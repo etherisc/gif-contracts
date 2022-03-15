@@ -5,7 +5,7 @@ This repository holds the GIF core contracts and tools to develop, test and depl
 ## Clone Repository
 
 ```bash
-git clone https://github.com/matthiaszimmermann/gif-contracts.git
+git clone https://github.com/etherisc/gif-contracts.git
 cd gif-contracts
 ```
 
