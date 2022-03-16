@@ -24,4 +24,4 @@ RUN echo "alias ll='ls -alF'" >> /root/.bashrc
 
 WORKDIR /projects
 
-ENTRYPOINT [ "bash" ]
+CMD [ "bash" ]
