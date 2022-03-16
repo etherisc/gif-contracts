@@ -52,7 +52,7 @@ def deployGifModule(controllerClass, storageClass, registry, owner):
     registry.register(controller.NAME.call(), controller.address, {'from': owner})
     registry.register(storage.NAME.call(), storage.address, {'from': owner})
 
-    return Contract.from_abi(controllerClass._name, storage.address, controllerClass.abi)
+    return contractFromAddress(controllerClass, storage.address)
 
 # generic upgradable gif module deployment
 def deployGifService(serviceClass, registry, owner):
@@ -61,3 +61,6 @@ def deployGifService(serviceClass, registry, owner):
     registry.register(service.NAME.call(), service.address, {'from': owner})
 
     return service
+
+def contractFromAddress(contractClass, contractAddress):
+    return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
