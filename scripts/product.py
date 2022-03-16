@@ -30,9 +30,7 @@ from scripts.const import (
     ORACLE_INPUT_FORMAT,
     ORACLE_OUTPUT_FORMAT,
     ORACLE_NAME,
-    ORACLE_ID,
     PRODUCT_NAME,
-    PRODUCT_ID,
 )
 
 from scripts.util import (
@@ -76,20 +74,20 @@ class GifTestOracle(object):
 
         # 4) instance operator approves oracle
         operatorService.approveOracle(
-            ORACLE_ID,
+            self.oracle.getId(),
             {'from': instance.getOwner()})
 
         # 5) instance operator approves oracle
         operatorService.assignOracleToOracleType(
             s2h(ORACLE_TYPE_NAME), 
-            ORACLE_ID,
+            self.oracle.getId(),
             {'from': instance.getOwner()})
 
     def getOracleTypeName(self) -> str:
         return s2h(ORACLE_TYPE_NAME)
     
     def getOracleId(self) -> int:
-        return ORACLE_ID
+        return self.oracle.getId()
     
     def getOracleContract(self) -> TestOracle:
         return self.oracle
@@ -110,10 +108,10 @@ class GifTestProduct(object):
             oracle.getOracleId(),
             {'from': productOwner})
 
-        operatorService.approveProduct(PRODUCT_ID)
+        operatorService.approveProduct(self.product.getId())
     
     def getProductId(self) -> int:
-        return PRODUCT_ID
+        return self.product.getId()
     
     def getProductContract(self) -> TestProduct:
         return self.product
