@@ -122,4 +122,8 @@ contract LicenseController is ILicenseController, LicenseStorageModel, ModuleCon
 
         _productId = productIdByAddress[_productContract];
     }
+
+    function getProductCount() external override view returns (uint256) { 
+        return productCount; 
+    }
 }

@@ -32,4 +32,9 @@ interface ILicenseController {
         external
         view
         returns (uint256 _productId);
+
+    function getProductCount() 
+        external 
+        view 
+        returns (uint256 _products);
 }

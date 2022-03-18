@@ -301,4 +301,13 @@ contract QueryController is IQueryController, QueryStorageModel, ModuleControlle
     function getOracleRequestCount() public view returns (uint256 _count) {
         return oracleRequests.length;
     }
+
+    function getOracleTypeCount() external override view returns (uint256) {
+        return oracleTypeNamesCount;
+    }
+
+    function getOracleCount() external override view returns (uint256) {
+        return oracleCount;
+    }
+
 }

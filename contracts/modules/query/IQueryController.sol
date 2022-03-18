@@ -55,4 +55,14 @@ interface IQueryController {
         address _responder,
         bytes calldata _data
     ) external;
+
+    function getOracleTypeCount() 
+        external 
+        view 
+        returns (uint256 _oracleTypes);
+
+    function getOracleCount() 
+        external 
+        view 
+        returns (uint256 _oracles);
 }

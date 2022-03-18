@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "../modules/license/ILicenseController.sol";
 import "../modules/access/IAccessController.sol";
 import "../modules/registry/IRegistryController.sol";
@@ -9,7 +8,9 @@ import "../modules/query/IQueryController.sol";
 import "../shared/WithRegistry.sol";
 import "../shared/IModuleController.sol";
 import "../shared/IModuleStorage.sol";
-import "./IInstanceOperatorService.sol";
+// import "./IInstanceOperatorService.sol";
+import "@gif-interface/contracts/IInstanceOperatorService.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Ownable {
     bytes32 public constant NAME = "InstanceOperatorService";
@@ -113,6 +114,19 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
         uint256 _oracleId
     ) external override onlyOwner {
         query().assignOracleToOracleType(_oracleTypeName, _oracleId);
+    }
+
+    /* Inventory */
+    function products() external override view returns(uint256) {
+        return license().getProductCount();
+    }
+
+    function oracleTypes() external override view returns(uint256) {
+        return query().getOracleTypeCount();
+    }
+
+    function oracles() external override view returns(uint256) {
+        return query().getOracleCount();
     }
 
     /* Lookup */
