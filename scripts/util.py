@@ -42,9 +42,22 @@ def encode_function_data(*args, initializer=None):
     return b''
 
 # generic upgradable gif module deployment
-def deployGifModule(controllerClass, storageClass, registry, owner):
-    controller = controllerClass.deploy(registry.address, {'from': owner})
-    storage = storageClass.deploy(registry.address, {'from': owner})
+def deployGifModule(
+    controllerClass, 
+    storageClass, 
+    registry, 
+    owner,
+    publishSource
+):
+    controller = controllerClass.deploy(
+        registry.address, 
+        {'from': owner},
+        publish_source=publishSource)
+    
+    storage = storageClass.deploy(
+        registry.address, 
+        {'from': owner},
+        publish_source=publishSource)
 
     controller.assignStorage(storage.address, {'from': owner})
     storage.assignController(controller.address, {'from': owner})
@@ -54,9 +67,17 @@ def deployGifModule(controllerClass, storageClass, registry, owner):
 
     return contractFromAddress(controllerClass, storage.address)
 
-# generic upgradable gif module deployment
-def deployGifService(serviceClass, registry, owner):
-    service = serviceClass.deploy(registry.address, {'from': owner})
+# generic upgradable gif service deployment
+def deployGifService(
+    serviceClass, 
+    registry, 
+    owner,
+    publishSource
+):
+    service = serviceClass.deploy(
+        registry.address, 
+        {'from': owner},
+        publish_source=publishSource)
 
     registry.register(service.NAME.call(), service.address, {'from': owner})
 

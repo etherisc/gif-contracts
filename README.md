@@ -49,21 +49,24 @@ Start the Brownie console that shows the `>>>` console prompt.
 brownie console
 ```
 
-Example session inside the Brownie console
+Example session inside the Brownie console for the deployment of a GIF instance,
 ```bash
 from scripts.instance import GifInstance
+
+owner = accounts[0]
+instance = GifInstance(owner)
+```
+
+And the deployment and usage of Test oracle and product.
+```bash
 from scripts.product import GifTestOracle
 from scripts.product import GifTestProduct
 
 print('accounts setup')
-owner = accounts[0]
 oracleOwner = accounts[1]
 productOwner = accounts[2]
 consumer1 = accounts[3]
 consumer2 = accounts[4]
-
-print('deploy gif instance')
-instance = GifInstance(owner)
 
 print('deploy gif test oracle and product')
 oracle = GifTestOracle(instance, oracleOwner)
@@ -103,4 +106,40 @@ pc.getPolicy(policyId1)
 pc.getPolicy(policyId2)
 pc.getClaim(policyId1, 0)
 pc.getClaim(policyId2, 0)
+```
+
+## Deployment to Live Networks
+
+Deployments to live networks can be done with brownie console as well.
+
+Example for the deployment to Polygon test
+
+```bash
+brownie console --network polygon-test
+
+# in console
+owner = accounts.add()
+# will generate a new account and prints the mnemonic here
+
+owner.address
+# will print the owner address that you will need to fund first
+```
+
+Use Polygon test [faucet](https://faucet.polygon.technology/) to fund the owner address
+```bash
+from scripts.instance import GifInstance
+
+# publishes source code to the network
+instance = GifInstance(owner, publishSource=True)
+
+# after the deploy print the registry address
+instance.getRegistry().address
+```
+
+After a successful deploy check the registry contract in the Polygon [testnet explorer](https://mumbai.polygonscan.com/).
+
+To check all contract addresses you may use the instance python script inside the brownie container as follows.
+```bash
+# 0x2852593b21796b549555d09873155B25257F6C38 is the registry contract address
+brownie run scripts/instance.py dump_sources 0x2852593b21796b549555d09873155B25257F6C38 --network polygon-test
 ```

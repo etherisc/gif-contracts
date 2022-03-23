@@ -8,7 +8,6 @@ import "../modules/query/IQueryController.sol";
 import "../shared/WithRegistry.sol";
 import "../shared/IModuleController.sol";
 import "../shared/IModuleStorage.sol";
-// import "./IInstanceOperatorService.sol";
 import "@gif-interface/contracts/IInstanceOperatorService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 

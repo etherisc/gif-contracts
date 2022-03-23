@@ -1,3 +1,6 @@
+import json
+import os
+
 from web3 import Web3
 
 from brownie.convert import to_bytes
@@ -20,6 +23,7 @@ from brownie import (
     OracleOwnerService,
     PolicyFlowDefault,
     InstanceOperatorService,
+    network
 )
 
 from scripts.const import (
@@ -38,9 +42,21 @@ from scripts.util import (
 
 class GifRegistry(object):
 
-    def __init__(self, owner: Account):
-        controller = RegistryController.deploy(s2h(GIF_RELEASE), {'from': owner})
-        storage = Registry.deploy(controller.address, s2h(GIF_RELEASE), {'from': owner})
+    def __init__(
+        self, 
+        owner: Account,
+        publishSource: bool = False
+    ):
+        controller = RegistryController.deploy(
+            s2h(GIF_RELEASE), 
+            {'from': owner},
+            publish_source=publishSource)
+
+        storage = Registry.deploy(
+            controller.address, 
+            s2h(GIF_RELEASE), 
+            {'from': owner},
+            publish_source=publishSource)
 
         self.owner = owner
         self.registry = contractFromAddress(RegistryController, storage.address)
@@ -56,24 +72,42 @@ class GifRegistry(object):
 
 class GifInstance(GifRegistry):
 
-    def __init__(self, owner:Account=None, registry_address=None):
+    def __init__(
+        self, 
+        owner: Account = None, 
+        registryAddress = None,
+        publishSource: bool = False
+    ):
         if owner:
-            super().__init__(owner)
-            self.deployWithRegistry(self.registry, owner)
-        elif registry_address:
-            self.fromRegistryAddress(registry_address)
+            super().__init__(
+                owner, 
+                publishSource)
+            
+            self.deployWithRegistry(
+                self.registry, 
+                owner,
+                publishSource)
+            
+        elif registryAddress:
+            self.fromRegistryAddress(registryAddress)
+
         else:
             raise ValueError('either owner or registry_address need to be provided')
 
-    def deployWithRegistry(self, registry: GifRegistry, owner: Account):
-        self.licence = deployGifModule(LicenseController, License, registry, owner)
-        self.policy = deployGifModule(PolicyController, Policy, registry, owner)
-        self.query = deployGifModule(QueryController, Query, registry, owner)
-        self.policyFlow = deployGifService(PolicyFlowDefault, registry, owner)
-        self.productService = deployGifService(ProductService, registry, owner)
-        self.oracleOwnerService = deployGifService(OracleOwnerService, registry, owner)
-        self.oracleService = deployGifService(OracleService, registry, owner)
-        self.instanceOperatorService = deployGifService(InstanceOperatorService, registry, owner)
+    def deployWithRegistry(
+        self, 
+        registry: GifRegistry, 
+        owner: Account,
+        publishSource: bool
+    ):
+        self.licence = deployGifModule(LicenseController, License, registry, owner, publishSource)
+        self.policy = deployGifModule(PolicyController, Policy, registry, owner, publishSource)
+        self.query = deployGifModule(QueryController, Query, registry, owner, publishSource)
+        self.policyFlow = deployGifService(PolicyFlowDefault, registry, owner, publishSource)
+        self.productService = deployGifService(ProductService, registry, owner, publishSource)
+        self.oracleOwnerService = deployGifService(OracleOwnerService, registry, owner, publishSource)
+        self.oracleService = deployGifService(OracleService, registry, owner, publishSource)
+        self.instanceOperatorService = deployGifService(InstanceOperatorService, registry, owner, publishSource)
 
     def fromRegistryAddress(self, registry_address):
         self.registry = contractFromAddress(RegistryController, registry_address)
@@ -114,3 +148,72 @@ class GifInstance(GifRegistry):
 
     def getPolicyController(self) -> PolicyController:
         return self.policy
+
+
+def dump_single(contract, instance=None) -> str:
+
+    info = contract.get_verification_info()
+    netw = network.show_active()
+    compiler = info['compiler_version']
+    optimizer = info['optimizer_enabled']
+    runs = info['optimizer_runs']
+    licence = info['license_identifier']
+    address = 'no_address'
+    name = info['contract_name']
+
+    if instance:
+        nameB32 = s2b32(contract._name)
+        address = instance.registry.getContract(nameB32)
+
+    dump_sources_contract_file = './dump_sources/{}/{}.json'.format(netw, name)
+    with open(dump_sources_contract_file,'w') as f: 
+        f.write(json.dumps(contract.get_verification_info()['standard_json_input']))
+
+    return '{} {} {} {} {} {} {}'.format(netw, compiler, optimizer, runs, licence, address, name)
+
+
+def dump_sources(registryAddress=None):
+
+    dump_sources_summary_dir = './dump_sources/{}'.format(network.show_active())
+    dump_sources_summary_file = '{}/contracts.txt'.format(dump_sources_summary_dir)
+
+    # create parent dir
+    try:
+        os.mkdir('./dump_sources')
+    except OSError:
+        pass
+
+    # create network specific sub dir
+    try:
+        os.mkdir(dump_sources_summary_dir)
+    except OSError:
+        pass
+    
+    instance = None
+        
+    if registryAddress:
+        instance = GifInstance(registryAddress=registryAddress)
+        
+    contracts = []
+    contracts.append(dump_single(Registry, instance))
+    contracts.append(dump_single(RegistryController, instance))
+
+    contracts.append(dump_single(License, instance))
+    contracts.append(dump_single(LicenseController, instance))
+    contracts.append(dump_single(Policy, instance))
+    contracts.append(dump_single(PolicyController, instance))
+    contracts.append(dump_single(Query, instance))
+    contracts.append(dump_single(QueryController, instance))
+
+    contracts.append(dump_single(PolicyFlowDefault, instance))
+    contracts.append(dump_single(ProductService, instance))
+    contracts.append(dump_single(OracleOwnerService, instance))
+    contracts.append(dump_single(OracleService, instance))
+    contracts.append(dump_single(InstanceOperatorService, instance))
+
+    with open(dump_sources_summary_file,'w') as f: 
+        f.write('\n'.join(contracts))
+        f.write('\n')
+
+    print('\n'.join(contracts))
+    print('\nfor contract json files see directory {}'.format(dump_sources_summary_dir))
