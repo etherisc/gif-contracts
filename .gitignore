@@ -5,3 +5,5 @@ __pycache__
 build/
 reports/
 dump_sources/
+
+**.pyc

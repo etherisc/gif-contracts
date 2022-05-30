@@ -34,7 +34,6 @@ CUSTOMER_ACCOUNT_NO = 3
 CUSTOMER2_ACCOUNT_NO = 4
 
 # TEST oracle/product values
-ORACLE_TYPE_NAME = 'Test.OracleType'
 ORACLE_NAME = 'Test.Oracle'
 ORACLE_INPUT_FORMAT = '(bytes input)'
 ORACLE_OUTPUT_FORMAT = '(bool output)'

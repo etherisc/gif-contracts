@@ -4,15 +4,6 @@ pragma solidity ^0.8.0;
 import "./IQuery.sol";
 
 interface IQueryController {
-    function proposeOracleType(
-        bytes32 _oracleTypeName,
-        string calldata _inputFormat,
-        string calldata _callbackFormat
-    ) external;
-
-    function approveOracleType(bytes32 _oracleTypeName) external;
-
-    function disapproveOracleType(bytes32 _oracleTypeName) external;
 
     function proposeOracle(bytes32 _name, address _oracleContract)
         external
@@ -26,27 +17,11 @@ interface IQueryController {
 
     function disapproveOracle(uint256 _oracleId) external;
 
-    function proposeOracleToOracleType(
-        bytes32 _oracleTypeName,
-        uint256 _oracleId
-    ) external;
-
-    function revokeOracleFromOracleType(
-        bytes32 _oracleTypeName,
-        uint256 _oracleId
-    ) external;
-
-    function assignOracleToOracleType(
-        bytes32 _oracleTypeName,
-        uint256 _oracleId
-    ) external;
-
     function request(
         bytes32 _bpKey,
         bytes calldata _input,
         string calldata _callbackMethodName,
         address _callbackContractAddress,
-        bytes32 _oracleTypeName,
         uint256 _responsibleOracleId
     ) external returns (uint256 _requestId);
 
@@ -55,11 +30,6 @@ interface IQueryController {
         address _responder,
         bytes calldata _data
     ) external;
-
-    function getOracleTypeCount() 
-        external 
-        view 
-        returns (uint256 _oracleTypes);
 
     function getOracleCount() 
         external 

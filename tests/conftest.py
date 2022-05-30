@@ -33,7 +33,6 @@ from scripts.const import (
     ORACLE_OWNER_ACCOUNT_NO,
     PRODUCT_OWNER_ACCOUNT_NO,
     CUSTOMER_ACCOUNT_NO,
-    ORACLE_TYPE_NAME,
     ORACLE_NAME,
     ORACLE_INPUT_FORMAT,
     ORACLE_OUTPUT_FORMAT,
@@ -58,6 +57,8 @@ from scripts.util import (
     deployGifModule,
     deployGifService,
 )
+
+PUBLISH_SOURCE = False
 
 @pytest.fixture(scope="function", autouse=True)
 def isolate(fn_isolation):
@@ -132,32 +133,32 @@ def registry(RegistryController, registryController, registryStorage, owner) -> 
 
 @pytest.fixture(scope="module")
 def license(LicenseController, License, registry, owner) -> License:
-    return deployGifModule(LicenseController, License, registry, owner)
+    return deployGifModule(LicenseController, License, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def policy(PolicyController, Policy, registry, owner) -> Policy:
-    return deployGifModule(PolicyController, Policy, registry, owner)
+    return deployGifModule(PolicyController, Policy, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def query(QueryController, Query, registry, owner) -> Query:
-    return deployGifModule(QueryController, Query, registry, owner)
+    return deployGifModule(QueryController, Query, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def productService(ProductService, registry, owner) -> ProductService:
-    return deployGifService(ProductService, registry, owner)
+    return deployGifService(ProductService, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def oracleService(OracleService, registry, owner) -> OracleService:
-    return deployGifService(OracleService, registry, owner)
+    return deployGifService(OracleService, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def oracleOwnerService(OracleOwnerService, registry, owner) -> OracleOwnerService:
-    return deployGifService(OracleOwnerService, registry, owner)
+    return deployGifService(OracleOwnerService, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def policyFlowDefault(PolicyFlowDefault, registry, owner) -> PolicyFlowDefault:
-    return deployGifService(PolicyFlowDefault, registry, owner)
+    return deployGifService(PolicyFlowDefault, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def instanceOperatorService(InstanceOperatorService, registry, owner) -> InstanceOperatorService:
-    return deployGifService(InstanceOperatorService, registry, owner)
+    return deployGifService(InstanceOperatorService, registry, owner, PUBLISH_SOURCE)

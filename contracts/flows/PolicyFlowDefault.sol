@@ -130,7 +130,6 @@ contract PolicyFlowDefault is WithRegistry {
         bytes calldata _input,
         string calldata _callbackMethodName,
         address _callbackContractAddress,
-        bytes32 _oracleTypeName,
         uint256 _responsibleOracleId
     ) external returns (uint256 _requestId) {
         _requestId = getQueryContract().request(
@@ -138,7 +137,6 @@ contract PolicyFlowDefault is WithRegistry {
             _input,
             _callbackMethodName,
             _callbackContractAddress,
-            _oracleTypeName,
             _responsibleOracleId
         );
     }

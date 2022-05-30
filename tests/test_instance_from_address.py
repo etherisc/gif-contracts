@@ -10,7 +10,7 @@ from scripts.instance import (
 
 def test_instance_addresses(instance: GifInstance):
     address = instance.getRegistry().address
-    addrInst = GifInstance(registry_address=address)
+    addrInst = GifInstance(registryAddress=address)
 
     assert addrInst.getInstanceOperatorService().address == instance.getInstanceOperatorService().address
     assert addrInst.getOracleOwnerService().address == instance.getOracleOwnerService().address

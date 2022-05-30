@@ -9,7 +9,6 @@ contract TestProduct is Product {
     bytes32 public constant POLICY_FLOW = "PolicyFlowDefault";
     string public constant ORACLE_CALLBACK_METHOD_NAME = "oracleCallback";
 
-    bytes32 private _testOracleType;
     uint256 private _testOracleId;
     uint256 private _policies;
     uint256 private _claims;
@@ -21,12 +20,10 @@ contract TestProduct is Product {
     constructor(
         address gifProductService,
         bytes32 productName,
-        bytes32 oracleType,
         uint256 oracleId
     )
         Product(gifProductService, productName, POLICY_FLOW)
     {
-        _testOracleType = oracleType;
         _testOracleId = oracleId;
     }
 
@@ -63,7 +60,6 @@ contract TestProduct is Product {
             policyId,
             abi.encode(_claims),
             ORACLE_CALLBACK_METHOD_NAME,
-            _testOracleType,
             _testOracleId
         );
     }

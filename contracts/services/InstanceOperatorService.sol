@@ -92,14 +92,6 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
     }
 
     /* Query */
-    function approveOracleType(bytes32 _oracleTypeName) external override onlyOwner {
-        query().approveOracleType(_oracleTypeName);
-    }
-
-    function disapproveOracleType(bytes32 _oracleTypeName) external override onlyOwner {
-        query().disapproveOracleType(_oracleTypeName);
-    }
-
     function approveOracle(uint256 _oracleId) external override onlyOwner {
         query().approveOracle(_oracleId);
     }
@@ -108,20 +100,9 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
         query().disapproveOracle(_oracleId);
     }
 
-    function assignOracleToOracleType(
-        bytes32 _oracleTypeName,
-        uint256 _oracleId
-    ) external override onlyOwner {
-        query().assignOracleToOracleType(_oracleTypeName, _oracleId);
-    }
-
     /* Inventory */
     function products() external override view returns(uint256) {
         return license().getProductCount();
-    }
-
-    function oracleTypes() external override view returns(uint256) {
-        return query().getOracleTypeCount();
     }
 
     function oracles() external override view returns(uint256) {

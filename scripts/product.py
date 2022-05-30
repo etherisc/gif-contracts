@@ -26,7 +26,6 @@ from brownie import (
 )
 
 from scripts.const import (
-    ORACLE_TYPE_NAME,
     ORACLE_INPUT_FORMAT,
     ORACLE_OUTPUT_FORMAT,
     ORACLE_NAME,
@@ -52,39 +51,17 @@ class GifTestOracle(object):
         oracleOwnerService = instance.getOracleOwnerService()
         oracleService = instance.getOracleService()
 
-        # 1) oracle owner proposes oracle type 
-        oracleOwnerService.proposeOracleType(
-            s2h(ORACLE_TYPE_NAME), 
-            ORACLE_INPUT_FORMAT,
-            ORACLE_OUTPUT_FORMAT,
-            {'from': oracleOwner})
-
-        # 2) instance operator approves oracle type
-        operatorService.approveOracleType(
-            s2h(ORACLE_TYPE_NAME),
-            {'from': instance.getOwner()})
-
-        # 3) oracle owner proposes oracle
+        # 1) oracle owner proposes oracle
         self.oracle = TestOracle.deploy(
             oracleService,
             oracleOwnerService,
-            s2h(ORACLE_TYPE_NAME),
             s2h(ORACLE_NAME),
             {'from': oracleOwner})
 
-        # 4) instance operator approves oracle
+        # 2) instance operator approves oracle
         operatorService.approveOracle(
             self.oracle.getId(),
             {'from': instance.getOwner()})
-
-        # 5) instance operator approves oracle
-        operatorService.assignOracleToOracleType(
-            s2h(ORACLE_TYPE_NAME), 
-            self.oracle.getId(),
-            {'from': instance.getOwner()})
-
-    def getOracleTypeName(self) -> str:
-        return s2h(ORACLE_TYPE_NAME)
     
     def getOracleId(self) -> int:
         return self.oracle.getId()
@@ -104,7 +81,6 @@ class GifTestProduct(object):
         self.product = TestProduct.deploy(
             productService,
             s2h(PRODUCT_NAME),
-            oracle.getOracleTypeName(),
             oracle.getOracleId(),
             {'from': productOwner})
 
