@@ -1,6 +1,10 @@
 from web3 import Web3
 
-from brownie import Contract
+from brownie import (
+    Contract, 
+    CoreProxy,
+)
+
 from brownie.convert import to_bytes
 from brownie.network import accounts
 from brownie.network.account import Account
@@ -16,6 +20,9 @@ def h2sLeft(hex: str) -> str:
 
 def s2b32(text: str):
     return '{:0<66}'.format(Web3.toHex(text.encode('ascii')))
+
+def b322s(b32: bytes):
+    return b32.decode().split('\x00')[0]
 
 def get_account(mnemonic: str, account_offset: int) -> Account:
     return accounts.from_mnemonic(
@@ -67,6 +74,38 @@ def deployGifModule(
 
     return contractFromAddress(controllerClass, storage.address)
 
+
+# generic open zeppelin upgradable gif module deployment
+def deployGifModuleV2(
+    moduleName,
+    controllerClass, 
+    registry, 
+    owner,
+    publishSource
+):
+    controller = controllerClass.deploy(
+        {'from': owner},
+        publish_source=publishSource)
+
+    encoded_initializer = encode_function_data(
+        registry.address,
+        initializer=controller.initialize)
+
+    proxy = CoreProxy.deploy(
+        controller.address, 
+        encoded_initializer, 
+        {'from': owner},
+        publish_source=publishSource)
+
+    moduleNameB32 = s2b32(moduleName)
+    controllerNameB32 = s2b32('{}Controller'.format(moduleName))
+
+    registry.register(moduleNameB32, proxy.address, {'from': owner})
+    registry.register(controllerNameB32, controller.address, {'from': owner})
+
+    return contractFromAddress(controllerClass, proxy.address)
+
+
 # generic upgradable gif service deployment
 def deployGifService(
     serviceClass, 
@@ -80,6 +119,22 @@ def deployGifService(
         publish_source=publishSource)
 
     registry.register(service.NAME.call(), service.address, {'from': owner})
+
+    return service
+
+def deployGifServiceV2(
+    serviceName,
+    serviceClass, 
+    registry, 
+    owner,
+    publishSource
+):
+    service = serviceClass.deploy(
+        registry.address, 
+        {'from': owner},
+        publish_source=publishSource)
+
+    registry.register(s2b32(serviceName), service.address, {'from': owner})
 
     return service
 

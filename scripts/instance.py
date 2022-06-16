@@ -10,7 +10,8 @@ from brownie.network.account import Account
 from brownie import (
     Wei,
     Contract, 
-    Registry,
+    CoreProxy,
+    AccessController,
     RegistryController,
     License,
     LicenseController,
@@ -20,7 +21,8 @@ from brownie import (
     QueryController,
     ProductService,
     OracleService,
-    OracleOwnerService,
+    ComponentController,
+    ComponentOwnerService,
     PolicyFlowDefault,
     InstanceOperatorService,
     network
@@ -37,6 +39,8 @@ from scripts.util import (
     s2b32,
     deployGifModule,
     deployGifService,
+    deployGifModuleV2,
+    deployGifServiceV2,
     contractFromAddress,
 )
 
@@ -48,20 +52,30 @@ class GifRegistry(object):
         publishSource: bool = False
     ):
         controller = RegistryController.deploy(
-            s2h(GIF_RELEASE), 
             {'from': owner},
             publish_source=publishSource)
 
-        storage = Registry.deploy(
-            controller.address, 
-            s2h(GIF_RELEASE), 
+        encoded_initializer = encode_function_data(
+            s2b32(GIF_RELEASE),
+            initializer=controller.initializeRegistry)
+
+        proxy = CoreProxy.deploy(
+            controller.address,
+            encoded_initializer, 
             {'from': owner},
             publish_source=publishSource)
 
         self.owner = owner
-        self.registry = contractFromAddress(RegistryController, storage.address)
-        self.registry.register(storage.NAME.call(), storage.address, {'from': owner})
-        self.registry.register(controller.NAME.call(), controller.address, {'from': owner})
+        self.registry = contractFromAddress(RegistryController, proxy.address)
+
+        print('owner {}'.format(owner))
+        print('controller.address {}'.format(controller.address))
+        print('proxy.address {}'.format(proxy.address))
+        print('registry.address {}'.format(self.registry.address))
+        print('registry.getContract(InstanceOperatorService) {}'.format(self.registry.getContract(s2h("InstanceOperatorService"))))
+
+        self.registry.register(s2b32("Registry"), proxy.address, {'from': owner})
+        self.registry.register(s2b32("RegistryController"), controller.address, {'from': owner})
 
     def getOwner(self) -> Account:
         return self.owner
@@ -94,20 +108,32 @@ class GifInstance(GifRegistry):
         else:
             raise ValueError('either owner or registry_address need to be provided')
 
+
     def deployWithRegistry(
         self, 
         registry: GifRegistry, 
         owner: Account,
         publishSource: bool
     ):
+        self.access = deployGifModuleV2("Access", AccessController, registry, owner, publishSource)
+        self.component = deployGifModuleV2("Component", ComponentController, registry, owner, publishSource)
+        self.componentOwnerService = deployGifServiceV2("ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
+
+        # TODO move modules below to V2 mechanism
         self.licence = deployGifModule(LicenseController, License, registry, owner, publishSource)
         self.policy = deployGifModule(PolicyController, Policy, registry, owner, publishSource)
         self.query = deployGifModule(QueryController, Query, registry, owner, publishSource)
         self.policyFlow = deployGifService(PolicyFlowDefault, registry, owner, publishSource)
         self.productService = deployGifService(ProductService, registry, owner, publishSource)
-        self.oracleOwnerService = deployGifService(OracleOwnerService, registry, owner, publishSource)
         self.oracleService = deployGifService(OracleService, registry, owner, publishSource)
+
+        # needs to be the last module to register as it will change
+        # the address of the instance operator service to its true address
         self.instanceOperatorService = deployGifService(InstanceOperatorService, registry, owner, publishSource)
+
+        # needs to be called during instance setup
+        self.access.setDefaultAdminRole(self.instanceOperatorService.address, {'from': owner})
+
 
     def fromRegistryAddress(self, registry_address):
         self.registry = contractFromAddress(RegistryController, registry_address)
@@ -118,7 +144,7 @@ class GifInstance(GifRegistry):
 
         self.policyFlow = self.contractFromGifRegistry(PolicyFlowDefault)
         self.productService = self.contractFromGifRegistry(ProductService)
-        self.oracleOwnerService = self.contractFromGifRegistry(OracleOwnerService)
+        self.componentOwnerService = self.contractFromGifRegistry(ComponentOwnerService)
         self.oracleService = self.contractFromGifRegistry(OracleService)
         self.instanceOperatorService = self.contractFromGifRegistry(InstanceOperatorService)
 
@@ -140,36 +166,14 @@ class GifInstance(GifRegistry):
     def getProductService(self) -> ProductService:
         return self.productService
     
-    def getOracleOwnerService(self) -> OracleOwnerService:
-        return self.oracleOwnerService
+    def getComponentOwnerService(self) -> ComponentOwnerService:
+        return self.componentOwnerService
     
     def getOracleService(self) -> OracleService:
         return self.oracleService
 
     def getPolicyController(self) -> PolicyController:
         return self.policy
-
-
-def dump_single(contract, instance=None) -> str:
-
-    info = contract.get_verification_info()
-    netw = network.show_active()
-    compiler = info['compiler_version']
-    optimizer = info['optimizer_enabled']
-    runs = info['optimizer_runs']
-    licence = info['license_identifier']
-    address = 'no_address'
-    name = info['contract_name']
-
-    if instance:
-        nameB32 = s2b32(contract._name)
-        address = instance.registry.getContract(nameB32)
-
-    dump_sources_contract_file = './dump_sources/{}/{}.json'.format(netw, name)
-    with open(dump_sources_contract_file,'w') as f: 
-        f.write(json.dumps(contract.get_verification_info()['standard_json_input']))
-
-    return '{} {} {} {} {} {} {}'.format(netw, compiler, optimizer, runs, licence, address, name)
 
 
 def dump_sources(registryAddress=None):
@@ -217,3 +221,25 @@ def dump_sources(registryAddress=None):
 
     print('\n'.join(contracts))
     print('\nfor contract json files see directory {}'.format(dump_sources_summary_dir))
+
+
+def dump_single(contract, instance=None) -> str:
+
+    info = contract.get_verification_info()
+    netw = network.show_active()
+    compiler = info['compiler_version']
+    optimizer = info['optimizer_enabled']
+    runs = info['optimizer_runs']
+    licence = info['license_identifier']
+    address = 'no_address'
+    name = info['contract_name']
+
+    if instance:
+        nameB32 = s2b32(contract._name)
+        address = instance.registry.getContract(nameB32)
+
+    dump_sources_contract_file = './dump_sources/{}/{}.json'.format(netw, name)
+    with open(dump_sources_contract_file,'w') as f: 
+        f.write(json.dumps(contract.get_verification_info()['standard_json_input']))
+
+    return '{} {} {} {} {} {} {}'.format(netw, compiler, optimizer, runs, licence, address, name)

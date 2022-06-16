@@ -1,0 +1,174 @@
+// SPDX-License-Identifier: Apache-2.0
+pragma solidity ^0.8.0;
+
+import "../shared/CoreController.sol";
+import "../test/IComponent.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+
+
+contract ComponentController is 
+    CoreController 
+ {
+
+    event LogComponentProposed (
+        bytes32 componentName, 
+        uint16 componentType, 
+        address componentAddress,
+        uint256 id);
+    
+    event LogComponentApproved (uint256 id);
+    event LogComponentDeclined (uint256 id);
+
+    event LogComponentPaused (uint256 id);
+    event LogComponentUnpaused (uint256 id);
+
+    event LogComponentStateChanged (uint256 id, uint16 stateOld, uint16 stateNew);
+
+    uint16 public constant CREATED_STATE = 0;
+    uint16 public constant PROPOSED_STATE = 1;
+    uint16 public constant DECLINED_STATE = 2;
+    uint16 public constant ACTIVE_STATE = 3;
+    uint16 public constant PAUSED_STATE = 4;
+    uint16 public constant SUSPENDED_STATE = 5;
+
+    mapping(uint256 => IComponent) private _componentById;
+    mapping(bytes32 => uint256) private _componentIdByName;
+    mapping(address => uint256) private _componentIdByAddress;
+    uint256 private _componentCount;
+
+
+    modifier onlyComponentOwnerService() {
+        require(
+             _msgSender() == _getContractAddress("ComponentOwnerService"),
+            "ERROR:CCR-001:NOT_COMPONENT_OWNER_SERVICE");
+        _;
+    }
+
+
+    modifier onlyInstanceOperatorService() {
+        require(
+             _msgSender() == _getContractAddress("InstanceOperatorService"),
+            "ERROR:CCR-001:NOT_INSTANCE_OPERATOR_SERVICE");
+        _;
+    }
+
+
+    function propose(IComponent component) external onlyComponentOwnerService {
+        // input validation
+        address componentAddress = address(component);
+        require(_componentIdByAddress[componentAddress] == 0, "ERROR:CCR-002:COMPONENT_ALREADY_EXISTS");
+
+        bytes32 componentName = component.getName();
+        require(_componentIdByName[componentName] == 0, "ERROR:CCR-003:COMPONENT_NAME_ALREADY_EXISTS");
+
+        // fetch next component id
+        _componentCount++;
+        uint256 id = _componentCount;
+
+        // update component state
+        component.setId(id);
+        _changeState(component, PROPOSED_STATE);
+
+        // update controller book keeping
+        _componentById[id] = component;
+        _componentIdByName[componentName] = id;
+        _componentIdByAddress[componentAddress] = id;
+
+        // log entry for successful proposal
+        emit LogComponentProposed(
+            componentName, 
+            component.getType(), 
+            componentAddress,
+            id);
+        
+        // inform component about successful proposal
+        component.proposalCallback();
+    }
+
+    function approve(
+        uint256 id, 
+        address [] calldata tokens, 
+        uint256 [] calldata amounts
+    ) 
+        external 
+        onlyInstanceOperatorService 
+    {
+        IComponent component = getComponent(id);
+        _changeState(component, ACTIVE_STATE);
+        // TODO consider implement how to persist and use the staking requirements
+        emit LogComponentApproved(id);
+        
+        // inform component about successful approval
+        component.approvalCallback(tokens, amounts);
+    }
+
+    function decline(uint256 id) 
+        external 
+        onlyInstanceOperatorService 
+    {
+        IComponent component = getComponent(id);
+        _changeState(component, DECLINED_STATE);
+        emit LogComponentDeclined(id);
+        
+        // inform component about decline
+        component.declineCallback();
+    }
+
+    function pause(uint256 id) 
+        external 
+        onlyComponentOwnerService 
+    {
+        IComponent component = getComponent(id);
+        _changeState(component, PAUSED_STATE);
+        emit LogComponentPaused(id);
+    }
+
+    function unpause(uint256 id) 
+        external 
+        onlyComponentOwnerService 
+    {
+        IComponent component = getComponent(id);
+        _changeState(component, ACTIVE_STATE);
+        emit LogComponentUnpaused(id);
+    }
+
+    function getComponent(uint256 id) public view returns (IComponent component) {
+        component = _componentById[id];
+        require(address(component) != address(0), "ERROR:CCR-005:INVALID_COMPONENT_ID");
+    }
+
+    function getComponentCount() public view returns (uint256 count) { return _componentCount; }
+
+
+    function _changeState(IComponent component, uint16 newState) internal {
+        uint16 oldState = component.getState();
+
+        _checkStateTransition(oldState, newState);
+        component.setState(newState);
+
+        // log entry for successful component state change
+        emit LogComponentStateChanged(component.getId(), oldState, newState);
+    }
+
+
+    function _checkStateTransition(uint16 oldState, uint16 newState) internal {
+        require(oldState <= 5, "ERROR:CMP-010:INVALID_INITIAL_STATE");
+        require(newState <= 5, "ERROR:CMP-011:INVALID_TARGET_STATE");
+
+        if (oldState == CREATED_STATE) {
+            require(newState == PROPOSED_STATE, "ERROR:CMP-012:CREATED_INVALID_TRANSITION");
+        } else if (oldState == PROPOSED_STATE) {
+            require(newState == ACTIVE_STATE || newState == DECLINED_STATE, "ERROR:CMP-013:PROPOSED_INVALID_TRANSITION");
+        } else if (oldState == DECLINED_STATE) {
+            revert("ERROR:CMP-014:DECLINED_IS_FINAL_STATE");
+        } else if (oldState == ACTIVE_STATE) {
+            require(newState == PAUSED_STATE || newState == SUSPENDED_STATE, "ERROR:CMP-015:ACTIVE_INVALID_TRANSITION");
+        } else if (oldState == PAUSED_STATE) {
+            require(newState == ACTIVE_STATE, "ERROR:CMP-016:PAUSED_INVALID_TRANSITION");
+        } else if (oldState == SUSPENDED_STATE) {
+            require(newState == ACTIVE_STATE, "ERROR:CMP-017:SUSPENDED_INVALID_TRANSITION");
+        } else {
+            revert("ERROR:CMP-018:INITIAL_STATE_NOT_HANDLED");
+        }
+    }
+}

@@ -8,8 +8,8 @@ from brownie.network.account import Account
 from brownie import (
     Wei,
     Contract, 
-    Registry,
-    RegistryController,
+    # Registry,
+    # RegistryController,
     License,
     LicenseController,
     Policy,
@@ -18,7 +18,7 @@ from brownie import (
     QueryController,
     ProductService,
     OracleService,
-    OracleOwnerService,
+    ComponentOwnerService,
     PolicyFlowDefault,
     InstanceOperatorService,
     TestOracle,
@@ -35,7 +35,8 @@ from scripts.const import (
 from scripts.util import (
     get_account,
     encode_function_data,
-    s2h,
+    # s2h,
+    s2b32,
     deployGifModule,
     deployGifService,
 )
@@ -48,17 +49,25 @@ class GifTestOracle(object):
 
     def __init__(self, instance: GifInstance, oracleOwner: Account):
         operatorService = instance.getInstanceOperatorService()
-        oracleOwnerService = instance.getOracleOwnerService()
+        componentOwnerService = instance.getComponentOwnerService()
         oracleService = instance.getOracleService()
 
-        # 1) oracle owner proposes oracle
+        # 1) add oracle provider role to owner
+        opRole = operatorService.oracleProviderRole()
+        operatorService.addRoleToAccount(oracleOwner, opRole)
+
+        # 2) oracle owner creates oracle
         self.oracle = TestOracle.deploy(
-            oracleService,
-            oracleOwnerService,
-            s2h(ORACLE_NAME),
+            s2b32(ORACLE_NAME),
+            instance.getRegistry(),
             {'from': oracleOwner})
 
-        # 2) instance operator approves oracle
+        # 3) oracle owner proposes oracle to instance
+        componentOwnerService.propose(
+            self.oracle,
+            {'from': oracleOwner})
+
+        # 4) instance operator approves oracle
         operatorService.approveOracle(
             self.oracle.getId(),
             {'from': instance.getOwner()})
@@ -80,11 +89,13 @@ class GifTestProduct(object):
 
         self.product = TestProduct.deploy(
             productService,
-            s2h(PRODUCT_NAME),
+            s2b32(PRODUCT_NAME),
             oracle.getOracleId(),
             {'from': productOwner})
 
-        operatorService.approveProduct(self.product.getId())
+        operatorService.approveProduct(
+            self.product.getId(),
+            {'from': instance.getOwner()})
     
     def getProductId(self) -> int:
         return self.product.getId()

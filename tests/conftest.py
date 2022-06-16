@@ -6,7 +6,7 @@ from typing import Dict
 from brownie import (
     Wei,
     Contract, 
-    Registry,
+    CoreProxy,
     RegistryController,
     License,
     LicenseController,
@@ -16,11 +16,12 @@ from brownie import (
     QueryController,
     ProductService,
     OracleService,
-    OracleOwnerService,
+    ComponentOwnerService,
     PolicyFlowDefault,
     InstanceOperatorService,
     TestOracle,
-    TestProduct
+    TestProduct,
+    TestRegistryControllerUpdated
 )
 
 from brownie.network import accounts
@@ -54,7 +55,9 @@ from scripts.util import (
     get_account,
     encode_function_data,
     s2h,
+    s2b32,
     deployGifModule,
+    deployGifModuleV2,
     deployGifService,
 )
 
@@ -82,6 +85,10 @@ def oracleOwner(accounts) -> Account:
     return owner
 
 @pytest.fixture(scope="module")
+def oracleProvider(oracleOwner) -> Account:
+    return oracleOwner
+
+@pytest.fixture(scope="module")
 def productOwner(accounts) -> Account:
     owner = get_account(ACCOUNTS_MNEMONIC, PRODUCT_OWNER_ACCOUNT_NO)
     accounts[2].transfer(owner, "100 ether")
@@ -104,32 +111,34 @@ def testProduct(instance: GifInstance, oracleOwner: Account, productOwner: Accou
 
     return product.getProductContract()
 
-# rel = '1.2.0'
-# relHex = Web3.toHex(rel.encode('ascii'))
-# controller = RegistryController.deploy(relHex, {'from': owner})
 @pytest.fixture(scope="module")
 def registryController(RegistryController, owner) -> RegistryController:
-    return RegistryController.deploy(s2h(GIF_RELEASE), {'from': owner})
+    return RegistryController.deploy({'from': owner})
 
-# storage = Registry.deploy(controller.address, relHex, {'from': owner})
 @pytest.fixture(scope="module")
-def registryStorage(Registry, registryController, owner) -> Registry:
-    return Registry.deploy(registryController.address, s2h(GIF_RELEASE), {'from': owner})
+def registryControllerV2Test(TestRegistryControllerUpdated, owner) -> TestRegistryControllerUpdated:
+    return TestRegistryControllerUpdated.deploy({'from': owner})
 
-# controller.assignStorage(storage.address, {'from': owner})
-# registry = Contract.from_abi(RegistryController._name, storage.address, RegistryController.abi)
-# registry.register(storage.NAME.call(), storage.address, {'from': owner})
-# registry.register(controller.NAME.call(), controller.address, {'from': owner})
 @pytest.fixture(scope="module")
-def registry(RegistryController, registryController, registryStorage, owner) -> Registry:
-    registryController.assignStorage(registryStorage.address, {'from': owner})
-    # TODO check: registryStorage.assignController missing ?
-    registry = Contract.from_abi(RegistryController._name, registryStorage.address, RegistryController.abi)
+def registry(registryController, owner) -> RegistryController:
+    encoded_initializer = encode_function_data(
+        s2b32(GIF_RELEASE),
+        initializer=registryController.initializeRegistry)
 
-    registry.register(registryStorage.NAME.call(), registryStorage.address, {'from': owner})
-    registry.register(registryController.NAME.call(), registryController.address, {'from': owner})
+    proxy = CoreProxy.deploy(
+        registryController.address, 
+        encoded_initializer, 
+        {'from': owner})
+
+    registry = contractFromAddress(RegistryController, proxy.address)
+    registry.register(s2b32("Registry"), proxy.address, {'from': owner})
+    registry.register(s2b32("RegistryController"), registryController.address, {'from': owner})
 
     return registry
+
+@pytest.fixture(scope="module")
+def access(AccessController, registry, owner) -> License:
+    return deployGifModuleV2("Access", AccessController, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def license(LicenseController, License, registry, owner) -> License:
@@ -152,8 +161,8 @@ def oracleService(OracleService, registry, owner) -> OracleService:
     return deployGifService(OracleService, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
-def oracleOwnerService(OracleOwnerService, registry, owner) -> OracleOwnerService:
-    return deployGifService(OracleOwnerService, registry, owner, PUBLISH_SOURCE)
+def componentOwnerService(ComponentOwnerService, registry, owner) -> ComponentOwnerService:
+    return deployGifService(ComponentOwnerService, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def policyFlowDefault(PolicyFlowDefault, registry, owner) -> PolicyFlowDefault:
@@ -162,3 +171,14 @@ def policyFlowDefault(PolicyFlowDefault, registry, owner) -> PolicyFlowDefault:
 @pytest.fixture(scope="module")
 def instanceOperatorService(InstanceOperatorService, registry, owner) -> InstanceOperatorService:
     return deployGifService(InstanceOperatorService, registry, owner, PUBLISH_SOURCE)
+
+def contractFromAddress(contractClass, contractAddress):
+    return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
+
+def encode_function_data(*args, initializer=None):
+    if not len(args): args = b''
+
+    if initializer:
+        return initializer.encode_input(*args)
+
+    return b''

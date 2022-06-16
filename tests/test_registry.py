@@ -8,15 +8,15 @@ from scripts.const import (
 )
 
 from scripts.util import (
-    h2s,
+    b322s,
     s2b32,
 )
 
 def test_registry_release(registry, owner):
-    assert GIF_RELEASE == h2s(registry.getRelease({'from': owner}))
+    assert GIF_RELEASE == b322s(registry.getRelease({'from': owner}))
 
 def test_registry_release_any_account(registry, accounts):
-    assert GIF_RELEASE == h2s(registry.getRelease({'from': accounts[0]}))
+    assert GIF_RELEASE == b322s(registry.getRelease({'from': accounts[0]}))
 
 def test_registry_controller(registry, registryController, owner, accounts):
     release = registry.getRelease({'from': owner})

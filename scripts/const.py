@@ -4,8 +4,13 @@
 GIF_RELEASE = '1.2.0'
 
 # GIF modules
+ACCESS_NAME = 'Access'
+
 REGISTRY_CONTROLLER_NAME = 'RegistryController'
 REGISTRY_NAME = 'Registry'
+
+ACCESS_CONTROLLER_NAME = 'AccessController'
+ACCESS_NAME = 'Access'
 
 LICENSE_CONTROLLER_NAME = 'LicenseController'
 LICENSE_NAME = 'License'
@@ -17,6 +22,7 @@ QUERY_CONTROLLER_NAME = 'QueryController'
 QUERY_NAME = 'Query'
 
 # GIF services
+COMPONENT_OWNER_SERVICE_NAME = 'ComponentOwnerService'
 PRODUCT_SERVICE_NAME = 'ProductService'
 ORACLE_SERVICE_NAME = 'OracleService'
 ORACLE_OWNER_SERVICE_NAME = 'OracleOwnerService'

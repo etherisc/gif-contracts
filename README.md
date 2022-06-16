@@ -49,18 +49,19 @@ Start the Brownie console that shows the `>>>` console prompt.
 brownie console
 ```
 
-Example session inside the Brownie console for the deployment of a GIF instance,
+Example session inside the Brownie console
+
+* Deployment of a GIF instance
+* Deployment and usage of Test oracle and product
+
 ```bash
 from scripts.instance import GifInstance
-
-owner = accounts[0]
-instance = GifInstance(owner)
-```
-
-And the deployment and usage of Test oracle and product.
-```bash
 from scripts.product import GifTestOracle
 from scripts.product import GifTestProduct
+
+print('instance deployment')
+owner = accounts[0]
+instance = GifInstance(owner)
 
 print('accounts setup')
 oracleOwner = accounts[1]
@@ -106,6 +107,12 @@ pc.getPolicy(policyId1)
 pc.getPolicy(policyId2)
 pc.getClaim(policyId1, 0)
 pc.getClaim(policyId2, 0)
+```
+
+In case things go wrong you can information regarding the last transaction via history.
+
+```bash
+history[-1].info()
 ```
 
 ## Deployment to Live Networks

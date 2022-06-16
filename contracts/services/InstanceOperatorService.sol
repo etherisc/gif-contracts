@@ -2,14 +2,15 @@
 pragma solidity ^0.8.0;
 
 import "../modules/license/ILicenseController.sol";
-import "../modules/access/IAccessController.sol";
-import "../modules/registry/IRegistryController.sol";
+import "../modules/access/IAccess.sol";
 import "../modules/query/IQueryController.sol";
+import "../modules/ComponentController.sol";
 import "../shared/WithRegistry.sol";
 import "../shared/IModuleController.sol";
 import "../shared/IModuleStorage.sol";
 import "@gif-interface/contracts/IInstanceOperatorService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Ownable {
     bytes32 public constant NAME = "InstanceOperatorService";
@@ -32,32 +33,70 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
     }
 
     /* License */
-    function approveProduct(uint256 _productId) external override {
+    function approveProduct(uint256 _productId)
+        external override 
+        onlyOwner 
+    {
         license().approveProduct(_productId);
     }
 
-    function disapproveProduct(uint256 _productId) external override {
+    function disapproveProduct(uint256 _productId) 
+        external override 
+        onlyOwner 
+    {
         license().disapproveProduct(_productId);
     }
 
-    function pauseProduct(uint256 _productId) external override {
+    function pauseProduct(uint256 _productId) 
+        external override 
+        onlyOwner 
+    {
         license().pauseProduct(_productId);
     }
 
     /* Access */
-    function createRole(bytes32 _role) external override onlyOwner {
-        access().createRole(_role);
+
+    function productOwnerRole() public view returns(bytes32) {
+        return access().productOwnerRole();
     }
 
+    function oracleProviderRole() public view returns(bytes32) {
+        return access().oracleProviderRole();
+    }
+
+    function riskpoolKeeperRole() public view returns(bytes32) {
+        return access().riskpoolKeeperRole();
+    }
+
+    // TODO add to interface IInstanceOperatorService
+    function hasRole(bytes32 _role, address _address)
+        public view 
+        returns(bool)
+    {
+        return access().hasRole(_role, _address);
+    }
+
+    // TODO update interface and rename to addRole
+    function createRole(bytes32 _role) 
+        external override
+        onlyOwner 
+    {
+        access().addRole(_role);
+    }
+
+    // TODO update interface and rename to grantRole and switch argument order
     function addRoleToAccount(address _address, bytes32 _role)
         external override
         onlyOwner
     {
-        access().addRoleToAccount(_address, _role);
+        access().grantRole(_role, _address);
     }
 
-    function cleanRolesForAccount(address _address) external override onlyOwner {
-        access().cleanRolesForAccount(_address);
+    // TODO add implementation in accesscontroller
+    function cleanRolesForAccount(address _address) 
+        external override 
+        onlyOwner 
+    {
     }
 
     /* Registry */
@@ -65,7 +104,10 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
         bytes32 _release,
         bytes32 _contractName,
         address _contractAddress
-    ) external override onlyOwner {
+    ) 
+        external override 
+        onlyOwner 
+    {
         registry.registerInRelease(_release, _contractName, _contractAddress);
     }
 
@@ -83,20 +125,36 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
         registry.deregisterInRelease(_release, _contractName);
     }
 
-    function deregister(bytes32 _contractName) external override onlyOwner {
+    function deregister(bytes32 _contractName) 
+        external override 
+        onlyOwner 
+    {
         registry.deregister(_contractName);
     }
 
-    function prepareRelease(bytes32 _newRelease) external override onlyOwner {
+    function prepareRelease(bytes32 _newRelease) 
+        external override 
+        onlyOwner 
+    {
         registry.prepareRelease(_newRelease);
     }
 
     /* Query */
-    function approveOracle(uint256 _oracleId) external override onlyOwner {
-        query().approveOracle(_oracleId);
+    function approveOracle(uint256 _oracleId)
+        external override 
+        onlyOwner
+    {
+        address [] memory tokens = new address[](0);
+        uint256 [] memory amounts = new uint256[](0);
+        
+        component().approve(_oracleId, tokens, amounts);
     }
 
-    function disapproveOracle(uint256 _oracleId) external override onlyOwner {
+    // TODO align with component neutral workflows
+    function disapproveOracle(uint256 _oracleId) 
+        external override 
+        onlyOwner 
+    {
         query().disapproveOracle(_oracleId);
     }
 
@@ -110,12 +168,16 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
     }
 
     /* Lookup */
-    function license() internal view returns (ILicenseController) {
-        return ILicenseController(registry.getContract("License"));
+    function access() internal view returns (IAccess) {
+        return IAccess(registry.getContract("Access"));
     }
 
-    function access() internal view returns (IAccessController) {
-        return IAccessController(registry.getContract("Access"));
+    function component() internal view returns (ComponentController) {
+        return ComponentController(registry.getContract("Component"));
+    }
+
+    function license() internal view returns (ILicenseController) {
+        return ILicenseController(registry.getContract("License"));
     }
 
     function query() internal view returns (IQueryController) {

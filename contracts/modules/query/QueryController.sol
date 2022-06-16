@@ -3,16 +3,32 @@ pragma solidity ^0.8.0;
 
 import "./QueryStorageModel.sol";
 import "./IQueryController.sol";
+import "../access/IAccess.sol";
+import "../ComponentController.sol";
 import "../../shared/ModuleController.sol";
 import "@gif-interface/contracts/IOracle.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract QueryController is IQueryController, QueryStorageModel, ModuleController {
     bytes32 public constant NAME = "QueryController";
 
+
+
     modifier isResponsibleOracle(uint256 _requestId, address _responder) {
+        // TODO cleanup/refactor, 
+        // add getOracle to componentcontroller? 
+        // that could then do require and conversion to ioracle internally
+        OracleRequest memory oraclReq = oracleRequests[_requestId];
+        uint256 respOraclId = oraclReq.responsibleOracleId;
+
+        IComponent cmp = component().getComponent(respOraclId);
+        require(cmp.getType() == 2, "ERROR:QUC-00y:COMPONENT_NOT_ORACLE");
+        IOracle oracle = IOracle(address(cmp));
+
         require(
-            oracles[oracleRequests[_requestId].responsibleOracleId]
-                .oracleContract == _responder,
+            // oracles[oracleRequests[_requestId].responsibleOracleId]
+            //     .oracleContract == _responder,
+            address(oracle) == _responder,
             "ERROR:QUC-001:NOT_RESPONSIBLE_ORACLE"
         );
         _;
@@ -26,9 +42,20 @@ contract QueryController is IQueryController, QueryStorageModel, ModuleControlle
         onlyOracleOwner
         returns (uint256 _oracleId)
     {
+        Ownable oracle = Ownable(_oracleContract);
+        bytes32 opRole = access().oracleProviderRole();
+        address opAddress = oracle.owner();
+
+        // check that oracle provider has the permission to propolse
+        require(
+            access().hasRole(opRole, opAddress), 
+            "ERROR:QUC-002:ORACLE_PROVIDER_ROLE_MISSING"
+        );
+
+        // check that the oracle has not yet been proposed in the past
         require(
             oracleIdByAddress[_oracleContract] == 0,
-            "ERROR:QUC-008:ORACLE_ALREADY_EXISTS"
+            "ERROR:QUC-003:ORACLE_ALREADY_EXISTS"
         );
 
         oracleCount += 1;
@@ -49,9 +76,19 @@ contract QueryController is IQueryController, QueryStorageModel, ModuleControlle
         override
         onlyOracleOwner
     {
+        Ownable oracle = Ownable(_newOracleContract);
+
+        // check that oracle provider has the permission to propose
+        require(
+            access().hasRole(
+                access().oracleProviderRole(), 
+                oracle.owner()), 
+            "ERROR:QUC-004:ORACLE_PROVIDER_ROLE_MISSING");
+
+        // check that the oracle has not yet been proposed in the past
         require(
             oracleIdByAddress[_newOracleContract] == 0,
-            "ERROR:QUC-009:ORACLE_ALREADY_EXISTS"
+            "ERROR:QUC-005:ORACLE_ALREADY_EXISTS"
         );
 
         address prevContract = oracles[_oracleId].oracleContract;
@@ -117,7 +154,15 @@ contract QueryController is IQueryController, QueryStorageModel, ModuleControlle
         req.responsibleOracleId = _responsibleOracleId;
         req.createdAt = block.timestamp;
 
-        IOracle(oracles[_responsibleOracleId].oracleContract).request(
+        // TODO cleanup/refactor, 
+        // add getOracle to componentcontroller? 
+        // that could then do require and conversion to ioracle internally
+        IComponent cmp = component().getComponent(_responsibleOracleId);
+        require(cmp.getType() == 2, "ERROR:QUC-00x:COMPONENT_NOT_ORACLE");
+        IOracle oracle = IOracle(address(cmp));
+
+        // IOracle(oracles[_responsibleOracleId].oracleContract).request(
+        oracle.request(
             _requestId,
             _input
         );
@@ -130,7 +175,11 @@ contract QueryController is IQueryController, QueryStorageModel, ModuleControlle
         uint256 _requestId,
         address _responder,
         bytes calldata _data
-    ) external override onlyOracleService isResponsibleOracle(_requestId, _responder) {
+    ) 
+        external override 
+        onlyOracleService 
+        isResponsibleOracle(_requestId, _responder) 
+    {
         OracleRequest storage req = oracleRequests[_requestId];
 
         (bool status, ) =
@@ -161,4 +210,12 @@ contract QueryController is IQueryController, QueryStorageModel, ModuleControlle
         return oracleCount;
     }
 
+    /* Lookup */
+    function component() internal view returns (ComponentController) {
+        return ComponentController(registry.getContract("Component"));
+    }
+
+    function access() internal view returns (IAccess) {
+        return IAccess(registry.getContract("Access"));
+    }
 }
