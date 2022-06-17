@@ -19,17 +19,17 @@ def test_deploy(instance: GifInstance, oracleOwner, productOwner):
     ios = instance.getInstanceOperatorService()
 
     # TODO think if/how type specific component counts are really needed
-    # assert ios.oracles() == 0
+    assert ios.oracles() == 0
     assert ios.products() == 0
 
     oracle = GifTestOracle(instance, oracleOwner)
 
-    # assert ios.oracles() == 1
+    assert ios.oracles() == 1
     assert ios.products() == 0
 
     product = GifTestProduct(instance, oracle, productOwner)
 
-    # assert ios.oracles() == 1
+    assert ios.oracles() == 1
     assert ios.products() == 1
 
 

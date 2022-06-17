@@ -164,7 +164,9 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
     }
 
     function oracles() external override view returns(uint256) {
-        return query().getOracleCount();
+        // TODO continue here
+        // return query().getOracleCount();
+        return component().oracles();
     }
 
     /* Lookup */

@@ -33,4 +33,7 @@ interface IComponent {
     function getRequiredRole() external view returns(bytes32 role);
     function getRequiredAssets() external view returns(address [] memory tokens, uint256 [] memory amounts); // returns staked assets required for approval
 
+    function isProduct() external view returns(bool);
+    function isOracle() external view returns(bool);
+    function isRiskpool() external view returns(bool);
 }

@@ -34,6 +34,10 @@ contract ComponentController is
     mapping(uint256 => IComponent) private _componentById;
     mapping(bytes32 => uint256) private _componentIdByName;
     mapping(address => uint256) private _componentIdByAddress;
+
+    uint256 [] private _products;
+    uint256 [] private _oracles;
+    uint256 [] private _riskpools;
     uint256 private _componentCount;
 
 
@@ -55,15 +59,30 @@ contract ComponentController is
 
     function propose(IComponent component) external onlyComponentOwnerService {
         // input validation
-        address componentAddress = address(component);
-        require(_componentIdByAddress[componentAddress] == 0, "ERROR:CCR-002:COMPONENT_ALREADY_EXISTS");
+        require(_componentIdByAddress[address(component)] == 0, "ERROR:CCR-002:COMPONENT_ALREADY_EXISTS");
+        require(_componentIdByName[component.getName()] == 0, "ERROR:CCR-003:COMPONENT_NAME_ALREADY_EXISTS");
 
-        bytes32 componentName = component.getName();
-        require(_componentIdByName[componentName] == 0, "ERROR:CCR-003:COMPONENT_NAME_ALREADY_EXISTS");
+        // assigning id and persisting component
+        uint256 id = _persistComponent(component);
 
+        // log entry for successful proposal
+        emit LogComponentProposed(
+            component.getName(), 
+            component.getType(), 
+            address(component),
+            id);
+        
+        // inform component about successful proposal
+        component.proposalCallback();
+    }
+
+    function _persistComponent(IComponent component) 
+        internal
+        returns(uint256 id)
+    {
         // fetch next component id
         _componentCount++;
-        uint256 id = _componentCount;
+        id = _componentCount;
 
         // update component state
         component.setId(id);
@@ -71,18 +90,14 @@ contract ComponentController is
 
         // update controller book keeping
         _componentById[id] = component;
-        _componentIdByName[componentName] = id;
-        _componentIdByAddress[componentAddress] = id;
+        _componentIdByName[component.getName()] = id;
+        _componentIdByAddress[address(component)] = id;
 
-        // log entry for successful proposal
-        emit LogComponentProposed(
-            componentName, 
-            component.getType(), 
-            componentAddress,
-            id);
-        
-        // inform component about successful proposal
-        component.proposalCallback();
+        // type specific book keeping
+        uint16 componentType = component.getType();
+        if (component.isProduct()) { _products.push(id); }
+        else if (component.isOracle()) { _oracles.push(id); }
+        else if (component.isRiskpool()) { _riskpools.push(id); }
     }
 
     function approve(
@@ -137,7 +152,10 @@ contract ComponentController is
         require(address(component) != address(0), "ERROR:CCR-005:INVALID_COMPONENT_ID");
     }
 
-    function getComponentCount() public view returns (uint256 count) { return _componentCount; }
+    function components() public view returns (uint256 count) { return _componentCount; }
+    function products() public view returns (uint256 count) { return _products.length; }
+    function oracles() public view returns (uint256 count) { return _oracles.length; }
+    function riskpools() public view returns (uint256 count) { return _riskpools.length; }
 
 
     function _changeState(IComponent component, uint16 newState) internal {
