@@ -5,7 +5,8 @@ import "../shared/WithRegistry.sol";
 import "../modules/policy/IPolicy.sol";
 import "../modules/policy/IPolicyController.sol";
 import "../modules/license/ILicenseController.sol";
-import "../modules/query/IQueryController.sol";
+// import "../modules/query/IQueryController.sol";
+import "../modules/query/IQuery.sol";
 
 /*
  * PolicyFlowDefault is a delegate of ProductService.sol.
@@ -176,7 +177,7 @@ contract PolicyFlowDefault is WithRegistry {
         return IPolicyController(getContractFromRegistry("Policy"));
     }
 
-    function getQueryContract() internal view returns (IQueryController) {
-        return IQueryController(getContractFromRegistry("Query"));
+    function getQueryContract() internal view returns (IQuery) {
+        return IQuery(getContractFromRegistry("Query"));
     }
 }

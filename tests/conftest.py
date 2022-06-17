@@ -12,7 +12,6 @@ from brownie import (
     LicenseController,
     Policy,
     PolicyController,
-    Query,
     QueryController,
     ProductService,
     OracleService,
@@ -149,8 +148,8 @@ def policy(PolicyController, Policy, registry, owner) -> Policy:
     return deployGifModule(PolicyController, Policy, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
-def query(QueryController, Query, registry, owner) -> Query:
-    return deployGifModule(QueryController, Query, registry, owner, PUBLISH_SOURCE)
+def query(QueryController, registry, owner) -> QueryController:
+    return deployGifModuleV2("Query", QueryController, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def productService(ProductService, registry, owner) -> ProductService:

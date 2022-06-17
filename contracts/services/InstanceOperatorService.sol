@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "../modules/license/ILicenseController.sol";
 import "../modules/access/IAccess.sol";
-import "../modules/query/IQueryController.sol";
+import "../modules/query/IQuery.sol";
 import "../modules/ComponentController.sol";
 import "../shared/WithRegistry.sol";
 import "../shared/IModuleController.sol";
@@ -155,7 +155,8 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
         external override 
         onlyOwner 
     {
-        query().disapproveOracle(_oracleId);
+        // query().disapproveOracle(_oracleId);
+        component().decline(_oracleId);
     }
 
     /* Inventory */
@@ -182,7 +183,7 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
         return ILicenseController(registry.getContract("License"));
     }
 
-    function query() internal view returns (IQueryController) {
-        return IQueryController(registry.getContract("Query"));
+    function query() internal view returns (IQuery) {
+        return IQuery(registry.getContract("Query"));
     }
 }

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../shared/WithRegistry.sol";
-import "../modules/query/IQueryController.sol";
+import "../modules/query/IQuery.sol";
 import "@gif-interface/contracts/IOracleService.sol";
 
 contract OracleService is IOracleService, WithRegistry {
@@ -17,7 +17,7 @@ contract OracleService is IOracleService, WithRegistry {
     }
 
     /* Lookup */
-    function query() internal view returns (IQueryController) {
-        return IQueryController(registry.getContract("Query"));
+    function query() internal view returns (IQuery) {
+        return IQuery(registry.getContract("Query"));
     }
 }

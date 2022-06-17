@@ -2,14 +2,6 @@
 pragma solidity ^0.8.0;
 
 interface IQuery {
-    enum OracleState {Proposed, Approved, Paused}
-    enum OracleAssignmentState {Unassigned, Proposed, Assigned}
-
-    struct Oracle {
-        bytes32 name;
-        address oracleContract;
-        OracleState state;
-    }
 
     struct OracleRequest {
         bytes data;
@@ -20,27 +12,31 @@ interface IQuery {
         uint256 createdAt;
     }
 
-    /* Logs */
-    event LogOracleProposed(
-        uint256 oracleId,
-        bytes32 name,
-        address oracleContract
-    );
-    event LogOracleSetState(uint256 oracleId, OracleState state);
-    event LogOracleContractUpdated(
-        uint256 oracleId,
-        address oldContract,
-        address newContract
-    );
     event LogOracleRequested(
         bytes32 bpKey,
         uint256 requestId,
         uint256 responsibleOracleId
     );
+
     event LogOracleResponded(
         bytes32 bpKey,
         uint256 requestId,
         address responder,
         bool status
     );
+
+    function request(
+        bytes32 _bpKey,
+        bytes calldata _input,
+        string calldata _callbackMethodName,
+        address _callbackContractAddress,
+        uint256 _responsibleOracleId
+    ) external returns (uint256 _requestId);
+
+    function respond(
+        uint256 _requestId,
+        address _responder,
+        bytes calldata _data
+    ) external;
+
 }

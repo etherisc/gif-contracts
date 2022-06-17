@@ -94,7 +94,6 @@ contract ComponentController is
         _componentIdByAddress[address(component)] = id;
 
         // type specific book keeping
-        uint16 componentType = component.getType();
         if (component.isProduct()) { _products.push(id); }
         else if (component.isOracle()) { _oracles.push(id); }
         else if (component.isRiskpool()) { _riskpools.push(id); }
@@ -110,7 +109,7 @@ contract ComponentController is
     {
         IComponent component = getComponent(id);
         _changeState(component, ACTIVE_STATE);
-        // TODO consider implement how to persist and use the staking requirements
+        // TODO consider/implement how to persist and use the staking requirements
         emit LogComponentApproved(id);
         
         // inform component about successful approval
@@ -169,7 +168,7 @@ contract ComponentController is
     }
 
 
-    function _checkStateTransition(uint16 oldState, uint16 newState) internal {
+    function _checkStateTransition(uint16 oldState, uint16 newState) internal pure {
         require(oldState <= 5, "ERROR:CMP-010:INVALID_INITIAL_STATE");
         require(newState <= 5, "ERROR:CMP-011:INVALID_TARGET_STATE");
 
