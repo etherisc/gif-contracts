@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../modules/registry/IRegistry.sol";
-import "../modules/access/IAccess.sol";
 import "../modules/ComponentController.sol";
-import "../test/IComponent.sol";
-import "./IComponentOwnerService.sol";
+import "@gif-interface/contracts/components/IComponent.sol";
+import "@gif-interface/contracts/modules/IAccess.sol";
+import "@gif-interface/contracts/modules/IRegistry.sol";
+import "@gif-interface/contracts/services/IComponentOwnerService.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
 contract ComponentOwnerService is 
@@ -14,11 +14,6 @@ contract ComponentOwnerService is
 {
     // TODO figure out if we should keep the pattern that core contracts have a name
     bytes32 public constant NAME = "ComponentOwnerService";
-
-    event LogCosDebug (
-        address componentOwnerAddress,
-        bytes32 requiredRole
-    );
 
     IRegistry private _registry;
     IAccess private _access;

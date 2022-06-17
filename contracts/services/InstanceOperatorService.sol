@@ -2,13 +2,13 @@
 pragma solidity ^0.8.0;
 
 import "../modules/license/ILicenseController.sol";
-import "../modules/access/IAccess.sol";
-import "../modules/query/IQuery.sol";
 import "../modules/ComponentController.sol";
 import "../shared/WithRegistry.sol";
 import "../shared/IModuleController.sol";
 import "../shared/IModuleStorage.sol";
-import "@gif-interface/contracts/IInstanceOperatorService.sol";
+import "@gif-interface/contracts/modules/IAccess.sol";
+import "@gif-interface/contracts/modules/IQuery.sol";
+import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 

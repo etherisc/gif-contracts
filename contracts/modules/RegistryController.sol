@@ -1,14 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-// import "./AccessController.sol";
-import "./IRegistry.sol";
-// import "./IRegistryController.sol";
-// import "./RegistryStorageModel.sol";
-// import "../../shared/BaseModuleController.sol";
-// import "../../shared/AccessModifiers.sol";
-import "../../shared/CoreController.sol";
-
+import "../shared/CoreController.sol";
+import "@gif-interface/contracts/modules/IRegistry.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 

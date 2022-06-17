@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../modules/registry/IRegistry.sol";
-import "../modules/access/IAccess.sol";
-import "../modules/ComponentController.sol";
-
+import "@gif-interface/contracts/modules/IAccess.sol";
+import "@gif-interface/contracts/modules/IRegistry.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
@@ -67,10 +65,6 @@ contract CoreController is
     function _afterInitialize() internal virtual onlyInitializing {}
 
     /* Lookup */
-    function _component() internal view returns (ComponentController) {
-        return ComponentController(_getContractAddress("Component"));
-    }
-
     function _access() internal view returns (IAccess) {
         return IAccess(_getContractAddress("Access"));
     }

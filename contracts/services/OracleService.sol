@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "../shared/WithRegistry.sol";
-import "../modules/query/IQuery.sol";
-import "@gif-interface/contracts/IOracleService.sol";
+import "@gif-interface/contracts/modules/IQuery.sol";
+import "@gif-interface/contracts/services/IOracleService.sol";
 
 contract OracleService is IOracleService, WithRegistry {
     bytes32 public constant NAME = "OracleService";

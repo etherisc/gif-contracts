@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./IQuery.sol";
-import "../../test/IComponent.sol";
-import "../../shared/CoreController.sol";
-import "@gif-interface/contracts/IOracle.sol";
+import "./ComponentController.sol";
+import "../shared/CoreController.sol";
+import "@gif-interface/contracts/components/IComponent.sol";
+import "@gif-interface/contracts/components/IOracle.sol";
+import "@gif-interface/contracts/modules/IQuery.sol";
+
 
 contract QueryController is 
     IQuery, 
@@ -15,8 +17,8 @@ contract QueryController is
     OracleRequest[] public oracleRequests;
 
     modifier isResponsibleOracle(uint256 requestId, address responder) {
-        OracleRequest memory request = oracleRequests[requestId];
-        uint256 oracleId = request.responsibleOracleId;
+        OracleRequest memory oracleRequest = oracleRequests[requestId];
+        uint256 oracleId = oracleRequest.responsibleOracleId;
 
         require(
             address(_getOracle(oracleId)) == responder,
@@ -103,5 +105,9 @@ contract QueryController is
         require(cmp.getType() == 2, "ERROR:QUC-00x:COMPONENT_NOT_ORACLE");
 
         oracle = IOracle(address(cmp));
+    }
+
+    function _component() internal view returns (ComponentController) {
+        return ComponentController(_getContractAddress("Component"));
     }
 }

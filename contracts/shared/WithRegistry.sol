@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../modules/registry/IRegistry.sol";
 import "./AccessModifiers.sol";
+import "@gif-interface/contracts/modules/IRegistry.sol";
 
 contract WithRegistry is AccessModifiers {
     IRegistry public registry;

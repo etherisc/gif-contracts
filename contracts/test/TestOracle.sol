@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./OracleNew.sol";
+import "@gif-interface/contracts/components/Oracle.sol";
 
-contract TestOracle is OracleNew {
+
+contract TestOracle is Oracle {
 
     constructor(
         bytes32 oracleName,
         address registry
     )
-        OracleNew(oracleName, registry)
+        Oracle(oracleName, registry)
     { }
 
     function _calculateResponseData(bytes calldata requestData)

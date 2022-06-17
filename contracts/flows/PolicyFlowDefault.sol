@@ -5,8 +5,8 @@ import "../shared/WithRegistry.sol";
 import "../modules/policy/IPolicy.sol";
 import "../modules/policy/IPolicyController.sol";
 import "../modules/license/ILicenseController.sol";
-// import "../modules/query/IQueryController.sol";
-import "../modules/query/IQuery.sol";
+
+import "@gif-interface/contracts/modules/IQuery.sol";
 
 /*
  * PolicyFlowDefault is a delegate of ProductService.sol.

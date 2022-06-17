@@ -2,8 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
-import "../test/IComponent.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@gif-interface/contracts/components/IComponent.sol";
 
 
 contract ComponentController is 
