@@ -10,7 +10,6 @@ from brownie import (
     Contract, 
     # Registry,
     # RegistryController,
-    License,
     LicenseController,
     Policy,
     PolicyController,
@@ -52,10 +51,10 @@ class GifTestOracle(object):
         oracleService = instance.getOracleService()
 
         # 1) add oracle provider role to owner
-        opRole = operatorService.oracleProviderRole()
-        operatorService.addRoleToAccount(oracleOwner, opRole)
+        providerRole = operatorService.oracleProviderRole()
+        operatorService.addRoleToAccount(oracleOwner, providerRole)
 
-        # 2) oracle owner creates oracle
+        # 2) oracle provider creates oracle
         self.oracle = TestOracle.deploy(
             s2b32(ORACLE_NAME),
             instance.getRegistry(),
@@ -84,14 +83,28 @@ class GifTestProduct(object):
         self.policyController = instance.getPolicyController()
 
         operatorService = instance.getInstanceOperatorService()
-        productService = instance.getProductService()
+        componentOwnerService = instance.getComponentOwnerService()
+        registry = instance.getRegistry()
 
+        # 1) add oracle provider role to owner
+        ownerRole = operatorService.productOwnerRole()
+        operatorService.addRoleToAccount(productOwner, ownerRole)
+
+        # 2) product owner creates product
         self.product = TestProduct.deploy(
-            productService,
             s2b32(PRODUCT_NAME),
+            registry,
             oracle.getOracleId(),
             {'from': productOwner})
 
+        print('prod id {} (before propose)'.format(self.product.getId()))
+        # 3) oracle owner proposes oracle to instance
+        componentOwnerService.propose(
+            self.product,
+            {'from': productOwner})
+
+        print('prod id {} (after propose)'.format(self.product.getId()))
+        # 4) instance operator approves oracle
         operatorService.approveProduct(
             self.product.getId(),
             {'from': instance.getOwner()})

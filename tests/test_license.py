@@ -4,6 +4,10 @@ import pytest
 
 # from exceptions import AttributeError
 
+from brownie import (
+    ComponentController
+)
+
 from scripts.const import (
     LICENSE_NAME,
     LICENSE_CONTROLLER_NAME,
@@ -12,11 +16,6 @@ from scripts.const import (
 from scripts.util import (
     s2b32,
 )
-
-def test_non_existing_product(license, owner, accounts):
-    productId = 0
-    assert not license.isApprovedProduct(productId, {'from': owner})
-    assert not license.isApprovedProduct(productId, {'from': accounts[0]})
 
 def test_non_existing_functionality(license, owner):
     with pytest.raises(AttributeError):

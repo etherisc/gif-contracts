@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@gif-interface/contracts/components/Product.sol";
+import "./ProductNew.sol";
+// import "@gif-interface/contracts/components/Product.sol";
 
 
-contract TestProduct is Product {
+contract TestProduct is ProductNew {
 
     bytes32 public constant POLICY_FLOW = "PolicyFlowDefault";
     string public constant ORACLE_CALLBACK_METHOD_NAME = "oracleCallback";
@@ -18,11 +19,11 @@ contract TestProduct is Product {
     mapping(bytes32 => uint256) private _policyIdToPayoutId;
 
     constructor(
-        address gifProductService,
         bytes32 productName,
+        address registry,
         uint256 oracleId
     )
-        Product(gifProductService, productName, POLICY_FLOW)
+        ProductNew(productName, POLICY_FLOW, registry)
     {
         _testOracleId = oracleId;
     }

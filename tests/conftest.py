@@ -7,8 +7,8 @@ from brownie import (
     Wei,
     Contract, 
     CoreProxy,
+    AccessController,
     RegistryController,
-    License,
     LicenseController,
     Policy,
     PolicyController,
@@ -136,16 +136,16 @@ def registry(registryController, owner) -> RegistryController:
     return registry
 
 @pytest.fixture(scope="module")
-def access(AccessController, registry, owner) -> License:
+def access(AccessController, registry, owner) -> AccessController:
     return deployGifModuleV2("Access", AccessController, registry, owner, PUBLISH_SOURCE)
-
-@pytest.fixture(scope="module")
-def license(LicenseController, License, registry, owner) -> License:
-    return deployGifModule(LicenseController, License, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def policy(PolicyController, Policy, registry, owner) -> Policy:
     return deployGifModule(PolicyController, Policy, registry, owner, PUBLISH_SOURCE)
+
+@pytest.fixture(scope="module")
+def license(LicenseController, registry, owner) -> LicenseController:
+    return deployGifModuleV2("License", LicenseController, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def query(QueryController, registry, owner) -> QueryController:

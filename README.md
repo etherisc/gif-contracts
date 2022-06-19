@@ -58,6 +58,7 @@ Example session inside the Brownie console
 from scripts.instance import GifInstance
 from scripts.product import GifTestOracle
 from scripts.product import GifTestProduct
+from scripts.util import s2b32
 
 print('instance deployment')
 owner = accounts[0]

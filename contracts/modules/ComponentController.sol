@@ -150,6 +150,11 @@ contract ComponentController is
         require(address(component) != address(0), "ERROR:CCR-005:INVALID_COMPONENT_ID");
     }
 
+    function getComponentId(address componentAddress) public view returns (uint256 id) {
+        require(componentAddress != address(0), "ERROR:CCR-005:COMPONENT_ADDRESS_ZERO");
+        id = _componentIdByAddress[componentAddress];
+    }
+
     function components() public view returns (uint256 count) { return _componentCount; }
     function products() public view returns (uint256 count) { return _products.length; }
     function oracles() public view returns (uint256 count) { return _oracles.length; }

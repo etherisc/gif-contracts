@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../modules/license/ILicenseController.sol";
+import "../modules/ILicense.sol";
 import "../modules/ComponentController.sol";
 import "../shared/WithRegistry.sol";
 import "../shared/IModuleController.sol";
@@ -12,7 +12,11 @@ import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Ownable {
+contract InstanceOperatorService is 
+    IInstanceOperatorService, 
+    WithRegistry, 
+    Ownable 
+{
     bytes32 public constant NAME = "InstanceOperatorService";
 
     // solhint-disable-next-line no-empty-blocks
@@ -37,25 +41,27 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
         external override 
         onlyOwner 
     {
-        license().approveProduct(_productId);
+        address [] memory tokens = new address[](0);
+        uint256 [] memory amounts = new uint256[](0);
+        
+        component().approve(_productId, tokens, amounts);
     }
 
     function disapproveProduct(uint256 _productId) 
         external override 
         onlyOwner 
     {
-        license().disapproveProduct(_productId);
+        component().decline(_productId);
     }
 
     function pauseProduct(uint256 _productId) 
         external override 
         onlyOwner 
     {
-        license().pauseProduct(_productId);
+        // TODO implementation needed
     }
 
     /* Access */
-
     function productOwnerRole() public view returns(bytes32) {
         return access().productOwnerRole();
     }
@@ -155,18 +161,15 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
         external override 
         onlyOwner 
     {
-        // query().disapproveOracle(_oracleId);
         component().decline(_oracleId);
     }
 
     /* Inventory */
     function products() external override view returns(uint256) {
-        return license().getProductCount();
+        return component().products();
     }
 
     function oracles() external override view returns(uint256) {
-        // TODO continue here
-        // return query().getOracleCount();
         return component().oracles();
     }
 
@@ -179,8 +182,8 @@ contract InstanceOperatorService is IInstanceOperatorService, WithRegistry, Owna
         return ComponentController(registry.getContract("Component"));
     }
 
-    function license() internal view returns (ILicenseController) {
-        return ILicenseController(registry.getContract("License"));
+    function license() internal view returns (ILicense) {
+        return ILicense(registry.getContract("License"));
     }
 
     function query() internal view returns (IQuery) {

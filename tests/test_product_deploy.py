@@ -87,7 +87,7 @@ def test_deploy_approve_oracle(instance: GifInstance, oracleProvider, productOwn
 def test_deploy_approve_product(instance: GifInstance, oracleProvider, productOwner):
     operatorService = instance.getInstanceOperatorService()
     componentOwnerService = instance.getComponentOwnerService()
-    productService = instance.getProductService()
+    registry = instance.getRegistry()
 
     # oracle owner proposes oracle
     oracle = TestOracle.deploy(
@@ -96,12 +96,11 @@ def test_deploy_approve_product(instance: GifInstance, oracleProvider, productOw
         {'from': oracleProvider})
     
     # add granting role and propose
-    opRole = operatorService.oracleProviderRole()
-    operatorService.addRoleToAccount(oracleProvider, opRole)
+    providerRole = operatorService.oracleProviderRole()
+    operatorService.addRoleToAccount(oracleProvider, providerRole)
     componentOwnerService.propose(
         oracle,
         {'from': oracleProvider})
-
 
     # instance operator can approve the propsed oracle
     operatorService.approveOracle(
@@ -109,25 +108,39 @@ def test_deploy_approve_product(instance: GifInstance, oracleProvider, productOw
         {'from': instance.getOwner()})
 
     product = TestProduct.deploy(
-        productService,
         s2b32("TestProduct"),
+        registry,
         oracle.getId(),
         {'from': productOwner})
+    
+    # add granting role and propose
+    ownerRole = operatorService.productOwnerRole()
+    operatorService.addRoleToAccount(productOwner, ownerRole)
 
-    productId = product.getId()
+    # check that product owner may not propose compoent
+    # without being owner
+    with brownie.reverts():
+        componentOwnerService.propose(
+            oracle,
+            {'from': productOwner})
+
+    # check that product owner may proposes his/her product
+    componentOwnerService.propose(
+        product,
+        {'from': productOwner})
 
     # verify that oracleOwner or productOwner cannot approve the product
     with brownie.reverts():
         operatorService.approveProduct(
-            productId,
+            product.getId(),
             {'from': oracleProvider})
 
     with brownie.reverts():
         operatorService.approveProduct(
-            productId,
+            product.getId(),
             {'from': productOwner})
 
     # verify that instance operator can approve the propsed product
     operatorService.approveProduct(
-        productId,
+        product.getId(),
         {'from': instance.getOwner()})

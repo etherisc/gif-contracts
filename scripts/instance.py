@@ -13,7 +13,6 @@ from brownie import (
     CoreProxy,
     AccessController,
     RegistryController,
-    License,
     LicenseController,
     Policy,
     PolicyController,
@@ -118,12 +117,12 @@ class GifInstance(GifRegistry):
         self.access = deployGifModuleV2("Access", AccessController, registry, owner, publishSource)
         self.component = deployGifModuleV2("Component", ComponentController, registry, owner, publishSource)
         self.query = deployGifModuleV2("Query", QueryController, registry, owner, publishSource)
+        self.licence = deployGifModuleV2("License", LicenseController, registry, owner, publishSource)
 
         # services
         self.componentOwnerService = deployGifServiceV2("ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
 
         # TODO move modules/services below to V2 mechanism
-        self.licence = deployGifModule(LicenseController, License, registry, owner, publishSource)
         self.policy = deployGifModule(PolicyController, Policy, registry, owner, publishSource)
         self.policyFlow = deployGifService(PolicyFlowDefault, registry, owner, publishSource)
         self.productService = deployGifService(ProductService, registry, owner, publishSource)
@@ -140,9 +139,9 @@ class GifInstance(GifRegistry):
     def fromRegistryAddress(self, registry_address):
         self.registry = contractFromAddress(RegistryController, registry_address)
 
-        self.licence = self.contractFromGifRegistry(LicenseController, License._name)
-        self.policy = self.contractFromGifRegistry(PolicyController, Policy._name)
         self.query = self.contractFromGifRegistry(QueryController, "Query")
+        self.licence = self.contractFromGifRegistry(LicenseController, "License")
+        self.policy = self.contractFromGifRegistry(PolicyController, Policy._name)
 
         self.policyFlow = self.contractFromGifRegistry(PolicyFlowDefault)
         self.productService = self.contractFromGifRegistry(ProductService)

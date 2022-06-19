@@ -86,6 +86,10 @@ contract ComponentOwnerService is
         _componentController.unpause(id);
     }
 
+    function getComponentId(address componentAddress) external returns(uint256 id) {
+        _componentController.getComponentId(componentAddress);
+    }
+
     function _getAccess() internal view returns (IAccess) {
         return IAccess(_registry.getContract("Access"));
     }

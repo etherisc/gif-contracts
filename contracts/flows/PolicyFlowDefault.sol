@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "../shared/WithRegistry.sol";
 import "../modules/policy/IPolicy.sol";
 import "../modules/policy/IPolicyController.sol";
-import "../modules/license/ILicenseController.sol";
+import "../modules/ILicense.sol";
 
 import "@gif-interface/contracts/modules/IQuery.sol";
 
@@ -17,7 +17,9 @@ import "@gif-interface/contracts/modules/IQuery.sol";
  * (if not, it reverts in StakeController.sol)
  */
 
-contract PolicyFlowDefault is WithRegistry {
+contract PolicyFlowDefault is 
+    WithRegistry 
+{
     bytes32 public constant NAME = "PolicyFlowDefault";
 
     // solhint-disable-next-line no-empty-blocks
@@ -28,10 +30,12 @@ contract PolicyFlowDefault is WithRegistry {
         bytes calldata _data // replaces premium, currency, payoutOptions
     ) external {
         IPolicyController policy = getPolicyContract();
-        ILicenseController license = getLicenseContract();
+        ILicense license = getLicenseContract();
         // the calling contract is the Product contract, which needs to have a productId in the license contract.
-        uint256 productId = license.getProductId(msg.sender);
-        require(!license.isPausedProduct(productId), "ERROR:PFD-006:PRODUCT_IS_PAUSED");
+        (uint256 productId, bool authorized, address policyFlow) = license.authorize(msg.sender);
+        require(authorized, "ERROR:PFD-006:NOT_AUTHORIZED");
+        require(policyFlow != address(0),"ERROR:PFD-007:POLICY_FLOW_NOT_RESOLVED");
+
         policy.createPolicyFlow(productId, _bpKey);
         policy.createApplication(_bpKey, _data);
     }
@@ -115,16 +119,16 @@ contract PolicyFlowDefault is WithRegistry {
         getPolicyContract().payOut(_bpKey, _payoutId, _complete, _data);
     }
 
-    function proposeProduct(bytes32 _productName, bytes32 _policyFlow)
-    external
-    returns (uint256 _productId)
-    {
-        _productId = getLicenseContract().proposeProduct(
-            _productName,
-            msg.sender,
-            _policyFlow
-        );
-    }
+    // function proposeProduct(bytes32 _productName, bytes32 _policyFlow)
+    // external
+    // returns (uint256 _productId)
+    // {
+    //     _productId = getLicenseContract().proposeProduct(
+    //         _productName,
+    //         msg.sender,
+    //         _policyFlow
+    //     );
+    // }
 
     function request(
         bytes32 _bpKey,
@@ -169,8 +173,8 @@ contract PolicyFlowDefault is WithRegistry {
         return policy.getPayout(_bpKey, _payoutId).data;
     }
 
-    function getLicenseContract() internal view returns (ILicenseController) {
-        return ILicenseController(getContractFromRegistry("License"));
+    function getLicenseContract() internal view returns (ILicense) {
+        return ILicense(getContractFromRegistry("License"));
     }
 
     function getPolicyContract() internal view returns (IPolicyController) {
