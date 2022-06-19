@@ -6,6 +6,10 @@ interface ILicense {
     function authorize(address _sender)
         external
         view
-        returns (uint256 _id, bool _authorized, address _policyFlow);
+        returns (uint256 _productId, bool _isAuthorized, address _policyFlow);
 
+    function getProductId(address sender) 
+        external 
+        view 
+        returns(uint256 productId);
 }

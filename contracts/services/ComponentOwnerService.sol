@@ -9,8 +9,8 @@ import "@gif-interface/contracts/services/IComponentOwnerService.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
 contract ComponentOwnerService is 
-    Context,
-    IComponentOwnerService
+    IComponentOwnerService,
+    Context
 {
     // TODO figure out if we should keep the pattern that core contracts have a name
     bytes32 public constant NAME = "ComponentOwnerService";

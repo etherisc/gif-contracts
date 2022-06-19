@@ -29,7 +29,7 @@ contract TestProduct is ProductNew {
     }
 
     function applyForPolicy() external payable returns (bytes32 policyId) {
-        address payable policyHolder = payable(msg.sender);
+        address payable policyHolder = payable(_msgSender());
         uint256 premium = msg.value;
 
         // Validate input parameters

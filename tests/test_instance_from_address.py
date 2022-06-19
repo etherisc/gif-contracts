@@ -14,7 +14,7 @@ def test_instance_addresses(instance: GifInstance):
 
     assert addrInst.getInstanceOperatorService().address == instance.getInstanceOperatorService().address
     assert addrInst.getComponentOwnerService().address == instance.getComponentOwnerService().address
+    assert addrInst.getProductService().address == instance.getProductService().address
     assert addrInst.getOracleService().address == instance.getOracleService().address
     assert addrInst.getPolicyController().address == instance.getPolicyController().address
-    assert addrInst.getProductService().address == instance.getProductService().address
     assert addrInst.getRegistry().address == address

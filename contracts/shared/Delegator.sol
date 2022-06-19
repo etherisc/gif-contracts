@@ -2,11 +2,22 @@
 pragma solidity ^0.8.0;
 
 contract Delegator {
+
+    event LogDelDummy1();
+    event LogDelDummy2(
+        address delegationAddress
+    );
+    
     function _delegate(address _implementation) internal {
+
+        emit LogDelDummy1();
+
         require(
             _implementation != address(0),
             "ERROR:DEL-001:UNKNOWN_IMPLEMENTATION"
         );
+
+        emit LogDelDummy2(_implementation);
 
         bytes memory data = msg.data;
 

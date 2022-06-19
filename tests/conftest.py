@@ -10,7 +10,6 @@ from brownie import (
     AccessController,
     RegistryController,
     LicenseController,
-    Policy,
     PolicyController,
     QueryController,
     ProductService,
@@ -140,8 +139,8 @@ def access(AccessController, registry, owner) -> AccessController:
     return deployGifModuleV2("Access", AccessController, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
-def policy(PolicyController, Policy, registry, owner) -> Policy:
-    return deployGifModule(PolicyController, Policy, registry, owner, PUBLISH_SOURCE)
+def policy(PolicyController, registry, owner) -> PolicyController:
+    return deployGifModuleV2("Policy", PolicyController, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def license(LicenseController, registry, owner) -> LicenseController:
@@ -157,7 +156,7 @@ def productService(ProductService, registry, owner) -> ProductService:
 
 @pytest.fixture(scope="module")
 def oracleService(OracleService, registry, owner) -> OracleService:
-    return deployGifService(OracleService, registry, owner, PUBLISH_SOURCE)
+    return deployGifModuleV2("OracleService", OracleService, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def componentOwnerService(ComponentOwnerService, registry, owner) -> ComponentOwnerService:

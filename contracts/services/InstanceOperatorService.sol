@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 import "../modules/ILicense.sol";
 import "../modules/ComponentController.sol";
 import "../shared/WithRegistry.sol";
-import "../shared/IModuleController.sol";
-import "../shared/IModuleStorage.sol";
+// import "../shared/IModuleController.sol";
+// import "../shared/IModuleStorage.sol";
 import "@gif-interface/contracts/modules/IAccess.sol";
 import "@gif-interface/contracts/modules/IQuery.sol";
 import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
@@ -26,14 +26,14 @@ contract InstanceOperatorService is
         external override
         onlyOwner
     {
-        IModuleStorage(_storage).assignController(_controller);
+        // IModuleStorage(_storage).assignController(_controller);
     }
 
     function assignStorage(address _controller, address _storage)
         external override
         onlyOwner
     {
-        IModuleController(_controller).assignStorage(_storage);
+        // IModuleController(_controller).assignStorage(_storage);
     }
 
     /* License */

@@ -14,15 +14,24 @@ contract LicenseController is
 {
 
     bytes32 public constant NAME = "LicenseController";
+
     function authorize(address _sender)
         public override
         view
-        returns (uint256 _id, bool _authorized, address _policyFlow)
+        returns (uint256 _productId, bool _isAuthorized, address _policyFlow)
     {
-        _id = _component().getComponentId(_sender);
-        IProduct product = _getProduct(_id);
-        _authorized = _isValidCall(IComponent(_sender));
-        _policyFlow = product.getPolicyFlow();
+        _productId = getProductId(_sender);
+        _isAuthorized = _isValidCall(IComponent(_sender));
+        // IProduct product = _getProduct(_productId);
+        _policyFlow = _getProduct(_productId).getPolicyFlow();
+    }
+
+    function getProductId(address sender) 
+        public override 
+        view 
+        returns(uint256 productId) 
+    {
+        productId = _component().getComponentId(sender);
     }
 
     function _isValidCall(IComponent component) internal view returns (bool) {

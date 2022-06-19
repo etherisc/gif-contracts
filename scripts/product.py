@@ -8,10 +8,7 @@ from brownie.network.account import Account
 from brownie import (
     Wei,
     Contract, 
-    # Registry,
-    # RegistryController,
     LicenseController,
-    Policy,
     PolicyController,
     QueryController,
     ProductService,

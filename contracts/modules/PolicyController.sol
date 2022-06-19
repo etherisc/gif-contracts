@@ -1,14 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./IPolicyController.sol";
-import "./PolicyStorageModel.sol";
-import "../../shared/ModuleController.sol";
+import "./IPolicy.sol";
+import "../shared/CoreController.sol";
 
-contract PolicyController is IPolicyController, PolicyStorageModel, ModuleController {
+contract PolicyController is 
+    IPolicy, 
+    CoreController
+{
     bytes32 public constant NAME = "PolicyController";
 
-    constructor(address _registry) WithRegistry(_registry) {}
+    // Metadata
+    mapping(bytes32 => Metadata) public metadata;
+
+    // Applications
+    mapping(bytes32 => Application) public applications;
+
+    // Policies
+    mapping(bytes32 => Policy) public policies;
+
+    // Claims
+    mapping(bytes32 => mapping(uint256 => Claim)) public claims;
+
+    // Payouts
+    mapping(bytes32 => mapping(uint256 => Payout)) public payouts;
+
+    bytes32[] public bpKeys;
 
     /* Metadata */
     function createPolicyFlow(uint256 _productId, bytes32 _bpKey)

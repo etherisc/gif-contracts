@@ -13,11 +13,6 @@ from scripts.util import (
     s2b32,
 )
 
-def test_type(oracleService):
-    serviceName = h2sLeft(oracleService.NAME.call())
-    assert ORACLE_SERVICE_NAME == serviceName
-    assert OracleService._name == serviceName
-
 def test_non_existing_functionality(oracleService, owner):
     with pytest.raises(AttributeError):
         assert oracleService.foo({'from': owner})

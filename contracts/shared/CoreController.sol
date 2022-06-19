@@ -32,7 +32,7 @@ contract CoreController is
 
         // Allow only ProductService (it delegates to PolicyFlow)
         require(
-            msg.sender == _getContractAddress("ProductService"),
+            _msgSender() == _getContractAddress("ProductService"),
             "ERROR:CRC-003:NOT_PRODUCT_SERVICE"
         );
         _;
@@ -40,7 +40,15 @@ contract CoreController is
 
     modifier onlyOracleService() {
         require(
-            msg.sender == _getContractAddress("OracleService"),
+            _msgSender() == _getContractAddress("OracleService"),
+            "ERROR:CRC-004:NOT_ORACLE_SERVICE"
+        );
+        _;
+    }
+
+    modifier onlyProductService() {
+        require(
+            _msgSender() == _getContractAddress("ProductService"),
             "ERROR:CRC-004:NOT_ORACLE_SERVICE"
         );
         _;
@@ -48,7 +56,7 @@ contract CoreController is
 
     modifier onlyInstanceOwner() {
         require(
-            _registry.ensureSender(msg.sender, "InstanceOwner"),
+            _registry.ensureSender(_msgSender(), "InstanceOwner"),
             "ERROR:CRC-005:NOT_INSTANCE_OWNER");
         _;
     }

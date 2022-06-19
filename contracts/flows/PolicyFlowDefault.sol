@@ -2,8 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../shared/WithRegistry.sol";
-import "../modules/policy/IPolicy.sol";
-import "../modules/policy/IPolicyController.sol";
+import "../modules/IPolicy.sol";
 import "../modules/ILicense.sol";
 
 import "@gif-interface/contracts/modules/IQuery.sol";
@@ -20,6 +19,20 @@ import "@gif-interface/contracts/modules/IQuery.sol";
 contract PolicyFlowDefault is 
     WithRegistry 
 {
+    event LogPfDummy0();
+
+    event LogPfDummy1(
+        address registryAddress
+    );
+
+    event LogPfDummy2(
+        address contractAddress
+    );
+
+    event LogPfDummy3(
+        uint256 requestId
+    );
+
     bytes32 public constant NAME = "PolicyFlowDefault";
 
     // solhint-disable-next-line no-empty-blocks
@@ -29,19 +42,31 @@ contract PolicyFlowDefault is
         bytes32 _bpKey,
         bytes calldata _data // replaces premium, currency, payoutOptions
     ) external {
-        IPolicyController policy = getPolicyContract();
+
+        emit LogPfDummy0();
+
+        emit LogPfDummy1(
+            address(registry)
+        );
+
+        emit LogPfDummy2(
+            registry.getContract("Policy") 
+        );
+
+        IPolicy policy = getPolicyContract();
         ILicense license = getLicenseContract();
-        // the calling contract is the Product contract, which needs to have a productId in the license contract.
-        (uint256 productId, bool authorized, address policyFlow) = license.authorize(msg.sender);
-        require(authorized, "ERROR:PFD-006:NOT_AUTHORIZED");
-        require(policyFlow != address(0),"ERROR:PFD-007:POLICY_FLOW_NOT_RESOLVED");
+        // // the calling contract is the Product contract, which needs to have a productId in the license contract.
+        // (uint256 productId, bool authorized, address policyFlow) = license.authorize(msg.sender);
+        // require(authorized, "ERROR:PFD-006:NOT_AUTHORIZED");
+        // require(policyFlow != address(0),"ERROR:PFD-007:POLICY_FLOW_NOT_RESOLVED");
+        uint256 productId = license.getProductId(msg.sender);
 
         policy.createPolicyFlow(productId, _bpKey);
         policy.createApplication(_bpKey, _data);
     }
 
     function underwrite(bytes32 _bpKey) external {
-        IPolicyController policy = getPolicyContract();
+        IPolicy policy = getPolicyContract();
         require(
             policy.getApplication(_bpKey).state ==
                 IPolicy.ApplicationState.Applied,
@@ -55,7 +80,7 @@ contract PolicyFlowDefault is
     }
 
     function decline(bytes32 _bpKey) external {
-        IPolicyController policy = getPolicyContract();
+        IPolicy policy = getPolicyContract();
         require(
             policy.getApplication(_bpKey).state ==
                 IPolicy.ApplicationState.Applied,
@@ -77,7 +102,7 @@ contract PolicyFlowDefault is
         uint256 _claimId,
         bytes calldata _data
     ) external returns (uint256 _payoutId) {
-        IPolicyController policy = getPolicyContract();
+        IPolicy policy = getPolicyContract();
         require(
             policy.getClaim(_bpKey, _claimId).state ==
             IPolicy.ClaimState.Applied,
@@ -90,7 +115,7 @@ contract PolicyFlowDefault is
     }
 
     function declineClaim(bytes32 _bpKey, uint256 _claimId) external {
-        IPolicyController policy = getPolicyContract();
+        IPolicy policy = getPolicyContract();
         require(
             policy.getClaim(_bpKey, _claimId).state ==
             IPolicy.ClaimState.Applied,
@@ -101,7 +126,7 @@ contract PolicyFlowDefault is
     }
 
     function expire(bytes32 _bpKey) external {
-        IPolicyController policy = getPolicyContract();
+        IPolicy policy = getPolicyContract();
         require(
             policy.getPolicy(_bpKey).state == IPolicy.PolicyState.Active,
             "ERROR:PFD-005:INVALID_POLICY_STATE"
@@ -119,17 +144,6 @@ contract PolicyFlowDefault is
         getPolicyContract().payOut(_bpKey, _payoutId, _complete, _data);
     }
 
-    // function proposeProduct(bytes32 _productName, bytes32 _policyFlow)
-    // external
-    // returns (uint256 _productId)
-    // {
-    //     _productId = getLicenseContract().proposeProduct(
-    //         _productName,
-    //         msg.sender,
-    //         _policyFlow
-    //     );
-    // }
-
     function request(
         bytes32 _bpKey,
         bytes calldata _input,
@@ -137,6 +151,8 @@ contract PolicyFlowDefault is
         address _callbackContractAddress,
         uint256 _responsibleOracleId
     ) external returns (uint256 _requestId) {
+        emit LogPfDummy3(_requestId);
+
         _requestId = getQueryContract().request(
             _bpKey,
             _input,
@@ -151,7 +167,7 @@ contract PolicyFlowDefault is
         view
         returns (bytes memory _data)
     {
-        IPolicyController policy = getPolicyContract();
+        IPolicy policy = getPolicyContract();
         return policy.getApplication(_bpKey).data;
     }
 
@@ -160,7 +176,7 @@ contract PolicyFlowDefault is
         view
         returns (bytes memory _data)
     {
-        IPolicyController policy = getPolicyContract();
+        IPolicy policy = getPolicyContract();
         return policy.getClaim(_bpKey, _claimId).data;
     }
 
@@ -169,7 +185,7 @@ contract PolicyFlowDefault is
         view
         returns (bytes memory _data)
     {
-        IPolicyController policy = getPolicyContract();
+        IPolicy policy = getPolicyContract();
         return policy.getPayout(_bpKey, _payoutId).data;
     }
 
@@ -177,8 +193,8 @@ contract PolicyFlowDefault is
         return ILicense(getContractFromRegistry("License"));
     }
 
-    function getPolicyContract() internal view returns (IPolicyController) {
-        return IPolicyController(getContractFromRegistry("Policy"));
+    function getPolicyContract() internal view returns (IPolicy) {
+        return IPolicy(getContractFromRegistry("Policy"));
     }
 
     function getQueryContract() internal view returns (IQuery) {
