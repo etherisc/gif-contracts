@@ -10,15 +10,14 @@ contract OracleService is
     IOracleService, 
     CoreController
 {
-    bytes32 public constant NAME = "OracleService";
+    IQuery private _query;
 
-    function respond(uint256 _requestId, bytes calldata _data) external override {
-        // todo: oracle contract should be approved
-        _query().respond(_requestId, _msgSender(), _data);
+    function _afterInitialize() internal override onlyInitializing {
+        _query = IQuery(_getContractAddress("Query"));
     }
 
-    function _query() internal view returns (IQuery) {
-        address queryAddress = _getContractAddress("Query");
-        return IQuery(queryAddress);
+    function respond(uint256 _requestId, bytes calldata _data) external override {
+        // TODO: oracle contract should be approved
+        _query.respond(_requestId, _msgSender(), _data);
     }
 }

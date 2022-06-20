@@ -36,7 +36,9 @@ contract PolicyFlowDefault is
     bytes32 public constant NAME = "PolicyFlowDefault";
 
     // solhint-disable-next-line no-empty-blocks
-    constructor(address _registry) WithRegistry(_registry) {}
+    constructor(address _registry) 
+        WithRegistry(_registry) 
+    { }
 
     function newApplication(
         bytes32 _bpKey,
@@ -50,7 +52,7 @@ contract PolicyFlowDefault is
         );
 
         emit LogPfDummy2(
-            registry.getContract("Policy") 
+            getContractFromRegistry("Policy")
         );
 
         IPolicy policy = getPolicyContract();

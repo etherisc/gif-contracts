@@ -49,7 +49,10 @@ class GifTestOracle(object):
 
         # 1) add oracle provider role to owner
         providerRole = operatorService.oracleProviderRole()
-        operatorService.addRoleToAccount(oracleOwner, providerRole)
+        operatorService.addRoleToAccount(
+            oracleOwner, 
+            providerRole, 
+            {'from': instance.getOwner()})
 
         # 2) oracle provider creates oracle
         self.oracle = TestOracle.deploy(
@@ -85,7 +88,10 @@ class GifTestProduct(object):
 
         # 1) add oracle provider role to owner
         ownerRole = operatorService.productOwnerRole()
-        operatorService.addRoleToAccount(productOwner, ownerRole)
+        operatorService.addRoleToAccount(
+            productOwner, 
+            ownerRole,
+            {'from': instance.getOwner()})
 
         # 2) product owner creates product
         self.product = TestProduct.deploy(

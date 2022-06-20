@@ -16,7 +16,15 @@ contract QueryController is
 
     OracleRequest[] public oracleRequests;
 
-    modifier isResponsibleOracle(uint256 requestId, address responder) {
+    modifier onlyOracleService() {
+        require(
+            _msgSender() == _getContractAddress("OracleService"),
+            "ERROR:CRC-004:NOT_ORACLE_SERVICE"
+        );
+        _;
+    }
+
+    modifier onlyResponsibleOracle(uint256 requestId, address responder) {
         OracleRequest memory oracleRequest = oracleRequests[requestId];
         uint256 oracleId = oracleRequest.responsibleOracleId;
 
@@ -72,7 +80,7 @@ contract QueryController is
     ) 
         external override 
         onlyOracleService 
-        isResponsibleOracle(_requestId, _responder) 
+        onlyResponsibleOracle(_requestId, _responder) 
     {
         OracleRequest storage req = oracleRequests[_requestId];
 

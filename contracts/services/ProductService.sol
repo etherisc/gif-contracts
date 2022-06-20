@@ -2,14 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "../shared/WithRegistry.sol";
-import "../shared/Delegator.sol";
 import "../modules/ILicense.sol";
 // import "../shared/CoreController.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
 contract ProductService is 
     WithRegistry, 
-    Delegator,
     // CoreController
     Context
  {
@@ -40,7 +38,6 @@ contract ProductService is
         require(policyFlow != address(0),"ERROR:PRS-002:POLICY_FLOW_NOT_RESOLVED");
 
         _delegate(policyFlow);
-        // _delegate2(policyFlow);
     }
 
     /**
@@ -50,7 +47,7 @@ contract ProductService is
      * This function is a 1:1 copy of _delegate from 
      * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.6/contracts/proxy/Proxy.sol
      */
-    function _delegate2(address implementation) internal {
+    function _delegate(address implementation) internal {
         assembly {
             // Copy msg.data. We take full control of memory in this inline assembly
             // block because it will not return to Solidity code. We overwrite the

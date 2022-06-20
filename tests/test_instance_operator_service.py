@@ -18,12 +18,6 @@ from scripts.util import (
     contractFromAddress
 )
 
-def test_type(instanceOperatorService):
-    serviceName = h2sLeft(instanceOperatorService.NAME.call())
-    assert INSTANCE_OPERATOR_SERVICE_NAME == serviceName
-    assert InstanceOperatorService._name == serviceName
-
-
 def test_non_existing_functionality(instanceOperatorService, owner):
     with pytest.raises(AttributeError):
         assert instanceOperatorService.foo({'from': owner})

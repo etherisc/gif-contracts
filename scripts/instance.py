@@ -118,9 +118,9 @@ class GifInstance(GifRegistry):
         self.query = deployGifModuleV2("Query", QueryController, registry, owner, publishSource)
         self.licence = deployGifModuleV2("License", LicenseController, registry, owner, publishSource)
         self.policy = deployGifModuleV2("Policy", PolicyController, registry, owner, publishSource)
+        self.componentOwnerService = deployGifModuleV2("ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
 
         # services
-        self.componentOwnerService = deployGifServiceV2("ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
         self.oracleService = deployGifModuleV2("OracleService", OracleService, registry, owner, publishSource)
         # self.productService = deployGifModuleV2("ProductService", ProductService, registry, owner, publishSource)
 
@@ -130,7 +130,8 @@ class GifInstance(GifRegistry):
 
         # needs to be the last module to register as it will change
         # the address of the instance operator service to its true address
-        self.instanceOperatorService = deployGifService(InstanceOperatorService, registry, owner, publishSource)
+        # self.instanceOperatorService = deployGifService(InstanceOperatorService, registry, owner, publishSource)
+        self.instanceOperatorService = deployGifModuleV2("InstanceOperatorService", InstanceOperatorService, registry, owner, publishSource)
 
         # needs to be called during instance setup
         self.access.setDefaultAdminRole(self.instanceOperatorService.address, {'from': owner})

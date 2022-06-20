@@ -33,8 +33,10 @@ contract RegistryController is
     // number of contracts in release
     mapping(bytes32 => uint256) public contractsInRelease;
 
+
     function initializeRegistry(bytes32 _initialRelease) public initializer {
-        _setupRegistry(address(this));
+        // _setupRegistry(address(this));
+        _registry = this;
 
         // this is a temporary assignment and must only be used
         // during the intial setup of a gif instance

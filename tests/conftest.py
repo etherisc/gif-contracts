@@ -160,7 +160,7 @@ def oracleService(OracleService, registry, owner) -> OracleService:
 
 @pytest.fixture(scope="module")
 def componentOwnerService(ComponentOwnerService, registry, owner) -> ComponentOwnerService:
-    return deployGifService(ComponentOwnerService, registry, owner, PUBLISH_SOURCE)
+    return deployGifModuleV2("ComponentOwnerService", ComponentOwnerService, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def policyFlowDefault(PolicyFlowDefault, registry, owner) -> PolicyFlowDefault:
@@ -168,7 +168,8 @@ def policyFlowDefault(PolicyFlowDefault, registry, owner) -> PolicyFlowDefault:
 
 @pytest.fixture(scope="module")
 def instanceOperatorService(InstanceOperatorService, registry, owner) -> InstanceOperatorService:
-    return deployGifService(InstanceOperatorService, registry, owner, PUBLISH_SOURCE)
+    # return deployGifService(InstanceOperatorService, registry, owner, PUBLISH_SOURCE)
+    return deployGifModuleV2("InstanceOperatorService", InstanceOperatorService, registry, owner, PUBLISH_SOURCE)
 
 def contractFromAddress(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)

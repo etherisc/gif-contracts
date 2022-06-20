@@ -2,23 +2,15 @@
 pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
+import "../shared/CoreController.sol";
 import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/modules/IAccess.sol";
-import "@gif-interface/contracts/modules/IRegistry.sol";
 import "@gif-interface/contracts/services/IComponentOwnerService.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
 
 contract ComponentOwnerService is 
     IComponentOwnerService,
-    Context
+    CoreController
 {
-    // TODO figure out if we should keep the pattern that core contracts have a name
-    bytes32 public constant NAME = "ComponentOwnerService";
-
-    IRegistry private _registry;
-    IAccess private _access;
     ComponentController private _componentController;
-
 
     modifier onlyOwnerWithRoleFromComponent(IComponent component) {
         address owner = component.getOwner();
@@ -27,7 +19,6 @@ contract ComponentOwnerService is
         require(_msgSender() == owner, "ERROR:COS-001:NOT_OWNER");
         _;
     }
-
 
     modifier onlyOwnerWithRole(uint256 id) {
         IComponent component = _componentController.getComponent(id);
@@ -41,15 +32,9 @@ contract ComponentOwnerService is
         _;
     }
 
-
-    constructor(IRegistry registry) {
-        require(address(registry) != address(0), "ERROR:COS-006:REGISTRY_ADDRESS_ZERO");
-
-        _registry = registry;
-        _access = _getAccess();
-        _componentController = _getComponentController();
+    function _afterInitialize() internal override onlyInitializing {
+        _componentController = ComponentController(_getContractAddress("Component"));
     }
-
 
     function propose(IComponent component) 
         external 
@@ -57,7 +42,6 @@ contract ComponentOwnerService is
     {
         _componentController.propose(component);
     }
-
 
     function stake(
         uint256 id, 
@@ -88,14 +72,5 @@ contract ComponentOwnerService is
 
     function getComponentId(address componentAddress) external returns(uint256 id) {
         _componentController.getComponentId(componentAddress);
-    }
-
-    function _getAccess() internal view returns (IAccess) {
-        return IAccess(_registry.getContract("Access"));
-    }
-
-
-    function _getComponentController() internal view returns (ComponentController) {
-        return ComponentController(_registry.getContract("Component"));
     }
 }

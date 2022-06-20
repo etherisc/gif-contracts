@@ -48,8 +48,11 @@ def test_deploy_oracle_and_oracle_provider_role(instance: GifInstance, owner, or
             {'from': oracleProvider})
     
     # add granting role
-    opRole = operatorService.oracleProviderRole()
-    operatorService.addRoleToAccount(oracleProvider, opRole)
+    providerRole = operatorService.oracleProviderRole()
+    operatorService.addRoleToAccount(
+        oracleProvider, 
+        providerRole,
+        {'from': instance.getOwner()})
 
     # try again
     componentOwnerService.propose(
@@ -66,8 +69,12 @@ def test_deploy_approve_oracle(instance: GifInstance, oracleProvider, productOwn
         {'from': oracleProvider})
     
     # add granting role and propose
-    opRole = operatorService.oracleProviderRole()
-    operatorService.addRoleToAccount(oracleProvider, opRole)
+    providerRole = operatorService.oracleProviderRole()
+    operatorService.addRoleToAccount(
+        oracleProvider, 
+        providerRole,
+        {'from': instance.getOwner()})
+    
     componentOwnerService.propose(
         oracle,
         {'from': oracleProvider})
@@ -97,7 +104,11 @@ def test_deploy_approve_product(instance: GifInstance, oracleProvider, productOw
     
     # add granting role and propose
     providerRole = operatorService.oracleProviderRole()
-    operatorService.addRoleToAccount(oracleProvider, providerRole)
+    operatorService.addRoleToAccount(
+        oracleProvider, 
+        providerRole,
+        {'from': instance.getOwner()})
+    
     componentOwnerService.propose(
         oracle,
         {'from': oracleProvider})
@@ -115,7 +126,10 @@ def test_deploy_approve_product(instance: GifInstance, oracleProvider, productOw
     
     # add granting role and propose
     ownerRole = operatorService.productOwnerRole()
-    operatorService.addRoleToAccount(productOwner, ownerRole)
+    operatorService.addRoleToAccount(
+        productOwner, 
+        ownerRole,
+        {'from': instance.getOwner()})
 
     # check that product owner may not propose compoent
     # without being owner
