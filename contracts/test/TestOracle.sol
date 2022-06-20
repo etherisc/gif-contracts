@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import "@gif-interface/contracts/components/Oracle.sol";
 
-
 contract TestOracle is Oracle {
 
     constructor(

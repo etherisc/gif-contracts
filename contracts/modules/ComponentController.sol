@@ -3,26 +3,12 @@ pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
 import "@gif-interface/contracts/components/IComponent.sol";
+import "@gif-interface/contracts/modules/IComponentEvents.sol";
 
-
-contract ComponentController is 
+contract ComponentController is
+    IComponentEvents,
     CoreController 
  {
-
-    event LogComponentProposed (
-        bytes32 componentName, 
-        uint16 componentType, 
-        address componentAddress,
-        uint256 id);
-    
-    event LogComponentApproved (uint256 id);
-    event LogComponentDeclined (uint256 id);
-
-    event LogComponentPaused (uint256 id);
-    event LogComponentUnpaused (uint256 id);
-
-    event LogComponentStateChanged (uint256 id, uint16 stateOld, uint16 stateNew);
-
     uint16 public constant CREATED_STATE = 0;
     uint16 public constant PROPOSED_STATE = 1;
     uint16 public constant DECLINED_STATE = 2;
@@ -39,7 +25,6 @@ contract ComponentController is
     uint256 [] private _riskpools;
     uint256 private _componentCount;
 
-
     modifier onlyComponentOwnerService() {
         require(
              _msgSender() == _getContractAddress("ComponentOwnerService"),
@@ -47,14 +32,12 @@ contract ComponentController is
         _;
     }
 
-
     modifier onlyInstanceOperatorService() {
         require(
              _msgSender() == _getContractAddress("InstanceOperatorService"),
             "ERROR:CCR-001:NOT_INSTANCE_OPERATOR_SERVICE");
         _;
     }
-
 
     function propose(IComponent component) external onlyComponentOwnerService {
         // input validation
@@ -160,7 +143,6 @@ contract ComponentController is
     function oracles() public view returns (uint256 count) { return _oracles.length; }
     function riskpools() public view returns (uint256 count) { return _riskpools.length; }
 
-
     function _changeState(IComponent component, uint16 newState) internal {
         uint16 oldState = component.getState();
 
@@ -170,7 +152,6 @@ contract ComponentController is
         // log entry for successful component state change
         emit LogComponentStateChanged(component.getId(), oldState, newState);
     }
-
 
     function _checkStateTransition(uint16 oldState, uint16 newState) internal pure {
         require(oldState <= 5, "ERROR:CMP-010:INVALID_INITIAL_STATE");

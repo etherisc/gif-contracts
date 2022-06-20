@@ -3,8 +3,8 @@ pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
 import "@gif-interface/contracts/modules/IQuery.sol";
+import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract InstanceOperatorService is 

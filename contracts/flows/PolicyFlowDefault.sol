@@ -2,9 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "../shared/WithRegistry.sol";
-import "../modules/IPolicy.sol";
-import "../modules/ILicense.sol";
-
+import "@gif-interface/contracts/modules/ILicense.sol";
+import "@gif-interface/contracts/modules/IPolicy.sol";
 import "@gif-interface/contracts/modules/IQuery.sol";
 
 /*

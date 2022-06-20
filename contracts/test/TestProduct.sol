@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./ProductNew.sol";
-// import "@gif-interface/contracts/components/Product.sol";
+import "@gif-interface/contracts/components/Product.sol";
 
-
-contract TestProduct is ProductNew {
-
+contract TestProduct is 
+    Product 
+{
     bytes32 public constant POLICY_FLOW = "PolicyFlowDefault";
     string public constant ORACLE_CALLBACK_METHOD_NAME = "oracleCallback";
 
@@ -23,7 +22,7 @@ contract TestProduct is ProductNew {
         address registry,
         uint256 oracleId
     )
-        ProductNew(productName, POLICY_FLOW, registry)
+        Product(productName, POLICY_FLOW, registry)
     {
         _testOracleId = oracleId;
     }
@@ -48,7 +47,7 @@ contract TestProduct is ProductNew {
     function submitClaim(bytes32 policyId) external {
         // validations 
         // ensure claim is made by policy holder
-        require(_policyIdToAddress[policyId] == msg.sender, "ERROR:TI-2:INVALID_POLICY_OR_HOLDER");
+        require(_policyIdToAddress[policyId] == _msgSender(), "ERROR:TI-2:INVALID_POLICY_OR_HOLDER");
         // TODO ensure policy is in active state
 
         // increase claims counter

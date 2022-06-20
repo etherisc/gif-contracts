@@ -12,7 +12,7 @@ contract QueryController is
     IQuery, 
     CoreController
 {
-    bytes32 public constant NAME = "QueryController";
+    // bytes32 public constant NAME = "QueryController";
 
     OracleRequest[] public oracleRequests;
 

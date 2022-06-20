@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 
-import "./ICoreProxy.sol";
+import "@gif-interface/contracts/shared/ICoreProxy.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 contract CoreProxy is ICoreProxy, ERC1967Proxy {

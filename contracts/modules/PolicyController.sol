@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./IPolicy.sol";
 import "../shared/CoreController.sol";
+import "@gif-interface/contracts/modules/IPolicy.sol";
 
 contract PolicyController is 
     IPolicy, 
     CoreController
 {
-    bytes32 public constant NAME = "PolicyController";
+    // bytes32 public constant NAME = "PolicyController";
 
     // Metadata
     mapping(bytes32 => Metadata) public metadata;

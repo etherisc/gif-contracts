@@ -10,8 +10,6 @@ contract RegistryController is
     IRegistry,
     CoreController
 {
-    bytes32 public constant NAME = "RegistryController";
-
     /**
      * @dev  Save number of items to iterate through
      * Currently we have < 20 contracts.
@@ -40,10 +38,10 @@ contract RegistryController is
 
         // this is a temporary assignment and must only be used
         // during the intial setup of a gif instance
-        // at execution time msg.sender is the address of the 
+        // at execution time _msgSender is the address of the 
         // registry proxy.
         release = _initialRelease;
-        contracts[release]["InstanceOperatorService"] = msg.sender;
+        contracts[release]["InstanceOperatorService"] = _msgSender();
         contractNames[release].push("InstanceOperatorService");
         contractsInRelease[release] = 1;
 

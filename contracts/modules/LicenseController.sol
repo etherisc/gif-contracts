@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./ILicense.sol";
-import "../test/IProduct.sol";
 import "./ComponentController.sol";
 import "../shared/CoreController.sol";
 import "@gif-interface/contracts/components/IComponent.sol";
+import "@gif-interface/contracts/components/IProduct.sol";
+import "@gif-interface/contracts/modules/ILicense.sol";
 
 
 contract LicenseController is
@@ -13,17 +13,21 @@ contract LicenseController is
     CoreController
 {
 
-    bytes32 public constant NAME = "LicenseController";
+    // bytes32 public constant NAME = "LicenseController";
+    ComponentController private _component;
 
-    function authorize(address _sender)
+    function _afterInitialize() internal override onlyInitializing {
+        _component = ComponentController(_getContractAddress("Component"));
+    }
+
+    function getAuthorizationStatus(address productAddress)
         public override
         view
-        returns (uint256 _productId, bool _isAuthorized, address _policyFlow)
+        returns (uint256 productId, bool isAuthorized, address policyFlow)
     {
-        _productId = getProductId(_sender);
-        _isAuthorized = _isValidCall(IComponent(_sender));
-        // IProduct product = _getProduct(_productId);
-        _policyFlow = _getProduct(_productId).getPolicyFlow();
+        productId = getProductId(productAddress);
+        isAuthorized = _isValidCall(IComponent(productAddress));
+        policyFlow = _getProduct(productId).getPolicyFlow();
     }
 
     function getProductId(address sender) 
@@ -31,7 +35,7 @@ contract LicenseController is
         view 
         returns(uint256 productId) 
     {
-        productId = _component().getComponentId(sender);
+        productId = _component.getComponentId(sender);
     }
 
     function _isValidCall(IComponent component) internal view returns (bool) {
@@ -40,12 +44,12 @@ contract LicenseController is
     }
 
     function _getProduct(uint256 id) internal view returns (IProduct product) {
-        IComponent cmp = _component().getComponent(id);
+        IComponent cmp = _component.getComponent(id);
         require(cmp.getType() == 1, "ERROR:LIC-001:COMPONENT_NOT_PRODUCT");
         product = IProduct(address(cmp));
     }
 
-    function _component() internal view returns (ComponentController) {
-        return ComponentController(_getContractAddress("Component"));
-    }
+    // function _component() internal view returns (ComponentController) {
+    //     return ComponentController(_getContractAddress("Component"));
+    // }
 }

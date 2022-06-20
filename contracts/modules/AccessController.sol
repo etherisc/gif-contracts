@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
-
 import "@gif-interface/contracts/modules/IAccess.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";

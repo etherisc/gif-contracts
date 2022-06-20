@@ -10,7 +10,7 @@ contract ComponentOwnerService is
     IComponentOwnerService,
     CoreController
 {
-    ComponentController private _componentController;
+    ComponentController private _component;
 
     modifier onlyOwnerWithRoleFromComponent(IComponent component) {
         address owner = component.getOwner();
@@ -21,7 +21,7 @@ contract ComponentOwnerService is
     }
 
     modifier onlyOwnerWithRole(uint256 id) {
-        IComponent component = _componentController.getComponent(id);
+        IComponent component = _component.getComponent(id);
         require(address(component) != address(0), "ERROR:COS-003:COMPONENT_ID_INVALID");
 
         address owner = component.getOwner();
@@ -33,14 +33,14 @@ contract ComponentOwnerService is
     }
 
     function _afterInitialize() internal override onlyInitializing {
-        _componentController = ComponentController(_getContractAddress("Component"));
+        _component = ComponentController(_getContractAddress("Component"));
     }
 
     function propose(IComponent component) 
         external 
         onlyOwnerWithRoleFromComponent(component) 
     {
-        _componentController.propose(component);
+        _component.propose(component);
     }
 
     function stake(
@@ -63,14 +63,14 @@ contract ComponentOwnerService is
         
 
     function pause(uint256 id) external onlyOwnerWithRole(id) {
-        _componentController.pause(id);
+        _component.pause(id);
     }
 
     function unpause(uint256 id) external onlyOwnerWithRole(id) {
-        _componentController.unpause(id);
+        _component.unpause(id);
     }
 
     function getComponentId(address componentAddress) external returns(uint256 id) {
-        _componentController.getComponentId(componentAddress);
+        _component.getComponentId(componentAddress);
     }
 }

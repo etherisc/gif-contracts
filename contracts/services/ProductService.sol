@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "../shared/WithRegistry.sol";
-import "../modules/ILicense.sol";
 // import "../shared/CoreController.sol";
+import "@gif-interface/contracts/modules/ILicense.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
 contract ProductService is 
@@ -17,7 +17,7 @@ contract ProductService is
 
     event LogPsDummy2 (
         uint256 id,
-        bool authorized,
+        bool isAuthorized,
         address policyFlowAddress
     );
 
@@ -30,11 +30,11 @@ contract ProductService is
 
         emit LogPsDummy1(address(_license()));
 
-        (uint256 id, bool authorized, address policyFlow) = _license().authorize(_msgSender());
+        (uint256 id, bool isAuthorized, address policyFlow) = _license().getAuthorizationStatus(_msgSender());
 
-        emit LogPsDummy2(id, authorized, policyFlow);
+        emit LogPsDummy2(id, isAuthorized, policyFlow);
 
-        require(authorized, "ERROR:PRS-001:NOT_AUTHORIZED");
+        require(isAuthorized, "ERROR:PRS-001:NOT_AUTHORIZED");
         require(policyFlow != address(0),"ERROR:PRS-002:POLICY_FLOW_NOT_RESOLVED");
 
         _delegate(policyFlow);
