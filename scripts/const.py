@@ -28,6 +28,7 @@ ORACLE_SERVICE_NAME = 'OracleService'
 ORACLE_OWNER_SERVICE_NAME = 'OracleOwnerService'
 POLICY_FLOW_DEFAULT_NAME = 'PolicyFlowDefault'
 INSTANCE_OPERATOR_SERVICE_NAME = 'InstanceOperatorService'
+INSTANCE_SERVICE_NAME = 'InstanceService'
 
 # === GIF testing =========================================================== #
 

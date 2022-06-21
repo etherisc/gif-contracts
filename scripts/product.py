@@ -43,15 +43,16 @@ from scripts.instance import (
 class GifTestOracle(object):
 
     def __init__(self, instance: GifInstance, oracleOwner: Account):
+        instanceService = instance.getInstanceService()
         operatorService = instance.getInstanceOperatorService()
         componentOwnerService = instance.getComponentOwnerService()
         oracleService = instance.getOracleService()
 
         # 1) add oracle provider role to owner
-        providerRole = operatorService.oracleProviderRole()
-        operatorService.addRoleToAccount(
-            oracleOwner, 
+        providerRole = instanceService.oracleProviderRole()
+        operatorService.grantRole(
             providerRole, 
+            oracleOwner, 
             {'from': instance.getOwner()})
 
         # 2) oracle provider creates oracle
@@ -66,8 +67,10 @@ class GifTestOracle(object):
             {'from': oracleOwner})
 
         # 4) instance operator approves oracle
-        operatorService.approveOracle(
+        operatorService.approve(
             self.oracle.getId(),
+            [], # tokens
+            [], # amounts
             {'from': instance.getOwner()})
     
     def getOracleId(self) -> int:
@@ -82,15 +85,16 @@ class GifTestProduct(object):
     def __init__(self, instance: GifInstance, oracle: GifTestOracle, productOwner: Account):
         self.policyController = instance.getPolicyController()
 
+        instanceService = instance.getInstanceService()
         operatorService = instance.getInstanceOperatorService()
         componentOwnerService = instance.getComponentOwnerService()
         registry = instance.getRegistry()
 
         # 1) add oracle provider role to owner
-        ownerRole = operatorService.productOwnerRole()
-        operatorService.addRoleToAccount(
-            productOwner, 
+        ownerRole = instanceService.productOwnerRole()
+        operatorService.grantRole(
             ownerRole,
+            productOwner, 
             {'from': instance.getOwner()})
 
         # 2) product owner creates product
@@ -108,8 +112,10 @@ class GifTestProduct(object):
 
         print('prod id {} (after propose)'.format(self.product.getId()))
         # 4) instance operator approves oracle
-        operatorService.approveProduct(
+        operatorService.approve(
             self.product.getId(),
+            [], # tokens
+            [], # amounts
             {'from': instance.getOwner()})
     
     def getProductId(self) -> int:

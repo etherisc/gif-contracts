@@ -4,12 +4,14 @@ import pytest
 
 from brownie import (
     AccessController,
-    InstanceOperatorService
+    InstanceOperatorService,
+    InstanceService
 )
 
 from scripts.const import (
     ACCESS_NAME,
     INSTANCE_OPERATOR_SERVICE_NAME,
+    INSTANCE_SERVICE_NAME,
 )
 
 from scripts.util import (
@@ -32,12 +34,16 @@ def test_instance_operator_service_contract_in_registry(instanceOperatorService,
 
 def test_role_granting(instance, owner, productOwner, customer):
     registry = instance.getRegistry()
+
     instanceOperatorServiceAddress = registry.getContract(s2b32(INSTANCE_OPERATOR_SERVICE_NAME))
     instanceOperatorService = contractFromAddress(InstanceOperatorService, instanceOperatorServiceAddress)
 
+    instanceServiceAddress = registry.getContract(s2b32(INSTANCE_SERVICE_NAME))
+    instanceService = contractFromAddress(InstanceService, instanceServiceAddress)
+
     # verify that after setup productOwner account does not yet have product owner role
-    poRole = instanceOperatorService.productOwnerRole({'from': customer})
-    assert not instanceOperatorService.hasRole(poRole, productOwner, {'from': customer})
+    poRole = instanceService.productOwnerRole({'from': customer})
+    assert not instanceService.hasRole(poRole, productOwner, {'from': customer})
 
     print('owner: {}'.format(owner))
     print('instanceOperatorServiceAddress: {}'.format(instanceOperatorServiceAddress))
@@ -46,12 +52,12 @@ def test_role_granting(instance, owner, productOwner, customer):
 
     # verify that addRoleToAccount is protected and not anybody (ie customer) and grant roles
     with brownie.reverts():
-        instanceOperatorService.addRoleToAccount(productOwner, poRole, {'from': customer})
+        instanceOperatorService.grantRole(poRole, productOwner, {'from': customer})
 
-    instanceOperatorService.addRoleToAccount(productOwner, poRole, {'from': owner})
+    instanceOperatorService.grantRole(poRole, productOwner, {'from': owner})
 
     # verify that productOwner account now has product owner role
-    assert instanceOperatorService.hasRole(poRole, productOwner, {'from': customer})
+    assert instanceService.hasRole(poRole, productOwner, {'from': customer})
 
 
 def test_default_admin_role_cannot_be_changed(instance, owner, customer):

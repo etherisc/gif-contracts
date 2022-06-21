@@ -19,92 +19,28 @@ contract InstanceOperatorService is
         _transferOwnership(_msgSender());
     }
 
-    // TODO remove once deleted from interface
-    function assignController(address _storage, address _controller)
+    /* registry */
+    function prepareRelease(bytes32 _newRelease) 
+        external override 
+        onlyOwner 
+    {
+        _registry.prepareRelease(_newRelease);
+    }
+
+    function register(bytes32 _contractName, address _contractAddress)
         external override
         onlyOwner
     {
-        // IModuleStorage(_storage).assignController(_controller);
+        _registry.register(_contractName, _contractAddress);
     }
 
-    // TODO remove once deleted from interface
-    function assignStorage(address _controller, address _storage)
-        external override
-        onlyOwner
-    {
-        // IModuleController(_controller).assignStorage(_storage);
-    }
-
-    /* License */
-    function approveProduct(uint256 _productId)
+    function deregister(bytes32 _contractName) 
         external override 
         onlyOwner 
     {
-        address [] memory tokens = new address[](0);
-        uint256 [] memory amounts = new uint256[](0);
-        
-        _component.approve(_productId, tokens, amounts);
+        _registry.deregister(_contractName);
     }
 
-    function disapproveProduct(uint256 _productId) 
-        external override 
-        onlyOwner 
-    {
-        _component.decline(_productId);
-    }
-
-    function pauseProduct(uint256 _productId) 
-        external override 
-        onlyOwner 
-    {
-        // TODO implementation needed
-    }
-
-    /* Access */
-    function productOwnerRole() public view returns(bytes32) {
-        return _access.productOwnerRole();
-    }
-
-    function oracleProviderRole() public view returns(bytes32) {
-        return _access.oracleProviderRole();
-    }
-
-    function riskpoolKeeperRole() public view returns(bytes32) {
-        return _access.riskpoolKeeperRole();
-    }
-
-    // TODO add to interface IInstanceOperatorService
-    function hasRole(bytes32 _role, address _address)
-        public view 
-        returns(bool)
-    {
-        return _access.hasRole(_role, _address);
-    }
-
-    // TODO update interface and rename to addRole
-    function createRole(bytes32 _role) 
-        external override
-        onlyOwner 
-    {
-        _access.addRole(_role);
-    }
-
-    // TODO update interface and rename to grantRole and switch argument order
-    function addRoleToAccount(address _address, bytes32 _role)
-        external override
-        onlyOwner
-    {
-        _access.grantRole(_role, _address);
-    }
-
-    // TODO add implementation in accesscontroller
-    function cleanRolesForAccount(address _address) 
-        external override 
-        onlyOwner 
-    {
-    }
-
-    /* Registry */
     function registerInRelease(
         bytes32 _release,
         bytes32 _contractName,
@@ -116,13 +52,6 @@ contract InstanceOperatorService is
         _registry.registerInRelease(_release, _contractName, _contractAddress);
     }
 
-    function register(bytes32 _contractName, address _contractAddress)
-        external override
-        onlyOwner
-    {
-        _registry.register(_contractName, _contractAddress);
-    }
-
     function deregisterInRelease(bytes32 _release, bytes32 _contractName)
         external override
         onlyOwner
@@ -130,45 +59,59 @@ contract InstanceOperatorService is
         _registry.deregisterInRelease(_release, _contractName);
     }
 
-    function deregister(bytes32 _contractName) 
-        external override 
+    /* access */
+    function createRole(bytes32 _role) 
+        external override
         onlyOwner 
     {
-        _registry.deregister(_contractName);
+        _access.addRole(_role);
     }
 
-    function prepareRelease(bytes32 _newRelease) 
-        external override 
-        onlyOwner 
-    {
-        _registry.prepareRelease(_newRelease);
-    }
-
-    /* Query */
-    function approveOracle(uint256 _oracleId)
-        external override 
+    function grantRole(bytes32 role, address principal)
+        external override
         onlyOwner
     {
-        address [] memory tokens = new address[](0);
-        uint256 [] memory amounts = new uint256[](0);
-        
-        _component.approve(_oracleId, tokens, amounts);
+        _access.grantRole(role, principal);
     }
 
-    // TODO align with component neutral workflows
-    function disapproveOracle(uint256 _oracleId) 
+    // TODO add implementation in accesscontroller
+    function revokeRole(bytes32 role, address principal) 
         external override 
         onlyOwner 
     {
-        _component.decline(_oracleId);
+        _access.revokeRole(role, principal);
     }
 
-    /* Inventory */
-    function products() external override view returns(uint256) {
-        return _component.products();
+    /* component */
+    function approve(
+        uint256 id, 
+        address [] calldata tokens, 
+        uint256 [] calldata amounts
+    )
+        external override 
+        onlyOwner 
+    {
+        _component.approve(id, tokens, amounts);
     }
 
-    function oracles() external override view returns(uint256) {
-        return _component.oracles();
+    function decline(uint256 id) 
+        external override 
+        onlyOwner 
+    {
+        _component.decline(id);
+    }
+
+    function suspend(uint256 id) 
+        external override 
+        onlyOwner 
+    {
+        _component.suspend(id);
+    }
+
+    function resume(uint256 id) 
+        external override 
+        onlyOwner 
+    {
+        _component.resume(id);
     }
 }

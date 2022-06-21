@@ -9,6 +9,10 @@ contract ComponentController is
     IComponentEvents,
     CoreController 
  {
+    // TODO remove, the two events below need to be defined in IComponentEvents
+    event LogComponentSuspended (uint256 id);
+    event LogComponentResumed (uint256 id);
+
     uint16 public constant CREATED_STATE = 0;
     uint16 public constant PROPOSED_STATE = 1;
     uint16 public constant DECLINED_STATE = 2;
@@ -108,6 +112,30 @@ contract ComponentController is
         
         // inform component about decline
         component.declineCallback();
+    }
+
+    function suspend(uint256 id) 
+        external 
+        onlyInstanceOperatorService 
+    {
+        IComponent component = getComponent(id);
+        _changeState(component, SUSPENDED_STATE);
+        emit LogComponentSuspended(id);
+        
+        // TODO add func to IComponent inform component about suspending
+        // component.suspendCallback();
+    }
+
+    function resume(uint256 id) 
+        external 
+        onlyInstanceOperatorService 
+    {
+        IComponent component = getComponent(id);
+        _changeState(component, ACTIVE_STATE);
+        emit LogComponentResumed(id);
+        
+        // TODO add func to IComponent inform component about resuming
+        // component.resumeCallback();
     }
 
     function pause(uint256 id) 

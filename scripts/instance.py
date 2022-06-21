@@ -22,6 +22,7 @@ from brownie import (
     ComponentOwnerService,
     PolicyFlowDefault,
     InstanceOperatorService,
+    InstanceService,
     network
 )
 
@@ -119,6 +120,7 @@ class GifInstance(GifRegistry):
         self.licence = deployGifModuleV2("License", LicenseController, registry, owner, publishSource)
         self.policy = deployGifModuleV2("Policy", PolicyController, registry, owner, publishSource)
         self.componentOwnerService = deployGifModuleV2("ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
+        self.instanceService = deployGifModuleV2("InstanceService", InstanceService, registry, owner, publishSource)
 
         # services
         self.oracleService = deployGifModuleV2("OracleService", OracleService, registry, owner, publishSource)
@@ -167,6 +169,9 @@ class GifInstance(GifRegistry):
 
     def getInstanceOperatorService(self) -> InstanceOperatorService:
         return self.instanceOperatorService
+
+    def getInstanceService(self) -> InstanceService:
+        return self.instanceService
     
     def getProductService(self) -> ProductService:
         return self.productService
