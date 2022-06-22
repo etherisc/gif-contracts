@@ -85,15 +85,11 @@ def test_deploy_approve_oracle(instance: GifInstance, oracleProvider, productOwn
     with brownie.reverts():
         operatorService.approve(
             oracle.getId(),
-            [], # tokens
-            [], # amounts
             {'from': productOwner})
 
     # verify that instance operator can approve the propsed oracle
     operatorService.approve(
         oracle.getId(),
-        [], # tokens
-        [], # amounts
         {'from': instance.getOwner()})
 
 
@@ -123,8 +119,6 @@ def test_deploy_approve_product(instance: GifInstance, oracleProvider, productOw
     # instance operator can approve the propsed oracle
     operatorService.approve(
         oracle.getId(),
-        [], # tokens
-        [], # amounts
         {'from': instance.getOwner()})
 
     product = TestProduct.deploy(
@@ -156,20 +150,14 @@ def test_deploy_approve_product(instance: GifInstance, oracleProvider, productOw
     with brownie.reverts():
         operatorService.approve(
             product.getId(),
-            [], # tokens
-            [], # amounts
             {'from': oracleProvider})
 
     with brownie.reverts():
         operatorService.approve(
             product.getId(),
-            [], # tokens
-            [], # amounts
             {'from': productOwner})
 
     # verify that instance operator can approve the propsed product
     operatorService.approve(
         product.getId(),
-        [], # tokens
-        [], # amounts
         {'from': instance.getOwner()})

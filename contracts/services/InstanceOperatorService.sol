@@ -83,15 +83,11 @@ contract InstanceOperatorService is
     }
 
     /* component */
-    function approve(
-        uint256 id, 
-        address [] calldata tokens, 
-        uint256 [] calldata amounts
-    )
+    function approve(uint256 id)
         external override 
         onlyOwner 
     {
-        _component.approve(id, tokens, amounts);
+        _component.approve(id);
     }
 
     function decline(uint256 id) 
@@ -113,5 +109,26 @@ contract InstanceOperatorService is
         onlyOwner 
     {
         _component.resume(id);
+    }
+
+    // service staking
+    function setDefaultStaking(
+        uint16 componentType, 
+        bytes calldata data
+    )
+        external override
+        onlyOwner
+    {
+        revert("ERROR:IOS-001:IMPLEMENATION_MISSING");
+    }
+
+    function adjustStakingRequirements(
+        uint256 id, 
+        bytes calldata data
+    )
+        external override
+        onlyOwner
+    {
+        revert("ERROR:IOS-002:IMPLEMENATION_MISSING");
     }
 }

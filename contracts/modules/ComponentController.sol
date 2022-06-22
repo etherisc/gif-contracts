@@ -9,10 +9,6 @@ contract ComponentController is
     IComponentEvents,
     CoreController 
  {
-    // TODO remove, the two events below need to be defined in IComponentEvents
-    event LogComponentSuspended (uint256 id);
-    event LogComponentResumed (uint256 id);
-
     uint16 public constant CREATED_STATE = 0;
     uint16 public constant PROPOSED_STATE = 1;
     uint16 public constant DECLINED_STATE = 2;
@@ -85,21 +81,16 @@ contract ComponentController is
         else if (component.isRiskpool()) { _riskpools.push(id); }
     }
 
-    function approve(
-        uint256 id, 
-        address [] calldata tokens, 
-        uint256 [] calldata amounts
-    ) 
+    function approve(uint256 id) 
         external 
         onlyInstanceOperatorService 
     {
         IComponent component = getComponent(id);
         _changeState(component, ACTIVE_STATE);
-        // TODO consider/implement how to persist and use the staking requirements
         emit LogComponentApproved(id);
         
         // inform component about successful approval
-        component.approvalCallback(tokens, amounts);
+        component.approvalCallback();
     }
 
     function decline(uint256 id) 

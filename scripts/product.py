@@ -69,8 +69,6 @@ class GifTestOracle(object):
         # 4) instance operator approves oracle
         operatorService.approve(
             self.oracle.getId(),
-            [], # tokens
-            [], # amounts
             {'from': instance.getOwner()})
     
     def getOracleId(self) -> int:
@@ -114,8 +112,6 @@ class GifTestProduct(object):
         # 4) instance operator approves oracle
         operatorService.approve(
             self.product.getId(),
-            [], # tokens
-            [], # amounts
             {'from': instance.getOwner()})
     
     def getProductId(self) -> int:

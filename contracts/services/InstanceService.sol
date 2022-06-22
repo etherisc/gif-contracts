@@ -85,4 +85,20 @@ contract InstanceService is
         return _component.getComponent(id);
     }
 
+    // service staking
+    function getStakingRequirements(uint256 id) 
+        external override 
+        view 
+        returns(bytes memory data) 
+    {
+        revert("ERROR:IS-001:IMPLEMENATION_MISSING");
+    }
+
+    function getStakedAssets(uint256 id)
+        external override 
+        view 
+        returns(bytes memory data) 
+    {
+        revert("ERROR:IS-002:IMPLEMENATION_MISSING");
+    }
 }

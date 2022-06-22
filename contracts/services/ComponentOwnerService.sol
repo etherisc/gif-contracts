@@ -43,23 +43,13 @@ contract ComponentOwnerService is
         _component.propose(component);
     }
 
-    function stake(
-        uint256 id, 
-        address [] calldata tokens, 
-        uint256 [] calldata amounts
-    ) 
-        external 
-        onlyOwnerWithRole(id)
-    { }
+    function stake(uint256 id) external onlyOwnerWithRole(id) {
+        revert("ERROR:COS-006:IMPLEMENATION_MISSING");
+    }
 
-    function withdraw(
-        uint256 id, 
-        address [] calldata tokens, 
-        uint256 [] calldata amounts
-    ) 
-        external
-        onlyOwnerWithRole(id)
-    { }
+    function withdraw(uint256 id) external onlyOwnerWithRole(id) {
+        revert("ERROR:COS-007:IMPLEMENATION_MISSING");
+    }
         
 
     function pause(uint256 id) external onlyOwnerWithRole(id) {
