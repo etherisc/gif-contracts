@@ -17,6 +17,7 @@ from brownie import (
     ComponentOwnerService,
     PolicyFlowDefault,
     InstanceOperatorService,
+    InstanceService,
     TestOracle,
     TestProduct,
     TestRegistryControllerUpdated
@@ -168,8 +169,11 @@ def policyFlowDefault(PolicyFlowDefault, registry, owner) -> PolicyFlowDefault:
 
 @pytest.fixture(scope="module")
 def instanceOperatorService(InstanceOperatorService, registry, owner) -> InstanceOperatorService:
-    # return deployGifService(InstanceOperatorService, registry, owner, PUBLISH_SOURCE)
     return deployGifModuleV2("InstanceOperatorService", InstanceOperatorService, registry, owner, PUBLISH_SOURCE)
+
+@pytest.fixture(scope="module")
+def instanceService(instance) -> InstanceService:
+    return instance.getInstanceService()
 
 def contractFromAddress(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)

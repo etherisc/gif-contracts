@@ -1,3 +1,5 @@
+from brownie import accounts
+
 # === GIF platform ========================================================== #
 
 # GIF release
@@ -31,6 +33,9 @@ INSTANCE_OPERATOR_SERVICE_NAME = 'InstanceOperatorService'
 INSTANCE_SERVICE_NAME = 'InstanceService'
 
 # === GIF testing =========================================================== #
+
+# ZERO_ADDRESS = accounts.at('0x0000000000000000000000000000000000000000')
+ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 # TEST account values
 ACCOUNTS_MNEMONIC = 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'

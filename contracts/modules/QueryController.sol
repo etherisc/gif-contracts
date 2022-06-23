@@ -110,7 +110,7 @@ contract QueryController is
 
     function _getOracle(uint256 id) internal view returns (IOracle oracle) {
         IComponent cmp = _component().getComponent(id);
-        require(cmp.getType() == 2, "ERROR:QUC-002:COMPONENT_NOT_ORACLE");
+        require(cmp.isOracle(), "ERROR:QUC-002:COMPONENT_NOT_ORACLE");
         oracle = IOracle(address(cmp));
     }
 

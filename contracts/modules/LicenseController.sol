@@ -13,7 +13,6 @@ contract LicenseController is
     CoreController
 {
 
-    // bytes32 public constant NAME = "LicenseController";
     ComponentController private _component;
 
     function _afterInitialize() internal override onlyInitializing {
@@ -39,17 +38,12 @@ contract LicenseController is
     }
 
     function _isValidCall(IComponent component) internal view returns (bool) {
-        // TODO replace hardcoded 3 with access function call
-        return component.getState() == 3;
+        return component.getStatus() == ComponentStatus.Active;
     }
 
     function _getProduct(uint256 id) internal view returns (IProduct product) {
         IComponent cmp = _component.getComponent(id);
-        require(cmp.getType() == 1, "ERROR:LIC-001:COMPONENT_NOT_PRODUCT");
+        require(cmp.isProduct(), "ERROR:LIC-001:COMPONENT_NOT_PRODUCT");
         product = IProduct(address(cmp));
     }
-
-    // function _component() internal view returns (ComponentController) {
-    //     return ComponentController(_getContractAddress("Component"));
-    // }
 }
