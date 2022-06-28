@@ -18,21 +18,16 @@ import "@gif-interface/contracts/modules/IQuery.sol";
 contract PolicyFlowDefault is 
     WithRegistry 
 {
-    event LogPfDummy0();
-
-    event LogPfDummy1(
-        address registryAddress
-    );
-
-    event LogPfDummy2(
-        address contractAddress
-    );
-
-    event LogPfDummy3(
-        uint256 requestId
-    );
-
     bytes32 public constant NAME = "PolicyFlowDefault";
+
+    modifier onlyActivePolicy(bytes32 _bpKey) {
+        IPolicy policy = getPolicyContract();
+        require(
+            policy.getPolicy(_bpKey).state == IPolicy.PolicyState.Active,
+            "ERROR:PFD-001:POLICY_NOT_ACTIVE"
+        );
+        _;
+    }
 
     // solhint-disable-next-line no-empty-blocks
     constructor(address _registry) 
@@ -41,27 +36,14 @@ contract PolicyFlowDefault is
 
     function newApplication(
         bytes32 _bpKey,
-        bytes calldata _data // replaces premium, currency, payoutOptions
-    ) external {
-
-        emit LogPfDummy0();
-
-        emit LogPfDummy1(
-            address(registry)
-        );
-
-        emit LogPfDummy2(
-            getContractFromRegistry("Policy")
-        );
-
-        IPolicy policy = getPolicyContract();
+        bytes calldata _data 
+    )
+        external 
+    {
         ILicense license = getLicenseContract();
-        // // the calling contract is the Product contract, which needs to have a productId in the license contract.
-        // (uint256 productId, bool authorized, address policyFlow) = license.authorize(msg.sender);
-        // require(authorized, "ERROR:PFD-006:NOT_AUTHORIZED");
-        // require(policyFlow != address(0),"ERROR:PFD-007:POLICY_FLOW_NOT_RESOLVED");
         uint256 productId = license.getProductId(msg.sender);
 
+        IPolicy policy = getPolicyContract();
         policy.createPolicyFlow(productId, _bpKey);
         policy.createApplication(_bpKey, _data);
     }
@@ -71,7 +53,7 @@ contract PolicyFlowDefault is
         require(
             policy.getApplication(_bpKey).state ==
                 IPolicy.ApplicationState.Applied,
-            "ERROR:PFD-001:INVALID_APPLICATION_STATE"
+            "ERROR:PFD-002:INVALID_APPLICATION_STATE"
         );
         policy.setApplicationState(
             _bpKey,
@@ -85,7 +67,7 @@ contract PolicyFlowDefault is
         require(
             policy.getApplication(_bpKey).state ==
                 IPolicy.ApplicationState.Applied,
-            "ERROR:PFD-002:INVALID_APPLICATION_STATE"
+            "ERROR:PFD-003:INVALID_APPLICATION_STATE"
         );
 
         policy.setApplicationState(_bpKey, IPolicy.ApplicationState.Declined);
@@ -93,6 +75,7 @@ contract PolicyFlowDefault is
 
     function newClaim(bytes32 _bpKey, bytes calldata _data)
         external
+        onlyActivePolicy(_bpKey)
         returns (uint256 _claimId)
     {
         _claimId = getPolicyContract().createClaim(_bpKey, _data);
@@ -107,7 +90,7 @@ contract PolicyFlowDefault is
         require(
             policy.getClaim(_bpKey, _claimId).state ==
             IPolicy.ClaimState.Applied,
-            "ERROR:PFD-003:INVALID_CLAIM_STATE"
+            "ERROR:PFD-010:INVALID_CLAIM_STATE"
         );
 
         policy.setClaimState(_bpKey, _claimId, IPolicy.ClaimState.Confirmed);
@@ -120,19 +103,17 @@ contract PolicyFlowDefault is
         require(
             policy.getClaim(_bpKey, _claimId).state ==
             IPolicy.ClaimState.Applied,
-            "ERROR:PFD-004:INVALID_CLAIM_STATE"
+            "ERROR:PFD-011:INVALID_CLAIM_STATE"
         );
 
         policy.setClaimState(_bpKey, _claimId, IPolicy.ClaimState.Declined);
     }
 
-    function expire(bytes32 _bpKey) external {
+    function expire(bytes32 _bpKey) 
+        external
+        onlyActivePolicy(_bpKey)
+    {
         IPolicy policy = getPolicyContract();
-        require(
-            policy.getPolicy(_bpKey).state == IPolicy.PolicyState.Active,
-            "ERROR:PFD-005:INVALID_POLICY_STATE"
-        );
-
         policy.setPolicyState(_bpKey, IPolicy.PolicyState.Expired);
     }
 
@@ -151,9 +132,10 @@ contract PolicyFlowDefault is
         string calldata _callbackMethodName,
         address _callbackContractAddress,
         uint256 _responsibleOracleId
-    ) external returns (uint256 _requestId) {
-        emit LogPfDummy3(_requestId);
-
+    ) 
+        external 
+        returns (uint256 _requestId) 
+    {
         _requestId = getQueryContract().request(
             _bpKey,
             _input,

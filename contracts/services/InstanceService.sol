@@ -2,9 +2,11 @@
 pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
+import "../modules/PolicyController.sol";
 import "../shared/CoreController.sol";
 import "../services/InstanceOperatorService.sol";
 import "@gif-interface/contracts/components/IComponent.sol";
+import "@gif-interface/contracts/modules/IPolicy.sol";
 import "@gif-interface/contracts/modules/IRegistry.sol";
 import "@gif-interface/contracts/services/IComponentOwnerService.sol";
 import "@gif-interface/contracts/services/IInstanceService.sol";
@@ -17,6 +19,8 @@ contract InstanceService is
     CoreController
 {
     bytes32 public constant COMPONENT_NAME = "Component";
+    bytes32 public constant POLICY_NAME = "Policy";
+
     bytes32 public constant COMPONENT_OWNER_SERVICE_NAME = "ComponentOwnerService";
     bytes32 public constant INSTANCE_OPERATOR_SERVICE_NAME = "InstanceOperatorService";
     bytes32 public constant ORACLE_SERVICE_NAME = "OracleService";
@@ -44,6 +48,7 @@ contract InstanceService is
         return ios.owner();
     }
 
+    // TODO decide how to protect registry access
     function getRegistry() external view returns(IRegistry service) {
         return _registry;
     }
@@ -66,6 +71,19 @@ contract InstanceService is
         returns(bool)
     {
         return _access.hasRole(role, principal);
+    }
+
+    /* policy */
+    function getMetadata(bytes32 bpKey) external view returns(IPolicy.Metadata memory metadata) {
+        metadata = _policy().getMetadata(bpKey);
+    }
+
+    function getApplication(bytes32 bpKey) external view returns(IPolicy.Application memory application) {
+        application = _policy().getApplication(bpKey);
+    }
+
+    function getPolicy(bytes32 bpKey) external view returns(IPolicy.Policy memory policy) {
+        policy = _policy().getPolicy(bpKey);
     }
 
     /* component */
@@ -100,6 +118,10 @@ contract InstanceService is
         returns(bytes memory data) 
     {
         revert("ERROR:IS-002:IMPLEMENATION_MISSING");
+    }
+
+    function _policy() internal view returns(PolicyController) {
+        return PolicyController(_getContractAddress(POLICY_NAME));
     }
 
     function _component() internal view returns(ComponentController) {

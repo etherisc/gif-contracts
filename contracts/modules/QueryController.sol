@@ -12,25 +12,29 @@ contract QueryController is
     IQuery, 
     CoreController
 {
-    // bytes32 public constant NAME = "QueryController";
-
     OracleRequest[] public oracleRequests;
 
     modifier onlyOracleService() {
         require(
             _msgSender() == _getContractAddress("OracleService"),
-            "ERROR:CRC-004:NOT_ORACLE_SERVICE"
+            "ERROR:CRC-001:NOT_ORACLE_SERVICE"
         );
         _;
     }
 
     modifier onlyResponsibleOracle(uint256 requestId, address responder) {
         OracleRequest memory oracleRequest = oracleRequests[requestId];
-        uint256 oracleId = oracleRequest.responsibleOracleId;
 
         require(
-            address(_getOracle(oracleId)) == responder,
-            "ERROR:QUC-001:NOT_RESPONSIBLE_ORACLE"
+            oracleRequest.createdAt > 0,
+            "ERROR:QUC-002:INVALID_REQUEST_ID"
+        );
+
+        uint256 oracleId = oracleRequest.responsibleOracleId;
+        address oracleAddress = address(_getOracle(oracleId));
+        require(
+            oracleAddress == responder,
+            "ERROR:QUC-003:NOT_RESPONSIBLE_ORACLE"
         );
         _;
     }
@@ -49,12 +53,12 @@ contract QueryController is
         onlyPolicyFlow("Query") 
         returns (uint256 _requestId) 
     {
-        // todo: validate
+        // TODO: validate
 
         _requestId = oracleRequests.length;
         oracleRequests.push();
 
-        // todo: get token from product
+        // TODO: get token from product
 
         OracleRequest storage req = oracleRequests[_requestId];
         req.bpKey = _bpKey;
@@ -83,25 +87,35 @@ contract QueryController is
         onlyResponsibleOracle(_requestId, _responder) 
     {
         OracleRequest storage req = oracleRequests[_requestId];
+        string memory functionSignature = string(
+            abi.encodePacked(
+                req.callbackMethodName,
+                "(uint256,bytes32,bytes)"
+            ));
+        bytes32 bpKey = req.bpKey;
 
-        (bool status, ) =
+        (bool success, ) =
             req.callbackContractAddress.call(
                 abi.encodeWithSignature(
-                    string(
-                        abi.encodePacked(
-                            req.callbackMethodName,
-                            "(uint256,bytes32,bytes)"
-                        )
-                    ),
+                    // string(
+                    //     abi.encodePacked(
+                    //         req.callbackMethodName,
+                    //         "(uint256,bytes32,bytes)"
+                    //     )
+                    // ),
+                    functionSignature,
                     _requestId,
-                    req.bpKey,
+                    bpKey,
                     _data
                 )
             );
 
-        // todo: send reward
+        require(success, "ERROR:QUC-004:UNSUCCESSFUL_PRODUCT_CALLBACK");
+        delete oracleRequests[_requestId];
 
-        emit LogOracleResponded(req.bpKey, _requestId, _responder, status);
+        // TODO implement reward payment
+
+        emit LogOracleResponded(bpKey, _requestId, _responder, success);
     }
 
     function getOracleRequestCount() public view returns (uint256 _count) {
@@ -110,7 +124,7 @@ contract QueryController is
 
     function _getOracle(uint256 id) internal view returns (IOracle oracle) {
         IComponent cmp = _component().getComponent(id);
-        require(cmp.isOracle(), "ERROR:QUC-002:COMPONENT_NOT_ORACLE");
+        require(cmp.isOracle(), "ERROR:QUC-005:COMPONENT_NOT_ORACLE");
         oracle = IOracle(address(cmp));
     }
 

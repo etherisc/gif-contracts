@@ -24,6 +24,12 @@ def s2b32(text: str):
 def b322s(b32: bytes):
     return b32.decode().split('\x00')[0]
 
+def s2b(text:str):
+    return s2b32(text)
+
+def b2s(b32: bytes):
+    return b322s(b32)
+
 def get_account(mnemonic: str, account_offset: int) -> Account:
     return accounts.from_mnemonic(
         mnemonic,

@@ -42,7 +42,12 @@ from scripts.instance import (
 
 class GifTestOracle(object):
 
-    def __init__(self, instance: GifInstance, oracleOwner: Account):
+    def __init__(self, 
+        instance: GifInstance, 
+        oracleOwner: Account, 
+        name=ORACLE_NAME, 
+        publishSource=False
+    ):
         instanceService = instance.getInstanceService()
         operatorService = instance.getInstanceOperatorService()
         componentOwnerService = instance.getComponentOwnerService()
@@ -57,9 +62,10 @@ class GifTestOracle(object):
 
         # 2) oracle provider creates oracle
         self.oracle = TestOracle.deploy(
-            s2b32(ORACLE_NAME),
+            s2b32(name),
             instance.getRegistry(),
-            {'from': oracleOwner})
+            {'from': oracleOwner},
+            publish_source=publishSource)
 
         # 3) oracle owner proposes oracle to instance
         componentOwnerService.propose(
@@ -80,7 +86,13 @@ class GifTestOracle(object):
 
 class GifTestProduct(object):
 
-    def __init__(self, instance: GifInstance, oracle: GifTestOracle, productOwner: Account):
+    def __init__(self, 
+        instance: GifInstance, 
+        oracle: GifTestOracle, 
+        productOwner: Account, 
+        name=PRODUCT_NAME, 
+        publishSource=False
+    ):
         self.policyController = instance.getPolicyController()
 
         instanceService = instance.getInstanceService()
@@ -97,10 +109,11 @@ class GifTestProduct(object):
 
         # 2) product owner creates product
         self.product = TestProduct.deploy(
-            s2b32(PRODUCT_NAME),
-            registry,
+            s2b32(name),
+            instance.getRegistry(),
             oracle.getOracleId(),
-            {'from': productOwner})
+            {'from': productOwner},
+            publish_source=publishSource)
 
         print('prod id {} (before propose)'.format(self.product.getId()))
         # 3) oracle owner proposes oracle to instance

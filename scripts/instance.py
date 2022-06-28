@@ -90,7 +90,11 @@ class GifInstance(GifRegistry):
         registryAddress = None,
         publishSource: bool = False
     ):
-        if owner:
+        if registryAddress:
+            self.fromRegistryAddress(registryAddress)
+            self.owner=owner
+        
+        elif owner:
             super().__init__(
                 owner, 
                 publishSource)
@@ -99,9 +103,6 @@ class GifInstance(GifRegistry):
                 self.registry, 
                 owner,
                 publishSource)
-            
-        elif registryAddress:
-            self.fromRegistryAddress(registryAddress)
 
         else:
             raise ValueError('either owner or registry_address need to be provided')

@@ -139,7 +139,7 @@ contract RegistryController is
             "ERROR:REC-004:NEW_RELEASE_NOT_EMPTY"
         );
 
-        // todo: think about how to avoid this loop
+        // TODO think about how to avoid this loop
         for (uint256 i = 0; i < countContracts; i += 1) {
             bytes32 contractName = contractNames[release][i];
             _registerInRelease(
@@ -214,7 +214,7 @@ contract RegistryController is
         uint256 indexToDelete;
         uint256 countContracts = contractNames[_release].length;
 
-        // todo: think about how to avoid this loop
+        // TODO think about how to avoid this loop
         for (uint256 i = 0; i < countContracts; i += 1) {
             if (contractNames[_release][i] == _contractName) {
                 indexToDelete = i;

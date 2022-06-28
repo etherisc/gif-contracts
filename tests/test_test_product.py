@@ -1,3 +1,4 @@
+import brownie
 import pytest
 
 from brownie.network.account import Account
@@ -52,10 +53,28 @@ def test_policy_application(instance: GifInstance, testProduct: TestProduct, cus
     policyController = instance.getPolicyController()
     policy = policyController.getPolicy(policy_id)
     assert policy is not None
-    # assert policy.state == 7
 
 
-def test_claim_submission(testProduct: TestProduct, customer: Account):
+def test_policy_application_and_product_activation(instance: GifInstance, testProduct: TestProduct, customer: Account, productOwner: Account):
+    # pause product
+    productId = testProduct.getId()
+    instance.getComponentOwnerService().pause(productId, {'from': productOwner})
+
+    # check policy application for initial product state does not work
+    premium = Wei("1.0 ether");
+    with brownie.reverts():
+        testProduct.applyForPolicy({'from': customer, 'amount': premium})
+
+    assert testProduct.policies() == 0
+
+    # unpause and try again
+    instance.getComponentOwnerService().unpause(productId, {'from': productOwner})
+    policy_tx = testProduct.applyForPolicy({'from': customer, 'amount': premium})
+
+    assert testProduct.policies() == 1
+
+
+def test_claim_submission(testProduct: TestProduct, customer: Account, productOwner: Account):
     customer_initial_balance = customer.balance()
     premium = Wei('0.5 ether');
 
@@ -71,14 +90,33 @@ def test_claim_submission(testProduct: TestProduct, customer: Account):
     assert testProduct.policies() == 1
     assert testProduct.claims() == 0
     
-    # submit claim for 1st policy
-    claim_tx = testProduct.submitClaim(policy1_id, {'from': customer})
+    # only policy holder may sumit a claim
+    with brownie.reverts():
+        testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': productOwner})
+
+    # submit claim
+    claim_tx = testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': customer})
     assert testProduct.claims() == 1
     assert testProduct.getClaimId(policy1_id) == 0
 
-    claim2_tx = testProduct.submitClaim(policy1_id, {'from': customer})
-    assert testProduct.claims() == 2
-    assert testProduct.getClaimId(policy1_id) == 0
+
+def test_claim_submission_for_expired_policy(testProduct: TestProduct, customer: Account, productOwner: Account):
+    customer_initial_balance = customer.balance()
+    premium = Wei('0.5 ether');
+
+    # create 1st policy
+    policy_tx = testProduct.applyForPolicy({'from': customer, 'amount': premium})
+    policy_id = policy_tx.return_value
+    
+    # only product owner may expire a policy
+    with brownie.reverts():
+        testProduct.expire(policy_id, {'from': customer})
+
+    testProduct.expire(policy_id, {'from': productOwner})
+
+    # attempt to submit a claim and verify attempt reverts
+    with brownie.reverts():
+        testProduct.submitClaim(policy_id, Wei('0.1 ether'), {'from': customer})
 
 
 def multiple_claim_submission(testProduct: TestProduct, customer: Account):
@@ -107,12 +145,12 @@ def multiple_claim_submission(testProduct: TestProduct, customer: Account):
     assert testProduct.claims() == 0
     
     # submit claim for 1st policy
-    testProduct.submitClaim(policy1_id, {'from': customer})
+    testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': customer})
     assert testProduct.claims() == 1
     assert testProduct.getClaimId(policy1_id) == 0
     
     # submit claim for 1st policy
-    testProduct.submitClaim(policy2_id, {'from': customer})
+    testProduct.submitClaim(policy2_id, Wei('0.1 ether'), {'from': customer})
     assert testProduct.claims() == 2
     assert testProduct.getClaimId(policy2_id) == 0
 

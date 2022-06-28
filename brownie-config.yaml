@@ -1,3 +1,6 @@
+# secrets management via .env (excluded via .gitignore)
+dotenv: .env
+
 # brownie default values made explicit
 compiler:
     evm_version: null

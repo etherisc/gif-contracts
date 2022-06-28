@@ -17,6 +17,17 @@ contract TestProduct is
     mapping(bytes32 => uint256) private _policyIdToClaimId;
     mapping(bytes32 => uint256) private _policyIdToPayoutId;
 
+    event LogTestProductFundingReceived(address sender, uint256 amount);
+    event LogTestOracleCallbackReceived(uint256 requestId, bytes32 policyId, bytes response);
+
+    modifier onlyPolicyHolder(bytes32 policyId) {
+        require(
+            _msgSender() == _policyIdToAddress[policyId], 
+            "ERROR:TI-2:INVALID_POLICY_OR_HOLDER"
+        );
+        _;
+    }
+
     constructor(
         bytes32 productName,
         address registry,
@@ -25,6 +36,10 @@ contract TestProduct is
         Product(productName, POLICY_FLOW, registry)
     {
         _testOracleId = oracleId;
+    }
+
+    receive() external payable {
+        emit LogTestProductFundingReceived(_msgSender(), msg.value);
     }
 
     function applyForPolicy() external payable returns (bytes32 policyId) {
@@ -36,6 +51,7 @@ contract TestProduct is
 
         // Create and underwrite new application
         policyId = keccak256(abi.encode(policyHolder, _policies));
+        // policyId = keccak256(abi.encode(policyHolder, block.timestamp));
         _newApplication(policyId, abi.encode(premium, policyHolder));
         _underwrite(policyId);
 
@@ -44,21 +60,33 @@ contract TestProduct is
         _policies += 1;
     }
 
-    function submitClaim(bytes32 policyId) external {
-        // validations 
-        // ensure claim is made by policy holder
-        require(_policyIdToAddress[policyId] == _msgSender(), "ERROR:TI-2:INVALID_POLICY_OR_HOLDER");
-        // TODO ensure policy is in active state
+    function expire(bytes32 policyId) 
+        external
+        onlyOwner
+    {
+        _expire(policyId);
+    }
+
+    function submitClaim(bytes32 policyId, uint256 payoutAmount) 
+        external
+        onlyPolicyHolder(policyId)
+    {
 
         // increase claims counter
         // the oracle business logic will use this counter value 
         // to determine if the claim is linke to a loss event or not
         _claims += 1;
+        
+        // claim application
+        bytes memory claimsData = abi.encode(payoutAmount);
+        uint256 claimId = _newClaim(policyId, claimsData);
+        _policyIdToClaimId[policyId] = claimId;
 
         // Request response to greeting via oracle call
+        bytes memory queryData = abi.encode(_claims);
         uint256 requestId = _request(
             policyId,
-            abi.encode(_claims),
+            queryData,
             ORACLE_CALLBACK_METHOD_NAME,
             _testOracleId
         );
@@ -67,35 +95,41 @@ contract TestProduct is
     function oracleCallback(
         uint256 requestId, 
         bytes32 policyId, 
-        bytes calldata response
+        bytes calldata responseData
     )
         external
         onlyOracle
     {
+        emit LogTestOracleCallbackReceived(requestId, policyId, responseData);
+
         // get oracle response data
-        (bool isLossEvent) = abi.decode(response, (bool));
+        (bool isLossEvent) = abi.decode(responseData, (bool));
+        uint256 claimId = _policyIdToClaimId[policyId];
 
         // claim handling if there is a loss
         if (isLossEvent) {
-            // get policy data for oracle response
+            // get policy and claims data for oracle response
             (uint256 premium, address payable policyHolder) = abi.decode(
                 _getApplicationData(policyId), (uint256, address));
 
-            // GIF claims and payout handling
-            uint256 payoutAmount = 2 * premium;
-            uint256 claimId = _newClaim(policyId, abi.encode(payoutAmount));
-            uint256 payoutId = _confirmClaim(policyId, claimId, abi.encode(payoutAmount));
-            _payout(policyId, payoutId, true, abi.encode(payoutAmount));
+            (uint256 payoutAmount) = abi.decode(
+                _getClaimData(policyId, claimId), (uint256));
 
-            _policyIdToClaimId[policyId] = claimId;
+            // specify payout data
+            bytes memory payoutData = abi.encode(payoutAmount);
+            uint256 payoutId = _confirmClaim(policyId, claimId, payoutData);
             _policyIdToPayoutId[policyId] = payoutId;
 
+            // create payout record
+            bool fullPayout = true;
+            _payout(policyId, payoutId, fullPayout, payoutData);
+
             // actual transfer of funds for payout of claim
+            // failing requires not visible when called via .call in querycontroller
             policyHolder.transfer(payoutAmount);
+        } else {
+            _declineClaim(policyId, claimId);
         }
-        
-        // policy only covers a single claims event
-        _expire(policyId);
     }
 
     function getClaimId(bytes32 policyId) external view returns (uint256) { return _policyIdToClaimId[policyId]; }
