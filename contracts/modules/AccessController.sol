@@ -42,37 +42,37 @@ contract AccessController is
     }
 
     //--- enforce role ownership --------------------------------------------//
-    function enforceProductOwnerRole(address principal) public view {
-        enforceRole(PRODUCT_OWNER_ROLE, principal);
-    }
+    // function enforceProductOwnerRole(address principal) public view {
+    //     enforceRole(PRODUCT_OWNER_ROLE, principal);
+    // }
 
-    function enforceOracleProviderRole(address principal) public view {
-        enforceRole(ORACLE_PROVIDER_ROLE, principal);
-    }
+    // function enforceOracleProviderRole(address principal) public view {
+    //     enforceRole(ORACLE_PROVIDER_ROLE, principal);
+    // }
 
-    function enforceRiskpoolKeeperRole(address principal) public view {
-        enforceRole(RISKPOOL_KEEPER_ROLE, principal);
-    }
+    // function enforceRiskpoolKeeperRole(address principal) public view {
+    //     enforceRole(RISKPOOL_KEEPER_ROLE, principal);
+    // }
 
-    // adapted from oz AccessControl._checkRole
-    function enforceRole(bytes32 role, address principal) public view {
-        require(
-            hasRole(role, principal),
-            string(
-                abi.encodePacked(
-                    "AccessController.enforceRole: account ",
-                    Strings.toHexString(uint160(principal), 20),
-                    " is missing role ",
-                    Strings.toHexString(uint256(role), 32)
-                )
-            )
-        );
-    }    
+    // // adapted from oz AccessControl._checkRole
+    // function enforceRole(bytes32 role, address principal) public view {
+    //     require(
+    //         hasRole(role, principal),
+    //         string(
+    //             abi.encodePacked(
+    //                 "AccessController.enforceRole: account ",
+    //                 Strings.toHexString(uint160(principal), 20),
+    //                 " is missing role ",
+    //                 Strings.toHexString(uint256(role), 32)
+    //             )
+    //         )
+    //     );
+    // }    
 
     //--- manage role ownership ---------------------------------------------//
     function grantRole(bytes32 role, address principal) 
         public 
-        override(AccessControl, IAccessControl, IAccess) 
+        override(IAccessControl, IAccess) 
         onlyInstanceOperator 
     {
         require(validRole[role], "ERROR:ACL-002:ROLE_UNKNOWN_OR_INVALID");
@@ -81,7 +81,7 @@ contract AccessController is
 
     function revokeRole(bytes32 role, address principal) 
         public 
-        override(AccessControl, IAccessControl, IAccess) 
+        override(IAccessControl, IAccess) 
         onlyInstanceOperator 
     {
         AccessControl.revokeRole(role, principal);
@@ -89,14 +89,14 @@ contract AccessController is
 
     function renounceRole(bytes32 role, address principal) 
         public 
-        override(AccessControl, IAccessControl, IAccess) 
+        override(IAccessControl, IAccess) 
     {
         AccessControl.renounceRole(role, principal);
     }
     
     //--- manage roles ------------------------------------------------------//
     function addRole(bytes32 role) 
-        public 
+        public override
         onlyInstanceOperator 
     {
         require(validRole[role], "ERROR:ACL-003:ROLE_EXISTING_AND_VALID");
@@ -104,7 +104,7 @@ contract AccessController is
     }
 
     function invalidateRole(bytes32 role)
-        public 
+        public override
         onlyInstanceOperator 
     {
         require(validRole[role], "ERROR:ACL-004:ROLE_UNKNOWN_OR_INVALID");
@@ -113,7 +113,7 @@ contract AccessController is
 
     function hasRole(bytes32 role, address principal) 
         public view 
-        override(AccessControl, IAccessControl, IAccess)
+        override(IAccessControl, IAccess)
         returns(bool)
     {
         return super.hasRole(role, principal);

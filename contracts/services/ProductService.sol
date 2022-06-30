@@ -22,35 +22,7 @@ contract ProductService is
         require(isAuthorized, "ERROR:PRS-001:NOT_AUTHORIZED");
         require(policyFlow != address(0),"ERROR:PRS-002:POLICY_FLOW_NOT_RESOLVED");
 
-        _delegateGif(policyFlow);
-    }
-
-    // delegate from GIF.Delegator
-    function _delegateGif(address _implementation) internal {
-        bytes memory data = msg.data;
-
-        /* solhint-disable no-inline-assembly */
-        assembly {
-            let result := delegatecall(
-                gas(),
-                _implementation,
-                add(data, 0x20),
-                mload(data),
-                0,
-                0
-            )
-            let size := returndatasize()
-            let ptr := mload(0x40)
-            returndatacopy(ptr, 0, size)
-            switch result
-                case 0 {
-                    revert(ptr, size)
-                }
-                default {
-                    return(ptr, size)
-                }
-        }
-        /* solhint-enable no-inline-assembly */
+        _delegate(policyFlow);
     }
     
 

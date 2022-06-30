@@ -120,13 +120,14 @@ class GifInstance(GifRegistry):
         self.query = deployGifModuleV2("Query", QueryController, registry, owner, publishSource)
         self.licence = deployGifModuleV2("License", LicenseController, registry, owner, publishSource)
         self.policy = deployGifModuleV2("Policy", PolicyController, registry, owner, publishSource)
-        self.componentOwnerService = deployGifModuleV2("ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
 
         # services
+        self.componentOwnerService = deployGifModuleV2("ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
         self.instanceService = deployGifModuleV2("InstanceService", InstanceService, registry, owner, publishSource)
         self.oracleService = deployGifModuleV2("OracleService", OracleService, registry, owner, publishSource)
-        # self.productService = deployGifModuleV2("ProductService", ProductService, registry, owner, publishSource)
 
+        # self.productService = deployGifModuleV2("ProductService", ProductService, registry, owner, publishSource)
+        # self.policyFlow = deployGifModuleV2("PolicyFlowDefault", PolicyFlowDefault, registry, owner, publishSource)
         # TODO these contracts do not work with proxy pattern
         self.policyFlow = deployGifService(PolicyFlowDefault, registry, owner, publishSource)
         self.productService = deployGifService(ProductService, registry, owner, publishSource)
@@ -150,11 +151,10 @@ class GifInstance(GifRegistry):
         self.oracleService = self.contractFromGifRegistry(OracleService, "OracleService")
         self.productService = self.contractFromGifRegistry(ProductService, "ProductService")
 
-        # self.oracleService = self.contractFromGifRegistry(OracleService)
-        # self.productService = self.contractFromGifRegistry(ProductService)
-        self.policyFlow = self.contractFromGifRegistry(PolicyFlowDefault)
+        self.policyFlow = self.contractFromGifRegistry(PolicyFlowDefault, "PolicyFlowDefault")
         self.componentOwnerService = self.contractFromGifRegistry(ComponentOwnerService)
         self.instanceOperatorService = self.contractFromGifRegistry(InstanceOperatorService)
+
 
     def contractFromGifRegistry(self, contractClass, name=None):
         if not name:

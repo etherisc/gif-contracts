@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../shared/WithRegistry.sol";
+// import "../shared/CoreController.sol";
 import "@gif-interface/contracts/modules/ILicense.sol";
 import "@gif-interface/contracts/modules/IPolicy.sol";
 import "@gif-interface/contracts/modules/IQuery.sol";
@@ -17,6 +18,7 @@ import "@gif-interface/contracts/modules/IQuery.sol";
 
 contract PolicyFlowDefault is 
     WithRegistry 
+    // CoreController
 {
     bytes32 public constant NAME = "PolicyFlowDefault";
 
@@ -183,4 +185,8 @@ contract PolicyFlowDefault is
     function getQueryContract() internal view returns (IQuery) {
         return IQuery(getContractFromRegistry("Query"));
     }
+
+    // function getContractFromRegistry(bytes32 moduleName) internal view returns(address) {
+    //     return _getContractAddress(moduleName);
+    // }
 }

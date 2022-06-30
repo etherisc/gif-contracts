@@ -252,7 +252,7 @@ contract PolicyController is
     }
 
     function getMetadata(bytes32 _bpKey)
-        public
+        public override
         view
         returns (IPolicy.Metadata memory _metadata)
     {

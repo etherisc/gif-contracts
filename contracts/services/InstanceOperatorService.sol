@@ -74,7 +74,6 @@ contract InstanceOperatorService is
         _access.grantRole(role, principal);
     }
 
-    // TODO add implementation in accesscontroller
     function revokeRole(bytes32 role, address principal) 
         external override 
         onlyOwner 
@@ -112,6 +111,7 @@ contract InstanceOperatorService is
     }
 
     // service staking
+    // TODO implement setDefaultStaking staking
     function setDefaultStaking(
         uint16 componentType, 
         bytes calldata data
@@ -122,6 +122,7 @@ contract InstanceOperatorService is
         revert("ERROR:IOS-001:IMPLEMENATION_MISSING");
     }
 
+    // TODO implement adjustStakingRequirements staking
     function adjustStakingRequirements(
         uint256 id, 
         bytes calldata data

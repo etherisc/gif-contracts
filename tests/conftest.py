@@ -166,6 +166,7 @@ def componentOwnerService(ComponentOwnerService, registry, owner) -> ComponentOw
 @pytest.fixture(scope="module")
 def policyFlowDefault(PolicyFlowDefault, registry, owner) -> PolicyFlowDefault:
     return deployGifService(PolicyFlowDefault, registry, owner, PUBLISH_SOURCE)
+    # return deployGifModuleV2("PolicyFlowDefault", PolicyFlowDefault, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def instanceOperatorService(InstanceOperatorService, registry, owner) -> InstanceOperatorService:

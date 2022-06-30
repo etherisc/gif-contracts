@@ -119,7 +119,7 @@ def test_claim_submission_for_expired_policy(testProduct: TestProduct, customer:
         testProduct.submitClaim(policy_id, Wei('0.1 ether'), {'from': customer})
 
 
-def multiple_claim_submission(testProduct: TestProduct, customer: Account):
+def test_multiple_claim_submission(instance:GifInstance, testProduct: TestProduct, customer: Account):
     customer_initial_balance = customer.balance()
     premium = Wei('0.5 ether');
 
@@ -140,18 +140,45 @@ def multiple_claim_submission(testProduct: TestProduct, customer: Account):
     assert customer.balance() + 2 * premium == customer_initial_balance
     assert testProduct.balance() == 2 * premium
 
+    instanceService = instance.getInstanceService()
+
     # ensure successful policy creation
     assert testProduct.policies() == 2
     assert testProduct.claims() == 0
+
+    assert instanceService.claims(policy1_id) == 0
+    assert instanceService.payouts(policy1_id) == 0
+    assert instanceService.claims(policy2_id) == 0
+    assert instanceService.payouts(policy2_id) == 0
     
     # submit claim for 1st policy
     testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': customer})
     assert testProduct.claims() == 1
     assert testProduct.getClaimId(policy1_id) == 0
+
+    assert instanceService.claims(policy1_id) == 1
+    assert instanceService.payouts(policy1_id) == 1
+    assert instanceService.claims(policy2_id) == 0
+    assert instanceService.payouts(policy2_id) == 0
     
-    # submit claim for 1st policy
+    # submit claim for 1st policy (every 2nd claim does not have any payout)
     testProduct.submitClaim(policy2_id, Wei('0.1 ether'), {'from': customer})
     assert testProduct.claims() == 2
     assert testProduct.getClaimId(policy2_id) == 0
+
+    assert instanceService.claims(policy1_id) == 1
+    assert instanceService.payouts(policy1_id) == 1
+    assert instanceService.claims(policy2_id) == 1
+    assert instanceService.payouts(policy2_id) == 0
+    
+    # submit 2nd claim for 1st policy
+    testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': customer})
+    assert testProduct.claims() == 3
+    assert testProduct.getClaimId(policy1_id) == 1
+
+    assert instanceService.claims(policy1_id) == 2
+    assert instanceService.payouts(policy1_id) == 2
+    assert instanceService.claims(policy2_id) == 1
+    assert instanceService.payouts(policy2_id) == 0
 
 

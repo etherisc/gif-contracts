@@ -37,26 +37,38 @@ contract ComponentOwnerService is
     }
 
     function propose(IComponent component) 
-        external 
+        external override
         onlyOwnerWithRoleFromComponent(component) 
     {
         _component.propose(component);
     }
 
-    function stake(uint256 id) external onlyOwnerWithRole(id) {
+    function stake(uint256 id) 
+        external override 
+        onlyOwnerWithRole(id) 
+    {
         revert("ERROR:COS-006:IMPLEMENATION_MISSING");
     }
 
-    function withdraw(uint256 id) external onlyOwnerWithRole(id) {
+    function withdraw(uint256 id) 
+        external override
+        onlyOwnerWithRole(id) 
+    {
         revert("ERROR:COS-007:IMPLEMENATION_MISSING");
     }
         
 
-    function pause(uint256 id) external onlyOwnerWithRole(id) {
+    function pause(uint256 id) 
+        external override
+        onlyOwnerWithRole(id) 
+    {
         _component.pause(id);
     }
 
-    function unpause(uint256 id) external onlyOwnerWithRole(id) {
+    function unpause(uint256 id) 
+        external override 
+        onlyOwnerWithRole(id) 
+    {
         _component.unpause(id);
     }
 

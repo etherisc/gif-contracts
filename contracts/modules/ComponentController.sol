@@ -32,7 +32,10 @@ contract ComponentController is
         _;
     }
 
-    function propose(IComponent component) external onlyComponentOwnerService {
+    function propose(IComponent component) 
+        external
+        onlyComponentOwnerService 
+    {
         // input validation
         require(_componentIdByAddress[address(component)] == 0, "ERROR:CCR-002:COMPONENT_ALREADY_EXISTS");
         require(_componentIdByName[component.getName()] == 0, "ERROR:CCR-003:COMPONENT_NAME_ALREADY_EXISTS");
@@ -75,7 +78,7 @@ contract ComponentController is
     }
 
     function approve(uint256 id) 
-        external 
+        external
         onlyInstanceOperatorService 
     {
         IComponent component = getComponent(id);
@@ -87,7 +90,7 @@ contract ComponentController is
     }
 
     function decline(uint256 id) 
-        external 
+        external
         onlyInstanceOperatorService 
     {
         IComponent component = getComponent(id);
