@@ -73,10 +73,6 @@ contract PolicyController is
         application.createdAt = block.timestamp;
         application.updatedAt = block.timestamp;
 
-        assert(meta.createdAt > 0);
-        assert(meta.hasApplication == false);
-
-        meta.hasApplication = true;
         meta.updatedAt = block.timestamp;
 
         emit LogNewApplication(meta.productId, _bpKey);
@@ -102,16 +98,14 @@ contract PolicyController is
     {
         Metadata storage meta = metadata[_bpKey];
         require(meta.createdAt > 0, "ERROR:POC-020:METADATA_DOES_NOT_EXIST");
-        require(meta.hasPolicy == false, "ERROR:POC-021:POLICY_ALREADY_EXISTS");
 
         Policy storage policy = policies[_bpKey];
-        require(policy.createdAt == 0, "ERROR:POC-022:POLICY_ALREADY_EXISTS_FOR_BPKEY");
+        require(policy.createdAt == 0, "ERROR:POC-021:POLICY_ALREADY_EXISTS");
 
         policy.state = PolicyState.Active;
         policy.createdAt = block.timestamp;
         policy.updatedAt = block.timestamp;
 
-        meta.hasPolicy = true;
         meta.updatedAt = block.timestamp;
 
         emit LogNewPolicy(_bpKey);
@@ -122,7 +116,7 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Policy storage policy = policies[_bpKey];
-        require(policy.createdAt > 0, "ERROR:POC-023:POLICY_DOES_NOT_EXIST");
+        require(policy.createdAt > 0, "ERROR:POC-022:POLICY_DOES_NOT_EXIST");
 
         policy.state = _state;
         policy.updatedAt = block.timestamp;
@@ -136,24 +130,21 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
         returns (uint256 _claimId)
     {
-        Metadata storage meta = metadata[_bpKey];
-        require(meta.createdAt > 0, "ERROR:POC-030:METADATA_DOES_NOT_EXIST");
+        Policy storage policy = policies[_bpKey];
+        require(policy.createdAt > 0, "ERROR:POC-030:POLICY_DOES_NOT_EXIST");
+        require(policy.state == IPolicy.PolicyState.Active, "ERROR:POC-031:POLICY_NOT_ACTIVE");
 
-        Policy memory policy = policies[_bpKey];
-        require(policy.createdAt > 0, "ERROR:POC-031:POLICY_DOES_NOT_EXIST");
-        require(policy.state == IPolicy.PolicyState.Active, "ERROR:POC-032:POLICY_NOT_ACTIVE");
-
-        _claimId = meta.claimsCount;
+        _claimId = policy.claimsCount;
         Claim storage claim = claims[_bpKey][_claimId];
-        require(claim.createdAt == 0, "ERROR:POC-033:CLAIM_ALREADY_EXISTS");
-
-        meta.claimsCount += 1;
-        meta.updatedAt = block.timestamp;
+        require(claim.createdAt == 0, "ERROR:POC-032:CLAIM_ALREADY_EXISTS");
 
         claim.state = ClaimState.Applied;
         claim.data = _data;
         claim.createdAt = block.timestamp;
         claim.updatedAt = block.timestamp;
+
+        policy.claimsCount += 1;
+        policy.updatedAt = block.timestamp;
 
         emit LogNewClaim(_bpKey, _claimId, ClaimState.Applied);
     }
@@ -167,7 +158,7 @@ contract PolicyController is
         onlyPolicyFlow("Policy") 
     {
         Claim storage claim = claims[_bpKey][_claimId];
-        require(claim.createdAt > 0, "ERROR:POC-034:CLAIM_DOES_NOT_EXIST");
+        require(claim.createdAt > 0, "ERROR:POC-033:CLAIM_DOES_NOT_EXIST");
 
         claim.state = _state;
         claim.updatedAt = block.timestamp;
@@ -185,24 +176,24 @@ contract PolicyController is
         onlyPolicyFlow("Policy") 
         returns (uint256 _payoutId)
     {
-        Metadata storage meta = metadata[_bpKey];
-        require(meta.createdAt > 0, "ERROR:POC-040:METADATA_DOES_NOT_EXIST");
+        Policy storage policy = policies[_bpKey];
+        require(policy.createdAt > 0, "ERROR:POC-040:POLICY_DOES_NOT_EXIST");
 
         Claim memory claim = claims[_bpKey][_claimId];
         require(claim.createdAt > 0, "ERROR:POC-041:CLAIM_DOES_NOT_EXIST");
 
-        _payoutId = meta.payoutsCount;
+        _payoutId = policy.payoutsCount;
         Payout storage payout = payouts[_bpKey][_payoutId];
         require(payout.createdAt == 0, "ERROR:POC-042:PAYOUT_ALREADY_EXISTS");
-
-        meta.payoutsCount += 1;
-        meta.updatedAt = block.timestamp;
 
         payout.claimId = _claimId;
         payout.data = _data;
         payout.state = PayoutState.Expected;
         payout.createdAt = block.timestamp;
         payout.updatedAt = block.timestamp;
+
+        policy.payoutsCount += 1;
+        policy.updatedAt = block.timestamp;
 
         emit LogNewPayout(_bpKey, _claimId, _payoutId, PayoutState.Expected);
     }
@@ -216,8 +207,8 @@ contract PolicyController is
         external override 
         onlyPolicyFlow("Policy")
     {
-        Metadata memory meta = metadata[_bpKey];
-        require(meta.createdAt > 0, "ERROR:POC-043:METADATA_DOES_NOT_EXIST");
+        Policy memory policy = policies[_bpKey];
+        require(policy.createdAt > 0, "ERROR:POC-043:POLICY_DOES_NOT_EXIST");
 
         Payout storage payout = payouts[_bpKey][_payoutId];
         require(payout.createdAt > 0, "ERROR:POC-044:PAYOUT_DOES_NOT_EXIST");

@@ -121,11 +121,11 @@ contract InstanceService is
     }
     
     function claims(bytes32 processId) external override view returns(uint256 numberOfClaims) {
-        numberOfClaims = _policy().getMetadata(processId).claimsCount;
+        numberOfClaims = _policy().getPolicy(processId).claimsCount;
     }
     
     function payouts(bytes32 processId) external override view returns(uint256 numberOfPayouts) {
-        numberOfPayouts = _policy().getMetadata(processId).payoutsCount;
+        numberOfPayouts = _policy().getPolicy(processId).payoutsCount;
     }
     
     function getClaim(bytes32 processId, uint256 claimId) external override view returns (IPolicy.Claim memory claim) {
