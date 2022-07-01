@@ -50,18 +50,45 @@ contract PolicyFlowDefault is
         policy.createApplication(_bpKey, _data);
     }
 
-    function underwrite(bytes32 _bpKey) external {
+    function underwrite(bytes32 processId) external {
         IPolicy policy = getPolicyContract();
+        IPolicy.Application application = policy.getApplication(_bpKey);
         require(
-            policy.getApplication(_bpKey).state ==
+            policy.getApplication(processId).state ==
                 IPolicy.ApplicationState.Applied,
             "ERROR:PFD-002:INVALID_APPLICATION_STATE"
         );
-        policy.setApplicationState(
-            _bpKey,
-            IPolicy.ApplicationState.Underwritten
+
+        // TODO check sum insured can be covered by risk pool
+        // 1 get set of nft covering this policy
+        // 2 get free capacity per covering nft
+        // 3 ensure total free capacity >= sum insure
+        // 4 lock capacity in participating nft according to allocated capacity fraction per nft
+        // 5 inform that cpacity is available
+        // 6 continue here (steps 1-6 to be handled pool internally)
+
+        IRiskpool riskpool = getRiskpoolContract();
+        bool isSecured = riskpool.securePolicy(processId);
+        require(isSecured, "ERROR:PFD-003:RISK_CAPITAL_UNAVAILABLE");
+
+        // make sure premium amount is available
+        // TODO move this to treasury
+        require(
+            _token.allowance(policyHolder, address(this)) >= premium, 
+            "ERROR:TI-3:PREMIUM_NOT_COVERED"
         );
-        policy.createPolicy(_bpKey);
+
+        // check how to distribute premium
+        IPricing pricing = getPricingContract();
+        (uint256 feeAmount, uint256 capitalAmount) = pricing.getPremiumSplit(processId);
+
+        ITreasury treasury = getContract();
+        bool isTransferred = treasury.transferPremium(processId, feeAmount, capitalAmount);
+        require(isTransferred, "ERROR:PFD-003:PREMIUM_TRANSFER_FAILED");
+
+        // final step create policy after successful underwriting
+        policy.setApplicationState(processId, IPolicy.ApplicationState.Underwritten);
+        policy.createPolicy(processId);
     }
 
     function decline(bytes32 _bpKey) external {
@@ -69,7 +96,7 @@ contract PolicyFlowDefault is
         require(
             policy.getApplication(_bpKey).state ==
                 IPolicy.ApplicationState.Applied,
-            "ERROR:PFD-003:INVALID_APPLICATION_STATE"
+            "ERROR:PFD-004:INVALID_APPLICATION_STATE"
         );
 
         policy.setApplicationState(_bpKey, IPolicy.ApplicationState.Declined);

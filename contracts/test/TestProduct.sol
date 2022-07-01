@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@gif-interface/contracts/components/Product.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract TestProduct is 
     Product 
@@ -9,7 +10,11 @@ contract TestProduct is
     bytes32 public constant POLICY_FLOW = "PolicyFlowDefault";
     string public constant ORACLE_CALLBACK_METHOD_NAME = "oracleCallback";
 
+    ERC20 private _token;
+    address private _capitalOwner;
+    address private _feeOwner;
     uint256 private _testOracleId;
+    uint256 private _testRiskpoolId;
     uint256 private _policies;
     uint256 private _claims;
 
@@ -23,40 +28,70 @@ contract TestProduct is
     modifier onlyPolicyHolder(bytes32 policyId) {
         require(
             _msgSender() == _policyIdToAddress[policyId], 
-            "ERROR:TI-2:INVALID_POLICY_OR_HOLDER"
+            "ERROR:TI-1:INVALID_POLICY_OR_HOLDER"
         );
         _;
     }
 
     constructor(
         bytes32 productName,
-        address registry,
-        uint256 oracleId
+        address tokenAddress,
+        address capitalOwner,
+        address feeOwner, // TODO feeOwner not product specific, move to instance
+        uint256 oracleId,
+        uint256 riskpoolId,
+        address registryAddress
     )
-        Product(productName, POLICY_FLOW, registry)
+        Product(productName, POLICY_FLOW, registryAddress)
     {
+        require(tokenAddress != address(0), "ERROR:TI-2:TOKEN_ADDRESS_ZERO");
+        _token = ERC20(tokenAddress);
+        _capitalOwner = capitalOwner;
+        _feeOwner = feeOwner;
         _testOracleId = oracleId;
+        _testRiskpoolId = riskpoolId;
     }
 
+    // TODO remove after switch to token completed
     receive() external payable {
         emit LogTestProductFundingReceived(_msgSender(), msg.value);
     }
 
-    function applyForPolicy() external payable returns (bytes32 policyId) {
-        address payable policyHolder = payable(_msgSender());
-        uint256 premium = msg.value;
+    // TODO move function to IProduct / Product
+    function getApplicationDataStructure() public view returns(string memory dataStructure) {
+        dataStructure = "(address policyHolder, uint256 premium, uint256 sumInsured)";
+    }
 
-        // Validate input parameters
-        require(premium >= 0, "ERROR:TI-1:INVALID_PREMIUM");
+    // TODO move function to IProduct / Product
+    function riskPoolCapacityCallback(uint256 capacity)
+        onlyRiskpool
+    {
+        // whatever product specific logic
+    }
+
+    function applyForPolicy(
+        uint256 premium, 
+        uint256 sumInsured
+    ) 
+        external 
+        payable 
+        returns (bytes32 processId) 
+    {
+        address payable policyHolder = payable(_msgSender());
 
         // Create and underwrite new application
-        policyId = keccak256(abi.encode(policyHolder, _policies));
-        // policyId = keccak256(abi.encode(policyHolder, block.timestamp));
-        _newApplication(policyId, abi.encode(premium, policyHolder));
-        _underwrite(policyId);
+        processId = keccak256(abi.encode(policyHolder, _policies));
+        bytes memory applicationData = abi.encode(
+            policyHolder,
+            premium, 
+            sumInsured
+        );
+
+        _newApplication(processId, applicationData);
+        _underwrite(processId);
 
         // Book keeping
-        _policyIdToAddress[policyId] = policyHolder;
+        _policyIdToAddress[processId] = policyHolder;
         _policies += 1;
     }
 

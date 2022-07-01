@@ -7,6 +7,7 @@ from brownie import (
     Wei,
     Contract, 
     CoreProxy,
+    DummyCoin,
     AccessController,
     RegistryController,
     LicenseController,
@@ -33,6 +34,8 @@ from scripts.const import (
     ORACLE_OWNER_ACCOUNT_NO,
     PRODUCT_OWNER_ACCOUNT_NO,
     CUSTOMER_ACCOUNT_NO,
+    CAPITAL_ACCOUNT_NO,
+    FEE_ACCOUNT_NO,
     ORACLE_NAME,
     ORACLE_INPUT_FORMAT,
     ORACLE_OUTPUT_FORMAT,
@@ -97,6 +100,18 @@ def productOwner(accounts) -> Account:
 def customer(accounts) -> Account:
     owner = get_account(ACCOUNTS_MNEMONIC, CUSTOMER_ACCOUNT_NO)
     accounts[3].transfer(owner, "100 ether")
+    return owner
+
+@pytest.fixture(scope="module")
+def capitalOwner(accounts) -> Account:
+    owner = get_account(ACCOUNTS_MNEMONIC, CAPITAL_ACCOUNT_NO)
+    accounts[4].transfer(owner, "100 ether")
+    return owner
+
+@pytest.fixture(scope="module")
+def feeOwner(accounts) -> Account:
+    owner = get_account(ACCOUNTS_MNEMONIC, FEE_ACCOUNT_NO)
+    accounts[4].transfer(owner, "100 ether")
     return owner
 
 @pytest.fixture(scope="module")
@@ -175,6 +190,15 @@ def instanceOperatorService(InstanceOperatorService, registry, owner) -> Instanc
 @pytest.fixture(scope="module")
 def instanceService(instance) -> InstanceService:
     return instance.getInstanceService()
+
+@pytest.fixture(scope="module")
+def dummyCoin(owner) -> DummyCoin:
+    return DummyCoin.deploy({'from': owner})
+
+@pytest.fixture(scope="module")
+def dummyCoinSetup(dummyCoin, owner, customer) -> DummyCoin:
+    dummyCoin.transfer(customer, 10**6, {'from': owner})
+    return dummyCoin
 
 def contractFromAddress(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
