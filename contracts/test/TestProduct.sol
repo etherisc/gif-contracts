@@ -52,26 +52,35 @@ contract TestProduct is
         _testRiskpoolId = riskpoolId;
     }
 
-    // TODO remove after switch to token completed
-    receive() external payable {
-        emit LogTestProductFundingReceived(_msgSender(), msg.value);
+    function getApplicationDataStructure() public override view returns(string memory dataStructure) {
+        dataStructure = "(address policyHolder)";
     }
 
-    // TODO move function to IProduct / Product
-    function getApplicationDataStructure() public view returns(string memory dataStructure) {
-        dataStructure = "(address policyHolder, uint256 premium, uint256 sumInsured)";
+    function getClaimDataStructure() public override view returns(string memory dataStructure) {
+        dataStructure = "()";
+    }
+
+    function getPayoutDataStructure() public override view returns(string memory dataStructure) {
+        dataStructure = "()";
+    }
+
+    function getRiskpoolId() public override view returns(uint256) {
+        return _testRiskpoolId;
     }
 
     // TODO move function to IProduct / Product
     function riskPoolCapacityCallback(uint256 capacity)
-        onlyRiskpool
+        public override
+        // onlyRiskpool // TODO implement
     {
         // whatever product specific logic
     }
 
     function applyForPolicy(
         uint256 premium, 
-        uint256 sumInsured
+        uint256 sumInsured,
+        bytes calldata metaData,
+        bytes calldata applicationData
     ) 
         external 
         payable 
@@ -81,13 +90,14 @@ contract TestProduct is
 
         // Create and underwrite new application
         processId = keccak256(abi.encode(policyHolder, _policies));
-        bytes memory applicationData = abi.encode(
-            policyHolder,
-            premium, 
-            sumInsured
-        );
 
-        _newApplication(processId, applicationData);
+        _newApplication(
+            processId, 
+            premium, 
+            sumInsured,
+            metaData,
+            applicationData);
+
         _underwrite(processId);
 
         // Book keeping
@@ -151,13 +161,13 @@ contract TestProduct is
                 _getClaimData(policyId, claimId), (uint256));
 
             // specify payout data
-            bytes memory payoutData = abi.encode(payoutAmount);
-            uint256 payoutId = _confirmClaim(policyId, claimId, payoutData);
+            bytes memory payoutData = abi.encode(0);
+            uint256 payoutId = _confirmClaim(policyId, claimId, payoutAmount, payoutData);
             _policyIdToPayoutId[policyId] = payoutId;
 
             // create payout record
             bool fullPayout = true;
-            _payout(policyId, payoutId, fullPayout, payoutData);
+            _processPayout(policyId, payoutId, fullPayout, payoutData);
 
             // actual transfer of funds for payout of claim
             // failing requires not visible when called via .call in querycontroller

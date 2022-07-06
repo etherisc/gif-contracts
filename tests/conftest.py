@@ -13,12 +13,15 @@ from brownie import (
     LicenseController,
     PolicyController,
     QueryController,
+    UnderwritingController,
+    ClaimsController,
     ProductService,
     OracleService,
     ComponentOwnerService,
     PolicyFlowDefault,
     InstanceOperatorService,
     InstanceService,
+    TestRiskpool,
     TestOracle,
     TestProduct,
     TestRegistryControllerUpdated
@@ -31,11 +34,14 @@ from scripts.const import (
     GIF_RELEASE,
     ACCOUNTS_MNEMONIC, 
     INSTANCE_OPERATOR_ACCOUNT_NO,
-    ORACLE_OWNER_ACCOUNT_NO,
+    RISKPOOL_KEEPER_ACCOUNT_NO,
+    ORACLE_PROVIDER_ACCOUNT_NO,
     PRODUCT_OWNER_ACCOUNT_NO,
     CUSTOMER_ACCOUNT_NO,
     CAPITAL_ACCOUNT_NO,
     FEE_ACCOUNT_NO,
+    RISKPOOL_NAME,
+    RIKSPOOL_ID,
     ORACLE_NAME,
     ORACLE_INPUT_FORMAT,
     ORACLE_OUTPUT_FORMAT,
@@ -49,6 +55,7 @@ from scripts.instance import (
 )
 
 from scripts.product import (
+    GifTestRiskpool,
     GifTestOracle,
     GifTestProduct,
 )
@@ -81,49 +88,84 @@ def owner(accounts) -> Account:
     return owner
 
 @pytest.fixture(scope="module")
-def oracleOwner(accounts) -> Account:
-    owner = get_account(ACCOUNTS_MNEMONIC, ORACLE_OWNER_ACCOUNT_NO)
+def riskpoolKeeper(accounts) -> Account:
+    owner = get_account(ACCOUNTS_MNEMONIC, RISKPOOL_KEEPER_ACCOUNT_NO)
     accounts[1].transfer(owner, "100 ether")
     return owner
 
 @pytest.fixture(scope="module")
-def oracleProvider(oracleOwner) -> Account:
-    return oracleOwner
+def oracleProvider(accounts) -> Account:
+    owner = get_account(ACCOUNTS_MNEMONIC, ORACLE_PROVIDER_ACCOUNT_NO)
+    accounts[2].transfer(owner, "100 ether")
+    return owner
 
 @pytest.fixture(scope="module")
 def productOwner(accounts) -> Account:
     owner = get_account(ACCOUNTS_MNEMONIC, PRODUCT_OWNER_ACCOUNT_NO)
-    accounts[2].transfer(owner, "100 ether")
+    accounts[3].transfer(owner, "100 ether")
     return owner
 
 @pytest.fixture(scope="module")
 def customer(accounts) -> Account:
     owner = get_account(ACCOUNTS_MNEMONIC, CUSTOMER_ACCOUNT_NO)
-    accounts[3].transfer(owner, "100 ether")
+    accounts[4].transfer(owner, "100 ether")
     return owner
 
 @pytest.fixture(scope="module")
 def capitalOwner(accounts) -> Account:
     owner = get_account(ACCOUNTS_MNEMONIC, CAPITAL_ACCOUNT_NO)
-    accounts[4].transfer(owner, "100 ether")
+    accounts[5].transfer(owner, "100 ether")
     return owner
 
 @pytest.fixture(scope="module")
 def feeOwner(accounts) -> Account:
     owner = get_account(ACCOUNTS_MNEMONIC, FEE_ACCOUNT_NO)
-    accounts[4].transfer(owner, "100 ether")
+    accounts[6].transfer(owner, "100 ether")
     return owner
 
 @pytest.fixture(scope="module")
 def instance(owner) -> GifInstance:
     return GifInstance(owner)
 
-@pytest.fixture(scope="module")
-def testProduct(instance: GifInstance, oracleOwner: Account, productOwner: Account) -> TestProduct:
-    oracle = GifTestOracle(instance, oracleOwner)
-    product = GifTestProduct(instance, oracle, productOwner)
 
-    return product.getProductContract()
+@pytest.fixture(scope="module")
+def gifTestOracle(instance: GifInstance, oracleProvider: Account) -> GifTestOracle:
+    oracle = GifTestOracle(instance, oracleProvider)
+    return oracle
+
+
+@pytest.fixture(scope="module")
+def gifTestRiskpool(instance: GifInstance, riskpoolKeeper: Account, capitalOwner: Account) -> GifTestRiskpool:
+    capitalization = 10000
+    riskpool = GifTestRiskpool(instance, riskpoolKeeper, capitalOwner, capitalization)
+    return riskpool
+
+
+@pytest.fixture(scope="module")
+def gifTestProduct(
+    instance: GifInstance, 
+    dummyCoinSetup: Account, 
+    capitalOwner: Account, 
+    feeOwner: Account, 
+    productOwner: Account,
+    gifTestOracle: GifTestOracle,
+    gifTestRiskpool: GifTestRiskpool
+) -> GifTestProduct:
+    product = GifTestProduct(
+        instance, 
+        dummyCoinSetup, 
+        capitalOwner,
+        feeOwner,
+        productOwner,
+        gifTestOracle,
+        gifTestRiskpool)
+    return product
+
+
+@pytest.fixture(scope="module")
+def testProduct(gifTestProduct: GifTestProduct):
+    return gifTestProduct.getContract()
+
 
 @pytest.fixture(scope="module")
 def registryController(RegistryController, owner) -> RegistryController:
@@ -161,6 +203,10 @@ def policy(PolicyController, registry, owner) -> PolicyController:
 @pytest.fixture(scope="module")
 def license(LicenseController, registry, owner) -> LicenseController:
     return deployGifModuleV2("License", LicenseController, registry, owner, PUBLISH_SOURCE)
+
+@pytest.fixture(scope="module")
+def underwriting(UnderwritingController, registry, owner) -> UnderwritingController:
+    return deployGifModuleV2("Underwriting", UnderwritingController, registry, owner, PUBLISH_SOURCE)
 
 @pytest.fixture(scope="module")
 def query(QueryController, registry, owner) -> QueryController:

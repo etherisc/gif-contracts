@@ -16,8 +16,11 @@ from brownie import (
     LicenseController,
     PolicyController,
     QueryController,
+    UnderwritingController,
+    ClaimsController,
     ProductService,
     OracleService,
+    RiskpoolService,
     ComponentController,
     ComponentOwnerService,
     PolicyFlowDefault,
@@ -120,11 +123,14 @@ class GifInstance(GifRegistry):
         self.query = deployGifModuleV2("Query", QueryController, registry, owner, publishSource)
         self.licence = deployGifModuleV2("License", LicenseController, registry, owner, publishSource)
         self.policy = deployGifModuleV2("Policy", PolicyController, registry, owner, publishSource)
+        self.underwriting = deployGifModuleV2("Underwriting", UnderwritingController, registry, owner, publishSource)
+        self.claims = deployGifModuleV2("Claims", ClaimsController, registry, owner, publishSource)
 
         # services
         self.componentOwnerService = deployGifModuleV2("ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
         self.instanceService = deployGifModuleV2("InstanceService", InstanceService, registry, owner, publishSource)
         self.oracleService = deployGifModuleV2("OracleService", OracleService, registry, owner, publishSource)
+        self.riskpoolService = deployGifModuleV2("RiskpoolService", RiskpoolService, registry, owner, publishSource)
 
         # self.productService = deployGifModuleV2("ProductService", ProductService, registry, owner, publishSource)
         # self.policyFlow = deployGifModuleV2("PolicyFlowDefault", PolicyFlowDefault, registry, owner, publishSource)
@@ -146,9 +152,12 @@ class GifInstance(GifRegistry):
         self.query = self.contractFromGifRegistry(QueryController, "Query")
         self.licence = self.contractFromGifRegistry(LicenseController, "License")
         self.policy = self.contractFromGifRegistry(PolicyController, "Policy")
+        self.underwriting = self.contractFromGifRegistry(UnderwritingController, "Underwriting")
+        self.claims = self.contractFromGifRegistry(ClaimsController, "Claims")
 
         self.instanceService = self.contractFromGifRegistry(InstanceService, "InstanceService")
         self.oracleService = self.contractFromGifRegistry(OracleService, "OracleService")
+        self.riskpoolService = self.contractFromGifRegistry(RiskpoolService, "RiskpoolService")
         self.productService = self.contractFromGifRegistry(ProductService, "ProductService")
 
         self.policyFlow = self.contractFromGifRegistry(PolicyFlowDefault, "PolicyFlowDefault")
@@ -174,6 +183,9 @@ class GifInstance(GifRegistry):
     def getInstanceService(self) -> InstanceService:
         return self.instanceService
     
+    def getRiskpoolService(self) -> RiskpoolService:
+        return self.riskpoolService
+    
     def getProductService(self) -> ProductService:
         return self.productService
     
@@ -188,6 +200,12 @@ class GifInstance(GifRegistry):
 
     def getPolicyController(self) -> PolicyController:
         return self.policy
+
+    def getUnderwritingController(self) -> UnderwritingController:
+        return self.underwriting
+
+    def getClaimsController(self) -> ClaimsController:
+        return self.claims
 
 
 def dump_sources(registryAddress=None):
@@ -222,6 +240,10 @@ def dump_sources(registryAddress=None):
     contracts.append(dump_single(PolicyController, instance))
     contracts.append(dump_single(Query, instance))
     contracts.append(dump_single(QueryController, instance))
+    contracts.append(dump_single(Claims, instance))
+    contracts.append(dump_single(ClaimsController, instance))
+    contracts.append(dump_single(Underwriting, instance))
+    contracts.append(dump_single(UnderwritingController, instance))
 
     contracts.append(dump_single(PolicyFlowDefault, instance))
     contracts.append(dump_single(ProductService, instance))

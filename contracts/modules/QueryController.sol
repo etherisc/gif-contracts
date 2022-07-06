@@ -97,12 +97,6 @@ contract QueryController is
         (bool success, ) =
             req.callbackContractAddress.call(
                 abi.encodeWithSignature(
-                    // string(
-                    //     abi.encodePacked(
-                    //         req.callbackMethodName,
-                    //         "(uint256,bytes32,bytes)"
-                    //     )
-                    // ),
                     functionSignature,
                     _requestId,
                     bpKey,

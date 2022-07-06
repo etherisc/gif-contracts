@@ -38,7 +38,7 @@ contract LicenseController is
     }
 
     function _isValidCall(IComponent component) internal view returns (bool) {
-        return component.getStatus() == ComponentStatus.Active;
+        return component.getState() == ComponentState.Active;
     }
 
     function _getProduct(uint256 id) internal view returns (IProduct product) {

@@ -23,20 +23,24 @@ from scripts.instance import (
 
 
 def test_policy_application(instance: GifInstance, testProduct: TestProduct, customer: Account):
-    premium = Wei("1.0 ether");
 
     # record balances before policy creation
-    customer_balance_before = customer.balance()
-    product_balance_before = testProduct.balance()
     product_policies_before = testProduct.policies()
 
+    # TODO record balacnes of customer and capital+fee owner before and after
+    # policy application
+
     # create policy
-    policy_tx = testProduct.applyForPolicy({'from': customer, 'amount': premium})
+    premium = 100
+    sumInsured = 5000
+    policy_tx = testProduct.applyForPolicy(
+        premium,
+        sumInsured,
+        {'from': customer})
+
     policy_id = policy_tx.return_value
 
     # record balances after policy creation
-    customer_balance_after = customer.balance()
-    product_balance_after = testProduct.balance()
     product_policies_after = testProduct.policies()
 
     assert not policy_tx is None
@@ -45,10 +49,7 @@ def test_policy_application(instance: GifInstance, testProduct: TestProduct, cus
     assert product_policies_before == 0
     assert product_policies_after == 1
 
-    # ensure premium amount is subtracted from customer account
-    assert customer_balance_before - premium == customer_balance_after
-    # ensure premium amount is added to product after policy creation
-    assert product_balance_before + premium == product_balance_after
+    # TODO add assersion for token balances before and after policy application
 
     policyController = instance.getPolicyController()
     policy = policyController.getPolicy(policy_id)
@@ -61,28 +62,42 @@ def test_policy_application_and_product_activation(instance: GifInstance, testPr
     instance.getComponentOwnerService().pause(productId, {'from': productOwner})
 
     # check policy application for initial product state does not work
-    premium = Wei("1.0 ether");
+    premium = 100
+    sumInsured = 5000
     with brownie.reverts():
-        testProduct.applyForPolicy({'from': customer, 'amount': premium})
+
+        testProduct.applyForPolicy(
+        premium,
+        sumInsured,
+        {'from': customer})
 
     assert testProduct.policies() == 0
 
     # unpause and try again
     instance.getComponentOwnerService().unpause(productId, {'from': productOwner})
-    policy_tx = testProduct.applyForPolicy({'from': customer, 'amount': premium})
+    policy_tx = testProduct.applyForPolicy(
+        premium,
+        sumInsured,
+        {'from': customer})
 
     assert testProduct.policies() == 1
 
 
 def test_claim_submission(testProduct: TestProduct, customer: Account, productOwner: Account):
-    customer_initial_balance = customer.balance()
-    premium = Wei('0.5 ether');
+    premium = 100
+    sumInsured = 5000
 
     # create 1st policy
-    policy1_tx = testProduct.applyForPolicy({'from': customer, 'amount': premium})
+    policy1_tx = testProduct.applyForPolicy(
+        premium,
+        sumInsured,
+        {'from': customer})
+    
     policy1_id = policy1_tx.return_value
     
     assert policy1_id is not None 
+
+    # TODO verify balance after application
     assert customer.balance() + premium == customer_initial_balance
     assert testProduct.balance() == premium
 
@@ -90,22 +105,29 @@ def test_claim_submission(testProduct: TestProduct, customer: Account, productOw
     assert testProduct.policies() == 1
     assert testProduct.claims() == 0
     
-    # only policy holder may sumit a claim
-    with brownie.reverts():
-        testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': productOwner})
+    # TODO adapt tests for claims handling with riskpools
+    # TODO implement claims handling
 
-    # submit claim
-    claim_tx = testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': customer})
-    assert testProduct.claims() == 1
-    assert testProduct.getClaimId(policy1_id) == 0
+    # # only policy holder may sumit a claim
+    # with brownie.reverts():
+    #     testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': productOwner})
+
+    # # submit claim
+    # claim_tx = testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': customer})
+    # assert testProduct.claims() == 1
+    # assert testProduct.getClaimId(policy1_id) == 0
 
 
 def test_claim_submission_for_expired_policy(testProduct: TestProduct, customer: Account, productOwner: Account):
-    customer_initial_balance = customer.balance()
-    premium = Wei('0.5 ether');
+    premium = 100
+    sumInsured = 5000
 
     # create 1st policy
-    policy_tx = testProduct.applyForPolicy({'from': customer, 'amount': premium})
+    policy_tx = testProduct.applyForPolicy(
+        premium,
+        sumInsured,
+        {'from': customer})
+
     policy_id = policy_tx.return_value
     
     # only product owner may expire a policy
@@ -120,11 +142,15 @@ def test_claim_submission_for_expired_policy(testProduct: TestProduct, customer:
 
 
 def test_multiple_claim_submission(instance:GifInstance, testProduct: TestProduct, customer: Account):
-    customer_initial_balance = customer.balance()
-    premium = Wei('0.5 ether');
+    premium = 100
+    sumInsured = 5000
 
     # create 1st policy
-    policy1_tx = testProduct.applyForPolicy({'from': customer, 'amount': premium})
+    policy1_tx = testProduct.applyForPolicy(
+        premium,
+        sumInsured,
+        {'from': customer})
+
     policy1_id = policy1_tx.return_value
     
     assert policy1_id is not None 
@@ -132,7 +158,11 @@ def test_multiple_claim_submission(instance:GifInstance, testProduct: TestProduc
     assert testProduct.balance() == premium
 
     # create 2nd policy
-    policy2_tx = testProduct.applyForPolicy({'from': customer, 'amount': premium})
+    policy2_tx = testProduct.applyForPolicy(
+        premium,
+        sumInsured,
+        {'from': customer})
+
     policy2_id = policy2_tx.return_value
     
     assert policy2_id is not None 

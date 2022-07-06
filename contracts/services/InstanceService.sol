@@ -3,8 +3,10 @@ pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
 import "../modules/PolicyController.sol";
+import "../modules/BundleController.sol";
 import "../shared/CoreController.sol";
 import "../services/InstanceOperatorService.sol";
+
 import "@gif-interface/contracts/components/IComponent.sol";
 import "@gif-interface/contracts/modules/IPolicy.sol";
 import "@gif-interface/contracts/modules/IRegistry.sol";
@@ -13,6 +15,7 @@ import "@gif-interface/contracts/services/IInstanceService.sol";
 import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
 import "@gif-interface/contracts/services/IOracleService.sol";
 import "@gif-interface/contracts/services/IProductService.sol";
+import "@gif-interface/contracts/services/IRiskpoolService.sol";
 
 contract InstanceService is 
     IInstanceService, 
@@ -20,11 +23,13 @@ contract InstanceService is
 {
     bytes32 public constant COMPONENT_NAME = "Component";
     bytes32 public constant POLICY_NAME = "Policy";
+    bytes32 public constant BUNDLE_NAME = "Bundle";
 
     bytes32 public constant COMPONENT_OWNER_SERVICE_NAME = "ComponentOwnerService";
     bytes32 public constant INSTANCE_OPERATOR_SERVICE_NAME = "InstanceOperatorService";
     bytes32 public constant ORACLE_SERVICE_NAME = "OracleService";
     bytes32 public constant PRODUCT_SERVICE_NAME = "ProductService";
+    bytes32 public constant RISKPOOL_SERVICE_NAME = "RiskpoolService";
 
     /* registry */
     function getComponentOwnerService() external override view returns(IComponentOwnerService service) {
@@ -41,6 +46,11 @@ contract InstanceService is
 
     function getProductService() external override view returns(IProductService service) {
         return IProductService(_getContractAddress(PRODUCT_SERVICE_NAME));
+    }
+
+    // TODO add to interface, add override
+    function getRiskpoolService() external view returns(IRiskpoolService service) {
+        return IRiskpoolService(_getContractAddress(RISKPOOL_SERVICE_NAME));
     }
 
     function getOwner() external override view returns(address) {
@@ -135,8 +145,21 @@ contract InstanceService is
     function getPayout(bytes32 processId, uint256 payoutId) external override view returns (IPolicy.Payout memory payout) {
         payout = _policy().getPayout(processId, payoutId);
     }
+
+    function getBundle(uint256 bundleId) external override view returns (IBundle.Bundle memory bundle) {
+        bundle = _bundle().getBundle(bundleId);
+    }
+
+    function bundles() external override view returns (uint256) {
+        return _bundle().bundles();
+    }
+
     
     /* internal functions */
+    function _bundle() internal view returns(BundleController) {
+        return BundleController(_getContractAddress(BUNDLE_NAME));
+    }
+
     function _policy() internal view returns(PolicyController) {
         return PolicyController(_getContractAddress(POLICY_NAME));
     }

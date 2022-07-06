@@ -2,7 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
+import "../modules/UnderwritingController.sol";
 import "../shared/CoreController.sol";
+import "../test/TestProduct.sol";
+
+import "@gif-interface/contracts/components/IComponent.sol";
+import "@gif-interface/contracts/components/IProduct.sol";
 import "@gif-interface/contracts/modules/IQuery.sol";
 import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -13,9 +18,11 @@ contract InstanceOperatorService is
     Ownable 
 {
     ComponentController private _component;
+    UnderwritingController private _underwriting;
 
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
+        _underwriting = UnderwritingController(_getContractAddress("Underwriting"));
         _transferOwnership(_msgSender());
     }
 
@@ -87,6 +94,18 @@ contract InstanceOperatorService is
         onlyOwner 
     {
         _component.approve(id);
+
+        IComponent component = _component.getComponent(id);
+        if (component.isProduct()) {
+            // TODO change to IProduct once skeleton setup is stable
+            // IProduct product = IProduct(address(component));
+            address tpa = address(component);
+            TestProduct product = TestProduct(tpa);
+
+            _underwriting.setRiskpoolForProduct(
+                component.getId(),
+                product.getRiskpoolId());
+        }
     }
 
     function decline(uint256 id) 

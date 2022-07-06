@@ -16,11 +16,13 @@ from brownie import (
     ComponentOwnerService,
     PolicyFlowDefault,
     InstanceOperatorService,
+    TestRiskpool,
     TestOracle,
     TestProduct,
 )
 
 from scripts.const import (
+    RISKPOOL_NAME,
     ORACLE_INPUT_FORMAT,
     ORACLE_OUTPUT_FORMAT,
     ORACLE_NAME,
@@ -39,6 +41,55 @@ from scripts.util import (
 from scripts.instance import (
     GifInstance,
 )
+
+
+class GifTestRiskpool(object):
+
+    def __init__(self, 
+        instance: GifInstance, 
+        riskpoolKeeper: Account, 
+        capitalOwner: Account, 
+        collateralization:int,
+        name=RISKPOOL_NAME, 
+        publishSource=False
+    ):
+        instanceService = instance.getInstanceService()
+        operatorService = instance.getInstanceOperatorService()
+        componentOwnerService = instance.getComponentOwnerService()
+        riskpoolService = instance.getRiskpoolService()
+
+        # 1) add role to keeper
+        keeperRole = instanceService.riskpoolKeeperRole()
+        operatorService.grantRole(
+            keeperRole, 
+            riskpoolKeeper, 
+            {'from': instance.getOwner()})
+
+        # 2) keeper deploys riskpool
+        self.riskpool = TestRiskpool.deploy(
+            s2b32(name),
+            collateralization,
+            capitalOwner,
+            instance.getRegistry(),
+            {'from': riskpoolKeeper},
+            publish_source=publishSource)
+
+        # 3) oracle owner proposes oracle to instance
+        componentOwnerService.propose(
+            self.riskpool,
+            {'from': riskpoolKeeper})
+
+        # 4) instance operator approves oracle
+        operatorService.approve(
+            self.riskpool.getId(),
+            {'from': instance.getOwner()})
+    
+    def getId(self) -> int:
+        return self.riskpool.getId()
+    
+    def getContract(self) -> TestRiskpool:
+        return self.riskpool
+
 
 class GifTestOracle(object):
 
@@ -77,10 +128,10 @@ class GifTestOracle(object):
             self.oracle.getId(),
             {'from': instance.getOwner()})
     
-    def getOracleId(self) -> int:
+    def getId(self) -> int:
         return self.oracle.getId()
     
-    def getOracleContract(self) -> TestOracle:
+    def getContract(self) -> TestOracle:
         return self.oracle
 
 
@@ -88,8 +139,12 @@ class GifTestProduct(object):
 
     def __init__(self, 
         instance: GifInstance, 
-        oracle: GifTestOracle, 
+        token: Account, 
+        capitalOwner: Account, 
+        feeOwner: Account, 
         productOwner: Account, 
+        oracle: GifTestOracle, 
+        riskpool: GifTestRiskpool, 
         name=PRODUCT_NAME, 
         publishSource=False
     ):
@@ -110,8 +165,12 @@ class GifTestProduct(object):
         # 2) product owner creates product
         self.product = TestProduct.deploy(
             s2b32(name),
+            token.address,
+            capitalOwner,
+            feeOwner,
+            oracle.getId(),
+            riskpool.getId(),
             instance.getRegistry(),
-            oracle.getOracleId(),
             {'from': productOwner},
             publish_source=publishSource)
 
@@ -127,10 +186,10 @@ class GifTestProduct(object):
             self.product.getId(),
             {'from': instance.getOwner()})
     
-    def getProductId(self) -> int:
+    def getId(self) -> int:
         return self.product.getId()
     
-    def getProductContract(self) -> TestProduct:
+    def getContract(self) -> TestProduct:
         return self.product
 
     def getPolicy(self, policyId: str):
