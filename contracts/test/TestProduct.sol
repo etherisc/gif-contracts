@@ -18,20 +18,11 @@ contract TestProduct is
     uint256 private _policies;
     uint256 private _claims;
 
-    mapping(bytes32 => address) private _policyIdToAddress;
     mapping(bytes32 => uint256) private _policyIdToClaimId;
     mapping(bytes32 => uint256) private _policyIdToPayoutId;
 
     event LogTestProductFundingReceived(address sender, uint256 amount);
     event LogTestOracleCallbackReceived(uint256 requestId, bytes32 policyId, bytes response);
-
-    modifier onlyPolicyHolder(bytes32 policyId) {
-        require(
-            _msgSender() == _policyIdToAddress[policyId], 
-            "ERROR:TI-1:INVALID_POLICY_OR_HOLDER"
-        );
-        _;
-    }
 
     constructor(
         bytes32 productName,
@@ -92,6 +83,7 @@ contract TestProduct is
         processId = keccak256(abi.encode(policyHolder, _policies));
 
         _newApplication(
+            policyHolder,
             processId, 
             premium, 
             sumInsured,
@@ -101,7 +93,6 @@ contract TestProduct is
         _underwrite(processId);
 
         // Book keeping
-        _policyIdToAddress[processId] = policyHolder;
         _policies += 1;
     }
 

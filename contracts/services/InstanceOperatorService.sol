@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
-import "../modules/UnderwritingController.sol";
+import "../modules/PoolController.sol";
 import "../shared/CoreController.sol";
 import "../test/TestProduct.sol";
 
@@ -18,11 +18,11 @@ contract InstanceOperatorService is
     Ownable 
 {
     ComponentController private _component;
-    UnderwritingController private _underwriting;
+    PoolController private _pool;
 
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
-        _underwriting = UnderwritingController(_getContractAddress("Underwriting"));
+        _pool = PoolController(_getContractAddress("Pool"));
         _transferOwnership(_msgSender());
     }
 
@@ -102,7 +102,7 @@ contract InstanceOperatorService is
             address tpa = address(component);
             TestProduct product = TestProduct(tpa);
 
-            _underwriting.setRiskpoolForProduct(
+            _pool.setRiskpoolForProduct(
                 component.getId(),
                 product.getRiskpoolId());
         }

@@ -5,13 +5,13 @@ import "./ComponentController.sol";
 import "./PolicyController.sol";
 import "../shared/CoreController.sol";
 
-import "@gif-interface/contracts/modules/IUnderwriting.sol";
+import "@gif-interface/contracts/modules/IPool.sol";
 import "@gif-interface/contracts/components/IComponent.sol";
 import "@gif-interface/contracts/components/IRiskpool.sol";
 
 
-contract UnderwritingController is
-    IUnderwriting,
+contract PoolController is
+    IPool,
     CoreController
 {
     mapping(uint256 => uint256) private _riskpoolIdForProductId;
@@ -39,10 +39,9 @@ contract UnderwritingController is
         _riskpoolIdForProductId[productId] = riskpoolId;
     }
 
-
     function underwrite(bytes32 processId) 
         external override 
-        onlyPolicyFlow("Underwriting")
+        onlyPolicyFlow("Pool")
         returns(bool success)
     {
         // check that application is in applied state
@@ -72,8 +71,12 @@ contract UnderwritingController is
         // of which product id links to which oracle id is stored in underwriting moudle
 
         // determine riskpool responsible for application
-        uint256 riskpoolId = _riskpoolIdForProductId[application.productId];
-        IRiskpool riskpool = _getRiskpool(riskpoolId);
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
+        IRiskpool riskpool = _getRiskpool(metadata);
+        require(
+            riskpool.getState() == ComponentState.Active, 
+            "ERROR:UWR-003:RISKPOOL_NOT_ACTIVE"
+        );
 
         // ask reiskpool to secure application
         bool isSecured = riskpool.collateralizePolicy(processId);
@@ -94,14 +97,34 @@ contract UnderwritingController is
         // bool isTransferred = treasury.transferPremium(processId, feeAmount, capitalAmount);
         // require(isTransferred, "ERROR:PFD-003:PREMIUM_TRANSFER_FAILED");
 
-        // final step create policy after successful underwriting
-        _policy.setApplicationState(processId, IPolicy.ApplicationState.Underwritten);
-        success = true;
+        success = isSecured;
     }
 
-    function _getRiskpool(uint256 id) internal view returns (IRiskpool riskpool) {
-        IComponent cmp = _component.getComponent(id);
+
+    function expire(bytes32 processId) 
+        external override
+        onlyPolicyFlow("Pool")
+    {
+        // check that policy is in aciive state
+        IPolicy.Policy memory policy = _policy.getPolicy(processId);
+        require(
+            policy.state == IPolicy.PolicyState.Active,
+            "ERROR:UWR-002:INVALID_POLICY_STATE"
+        );
+
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
+        IRiskpool riskpool = _getRiskpool(metadata);
+        riskpool.expirePolicy(processId);
+    }
+
+
+    function _getRiskpool(IPolicy.Metadata memory metadata) internal view returns (IRiskpool riskpool) {
+        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
+        require(riskpoolId > 0, "ERROR:UWR-001:RISKPOOL_MISSING");
+
+        IComponent cmp = _component.getComponent(riskpoolId);
         require(cmp.isRiskpool(), "ERROR:UWR-001:COMPONENT_NOT_RISKPOOL");
+        
         riskpool = IRiskpool(address(cmp));
     }
 }

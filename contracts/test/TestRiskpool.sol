@@ -1,20 +1,28 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../shared/IntSet.sol"; // TODO decide on better fitting name
+import "./IdSet.sol";
 import "../services/InstanceService.sol"; // TODO remove once getBundle is fixed
 
 import "@gif-interface/contracts/modules/IBundle.sol";
+import "@gif-interface/contracts/modules/IPolicy.sol";
 import "@gif-interface/contracts/components/Component.sol";
 import "@gif-interface/contracts/components/IRiskpool.sol";
 import "@gif-interface/contracts/services/IInstanceService.sol";
 import "@gif-interface/contracts/services/IRiskpoolService.sol";
 
-
+// TODO consider to move bunlde per riskpool book keeping to bundle controller
 contract TestRiskpool is 
     IRiskpool, 
+    IdSet,
     Component 
 {
+
+    event LogRiskpoolBundleCreated(uint256 bundleId, uint256 amount);
+    event LogRiskpoolRequiredCollateral(bytes32 processId, uint256 sumInsured, uint256 collateral);
+    event LogRiskpoolBundleMatchesPolicy(uint256 bundleId, bool isMatching);
+    event LogRiskpoolCollateralLocked(bytes32 processId, uint256 collateralAmount, bool isSecured);
+    
     // used for representation of collateralization
     // collateralization between 0 and 1 (1=100%) 
     // value might be larger when overcollateralization
@@ -26,16 +34,21 @@ contract TestRiskpool is
     IRiskpoolService private _riskpoolService;
     
     uint256 [] private _bundleIds;
-    IntSet private _activeBundleIds;
+
+    // remember bundleId for each processId
+    // approach only works for basic risk pool where a
+    // policy is collateralized by exactly one bundle
+    mapping(bytes32 => uint256) private _collateralizedBy;
 
     address private _wallet;
     uint256 private _collateralization;
-    uint256 private _valueTotal;
-    uint256 private _valueLocked;
+    uint256 private _capital;
+    uint256 private _lockedCapital;
+    uint256 private _balance;
 
-    modifier onlyUnderwriting {
+    modifier onlyPool {
         require(
-             _msgSender() == _getContractAddress("Underwriting"),
+             _msgSender() == _getContractAddress("Pool"),
             "ERROR:RPL-001:ACCESS_DENIED"
         );
         _;
@@ -59,30 +72,44 @@ contract TestRiskpool is
         _riskpoolService = IRiskpoolService(_getContractAddress("RiskpoolService"));
     }
 
+    // TODO decide on authz for bundle creation
     function createBundle(bytes calldata filter, uint256 initialAmount) 
         external override
         returns(uint256 bundleId)
     {
-        bundleId = _riskpoolService.createBundle(filter, initialAmount);
+        address bundleOwner = _msgSender();
+        bundleId = _riskpoolService.createBundle(bundleOwner, filter, initialAmount);
 
         _bundleIds.push(bundleId);
-        _activeBundleIds.add(bundleId); // TODO consider to actually check that bundle is active
+        _addIdToSet(bundleId); // TODO consider to actually check that bundle is active
+
+        // update financials
+        _capital += initialAmount;
+        _balance += initialAmount;
+
+        emit LogRiskpoolBundleCreated(bundleId, initialAmount);
     }
+
 
     function collateralizePolicy(bytes32 processId) 
         external override
-        onlyUnderwriting
+        onlyPool
         returns(bool isSecured) 
     {
-        uint256 requiredCapital = _calculateRiskCapital(processId);
-        isSecured = _lockCapital(processId, requiredCapital);
+        IPolicy.Application memory application = _instanceService.getApplication(processId);
+        uint256 sumInsured = application.sumInsuredAmount;
+        uint256 collateralAmount = _calculateCollateralAmount(application);
+        emit LogRiskpoolRequiredCollateral(processId, sumInsured, collateralAmount);
+
+        isSecured = _lockCollateral(processId, collateralAmount);
+        emit LogRiskpoolCollateralLocked(processId, collateralAmount, isSecured);
     }
 
     function expirePolicy(bytes32 processId) 
         external override
-        onlyUnderwriting
+        onlyPool
     {
-        _freeCapital(processId);
+        _freeCollateral(processId);
     }
 
 
@@ -94,15 +121,15 @@ contract TestRiskpool is
         revert("ERROR:RPL-991:EXECUTE_PAYOUT_NOT_IMPLEMENTED");
     }
 
-    function _calculateRiskCapital(bytes32 processId) internal view returns (uint256 riskCapital) {
-        uint256 sumInsured = _getSumInsured(processId);
-        // https://ethereum.stackexchange.com/questions/91367/is-the-safemath-library-obsolete-in-solidity-0-8-0
-        riskCapital = (sumInsured * COLLATERALIZATION_DECIMALS) / _collateralization;
-    }
+    function _calculateCollateralAmount(IPolicy.Application memory application) internal view returns (uint256 collateralAmount) {
+        uint256 sumInsured = application.sumInsuredAmount;
 
-    // TODO add to interface- -> to be provided by policy service
-    function _getSumInsured(bytes32 processId) internal view returns (uint256) {
-        return 0;
+        if (_collateralization == COLLATERALIZATION_DECIMALS) {
+            collateralAmount = sumInsured;
+        } else {
+            // https://ethereum.stackexchange.com/questions/91367/is-the-safemath-library-obsolete-in-solidity-0-8-0
+            collateralAmount = (_collateralization * sumInsured) / COLLATERALIZATION_DECIMALS;
+        }
     }
     
     // needs to remember which bundles helped to cover ther risk
@@ -111,32 +138,69 @@ contract TestRiskpool is
     // complex (wholesale) approach: single policy covered by many bundles
     // Component <- Riskpool <- BasicRiskpool <- TestRiskpool
     // Component <- Riskpool <- AdvancedRiskpool <- TestRiskpool
-    function _lockCapital(bytes32 processId, uint256 riskCapital) internal returns(bool success) {
-        require(_valueTotal > _valueLocked, "ERROR:RPL-004:NO_FREE_CAPITAL");
+    function _lockCollateral(bytes32 processId, uint256 collateralAmount) internal returns(bool success) {
+        uint256 activeBundles = _idSetSize();
+        require(activeBundles > 0, "ERROR:RPL-004:NO_ACTIVE_BUNDLES");
+        require(_capital > _lockedCapital, "ERROR:RPL-005:NO_FREE_CAPITAL");
 
-        if(_valueTotal >= _valueLocked + riskCapital) {         
-            // update value locked before any actual locking in bundles  
-            _valueLocked += riskCapital;
+        // ensure there is a chance to find the collateral
+        if(_capital >= _lockedCapital + collateralAmount) {
+            IPolicy.Application memory application = _instanceService.getApplication(processId);
 
-            // TODO implement allocation of capital via bundles
-            // should be responsibility of riskpoo to decide if a policy should 
-            // bbe covered by a single bundle or a set of bundles
-            // given a processId riskpool must know which bundle(S) are covering it
-            // given a processId a bundle knows how much capital is locked for this policy
+            // basic riskpool implementation: policy coverage by single bundle only
+            uint i;
+            while (i < activeBundles && !success) {
+                uint256 bundleId = _idInSetAt(i);
+                uint256 maxAmount = _maxCollateralFromBundle(bundleId, application);
 
-            success = true;
+                if (maxAmount >= collateralAmount) {
+                    _riskpoolService.collateralizePolicy(bundleId, processId, collateralAmount);
+                    _collateralizedBy[processId] = bundleId;
+
+                    _lockedCapital += collateralAmount;
+                    success = true;
+                } else {
+                    i++;
+                }
+            }
         }
     }
 
-
-    function _freeCapital(bytes32 processId) internal returns(bool success) {
+    // this is the product/riskpool specific definition of what can be done with filters
+    function _maxCollateralFromBundle(uint256 bundleId, IPolicy.Application memory application)
+        internal
+        returns(uint256 maxCollateralAmount)
+    {
+        IBundle.Bundle memory bundle = _instanceService.getBundle(bundleId);
         
-        // TODO get risk capital associated with processId
-        uint256 riskCapital = 0;
-        // TODO implement freeing of capital via bundles
+        if (_bundleFilterMatchesApplication(bundle, application)) {
+            maxCollateralAmount = bundle.capital - bundle.lockedCapital;
+        }
+    }
+
+    // default/trivial implementation
+    function _bundleFilterMatchesApplication(
+        IBundle.Bundle memory bundle, 
+        IPolicy.Application memory application
+    ) 
+        internal 
+        returns(bool isMatching) 
+    {
+        // matches with any application
+        uint256 bundleId = bundle.id;
+        isMatching = true;
+
+        emit LogRiskpoolBundleMatchesPolicy(bundleId, isMatching);
+    }
+
+
+    function _freeCollateral(bytes32 processId) internal returns(bool success) {
+        
+        uint256 bundleId = _collateralizedBy[processId];
+        uint256 freedCollateral = _riskpoolService.expirePolicy(bundleId, processId);
 
         // update value locked after any actual freeing of capital in bundles  
-        _valueLocked -= riskCapital;
+        _lockedCapital -= freedCollateral;
     }
 
     function getCollateralizationLevel() public view override returns (uint256) {
@@ -144,7 +208,7 @@ contract TestRiskpool is
     }
 
 
-    function getCollateralizationDecimals() public view override returns (uint256) {
+    function getCollateralizationDecimals() public pure override returns (uint256) {
         return COLLATERALIZATION_DECIMALS;
     }
 
@@ -159,21 +223,20 @@ contract TestRiskpool is
         return _instanceService.getBundle(bundleIdx);
     }
 
-    function getFilterDataStructure() external override view returns(string memory) {
+    function getFilterDataStructure() external override pure returns(string memory) {
         return DEFAULT_FILTER_DATA_STRUCTURE;
     }
 
     function getCapacity() external override view returns(uint256) {
-        revert("ERROR:RPL-991:CAPACITY_NOT_IMPLEMENTED");
+        return _capital - _lockedCapital;
     }
 
     function getTotalValueLocked() external override view returns(uint256) {
-        revert("ERROR:RPL-991:TVL_NOT_IMPLEMENTED");
+        return _lockedCapital;
     }
-    
 
     function getPrice() external override view returns(uint256) {
-        revert("ERROR:RPL-991:PRICE_NOT_IMPLEMENTED");
+        return _balance;
     }
 
 }

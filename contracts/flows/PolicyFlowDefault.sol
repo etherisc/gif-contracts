@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../modules/IClaims.sol";
+import "../modules/PoolController.sol";
 import "../shared/WithRegistry.sol";
 // import "../shared/CoreController.sol";
 import "@gif-interface/contracts/modules/ILicense.sol";
 import "@gif-interface/contracts/modules/IPolicy.sol";
 import "@gif-interface/contracts/modules/IQuery.sol";
 import "@gif-interface/contracts/modules/IRegistry.sol";
-import "@gif-interface/contracts/modules/IUnderwriting.sol";
-
-// import "@gif-interface/contracts/modules/IClaims.sol";
-// import "@gif-interface/contracts/modules/IRiskpool.sol";
+import "@gif-interface/contracts/modules/IPool.sol";
 
 /*
  * PolicyFlowDefault is a delegate of ProductService.sol.
@@ -43,6 +40,7 @@ contract PolicyFlowDefault is
     { }
 
     function newApplication(
+        address owner,
         bytes32 processId,
         uint256 premiumAmount,
         uint256 sumInsuredAmount,
@@ -55,9 +53,8 @@ contract PolicyFlowDefault is
         uint256 productId = license.getProductId(msg.sender);
 
         IPolicy policy = getPolicyContract();
-        policy.createPolicyFlow(processId, metaData);
+        policy.createPolicyFlow(owner, processId, productId, metaData);
         policy.createApplication(
-            productId, 
             processId, 
             premiumAmount, 
             sumInsuredAmount, 
@@ -65,11 +62,12 @@ contract PolicyFlowDefault is
     }
 
     function underwrite(bytes32 processId) external {
-        IUnderwriting underwriting = getUnderwritingContract();
-        bool success = underwriting.underwrite(processId);
+        IPool pool = getPoolContract();
+        bool success = pool.underwrite(processId);
         require(success, "ERROR:PFD-002:UNDERWRITING_FAILED");
 
         IPolicy policy = getPolicyContract();
+        policy.setApplicationState(processId, IPolicy.ApplicationState.Underwritten);
         policy.createPolicy(processId);
     }
 
@@ -125,6 +123,9 @@ contract PolicyFlowDefault is
         external
         onlyActivePolicy(processId)
     {
+        PoolController pool = getPoolContract(); // TODO switch from underwriting to pool
+        pool.expire(processId);
+
         IPolicy policy = getPolicyContract();
         policy.setPolicyState(processId, IPolicy.PolicyState.Expired);
     }
@@ -188,8 +189,8 @@ contract PolicyFlowDefault is
         return ILicense(getContractFromRegistry("License"));
     }
 
-    function getUnderwritingContract() internal view returns (IUnderwriting) {
-        return IUnderwriting(getContractFromRegistry("Underwriting"));
+    function getPoolContract() internal view returns (PoolController) { // TODO switch from underwriting to pool
+        return PoolController(getContractFromRegistry("Pool"));
     }
 
     function getPolicyContract() internal view returns (IPolicy) {
@@ -198,10 +199,6 @@ contract PolicyFlowDefault is
 
     function getQueryContract() internal view returns (IQuery) {
         return IQuery(getContractFromRegistry("Query"));
-    }
-
-    function getClaimsContract() internal view returns (IClaims) {
-        return IClaims(getContractFromRegistry("Claims"));
     }
 
     // function getContractFromRegistry(bytes32 moduleName) internal view returns(address) {

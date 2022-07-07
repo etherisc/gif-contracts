@@ -118,7 +118,7 @@ contract InstanceService is
     }
 
     /* policy */
-    function getMetadata(bytes32 bpKey) external view returns(IPolicy.Metadata memory metadata) {
+    function getMetadata(bytes32 bpKey) external override view returns(IPolicy.Metadata memory metadata) {
         metadata = _policy().getMetadata(bpKey);
     }
 
@@ -146,6 +146,7 @@ contract InstanceService is
         payout = _policy().getPayout(processId, payoutId);
     }
 
+    /* bundle */
     function getBundle(uint256 bundleId) external override view returns (IBundle.Bundle memory bundle) {
         bundle = _bundle().getBundle(bundleId);
     }

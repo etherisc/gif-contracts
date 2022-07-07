@@ -25,26 +25,36 @@ contract PolicyController is
     // Payouts
     mapping(bytes32 => mapping(uint256 => Payout)) public payouts;
 
-    bytes32[] public bpKeys;
+    bytes32[] public processIds;
 
     /* Metadata */
-    function createPolicyFlow(bytes32 processId, bytes calldata data)
+    function createPolicyFlow(
+        address owner,
+        bytes32 processId, 
+        uint256 productId,
+        bytes calldata data
+    )
         external override
         onlyPolicyFlow("Policy")
     {
         Metadata storage meta = metadata[processId];
         require(meta.createdAt == 0, "ERROR:POC-001:METADATA_ALREADY_EXISTS");
 
+        meta.owner = owner;
+        meta.productId = productId;
         meta.state = PolicyFlowState.Started;
         meta.data = data;
         meta.createdAt = block.timestamp;
         meta.updatedAt = block.timestamp;
-        bpKeys.push(processId);
+        processIds.push(processId);
 
-        emit LogNewMetadata(processId, PolicyFlowState.Started);
+        emit LogNewMetadata(owner, processId, productId, PolicyFlowState.Started);
     }
 
-    function setPolicyFlowState(bytes32 processId, PolicyFlowState state)
+    function setPolicyFlowState(
+        bytes32 processId, 
+        PolicyFlowState state
+    )
         external override
         onlyPolicyFlow("Policy")
     {
@@ -59,7 +69,6 @@ contract PolicyController is
 
     /* Application */
     function createApplication(
-        uint256 productId, 
         bytes32 processId, 
         uint256 premiumAmount,
         uint256 sumInsuredAmount,
@@ -74,7 +83,6 @@ contract PolicyController is
         Application storage application = applications[processId];
         require(application.createdAt == 0, "ERROR:POC-011:APPLICATION_ALREADY_EXISTS");
 
-        application.productId = productId;
         application.state = ApplicationState.Applied;
         application.premiumAmount = premiumAmount;
         application.sumInsuredAmount = sumInsuredAmount;
@@ -84,7 +92,7 @@ contract PolicyController is
 
         meta.updatedAt = block.timestamp;
 
-        emit LogNewApplication(productId, processId, premiumAmount, sumInsuredAmount);
+        emit LogNewApplication(processId, premiumAmount, sumInsuredAmount);
     }
 
     function setApplicationState(bytes32 processId, ApplicationState state)
@@ -299,6 +307,6 @@ contract PolicyController is
     }
 
     function getProcessIdCount() external override view returns (uint256) {
-        return bpKeys.length;
+        return processIds.length;
     }
 }

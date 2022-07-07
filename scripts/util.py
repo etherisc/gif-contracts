@@ -81,6 +81,25 @@ def deployGifModule(
     return contractFromAddress(controllerClass, storage.address)
 
 
+
+# gif token deployment
+def deployGifToken(
+    tokenName,
+    tokenClass,
+    registry,
+    owner,
+    publishSource
+):
+    print('token {} deploy'.format(tokenName))
+    token = tokenClass.deploy(
+        {'from': owner},
+        publish_source=publishSource)
+
+    tokenNameB32 = s2b32(tokenName)
+    print('token {} register'.format(tokenName))
+    registry.register(tokenNameB32, token.address, {'from': owner})
+
+
 # generic open zeppelin upgradable gif module deployment
 def deployGifModuleV2(
     moduleName,
@@ -89,6 +108,7 @@ def deployGifModuleV2(
     owner,
     publishSource
 ):
+    print('module {} deploy controller'.format(moduleName))
     controller = controllerClass.deploy(
         {'from': owner},
         publish_source=publishSource)
@@ -97,6 +117,7 @@ def deployGifModuleV2(
         registry.address,
         initializer=controller.initialize)
 
+    print('module {} deploy proxy'.format(moduleName))
     proxy = CoreProxy.deploy(
         controller.address, 
         encoded_initializer, 
@@ -106,7 +127,9 @@ def deployGifModuleV2(
     moduleNameB32 = s2b32(moduleName)
     controllerNameB32 = s2b32('{}Controller'.format(moduleName))[:32]
 
+    print('module {} register controller'.format(moduleName))
     registry.register(controllerNameB32, controller.address, {'from': owner})
+    print('module {} register proxy'.format(moduleName))
     registry.register(moduleNameB32, proxy.address, {'from': owner})
 
     return contractFromAddress(controllerClass, proxy.address)

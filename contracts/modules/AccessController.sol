@@ -30,6 +30,8 @@ contract AccessController is
         _populateValidRoles();
     }
 
+    function _getName() internal override pure returns(bytes32) { return "Access"; }
+
     // IMPORTANT this method must be called during initial setup of the GIF instance
     // otherwise any caller might set the default role admin to any addressS
     function setDefaultAdminRole(address defaultAdmin) 

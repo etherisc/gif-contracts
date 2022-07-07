@@ -41,13 +41,20 @@ contract CoreController is
 
     function initialize(address registry) public initializer {
         _registry = IRegistry(registry);
-        _access = IAccess(_getContractAddress("Access"));
+        if (_getName() != "Access") { _access = IAccess(_getContractAddress("Access")); }
+        
         _afterInitialize();
     }
 
+    function _getName() internal virtual pure returns(bytes32) { return ""; }
+
     function _afterInitialize() internal virtual onlyInitializing {}
 
-    function _getContractAddress(bytes32 contractName) internal view returns (address) { 
-        return _registry.getContract(contractName);
+    function _getContractAddress(bytes32 contractName) internal view returns (address contractAddress) { 
+        contractAddress = _registry.getContract(contractName);
+        require(
+            contractAddress != address(0),
+            "ERROR:CRC-004:CONTRACT_NOT_REGISTERED"
+        );
     }
 }
