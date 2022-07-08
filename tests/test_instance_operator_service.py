@@ -20,12 +20,16 @@ from scripts.util import (
     contractFromAddress
 )
 
-def test_non_existing_functionality(instanceOperatorService, owner):
+def test_non_existing_functionality(instance, owner):
+    instanceOperatorService = instance.getInstanceOperatorService()
     with pytest.raises(AttributeError):
         assert instanceOperatorService.foo({'from': owner})
 
 
-def test_instance_operator_service_contract_in_registry(instanceOperatorService, registry, owner):
+def test_instance_operator_service_contract_in_registry(instance, owner):
+    instanceOperatorService = instance.getInstanceOperatorService()
+    registry = instance.getRegistry()
+    
     instanceOperatorServiceAddress = registry.getContract(s2b32(INSTANCE_OPERATOR_SERVICE_NAME))
 
     assert instanceOperatorService.address == instanceOperatorServiceAddress

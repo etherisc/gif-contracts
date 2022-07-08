@@ -21,54 +21,51 @@ from scripts.instance import (
     GifInstance,
 )
 
+from scripts.product import (
+    GifTestProduct,
+    GifTestRiskpool,
+)
 
-def test_policy_application(instance: GifInstance, testProduct: TestProduct, customer: Account):
+def fund_riskpool(gifTestProduct: GifTestProduct, bundleOwner: Account):
+    # add bundle with funding to riskpool
+    testRiskpool = gifTestProduct.getRiskpool()
+    riskpool = testRiskpool.getContract()
 
-    # record balances before policy creation
-    product_policies_before = testProduct.policies()
+    applicationFilter = bytes(0)
+    initialFunding = 10000
 
-    # TODO record balacnes of customer and capital+fee owner before and after
-    # policy application
-
-    # create policy
-    premium = 100
-    sumInsured = 5000
-    policy_tx = testProduct.applyForPolicy(
-        premium,
-        sumInsured,
-        {'from': customer})
-
-    policy_id = policy_tx.return_value
-
-    # record balances after policy creation
-    product_policies_after = testProduct.policies()
-
-    assert not policy_tx is None
-    assert policy_id == '0x76c2e3b708d8fcc307d69c21a89f15c54e99ccd4744e4227151d7e488eb2ebae'
-
-    assert product_policies_before == 0
-    assert product_policies_after == 1
-
-    # TODO add assersion for token balances before and after policy application
-
-    policyController = instance.getPolicyController()
-    policy = policyController.getPolicy(policy_id)
-    assert policy is not None
+    riskpool.createBundle(
+        applicationFilter, 
+        initialFunding, 
+        {'from': bundleOwner})
 
 
-def test_policy_application_and_product_activation(instance: GifInstance, testProduct: TestProduct, customer: Account, productOwner: Account):
+def test_policy_application_and_product_activation(
+    instance: GifInstance, 
+    gifTestProduct: GifTestProduct, 
+    customer: Account, 
+    productOwner: Account,
+    riskpoolKeeper: Account
+):
+    fund_riskpool(gifTestProduct, riskpoolKeeper)
+    
     # pause product
+    testProduct = gifTestProduct.getContract()
     productId = testProduct.getId()
     instance.getComponentOwnerService().pause(productId, {'from': productOwner})
 
     # check policy application for initial product state does not work
     premium = 100
     sumInsured = 5000
-    with brownie.reverts():
+    metaData = s2b32('')
+    applicationData = s2b32('')
 
+    with brownie.reverts():
         testProduct.applyForPolicy(
         premium,
         sumInsured,
+        metaData,
+        applicationData,
         {'from': customer})
 
     assert testProduct.policies() == 0
@@ -78,19 +75,34 @@ def test_policy_application_and_product_activation(instance: GifInstance, testPr
     policy_tx = testProduct.applyForPolicy(
         premium,
         sumInsured,
+        metaData,
+        applicationData,
         {'from': customer})
 
     assert testProduct.policies() == 1
 
 
-def test_claim_submission(testProduct: TestProduct, customer: Account, productOwner: Account):
+def test_claim_submission(
+    instance: GifInstance, 
+    gifTestProduct: GifTestProduct, 
+    customer: Account, 
+    productOwner: Account,
+    riskpoolKeeper: Account
+):
+    fund_riskpool(gifTestProduct, riskpoolKeeper)
+
     premium = 100
     sumInsured = 5000
+    metaData = s2b32('')
+    applicationData = s2b32('')
 
     # create 1st policy
+    testProduct = gifTestProduct.getContract()
     policy1_tx = testProduct.applyForPolicy(
         premium,
         sumInsured,
+        metaData,
+        applicationData,
         {'from': customer})
     
     policy1_id = policy1_tx.return_value
@@ -98,8 +110,6 @@ def test_claim_submission(testProduct: TestProduct, customer: Account, productOw
     assert policy1_id is not None 
 
     # TODO verify balance after application
-    assert customer.balance() + premium == customer_initial_balance
-    assert testProduct.balance() == premium
 
     # ensure successful policy creation
     assert testProduct.policies() == 1
@@ -108,24 +118,45 @@ def test_claim_submission(testProduct: TestProduct, customer: Account, productOw
     # TODO adapt tests for claims handling with riskpools
     # TODO implement claims handling
 
-    # # only policy holder may sumit a claim
-    # with brownie.reverts():
-    #     testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': productOwner})
+    # only policy holder may sumit a claim
+    claimAmount = 300
+    with brownie.reverts():
+        testProduct.submitClaim(
+            policy1_id, 
+            claimAmount, 
+            {'from': productOwner})
 
-    # # submit claim
-    # claim_tx = testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': customer})
-    # assert testProduct.claims() == 1
-    # assert testProduct.getClaimId(policy1_id) == 0
+    # submit claim
+    claim_tx = testProduct.submitClaim(
+        policy1_id, 
+        claimAmount, 
+        {'from': customer})
+    
+    assert testProduct.claims() == 1
+    assert testProduct.getClaimId(policy1_id) == 0
 
 
-def test_claim_submission_for_expired_policy(testProduct: TestProduct, customer: Account, productOwner: Account):
+def test_claim_submission_for_expired_policy(
+    instance: GifInstance, 
+    gifTestProduct: GifTestProduct, 
+    customer: Account, 
+    productOwner: Account,
+    riskpoolKeeper: Account
+):
+    fund_riskpool(gifTestProduct, riskpoolKeeper)
+
     premium = 100
     sumInsured = 5000
+    metaData = s2b32('')
+    applicationData = s2b32('')
 
     # create 1st policy
+    testProduct = gifTestProduct.getContract()
     policy_tx = testProduct.applyForPolicy(
         premium,
         sumInsured,
+        metaData,
+        applicationData,
         {'from': customer})
 
     policy_id = policy_tx.return_value
@@ -141,41 +172,55 @@ def test_claim_submission_for_expired_policy(testProduct: TestProduct, customer:
         testProduct.submitClaim(policy_id, Wei('0.1 ether'), {'from': customer})
 
 
-def test_multiple_claim_submission(instance:GifInstance, testProduct: TestProduct, customer: Account):
+def test_multiple_claim_submission(
+    instance: GifInstance, 
+    gifTestProduct: GifTestProduct, 
+    customer: Account, 
+    productOwner: Account,
+    riskpoolKeeper: Account
+):
+    fund_riskpool(gifTestProduct, riskpoolKeeper)
+
     premium = 100
     sumInsured = 5000
+    metaData = s2b32('')
+    applicationData = s2b32('')
 
     # create 1st policy
+    testProduct = gifTestProduct.getContract()
     policy1_tx = testProduct.applyForPolicy(
         premium,
         sumInsured,
+        metaData,
+        applicationData,
         {'from': customer})
 
     policy1_id = policy1_tx.return_value
     
     assert policy1_id is not None 
-    assert customer.balance() + premium == customer_initial_balance
-    assert testProduct.balance() == premium
+
+    # TODO add assertions to check coin balance
 
     # create 2nd policy
     policy2_tx = testProduct.applyForPolicy(
         premium,
         sumInsured,
+        metaData,
+        applicationData,
         {'from': customer})
 
     policy2_id = policy2_tx.return_value
     
     assert policy2_id is not None 
     assert policy1_id != policy2_id
-    assert customer.balance() + 2 * premium == customer_initial_balance
-    assert testProduct.balance() == 2 * premium
-
-    instanceService = instance.getInstanceService()
+    
+    # TODO add assertions to check coin balance
 
     # ensure successful policy creation
     assert testProduct.policies() == 2
     assert testProduct.claims() == 0
 
+    instanceService = instance.getInstanceService()
     assert instanceService.claims(policy1_id) == 0
     assert instanceService.payouts(policy1_id) == 0
     assert instanceService.claims(policy2_id) == 0

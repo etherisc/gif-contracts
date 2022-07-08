@@ -15,6 +15,7 @@ contract PoolController is
     CoreController
 {
     mapping(uint256 => uint256) private _riskpoolIdForProductId;
+    uint256 [] private _riskpools;
 
     ComponentController private _component;
     PolicyController private _policy;
@@ -22,7 +23,7 @@ contract PoolController is
     modifier onlyInstanceOperatorService() {
         require(
             _msgSender() == _getContractAddress("InstanceOperatorService"),
-            "ERROR:UWR-001:NOT_INSTANCE_OPERATOR"
+            "ERROR:POL-001:NOT_INSTANCE_OPERATOR"
         );
         _;
     }
@@ -36,6 +37,13 @@ contract PoolController is
         external override
         onlyInstanceOperatorService
     {
+        require(_component.exists(productId), "ERROR:POL-002:PRODUCT_DOES_NOT_EXIST");
+        require(_component.exists(riskpoolId), "ERROR:POL-003:RISKPOOL_DOES_NOT_EXIST");
+        
+        if (_riskpoolIdForProductId[productId] == 0) {
+            _riskpools.push(riskpoolId);
+        }
+
         _riskpoolIdForProductId[productId] = riskpoolId;
     }
 
@@ -48,7 +56,7 @@ contract PoolController is
         IPolicy.Application memory application = _policy.getApplication(processId);
         require(
             application.state == IPolicy.ApplicationState.Applied,
-            "ERROR:UWR-002:INVALID_APPLICATION_STATE"
+            "ERROR:POL-004:INVALID_APPLICATION_STATE"
         );
 
         // TODO check sum insured can be covered by risk pool
@@ -75,12 +83,12 @@ contract PoolController is
         IRiskpool riskpool = _getRiskpool(metadata);
         require(
             riskpool.getState() == ComponentState.Active, 
-            "ERROR:UWR-003:RISKPOOL_NOT_ACTIVE"
+            "ERROR:POL-005:RISKPOOL_NOT_ACTIVE"
         );
 
         // ask reiskpool to secure application
         bool isSecured = riskpool.collateralizePolicy(processId);
-        require(isSecured, "ERROR:UWR-003:RISK_CAPITAL_UNAVAILABLE");
+        require(isSecured, "ERROR:POL-006:RISK_CAPITAL_UNAVAILABLE");
 
         // // make sure premium amount is available
         // // TODO move this to treasury
@@ -109,7 +117,7 @@ contract PoolController is
         IPolicy.Policy memory policy = _policy.getPolicy(processId);
         require(
             policy.state == IPolicy.PolicyState.Active,
-            "ERROR:UWR-002:INVALID_POLICY_STATE"
+            "ERROR:POL-007:INVALID_POLICY_STATE"
         );
 
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
@@ -117,13 +125,23 @@ contract PoolController is
         riskpool.expirePolicy(processId);
     }
 
+    
+    function riskpools() external view returns(uint256 idx) { return _riskpools.length; }
+    function getRiskpoolId(uint256 idx) 
+        external view 
+        returns(uint256) 
+    { 
+        require(idx < _riskpools.length, "ERROR:POL-008:INDEX_TOO_LARGE");
+        return _riskpools[idx]; 
+    }
+
 
     function _getRiskpool(IPolicy.Metadata memory metadata) internal view returns (IRiskpool riskpool) {
         uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
-        require(riskpoolId > 0, "ERROR:UWR-001:RISKPOOL_MISSING");
+        require(riskpoolId > 0, "ERROR:POL-009:RISKPOOL_DOES_NOT_EXIST");
 
         IComponent cmp = _component.getComponent(riskpoolId);
-        require(cmp.isRiskpool(), "ERROR:UWR-001:COMPONENT_NOT_RISKPOOL");
+        require(cmp.isRiskpool(), "ERROR:POL-010:COMPONENT_NOT_RISKPOOL");
         
         riskpool = IRiskpool(address(cmp));
     }

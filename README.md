@@ -55,59 +55,62 @@ Example session inside the Brownie console
 * Deployment and usage of Test oracle and product
 
 ```bash
-from scripts.instance import GifInstance
-from scripts.product import GifTestOracle
-from scripts.product import GifTestProduct
-from scripts.util import s2b32
+# --- imports ---
+import uuid
+from scripts.product import GifInstance, GifTestOracle, GifTestProduct, GifTestRiskpool
+from scripts.util import s2b, b2s
 
-print('instance deployment')
-owner = accounts[0]
+# --- create instance and accounts setup ---
+owner=accounts[0]
+riskpoolKeeper=accounts[1]
+oracleProvider=accounts[2]
+productOwner=accounts[3]
+customer=accounts[4]
+capitalOwner=accounts[5]
+feeOwner=accounts[6]
+
+# --- dummy coin setup ---
+testCoin = DummyCoin.deploy({'from': owner})
+testCoin.transfer(riskpoolKeeper, 10**6, {'from': owner})
+testCoin.transfer(customer, 10**6, {'from': owner})
+
+# --- create instance setup ---
+# instance=GifInstance(registryAddress='0xe7D6c54cf8Bd798edA9E9A3Aa094Fb01EF34C251', owner=owner)
 instance = GifInstance(owner)
+service = instance.getInstanceService()
 
-print('accounts setup')
-oracleOwner = accounts[1]
-productOwner = accounts[2]
-consumer1 = accounts[3]
-consumer2 = accounts[4]
+instance.getRegistry()
 
-print('deploy gif test oracle and product')
-oracle = GifTestOracle(instance, oracleOwner)
-product = GifTestProduct(instance, oracle, productOwner)
-productContract = product.getProductContract()
+# --- deploy product (and oracle) ---
+capitalization = 10000
+gifRiskpool = GifTestRiskpool(instance, riskpoolKeeper, capitalOwner, capitalization)
+gifOracle = GifTestOracle(instance, oracleProvider, name=str(uuid.uuid4())[:8])
+gifProduct = GifTestProduct(
+  instance,
+  testCoin,
+  capitalOwner,
+  feeOwner,
+  productOwner,
+  gifOracle,
+  gifRiskpool,
+  name=str(uuid.uuid4())[:8])
 
-print('check balances')
-Wei(consumer1.balance()).to('ether')
-Wei(productContract.balance()).to('ether')
+riskpool = gifRiskpool.getContract()
+oracle = gifOracle.getContract()
+product = gifProduct.getContract()
 
-print('create policies')
-premium = Wei('0.5 ether')
-tx1 = productContract.applyForPolicy({'from': consumer1, 'amount': premium})
-tx2 = productContract.applyForPolicy({'from': consumer1, 'amount': premium})
-policyId1 = tx1.return_value
-policyId2 = tx2.return_value
-print('ids of created policies:\n{}\n{}'.format(policyId1, policyId2))
+# --- fund riskpool ---
+riskpool.createBundle(bytes(0), 100, {'from':riskpoolKeeper})
+riskpool.createBundle(bytes(0), 200, {'from':riskpoolKeeper})
 
-print('balances after policy creation')
-Wei(consumer1.balance()).to('ether')
-Wei(productContract.balance()).to('ether')
+# --- create policy ---
+premium = 10
+sumInsured = 100
+metaData = s2b('')
+applicationData = s2b('')
 
-print('show events and subcalls for policy creation')
-tx1.events
-tx1.subcalls
-
-print('submit claims')
-tx_claim1 = productContract.submitClaim(policyId1, {'from': consumer1})
-tx_claim2 = productContract.submitClaim(policyId2, {'from': consumer1})
-
-print('show events for claim submission')
-tx_claim1.events
-tx_claim2.events
-
-pc = instance.getPolicyController()
-pc.getPolicy(policyId1)
-pc.getPolicy(policyId2)
-pc.getClaim(policyId1, 0)
-pc.getClaim(policyId2, 0)
+txPolicy1 = product.applyForPolicy(premium, sumInsured, metaData, applicationData, {'from':customer})
+txPolicy2 = product.applyForPolicy(premium, sumInsured, metaData, applicationData, {'from':customer})
 ```
 
 In case things go wrong you can information regarding the last transaction via history.

@@ -130,7 +130,7 @@ class GifInstance(GifRegistry):
         self.access = deployGifModuleV2("Access", AccessController, registry, owner, publishSource)
         self.component = deployGifModuleV2("Component", ComponentController, registry, owner, publishSource)
         self.query = deployGifModuleV2("Query", QueryController, registry, owner, publishSource)
-        self.licence = deployGifModuleV2("License", LicenseController, registry, owner, publishSource)
+        self.license = deployGifModuleV2("License", LicenseController, registry, owner, publishSource)
         self.policy = deployGifModuleV2("Policy", PolicyController, registry, owner, publishSource)
         self.bundle = deployGifModuleV2("Bundle", BundleController, registry, owner, publishSource)
         self.pool = deployGifModuleV2("Pool", PoolController, registry, owner, publishSource)
@@ -157,9 +157,11 @@ class GifInstance(GifRegistry):
 
     def fromRegistryAddress(self, registry_address):
         self.registry = contractFromAddress(RegistryController, registry_address)
+        self.access = self.contractFromGifRegistry(AccessController, "Access")
+        self.component = self.contractFromGifRegistry(AccessController, "Component")
 
         self.query = self.contractFromGifRegistry(QueryController, "Query")
-        self.licence = self.contractFromGifRegistry(LicenseController, "License")
+        self.license = self.contractFromGifRegistry(LicenseController, "License")
         self.policy = self.contractFromGifRegistry(PolicyController, "Policy")
         self.bundle = self.contractFromGifRegistry(BundleController, "Bundle")
         self.pool = self.contractFromGifRegistry(PoolController, "Pool")
@@ -186,6 +188,30 @@ class GifInstance(GifRegistry):
     def getRegistry(self) -> GifRegistry:
         return self.registry
 
+    def getAccess(self) -> AccessController:
+        return self.access
+
+    def getBundle(self) -> BundleController:
+        return self.bundle
+
+    def getComponent(self) -> ComponentController:
+        return self.component
+
+    def getLicense(self) -> LicenseController:
+        return self.license
+
+    def getPolicy(self) -> PolicyController:
+        return self.policy
+    
+    def getPolicyFlowDefault(self) -> PolicyFlowDefault:
+        return self.policyFlow
+
+    def getPool(self) -> PoolController:
+        return self.pool
+
+    def getQuery(self) -> QueryController:
+        return self.query
+
     def getInstanceOperatorService(self) -> InstanceOperatorService:
         return self.instanceOperatorService
 
@@ -198,23 +224,11 @@ class GifInstance(GifRegistry):
     def getProductService(self) -> ProductService:
         return self.productService
     
-    def getPolicyFlowDefault(self) -> PolicyFlowDefault:
-        return self.policyFlow
-    
     def getComponentOwnerService(self) -> ComponentOwnerService:
         return self.componentOwnerService
     
     def getOracleService(self) -> OracleService:
         return self.oracleService
-
-    def getPolicyController(self) -> PolicyController:
-        return self.policy
-
-    def getPoolController(self) -> PoolController:
-        return self.pool
-
-    def getBundleController(self) -> BundleController:
-        return self.bundle
 
 
 def dump_sources(registryAddress=None):
@@ -273,7 +287,7 @@ def dump_single(contract, instance=None) -> str:
     compiler = info['compiler_version']
     optimizer = info['optimizer_enabled']
     runs = info['optimizer_runs']
-    licence = info['license_identifier']
+    license = info['license_identifier']
     address = 'no_address'
     name = info['contract_name']
 
@@ -285,4 +299,4 @@ def dump_single(contract, instance=None) -> str:
     with open(dump_sources_contract_file,'w') as f: 
         f.write(json.dumps(contract.get_verification_info()['standard_json_input']))
 
-    return '{} {} {} {} {} {} {}'.format(netw, compiler, optimizer, runs, licence, address, name)
+    return '{} {} {} {} {} {} {}'.format(netw, compiler, optimizer, runs, license, address, name)

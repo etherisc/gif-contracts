@@ -14,11 +14,16 @@ from scripts.util import (
 
 )
 
-def test_non_existing_functionality(componentOwnerService, owner):
+def test_non_existing_functionality(instance, owner):
+    componentOwnerService = instance.getComponentOwnerService()
+
     with pytest.raises(AttributeError):
         assert componentOwnerService.foo({'from': owner})
 
-def test_component_service_contract_in_registry(componentOwnerService, registry, owner):
+def test_component_service_contract_in_registry(instance, owner):
+    componentOwnerService = instance.getComponentOwnerService()
+
+    registry = instance.getRegistry()    
     componentOwnerServiceAddress = registry.getContract(s2b32(COMPONENT_OWNER_SERVICE_NAME))
 
     assert componentOwnerService.address == componentOwnerServiceAddress

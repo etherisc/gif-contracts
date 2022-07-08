@@ -3,10 +3,12 @@ from brownie import accounts
 # === GIF platform ========================================================== #
 
 # GIF release
-GIF_RELEASE = '1.2.0'
+GIF_RELEASE = '1.6.0'
 
 # GIF modules
 ACCESS_NAME = 'Access'
+BUNDLE_NAME = 'Bundle'
+COMPONENT_NAME = 'Component'
 
 REGISTRY_CONTROLLER_NAME = 'RegistryController'
 REGISTRY_NAME = 'Registry'
@@ -20,6 +22,9 @@ LICENSE_NAME = 'License'
 POLICY_CONTROLLER_NAME = 'PolicyController'
 POLICY_NAME = 'Policy'
 
+POLICY_FLOW_DEFAULT_NAME = 'PolicyFlowDefault'
+POOL_NAME = 'Pool'
+
 QUERY_CONTROLLER_NAME = 'QueryController'
 QUERY_NAME = 'Query'
 
@@ -29,8 +34,8 @@ RISKPOOL_NAME = 'Riskpool'
 # GIF services
 COMPONENT_OWNER_SERVICE_NAME = 'ComponentOwnerService'
 PRODUCT_SERVICE_NAME = 'ProductService'
+RISKPOOL_SERVICE_NAME = 'RiskpoolService'
 ORACLE_SERVICE_NAME = 'OracleService'
-ORACLE_OWNER_SERVICE_NAME = 'OracleOwnerService'
 POLICY_FLOW_DEFAULT_NAME = 'PolicyFlowDefault'
 INSTANCE_OPERATOR_SERVICE_NAME = 'InstanceOperatorService'
 INSTANCE_SERVICE_NAME = 'InstanceService'

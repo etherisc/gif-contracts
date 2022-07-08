@@ -144,7 +144,9 @@ class GifTestProduct(object):
         name=PRODUCT_NAME, 
         publishSource=False
     ):
-        self.policyController = instance.getPolicyController()
+        self.policy = instance.getPolicy()
+        self.oracle = oracle
+        self.riskpool = riskpool
 
         instanceService = instance.getInstanceService()
         operatorService = instance.getInstanceOperatorService()
@@ -184,9 +186,15 @@ class GifTestProduct(object):
     
     def getId(self) -> int:
         return self.product.getId()
+
+    def getOracle(self) -> GifTestOracle:
+        return self.oracle
+
+    def getRiskpool(self) -> GifTestRiskpool:
+        return self.riskpool
     
     def getContract(self) -> TestProduct:
         return self.product
 
     def getPolicy(self, policyId: str):
-        return self.policyController.getPolicy(policyId)
+        return self.policy.getPolicy(policyId)

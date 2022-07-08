@@ -8,15 +8,18 @@ from brownie import (
     Contract, 
     CoreProxy,
     DummyCoin,
+    BundleToken,
+    RiskpoolToken,
     AccessController,
+    BundleController,
     RegistryController,
     LicenseController,
     PolicyController,
     QueryController,
-    UnderwritingController,
-    ClaimsController,
+    PoolController,
     ProductService,
     OracleService,
+    RiskpoolService,
     ComponentOwnerService,
     PolicyFlowDefault,
     InstanceOperatorService,
@@ -24,6 +27,7 @@ from brownie import (
     TestRiskpool,
     TestOracle,
     TestProduct,
+    TestRiskpool,
     TestRegistryControllerUpdated
 )
 
@@ -166,7 +170,6 @@ def gifTestProduct(
 def testProduct(gifTestProduct: GifTestProduct):
     return gifTestProduct.getContract()
 
-
 @pytest.fixture(scope="module")
 def registryController(RegistryController, owner) -> RegistryController:
     return RegistryController.deploy({'from': owner})
@@ -192,50 +195,54 @@ def registry(registryController, owner) -> RegistryController:
 
     return registry
 
-@pytest.fixture(scope="module")
-def access(AccessController, registry, owner) -> AccessController:
-    return deployGifModuleV2("Access", AccessController, registry, owner, PUBLISH_SOURCE)
+# @pytest.fixture(scope="module")
+# def access(AccessController, registry, owner) -> AccessController:
+#     return deployGifModuleV2("Access", AccessController, registry, owner, PUBLISH_SOURCE)
 
-@pytest.fixture(scope="module")
-def policy(PolicyController, registry, owner) -> PolicyController:
-    return deployGifModuleV2("Policy", PolicyController, registry, owner, PUBLISH_SOURCE)
+# @pytest.fixture(scope="module")
+# def policy(PolicyController, registry, owner) -> PolicyController:
+#     return deployGifModuleV2("Policy", PolicyController, registry, owner, PUBLISH_SOURCE)
 
-@pytest.fixture(scope="module")
-def license(LicenseController, registry, owner) -> LicenseController:
-    return deployGifModuleV2("License", LicenseController, registry, owner, PUBLISH_SOURCE)
+# @pytest.fixture(scope="module")
+# def query(QueryController, registry, owner) -> QueryController:
+#     return deployGifModuleV2("Query", QueryController, registry, owner, PUBLISH_SOURCE)
 
-@pytest.fixture(scope="module")
-def underwriting(UnderwritingController, registry, owner) -> UnderwritingController:
-    return deployGifModuleV2("Underwriting", UnderwritingController, registry, owner, PUBLISH_SOURCE)
+# @pytest.fixture(scope="module")
+# def pool(PoolController, registry, owner) -> PoolController:
+#     return deployGifModuleV2("Pool", PoolController, registry, owner, PUBLISH_SOURCE)
 
-@pytest.fixture(scope="module")
-def query(QueryController, registry, owner) -> QueryController:
-    return deployGifModuleV2("Query", QueryController, registry, owner, PUBLISH_SOURCE)
+# @pytest.fixture(scope="module")
+# def bundle(BundleController, registry, owner) -> BundleController:
+#     return deployGifModuleV2("Bundle", BundleController, registry, owner, PUBLISH_SOURCE)
 
-@pytest.fixture(scope="module")
-def productService(ProductService, registry, owner) -> ProductService:
-    return deployGifService(ProductService, registry, owner, PUBLISH_SOURCE)
+# @pytest.fixture(scope="module")
+# def license(LicenseController, registry, owner) -> LicenseController:
+#     return deployGifModuleV2("License", LicenseController, registry, owner, PUBLISH_SOURCE)
 
-@pytest.fixture(scope="module")
-def oracleService(OracleService, registry, owner) -> OracleService:
-    return deployGifModuleV2("OracleService", OracleService, registry, owner, PUBLISH_SOURCE)
+# @pytest.fixture(scope="module")
+# def productService(ProductService, registry, owner) -> ProductService:
+#     return deployGifService(ProductService, registry, owner, PUBLISH_SOURCE)
 
-@pytest.fixture(scope="module")
-def componentOwnerService(ComponentOwnerService, registry, owner) -> ComponentOwnerService:
-    return deployGifModuleV2("ComponentOwnerService", ComponentOwnerService, registry, owner, PUBLISH_SOURCE)
+# @pytest.fixture(scope="module")
+# def oracleService(OracleService, registry, owner) -> OracleService:
+#     return deployGifModuleV2("OracleService", OracleService, registry, owner, PUBLISH_SOURCE)
 
-@pytest.fixture(scope="module")
-def policyFlowDefault(PolicyFlowDefault, registry, owner) -> PolicyFlowDefault:
-    return deployGifService(PolicyFlowDefault, registry, owner, PUBLISH_SOURCE)
-    # return deployGifModuleV2("PolicyFlowDefault", PolicyFlowDefault, registry, owner, PUBLISH_SOURCE)
+# @pytest.fixture(scope="module")
+# def componentOwnerService(instance) -> ComponentOwnerService:
+#     return instance.getComponentOwnerService()
 
-@pytest.fixture(scope="module")
-def instanceOperatorService(InstanceOperatorService, registry, owner) -> InstanceOperatorService:
-    return deployGifModuleV2("InstanceOperatorService", InstanceOperatorService, registry, owner, PUBLISH_SOURCE)
+# @pytest.fixture(scope="module")
+# def policyFlowDefault(PolicyFlowDefault, registry, owner) -> PolicyFlowDefault:
+#     return deployGifService(PolicyFlowDefault, registry, owner, PUBLISH_SOURCE)
+#     # return deployGifModuleV2("PolicyFlowDefault", PolicyFlowDefault, registry, owner, PUBLISH_SOURCE)
 
-@pytest.fixture(scope="module")
-def instanceService(instance) -> InstanceService:
-    return instance.getInstanceService()
+# @pytest.fixture(scope="module")
+# def instanceOperatorService(InstanceOperatorService, registry, owner) -> InstanceOperatorService:
+#     return deployGifModuleV2("InstanceOperatorService", InstanceOperatorService, registry, owner, PUBLISH_SOURCE)
+
+# @pytest.fixture(scope="module")
+# def instanceService(instance) -> InstanceService:
+#     return instance.getInstanceService()
 
 @pytest.fixture(scope="module")
 def dummyCoin(owner) -> DummyCoin:

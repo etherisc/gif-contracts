@@ -77,6 +77,11 @@ contract ComponentController is
         else if (component.isRiskpool()) { _riskpools.push(id); }
     }
 
+    function exists(uint256 id) public view returns(bool) {
+        IComponent component = _componentById[id];
+        return (address(component) != address(0));
+    }
+
     function approve(uint256 id) 
         external
         onlyInstanceOperatorService 

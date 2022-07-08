@@ -2,7 +2,7 @@ import binascii
 import brownie
 import pytest
 
-from brownie import IntSet
+from brownie import TestSet
 
 def test_empty_set(owner):
     intSet = _deploySet(owner);
@@ -161,5 +161,5 @@ def test_int_at(owner):
         assert 42 == intSet.intAt(5)
 
 
-def _deploySet(owner) -> IntSet:
-    return  IntSet.deploy({'from': owner})
+def _deploySet(owner) -> TestSet:
+    return  TestSet.deploy({'from': owner})
