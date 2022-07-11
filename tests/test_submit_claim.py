@@ -114,7 +114,7 @@ def test_claim_submission_for_expired_policy(
         testProduct.submitClaim(policy_id, Wei('0.1 ether'), {'from': customer})
 
 
-def z_test_multiple_claim_submission(
+def test_multiple_claim_submission(
     instance: GifInstance, 
     gifTestProduct: GifTestProduct, 
     customer: Account, 
