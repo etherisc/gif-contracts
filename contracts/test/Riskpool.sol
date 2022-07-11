@@ -26,7 +26,6 @@ abstract contract Riskpool is
     // collateralization between 0 and 1 (1=100%) 
     // value might be larger when overcollateralization
     uint256 public constant COLLATERALIZATION_DECIMALS = 10000;
-
     string public constant DEFAULT_FILTER_DATA_STRUCTURE = "";
 
     IInstanceService internal _instanceService; 
@@ -34,11 +33,6 @@ abstract contract Riskpool is
     
     // keep track of bundles associated with this riskpool
     uint256 [] internal _bundleIds;
-
-    // remember bundleId for each processId
-    // approach only works for basic risk pool where a
-    // policy is collateralized by exactly one bundle
-    mapping(bytes32 => uint256) internal _collateralizedBy;
 
     address private _wallet;
     uint256 private _collateralization;
@@ -133,12 +127,28 @@ abstract contract Riskpool is
         revert("ERROR:RPL-991:EXECUTE_PAYOUT_NOT_IMPLEMENTED");
     }
 
+    function getCollateralizationDecimals() public pure override returns (uint256) {
+        return COLLATERALIZATION_DECIMALS;
+    }
+
     function getCollateralizationLevel() public view override returns (uint256) {
         return _collateralization;
     }
 
-    function getCollateralizationDecimals() public pure override returns (uint256) {
-        return COLLATERALIZATION_DECIMALS;
+    function calculateCollateral(IPolicy.Application memory application) 
+        public // override
+        view 
+        returns (uint256 collateralAmount) 
+    {
+        uint256 sumInsured = application.sumInsuredAmount;
+        uint256 collateralization = getCollateralizationLevel();
+
+        if (collateralization == COLLATERALIZATION_DECIMALS) {
+            collateralAmount = sumInsured;
+        } else {
+            // https://ethereum.stackexchange.com/questions/91367/is-the-safemath-library-obsolete-in-solidity-0-8-0
+            collateralAmount = (collateralization * sumInsured) / COLLATERALIZATION_DECIMALS;
+        }
     }
 
     function bundles() public override view returns(uint256) {
@@ -172,9 +182,9 @@ abstract contract Riskpool is
         return _balance;
     }
 
-    // TODO remove once this is in IRiskpool
-    function calculateCollateral(IPolicy.Application memory application) public view virtual returns (uint256 collateralAmount);
- 
+    // TODO move the two functions below to IRiskpool
+    function bundleMatchesApplication(IBundle.Bundle memory bundle, IPolicy.Application memory application) public view virtual returns(bool isMatching);
+
     function _lockCollateral(bytes32 processId, uint256 collateralAmount) internal virtual returns(bool success);
     function _freeCollateral(bytes32 processId) internal virtual returns(uint256 collateralAmount);
 

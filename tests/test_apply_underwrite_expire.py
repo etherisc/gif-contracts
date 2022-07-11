@@ -291,7 +291,7 @@ def test_empty_riskpool(
     metaData = s2b32('meta')
     applicationData = s2b32('application')
 
-    with brownie.reverts('ERROR:RPL-004:NO_ACTIVE_BUNDLES'):
+    with brownie.reverts('ERROR:BRP-001:NO_ACTIVE_BUNDLES'):
         apply_tx = product.applyForPolicy(
                 premium,
                 sumInsured,
