@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
+import "@gif-interface/contracts/modules/IPolicy.sol";
+import "@gif-interface/contracts/services/IProductService.sol";
+import "@gif-interface/contracts/services/IInstanceService.sol";
 import "@gif-interface/contracts/components/Product.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -15,7 +18,12 @@ contract TestProduct is
     address private _feeOwner;
     uint256 private _testOracleId;
     uint256 private _testRiskpoolId;
-    uint256 private _policies;
+
+    IProductService private _ps; // TODO once moved to product
+    IInstanceService private _is; // TODO once moved to product
+
+    bytes32 [] private _applications;
+    bytes32 [] private _policies;
     uint256 private _claims;
 
     mapping(bytes32 => uint256) private _policyIdToClaimId;
@@ -41,6 +49,10 @@ contract TestProduct is
         _feeOwner = feeOwner;
         _testOracleId = oracleId;
         _testRiskpoolId = riskpoolId;
+
+        _ps = IProductService(_getContractAddress("ProductService"));
+        _is = IInstanceService(_getContractAddress("InstanceService"));
+
     }
 
     function getApplicationDataStructure() public override view returns(string memory dataStructure) {
@@ -90,11 +102,18 @@ contract TestProduct is
             metaData,
             applicationData);
 
-        _underwrite(processId);
+        _applications.push(processId);
 
-        // Book keeping
-        _policies += 1;
+        bool success = _underwrite(processId);
+        if (success) {
+            _policies.push(processId);
+        }
     }
+
+    // // TODO move to gif-interfaces product
+    // function _underwrite2(bytes32 processId) internal returns(bool) {
+    //     return _ps.underwrite(processId);
+    // }
 
     function expire(bytes32 policyId) 
         external
@@ -103,7 +122,7 @@ contract TestProduct is
         _expire(policyId);
     }
 
-    function submitClaim(bytes32 policyId, uint256 payoutAmount) 
+    function submitClaim(bytes32 policyId, uint256 claimAmount) 
         external
         onlyPolicyHolder(policyId)
     {
@@ -114,8 +133,8 @@ contract TestProduct is
         _claims += 1;
         
         // claim application
-        bytes memory claimsData = abi.encode(payoutAmount);
-        uint256 claimId = _newClaim(policyId, claimsData);
+        // bytes memory claimsData = ""; // TODO cleansup
+        uint256 claimId = _newClaim(policyId, claimAmount, "");
         _policyIdToClaimId[policyId] = claimId;
 
         // Request response to greeting via oracle call
@@ -144,25 +163,35 @@ contract TestProduct is
 
         // claim handling if there is a loss
         if (isLossEvent) {
-            // get policy and claims data for oracle response
-            (uint256 premium, address payable policyHolder) = abi.decode(
-                _getApplicationData(policyId), (uint256, address));
+            // get policy and claims info for oracle response
+            IPolicy.Application memory application 
+                = _getApplication(policyId);
 
-            (uint256 payoutAmount) = abi.decode(
-                _getClaimData(policyId, claimId), (uint256));
+            // TODO refactor to ordinary attribute claimAmount
+            // once this is in gif-interface
+
+            IPolicy.Claim memory claim 
+                = _getClaim(policyId, claimId);
+
+            // (uint256 premium, address payable policyHolder) = abi.decode(
+            //     _getApplicationData(policyId), (uint256, address));
+
+            // (uint256 payoutAmount) = abi.decode(
+            //     _getClaimData(policyId, claimId), (uint256));
 
             // specify payout data
             bytes memory payoutData = abi.encode(0);
-            uint256 payoutId = _confirmClaim(policyId, claimId, payoutAmount, payoutData);
+            uint256 payoutId = _confirmClaim(policyId, claimId, claim.claimAmount, payoutData);
             _policyIdToPayoutId[policyId] = payoutId;
 
             // create payout record
-            bool fullPayout = true;
-            _processPayout(policyId, payoutId, fullPayout, payoutData);
+            bool isComplete = true;
+            _processPayout(policyId, payoutId, isComplete, payoutData);
 
+            // TODO refactor to payout using erc-20 token
             // actual transfer of funds for payout of claim
             // failing requires not visible when called via .call in querycontroller
-            policyHolder.transfer(payoutAmount);
+            // policyHolder.transfer(payoutAmount);
         } else {
             _declineClaim(policyId, claimId);
         }
@@ -170,6 +199,7 @@ contract TestProduct is
 
     function getClaimId(bytes32 policyId) external view returns (uint256) { return _policyIdToClaimId[policyId]; }
     function getPayoutId(bytes32 policyId) external view returns (uint256) { return _policyIdToPayoutId[policyId]; }
-    function policies() external view returns (uint256) { return _policies; }
+    function applications() external view returns (uint256) { return _applications.length; }
+    function policies() external view returns (uint256) { return _policies.length; }
     function claims() external view returns (uint256) { return _claims; }
 }

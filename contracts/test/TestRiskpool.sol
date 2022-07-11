@@ -235,7 +235,7 @@ contract TestRiskpool is
         return _lockedCapital;
     }
 
-    function getPrice() external override view returns(uint256) {
+    function getBalance() external override view returns(uint256) {
         return _balance;
     }
 

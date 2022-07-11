@@ -25,7 +25,7 @@ contract PolicyController is
     // Payouts
     mapping(bytes32 => mapping(uint256 => Payout)) public payouts;
 
-    bytes32[] public processIds;
+    bytes32[] private _processIds;
 
     /* Metadata */
     function createPolicyFlow(
@@ -46,9 +46,9 @@ contract PolicyController is
         meta.data = data;
         meta.createdAt = block.timestamp;
         meta.updatedAt = block.timestamp;
-        processIds.push(processId);
+        _processIds.push(processId);
 
-        emit LogNewMetadata(owner, processId, productId, PolicyFlowState.Started);
+        emit LogMetadataCreated(owner, processId, productId, PolicyFlowState.Started);
     }
 
     function setPolicyFlowState(
@@ -92,7 +92,7 @@ contract PolicyController is
 
         meta.updatedAt = block.timestamp;
 
-        emit LogNewApplication(processId, premiumAmount, sumInsuredAmount);
+        emit LogApplicationCreated(processId, premiumAmount, sumInsuredAmount);
     }
 
     function setApplicationState(bytes32 processId, ApplicationState state)
@@ -125,7 +125,7 @@ contract PolicyController is
 
         meta.updatedAt = block.timestamp;
 
-        emit LogNewPolicy(processId);
+        emit LogPolicyCreated(processId);
     }
 
     function setPolicyState(bytes32 processId, PolicyState state)
@@ -142,7 +142,11 @@ contract PolicyController is
     }
 
     /* Claim */
-    function createClaim(bytes32 processId, bytes calldata data)
+    function createClaim(
+        bytes32 processId, 
+        uint256 claimAmount,
+        bytes calldata data
+    )
         external override
         onlyPolicyFlow("Policy")
         returns (uint256 claimId)
@@ -156,6 +160,7 @@ contract PolicyController is
         require(claim.createdAt == 0, "ERROR:POC-032:CLAIM_ALREADY_EXISTS");
 
         claim.state = ClaimState.Applied;
+        claim.claimAmount = claimAmount;
         claim.data = data;
         claim.createdAt = block.timestamp;
         claim.updatedAt = block.timestamp;
@@ -163,7 +168,7 @@ contract PolicyController is
         policy.claimsCount += 1;
         policy.updatedAt = block.timestamp;
 
-        emit LogNewClaim(processId, claimId, ClaimState.Applied);
+        emit LogClaimCreated(processId, claimId, ClaimState.Applied);
     }
 
     function setClaimState(
@@ -214,7 +219,7 @@ contract PolicyController is
         policy.payoutsCount += 1;
         policy.updatedAt = block.timestamp;
 
-        emit LogNewPayout(processId, claimId, payoutId, PayoutState.Expected);
+        emit LogPayoutCreated(processId, claimId, payoutId, PayoutState.Expected);
     }
 
     function processPayout(
@@ -262,7 +267,7 @@ contract PolicyController is
     }
 
     function getMetadata(bytes32 processId)
-        public override
+        public
         view
         returns (IPolicy.Metadata memory _metadata)
     {
@@ -271,7 +276,7 @@ contract PolicyController is
     }
 
     function getApplication(bytes32 processId)
-        public override
+        public
         view
         returns (IPolicy.Application memory application)
     {
@@ -280,7 +285,7 @@ contract PolicyController is
     }
 
     function getPolicy(bytes32 processId)
-        public override
+        public
         view
         returns (IPolicy.Policy memory policy)
     {
@@ -289,7 +294,7 @@ contract PolicyController is
     }
 
     function getClaim(bytes32 processId, uint256 claimId)
-        public override
+        public
         view
         returns (IPolicy.Claim memory claim)
     {
@@ -298,7 +303,7 @@ contract PolicyController is
     }
 
     function getPayout(bytes32 processId, uint256 payoutId)
-        public override
+        public
         view
         returns (IPolicy.Payout memory payout)
     {
@@ -306,7 +311,7 @@ contract PolicyController is
         require(payout.createdAt > 0, "ERROR:POC-054:PAYOUT_DOES_NOT_EXIST");        
     }
 
-    function getProcessIdCount() external override view returns (uint256) {
-        return processIds.length;
+    function processIds() external view returns (uint256) {
+        return _processIds.length;
     }
 }

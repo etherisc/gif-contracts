@@ -146,13 +146,18 @@ contract BundleController is
         onlyRiskpoolService
         returns(uint256 collateralAmount)
     {
-        collateralAmount = _valueLockedPerPolicy[bundleId][processId];
+        // make sure bundle exists
         Bundle storage bundle = _bundles[bundleId];
+        require(
+            bundle.createdAt > 0, 
+            "ERROR:BUC-007:BUNDLE_DOES_NOT_EXIST"
+        );
 
         // this should never ever fail ...
+        collateralAmount = _valueLockedPerPolicy[bundleId][processId];
         require(
             bundle.lockedCapital >= collateralAmount,
-            "PANIC:BUC-004:UNLOCK_CAPITAL_TOO_BIG"
+            "PANIC:BUC-008:UNLOCK_CAPITAL_TOO_BIG"
         );
 
         delete _valueLockedPerPolicy[bundleId][processId];

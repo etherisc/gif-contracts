@@ -48,8 +48,7 @@ contract InstanceService is
         return IProductService(_getContractAddress(PRODUCT_SERVICE_NAME));
     }
 
-    // TODO add to interface, add override
-    function getRiskpoolService() external view returns(IRiskpoolService service) {
+    function getRiskpoolService() external override view returns(IRiskpoolService service) {
         return IRiskpoolService(_getContractAddress(RISKPOOL_SERVICE_NAME));
     }
 

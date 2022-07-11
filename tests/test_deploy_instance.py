@@ -101,7 +101,7 @@ def test_Policy(instance: GifInstance, owner):
     assert policy.address == registry.getContract(s2b32(POLICY_NAME))
     assert policy.address != 0x0
 
-    assert policy.getProcessIdCount() == 0
+    assert policy.processIds() == 0
     with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
         policy.getPolicy(s2b32(''))
 

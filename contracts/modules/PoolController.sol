@@ -86,26 +86,16 @@ contract PoolController is
             "ERROR:POL-005:RISKPOOL_NOT_ACTIVE"
         );
 
-        // ask reiskpool to secure application
-        bool isSecured = riskpool.collateralizePolicy(processId);
-        require(isSecured, "ERROR:POL-006:RISK_CAPITAL_UNAVAILABLE");
+        // ask riskpool to secure application
+        success = riskpool.collateralizePolicy(processId);
+        uint256 riskpoolId = riskpool.getId();
+        uint256 sumInsured = application.sumInsuredAmount;
 
-        // // make sure premium amount is available
-        // // TODO move this to treasury
-        // require(
-        //     _token.allowance(policyHolder, address(this)) >= premium, 
-        //     "ERROR:TI-3:PREMIUM_NOT_COVERED"
-        // );
-
-        // // check how to distribute premium
-        // IPricing pricing = getPricingContract();
-        // (uint256 feeAmount, uint256 capitalAmount) = pricing.getPremiumSplit(processId);
-
-        // ITreasury treasury = getContract();
-        // bool isTransferred = treasury.transferPremium(processId, feeAmount, capitalAmount);
-        // require(isTransferred, "ERROR:PFD-003:PREMIUM_TRANSFER_FAILED");
-
-        success = isSecured;
+        if (success) {
+            emit LogRiskpoolCollateralizationSucceeded(riskpoolId, processId, sumInsured);
+        } else {
+            emit LogRiskpoolCollateralizationFailed(riskpoolId, processId, sumInsured);
+        }
     }
 
 
