@@ -97,11 +97,7 @@ contract InstanceOperatorService is
 
         IComponent component = _component.getComponent(id);
         if (component.isProduct()) {
-            // TODO change to IProduct once skeleton setup is stable
-            // IProduct product = IProduct(address(component));
-            address tpa = address(component);
-            TestProduct product = TestProduct(tpa);
-
+            IProduct product = IProduct(address(component));
             _pool.setRiskpoolForProduct(
                 component.getId(),
                 product.getRiskpoolId());

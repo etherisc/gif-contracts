@@ -147,7 +147,7 @@ contract PolicyFlowDefault is
         external
         onlyActivePolicy(processId)
     {
-        PoolController pool = getPoolContract(); // TODO switch from underwriting to pool
+        IPool pool = getPoolContract();
         pool.expire(processId);
 
         IPolicy policy = getPolicyContract();
@@ -213,8 +213,8 @@ contract PolicyFlowDefault is
         return ILicense(getContractFromRegistry("License"));
     }
 
-    function getPoolContract() internal view returns (PoolController) { // TODO switch from underwriting to pool
-        return PoolController(getContractFromRegistry("Pool"));
+    function getPoolContract() internal view returns (IPool) {
+        return IPool(getContractFromRegistry("Pool"));
     }
 
     function getPolicyContract() internal view returns (PolicyController) {

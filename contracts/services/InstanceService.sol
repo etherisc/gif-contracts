@@ -117,6 +117,10 @@ contract InstanceService is
     }
 
     /* policy */
+    function processIds() external override view returns(uint256 numberOfProcessIds) {
+        numberOfProcessIds = _policy().processIds();
+    }
+
     function getMetadata(bytes32 bpKey) external override view returns(IPolicy.Metadata memory metadata) {
         metadata = _policy().getMetadata(bpKey);
     }

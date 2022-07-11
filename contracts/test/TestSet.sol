@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./IdSet.sol";
+// import "./IdSet.sol";
+import "@gif-interface/contracts/components/IdSet.sol";
+
 
 contract TestSet is IdSet {
 

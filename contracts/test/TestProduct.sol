@@ -19,9 +19,6 @@ contract TestProduct is
     uint256 private _testOracleId;
     uint256 private _testRiskpoolId;
 
-    IProductService private _ps; // TODO once moved to product
-    IInstanceService private _is; // TODO once moved to product
-
     bytes32 [] private _applications;
     bytes32 [] private _policies;
     uint256 private _claims;
@@ -49,10 +46,6 @@ contract TestProduct is
         _feeOwner = feeOwner;
         _testOracleId = oracleId;
         _testRiskpoolId = riskpoolId;
-
-        _ps = IProductService(_getContractAddress("ProductService"));
-        _is = IInstanceService(_getContractAddress("InstanceService"));
-
     }
 
     function getApplicationDataStructure() public override view returns(string memory dataStructure) {
@@ -71,7 +64,6 @@ contract TestProduct is
         return _testRiskpoolId;
     }
 
-    // TODO move function to IProduct / Product
     function riskPoolCapacityCallback(uint256 capacity)
         public override
         // onlyRiskpool // TODO implement
@@ -110,11 +102,6 @@ contract TestProduct is
         }
     }
 
-    // // TODO move to gif-interfaces product
-    // function _underwrite2(bytes32 processId) internal returns(bool) {
-    //     return _ps.underwrite(processId);
-    // }
-
     function expire(bytes32 policyId) 
         external
         onlyOwner
@@ -133,7 +120,6 @@ contract TestProduct is
         _claims += 1;
         
         // claim application
-        // bytes memory claimsData = ""; // TODO cleansup
         uint256 claimId = _newClaim(policyId, claimAmount, "");
         _policyIdToClaimId[policyId] = claimId;
 

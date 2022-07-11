@@ -59,25 +59,6 @@ contract PoolController is
             "ERROR:POL-004:INVALID_APPLICATION_STATE"
         );
 
-        // TODO check sum insured can be covered by risk pool
-        // 1 get set of nft covering this policy
-        // 2 get free capacity per covering nft
-        // 3 ensure total free capacity >= sum insure
-        // 4 lock capacity in participating nft according to allocated capacity fraction per nft
-        // 5 inform that cpacity is available
-        // 6 continue here (steps 1-6 to be handled pool internally)
-
-        // TODO need to decide how underwriter gets information about riskpool
-        // associated with product that is associated with application
-        // registration order 1st risk pool, then product (riskpool id = mandatory constuctor arg)
-        // product approval time is time to register relation of product /w risk pool in instance
-        // option a) underwriting module keeps track of association
-        // option b) in some other module
-        // option c) association resolved at runtime via getter function in product
-        // lets go for a)
-        // - in function approve for a product of the instance operator service the relation
-        // of which product id links to which oracle id is stored in underwriting moudle
-
         // determine riskpool responsible for application
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         IRiskpool riskpool = _getRiskpool(metadata);
