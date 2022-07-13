@@ -26,10 +26,16 @@ from scripts.product import (
     GifTestRiskpool,
 )
 
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
 
 def test_claim_submission(
     instance: GifInstance, 
     gifTestProduct: GifTestProduct, 
+    testCoin,
+    owner: Account,
     customer: Account, 
     productOwner: Account,
     riskpoolKeeper: Account
@@ -40,6 +46,10 @@ def test_claim_submission(
     sumInsured = 5000
     metaData = s2b32('')
     applicationData = s2b32('')
+
+    # transfer funds to customer and create allowance
+    testCoin.transfer(customer, premium, {'from': owner})
+    testCoin.approve(instance.getTreasury(), premium, {'from': customer})
 
     # create 1st policy
     testProduct = gifTestProduct.getContract()
@@ -84,6 +94,8 @@ def test_claim_submission(
 def test_claim_submission_for_expired_policy(
     instance: GifInstance, 
     gifTestProduct: GifTestProduct, 
+    testCoin,
+    owner: Account,
     customer: Account, 
     productOwner: Account,
     riskpoolKeeper: Account
@@ -94,6 +106,10 @@ def test_claim_submission_for_expired_policy(
     sumInsured = 5000
     metaData = s2b32('')
     applicationData = s2b32('')
+
+    # transfer funds to customer and create allowance
+    testCoin.transfer(customer, premium, {'from': owner})
+    testCoin.approve(instance.getTreasury(), premium, {'from': customer})
 
     # create 1st policy
     testProduct = gifTestProduct.getContract()
@@ -117,6 +133,8 @@ def test_claim_submission_for_expired_policy(
 def test_multiple_claim_submission(
     instance: GifInstance, 
     gifTestProduct: GifTestProduct, 
+    testCoin,
+    owner: Account,
     customer: Account, 
     productOwner: Account,
     riskpoolKeeper: Account
@@ -127,6 +145,10 @@ def test_multiple_claim_submission(
     sumInsured = 5000
     metaData = s2b32('')
     applicationData = s2b32('')
+
+    # transfer funds to customer and create allowance
+    testCoin.transfer(customer, 2 * premium, {'from': owner})
+    testCoin.approve(instance.getTreasury(), 2 * premium, {'from': customer})
 
     # create 1st policy
     testProduct = gifTestProduct.getContract()

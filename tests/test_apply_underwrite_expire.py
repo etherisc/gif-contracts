@@ -27,11 +27,17 @@ from scripts.product import (
     GifTestRiskpool,
 )
 
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
 
 def test_create_policy(
     instance: GifInstance, 
+    testCoin,
     gifTestProduct: GifTestProduct, 
     riskpoolKeeper: Account,
+    owner: Account,
     customer: Account
 ):
     # add bundle with funding to riskpool
@@ -51,13 +57,18 @@ def test_create_policy(
     # record number of policies before policy creation
     product = gifTestProduct.getContract()
     product_policies_before = product.policies()
-
-    # create policy
+    
+    # application spec
     premium = 100
     sumInsured = 5000
     metaData = s2b32('meta')
     applicationData = s2b32('application')
 
+    # transfer funds to customer and create allowance
+    testCoin.transfer(customer, premium, {'from': owner})
+    testCoin.approve(instance.getTreasury(), premium, {'from': customer})
+
+    # create policy
     policy_tx = product.applyForPolicy(
         premium,
         sumInsured,
@@ -108,9 +119,11 @@ def test_create_policy(
 
 def test_create_and_expire_policy(
     instance: GifInstance, 
+    testCoin,
     gifTestProduct: GifTestProduct, 
     productOwner: Account,
     riskpoolKeeper: Account,
+    owner: Account,
     customer: Account
 ):
     # add bundle with funding to riskpool
@@ -133,6 +146,10 @@ def test_create_and_expire_policy(
     sumInsured = 5000
     metaData = s2b32('meta')
     applicationData = s2b32('application')
+
+    # transfer funds to customer and create allowance
+    testCoin.transfer(customer, premium, {'from': owner})
+    testCoin.approve(instance.getTreasury(), premium, {'from': customer})
 
     policy_tx = product.applyForPolicy(
         premium,
@@ -176,6 +193,53 @@ def test_create_and_expire_policy(
     # check that capacity remains at initial level
     assert product.policies() == 1
     assert riskpool.getCapacity() == initialFunding
+
+
+def test_application_with_insufficient_premium_funding(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    riskpoolKeeper: Account,
+    owner: Account,
+    customer: Account
+):
+    # add bundle with funding to riskpool
+    testRiskpool = gifTestProduct.getRiskpool()
+    riskpool = testRiskpool.getContract()
+
+    applicationFilter = bytes(0)
+    initialFunding = 10000
+    riskpool.createBundle(
+        applicationFilter, 
+        initialFunding, 
+        {'from': riskpoolKeeper})
+
+    assert riskpool.bundles() == 1
+    assert riskpool.getCapacity() == initialFunding
+
+    # record number of policies before policy creation
+    product = gifTestProduct.getContract()
+    product_policies_before = product.policies()
+    
+    # application spec
+    premium = 100
+    sumInsured = 5000
+    metaData = s2b32('meta')
+    applicationData = s2b32('application')
+
+    # transfer funds to customer and create allowance
+    testCoin.transfer(customer, premium, {'from': owner})
+    # allow only half of required premium
+    testCoin.approve(instance.getTreasury(), premium/2, {'from': customer})
+
+    # ensure policy creation is not possible
+    with brownie.reverts('ERROR:TRS-002:ALLOWANCE_SMALLER_THAN_PREMIUM'):
+        policy_tx = product.applyForPolicy(
+            premium,
+            sumInsured,
+            metaData,
+            applicationData,
+            {'from': customer})
 
 
 def test_product_inactive(
@@ -258,7 +322,7 @@ def test_riskpool_inactive(
     applicationData = s2b32('application')
 
     # check that inactive product does not lead to policy creation
-    with brownie.reverts('ERROR:POL-005:RISKPOOL_NOT_ACTIVE'):
+    with brownie.reverts('ERROR:POL-006:RISKPOOL_NOT_ACTIVE'):
         apply_tx = product.applyForPolicy(
             premium,
             sumInsured,

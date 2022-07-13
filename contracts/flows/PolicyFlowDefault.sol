@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "../modules/PoolController.sol";
 import "../modules/PolicyController.sol";
+import "../modules/TreasuryModule.sol";
 import "../shared/WithRegistry.sol";
 // import "../shared/CoreController.sol";
 import "@gif-interface/contracts/modules/ILicense.sol";
@@ -68,20 +69,9 @@ contract PolicyFlowDefault is
         success = pool.underwrite(processId);
 
         if (success) {
-            // // make sure premium amount is available
-            // // TODO move this to treasury
-            // require(
-            //     _token.allowance(policyHolder, address(this)) >= premium, 
-            //     "ERROR:TI-3:PREMIUM_NOT_COVERED"
-            // );
-
-            // // check how to distribute premium
-            // IPricing pricing = getPricingContract();
-            // (uint256 feeAmount, uint256 capitalAmount) = pricing.getPremiumSplit(processId);
-
-            // ITreasury treasury = getContract();
-            // bool isTransferred = treasury.transferPremium(processId, feeAmount, capitalAmount);
-            // require(isTransferred, "ERROR:PFD-003:PREMIUM_TRANSFER_FAILED");
+            ITreasury treasury = getTreasuryContract();
+            success = treasury.processPremium(processId);
+            require(success, "ERROR:PFD-004:PREMIUM_TRANSFER_FAILED");
 
             IPolicy policy = getPolicyContract();
             policy.setApplicationState(processId, IPolicy.ApplicationState.Underwritten);
@@ -93,7 +83,7 @@ contract PolicyFlowDefault is
         PolicyController policy = getPolicyContract();
         require(
             policy.getApplication(processId).state == IPolicy.ApplicationState.Applied,
-            "ERROR:PFD-004:INVALID_APPLICATION_STATE"
+            "ERROR:PFD-005:INVALID_APPLICATION_STATE"
         );
 
         policy.setApplicationState(processId, IPolicy.ApplicationState.Declined);
@@ -223,6 +213,10 @@ contract PolicyFlowDefault is
 
     function getQueryContract() internal view returns (IQuery) {
         return IQuery(getContractFromRegistry("Query"));
+    }
+
+    function getTreasuryContract() internal view returns (ITreasury) {
+        return ITreasury(getContractFromRegistry("Treasury"));
     }
 
     // function getContractFromRegistry(bytes32 moduleName) internal view returns(address) {

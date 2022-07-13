@@ -1,4 +1,5 @@
 import brownie
+import pytest
 
 from brownie import TestOracle
 
@@ -6,6 +7,10 @@ from scripts.instance import GifInstance
 from scripts.product import GifTestOracle
 from scripts.util import s2b32
 
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
 
 # def test_deploy(instance: GifInstance, oracleOwner, productOwner):
 def test_deploy_simple(

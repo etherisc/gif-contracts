@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
-import "../modules/PolicyController.sol";
 import "../modules/BundleController.sol";
+import "../modules/PolicyController.sol";
+import "../modules/TreasuryModule.sol";
 import "../shared/CoreController.sol";
 import "../services/InstanceOperatorService.sol";
 
@@ -16,6 +17,7 @@ import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
 import "@gif-interface/contracts/services/IOracleService.sol";
 import "@gif-interface/contracts/services/IProductService.sol";
 import "@gif-interface/contracts/services/IRiskpoolService.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract InstanceService is 
     IInstanceService, 
@@ -30,6 +32,12 @@ contract InstanceService is
     bytes32 public constant ORACLE_SERVICE_NAME = "OracleService";
     bytes32 public constant PRODUCT_SERVICE_NAME = "ProductService";
     bytes32 public constant RISKPOOL_SERVICE_NAME = "RiskpoolService";
+
+    TreasuryModule private _treasury;
+
+    function _afterInitialize() internal override onlyInitializing {
+        _treasury = TreasuryModule(_getContractAddress("Treasury"));
+    }
 
     /* registry */
     function getComponentOwnerService() external override view returns(IComponentOwnerService service) {
@@ -156,6 +164,23 @@ contract InstanceService is
 
     function bundles() external override view returns (uint256) {
         return _bundle().bundles();
+    }
+
+    /* treasury */
+    function getInstanceWallet() external view returns(address) { 
+        return _treasury.getInstanceWallet();
+    }
+
+    function getRiskpoolWallet(uint256 riskpoolId) external view returns(address) { 
+        return _treasury.getRiskpoolWallet(riskpoolId);
+    }
+
+    function getProductToken(uint256 productId) external view returns(IERC20) { 
+        return _treasury.getProductToken(productId);
+    }
+
+    function getFeeFractionFullUnit() external view returns(uint256) {
+        return _treasury.getFractionFullUnit();
     }
 
     

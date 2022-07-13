@@ -11,6 +11,7 @@ from scripts.const import (
     POLICY_NAME,
     POLICY_FLOW_DEFAULT_NAME,
     POOL_NAME,
+    TREASURY_NAME,
     COMPONENT_OWNER_SERVICE_NAME,
     INSTANCE_OPERATOR_SERVICE_NAME,
     INSTANCE_SERVICE_NAME,
@@ -136,6 +137,20 @@ def test_Pool(instance: GifInstance, owner):
 
     with pytest.raises(AttributeError):
         assert pool.foo({'from': owner})
+
+
+def test_Treasury(instance: GifInstance, owner, feeOwner):
+    registry = instance.getRegistry()
+    treasury = instance.getTreasury()
+
+    assert treasury.address == registry.getContract(s2b32(TREASURY_NAME))
+    assert treasury.address != 0x0
+
+    assert treasury.getFractionFullUnit() == 10**18
+    assert treasury.getInstanceWallet() == feeOwner
+
+    with pytest.raises(AttributeError):
+        assert treasury.foo({'from': owner})
 
 
 def test_InstanceService(instance, registry, owner):

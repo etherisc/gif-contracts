@@ -37,13 +37,14 @@ contract PoolController is
         external override
         onlyInstanceOperatorService
     {
-        require(_component.exists(productId), "ERROR:POL-002:PRODUCT_DOES_NOT_EXIST");
-        require(_component.exists(riskpoolId), "ERROR:POL-003:RISKPOOL_DOES_NOT_EXIST");
-        
-        if (_riskpoolIdForProductId[productId] == 0) {
-            _riskpools.push(riskpoolId);
-        }
+        IComponent product = _component.getComponent(productId);
+        IComponent riskpool = _component.getComponent(riskpoolId);
 
+        require(product.isProduct(), "ERROR:POL-002:NOT_PRODUCT");
+        require(riskpool.isRiskpool(), "ERROR:POL-002:NOT_RISKPOOL");
+        require(_riskpoolIdForProductId[productId] == 0, "ERROR:POL-004:RISKPOOL_ALREADY_SET");
+        
+        _riskpools.push(riskpoolId);
         _riskpoolIdForProductId[productId] = riskpoolId;
     }
 
@@ -56,7 +57,7 @@ contract PoolController is
         IPolicy.Application memory application = _policy.getApplication(processId);
         require(
             application.state == IPolicy.ApplicationState.Applied,
-            "ERROR:POL-004:INVALID_APPLICATION_STATE"
+            "ERROR:POL-005:INVALID_APPLICATION_STATE"
         );
 
         // determine riskpool responsible for application
@@ -64,7 +65,7 @@ contract PoolController is
         IRiskpool riskpool = _getRiskpool(metadata);
         require(
             riskpool.getState() == ComponentState.Active, 
-            "ERROR:POL-005:RISKPOOL_NOT_ACTIVE"
+            "ERROR:POL-006:RISKPOOL_NOT_ACTIVE"
         );
 
         // ask riskpool to secure application
@@ -98,6 +99,7 @@ contract PoolController is
 
     
     function riskpools() external view returns(uint256 idx) { return _riskpools.length; }
+
     function getRiskpoolId(uint256 idx) 
         external view 
         returns(uint256) 
@@ -106,6 +108,9 @@ contract PoolController is
         return _riskpools[idx]; 
     }
 
+    function getRiskPoolForProduct(uint256 productId) external view returns (uint256 riskpoolId) {
+        return _riskpoolIdForProductId[productId];
+    }
 
     function _getRiskpool(IPolicy.Metadata memory metadata) internal view returns (IRiskpool riskpool) {
         uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];

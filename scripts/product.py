@@ -70,14 +70,20 @@ class GifTestRiskpool(object):
             {'from': riskpoolKeeper},
             publish_source=publishSource)
 
-        # 3) oracle owner proposes oracle to instance
+        # 3) riskpool keeperproposes oracle to instance
         componentOwnerService.propose(
             self.riskpool,
             {'from': riskpoolKeeper})
 
-        # 4) instance operator approves oracle
+        # 4) instance operator approves riskpool
         operatorService.approve(
             self.riskpool.getId(),
+            {'from': instance.getOwner()})
+
+        # 5) instance operator assigns riskpool wallet
+        operatorService.setRiskpoolWallet(
+            self.riskpool.getId(),
+            capitalOwner,
             {'from': instance.getOwner()})
     
     def getId(self) -> int:
@@ -172,17 +178,36 @@ class GifTestProduct(object):
             {'from': productOwner},
             publish_source=publishSource)
 
-        print('prod id {} (before propose)'.format(self.product.getId()))
-        # 3) oracle owner proposes oracle to instance
+        # 3) product owner proposes product to instance
         componentOwnerService.propose(
             self.product,
             {'from': productOwner})
 
-        print('prod id {} (after propose)'.format(self.product.getId()))
-        # 4) instance operator approves oracle
+        # 4) instance operator approves product
         operatorService.approve(
             self.product.getId(),
             {'from': instance.getOwner()})
+
+        # 5) instance owner sets token in treasury
+        operatorService.setProductToken(
+            self.product.getId(), 
+            token,
+            {'from': instance.getOwner()}) 
+
+        # 5) instance owner creates and sets product fee spec
+        fixedFee = 3
+        fractionalFee = instanceService.getFeeFractionFullUnit() / 10 # corresponds to 10%
+        feeSpec = operatorService.createFeeSpecification(
+            self.product.getId(),
+            fixedFee,
+            fractionalFee,
+            b'',
+            {'from': instance.getOwner()}) 
+
+        operatorService.setPremiumFees(
+            feeSpec,
+            {'from': instance.getOwner()}) 
+
     
     def getId(self) -> int:
         return self.product.getId()

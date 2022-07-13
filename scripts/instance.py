@@ -21,6 +21,7 @@ from brownie import (
     PoolController,
     BundleController,
     PoolController,
+    TreasuryModule,
     ProductService,
     OracleService,
     RiskpoolService,
@@ -94,6 +95,7 @@ class GifInstance(GifRegistry):
     def __init__(
         self, 
         owner: Account = None, 
+        instanceWallet: Account = None, 
         registryAddress = None,
         publishSource: bool = False
     ):
@@ -110,7 +112,11 @@ class GifInstance(GifRegistry):
                 self.registry, 
                 owner,
                 publishSource)
-
+                    
+            self.instanceOperatorService.setInstanceWallet(
+                instanceWallet,
+                {'from': owner})
+            
         else:
             raise ValueError('either owner or registry_address need to be provided')
 
@@ -134,6 +140,7 @@ class GifInstance(GifRegistry):
         self.policy = deployGifModuleV2("Policy", PolicyController, registry, owner, publishSource)
         self.bundle = deployGifModuleV2("Bundle", BundleController, registry, owner, publishSource)
         self.pool = deployGifModuleV2("Pool", PoolController, registry, owner, publishSource)
+        self.treasury = deployGifModuleV2("Treasury", TreasuryModule, registry, owner, publishSource)
 
         # TODO these contracts do not work with proxy pattern
         self.policyFlow = deployGifService(PolicyFlowDefault, registry, owner, publishSource)
@@ -165,6 +172,7 @@ class GifInstance(GifRegistry):
         self.policy = self.contractFromGifRegistry(PolicyController, "Policy")
         self.bundle = self.contractFromGifRegistry(BundleController, "Bundle")
         self.pool = self.contractFromGifRegistry(PoolController, "Pool")
+        self.treasury = self.contractFromGifRegistry(TreasuryModule, "Treasury")
 
         self.instanceService = self.contractFromGifRegistry(InstanceService, "InstanceService")
         self.oracleService = self.contractFromGifRegistry(OracleService, "OracleService")
@@ -208,6 +216,9 @@ class GifInstance(GifRegistry):
 
     def getPool(self) -> PoolController:
         return self.pool
+
+    def getTreasury(self) -> TreasuryModule:
+        return self.treasury
 
     def getQuery(self) -> QueryController:
         return self.query

@@ -70,13 +70,13 @@ capitalOwner=accounts[5]
 feeOwner=accounts[6]
 
 # --- dummy coin setup ---
-testCoin = DummyCoin.deploy({'from': owner})
+testCoin = TestCoin.deploy({'from': owner})
 testCoin.transfer(riskpoolKeeper, 10**6, {'from': owner})
 testCoin.transfer(customer, 10**6, {'from': owner})
 
 # --- create instance setup ---
 # instance=GifInstance(registryAddress='0xe7D6c54cf8Bd798edA9E9A3Aa094Fb01EF34C251', owner=owner)
-instance = GifInstance(owner)
+instance = GifInstance(owner, feeOwner)
 service = instance.getInstanceService()
 
 instance.getRegistry()
@@ -100,15 +100,21 @@ oracle = gifOracle.getContract()
 product = gifProduct.getContract()
 
 # --- fund riskpool ---
-riskpool.createBundle(bytes(0), 100, {'from':riskpoolKeeper})
-riskpool.createBundle(bytes(0), 200, {'from':riskpoolKeeper})
+riskpool.createBundle(bytes(0), 1000, {'from':riskpoolKeeper})
+riskpool.createBundle(bytes(0), 2000, {'from':riskpoolKeeper})
 
-# --- create policy ---
-premium = 10
-sumInsured = 100
+# --- policy application spec  ---
+premium = 100
+sumInsured = 1000
 metaData = s2b('')
 applicationData = s2b('')
 
+# --- premium funding setup
+treasuryAddress = instance.getTreasury().address
+testCoin.transfer(customer, premium, {'from': owner})
+testCoin.approve(treasuryAddress, premium, {'from': customer})
+
+# --- create policies ---
 txPolicy1 = product.applyForPolicy(premium, sumInsured, metaData, applicationData, {'from':customer})
 txPolicy2 = product.applyForPolicy(premium, sumInsured, metaData, applicationData, {'from':customer})
 ```

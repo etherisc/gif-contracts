@@ -1,4 +1,5 @@
 import brownie
+import pytest
 
 from brownie import (
     TestOracle,
@@ -16,9 +17,14 @@ from scripts.product import (
 from scripts.util import s2b32
 
 
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
+
 def test_deploy_simple(
     instance: GifInstance, 
-    dummyCoin,
+    testCoin,
     capitalOwner,
     feeOwner,
     productOwner,
@@ -33,7 +39,7 @@ def test_deploy_simple(
 
     product = GifTestProduct(
         instance, 
-        dummyCoin, 
+        testCoin, 
         capitalOwner, 
         feeOwner, 
         productOwner, 
@@ -44,12 +50,14 @@ def test_deploy_simple(
     assert instanceService.products() == 1
     assert instanceService.riskpools() == 1
 
-    # TODO add asssertions for initialized product
+    # asssertions for initialized product
+    assert instanceService.getProductToken(product.getId()) == testCoin
+    assert instanceService.getRiskpoolWallet(gifTestRiskpool.getId()) == capitalOwner
 
 
 def test_deploy_approve_product(
     instance: GifInstance, 
-    dummyCoin, 
+    testCoin, 
     capitalOwner, 
     feeOwner, 
     productOwner,
@@ -76,7 +84,7 @@ def test_deploy_approve_product(
 
     product = TestProduct.deploy(
         s2b32("TestProduct"),
-        dummyCoin.address,
+        testCoin.address,
         capitalOwner,
         feeOwner,
         oracle.getId(),

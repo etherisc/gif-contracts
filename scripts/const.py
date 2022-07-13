@@ -30,6 +30,7 @@ QUERY_NAME = 'Query'
 
 RISKPOOL_CONTROLLER_NAME = 'RiskpoolController'
 RISKPOOL_NAME = 'Riskpool'
+TREASURY_NAME = 'Treasury'
 
 # GIF services
 COMPONENT_OWNER_SERVICE_NAME = 'ComponentOwnerService'

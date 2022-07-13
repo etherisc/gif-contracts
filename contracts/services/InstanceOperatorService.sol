@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
 import "../modules/PoolController.sol";
+import "../modules/ITreasury.sol";
+import "../modules/TreasuryModule.sol";
 import "../shared/CoreController.sol";
 import "../test/TestProduct.sol";
 
@@ -19,10 +21,13 @@ contract InstanceOperatorService is
 {
     ComponentController private _component;
     PoolController private _pool;
+    TreasuryModule private _treasury;
 
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
         _pool = PoolController(_getContractAddress("Pool"));
+        _treasury = TreasuryModule(_getContractAddress("Treasury"));
+
         _transferOwnership(_msgSender());
     }
 
@@ -147,4 +152,53 @@ contract InstanceOperatorService is
     {
         revert("ERROR:IOS-002:IMPLEMENATION_MISSING");
     }
+
+    /* treasury */
+    function setInstanceWallet(address walletAddress) 
+        external // override // TODO add to IInstanceService in gif-interface
+        onlyOwner
+    {
+        _treasury.setInstanceWallet(walletAddress);
+    }
+
+    function setRiskpoolWallet(uint256 riskpoolId, address riskpoolWalletAddress) 
+        external // override // TODO add to IInstanceService in gif-interface
+        onlyOwner
+    {
+        _treasury.setRiskpoolWallet(riskpoolId, riskpoolWalletAddress);
+    }
+
+    function setProductToken(uint256 productId, address erc20Address) 
+        external // override // TODO add to IInstanceService in gif-interface
+        onlyOwner
+    {
+        _treasury.setProductToken(productId, erc20Address);
+    }
+
+    function createFeeSpecification(
+        uint256 componentId,
+        uint256 fixedFee,
+        uint256 fractionalFee,
+        bytes calldata feeCalculationData
+    )
+        external // override
+        view 
+        returns(ITreasury.FeeSpecification memory)
+    {
+        return _treasury.createFeeSpecification(
+            componentId,
+            fixedFee,
+            fractionalFee,
+            feeCalculationData
+        );
+    }
+    
+    function setPremiumFees(ITreasury.FeeSpecification calldata feeSpec) 
+        external // override
+        onlyOwner
+    {
+        _treasury.setPremiumFees(feeSpec);
+    }
+
+
 }

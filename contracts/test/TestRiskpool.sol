@@ -22,7 +22,7 @@ contract TestRiskpool is BasicRiskpool {
         IPolicy.Application memory application
     ) 
         public override
-        view
+        pure
         returns(bool isMatching) 
     {
         isMatching = true;
