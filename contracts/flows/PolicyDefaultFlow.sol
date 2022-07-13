@@ -21,11 +21,11 @@ import "@gif-interface/contracts/modules/IPool.sol";
  * (if not, it reverts in StakeController.sol)
  */
 
-contract PolicyFlowDefault is 
+contract PolicyDefaultFlow is 
     WithRegistry 
     // CoreController
 {
-    bytes32 public constant NAME = "PolicyFlowDefault";
+    bytes32 public constant NAME = "PolicyDefaultFlow";
 
     modifier onlyActivePolicy(bytes32 processId) {
         PolicyController policy = getPolicyContract();
@@ -64,15 +64,21 @@ contract PolicyFlowDefault is
     }
 
     /* success implies the successful creation of a policy */
-    function underwrite(bytes32 processId) external returns(bool success){
+    function underwrite(bytes32 processId) external returns(bool success) {
+        // attempt to get the collateral to secure the policy
         IPool pool = getPoolContract();
         success = pool.underwrite(processId);
 
         if (success) {
+            // once collateral is secured transfer premium amount
             ITreasury treasury = getTreasuryContract();
             success = treasury.processPremium(processId);
+
+            // if premium transfer not successful revert so no funds are transferred
             require(success, "ERROR:PFD-004:PREMIUM_TRANSFER_FAILED");
 
+            // application underwritten, premium funds transferred 
+            // so we can create the policy now
             IPolicy policy = getPolicyContract();
             policy.setApplicationState(processId, IPolicy.ApplicationState.Underwritten);
             policy.createPolicy(processId);

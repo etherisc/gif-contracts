@@ -20,7 +20,7 @@ from brownie import (
     OracleService,
     RiskpoolService,
     ComponentOwnerService,
-    PolicyFlowDefault,
+    PolicyDefaultFlow,
     InstanceOperatorService,
     InstanceService,
     TestCoin,

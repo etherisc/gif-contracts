@@ -38,7 +38,9 @@ def test_create_policy(
     gifTestProduct: GifTestProduct, 
     riskpoolKeeper: Account,
     owner: Account,
-    customer: Account
+    customer: Account,
+    feeOwner: Account,
+    capitalOwner: Account
 ):
     # add bundle with funding to riskpool
     testRiskpool = gifTestProduct.getRiskpool()
@@ -46,6 +48,12 @@ def test_create_policy(
 
     applicationFilter = bytes(0)
     initialFunding = 10000
+
+    # transfer funds to riskpool keeper and create allowance
+    testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
+    testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
+
+    # actual bundle creation
     riskpool.createBundle(
         applicationFilter, 
         initialFunding, 
@@ -68,6 +76,11 @@ def test_create_policy(
     testCoin.transfer(customer, premium, {'from': owner})
     testCoin.approve(instance.getTreasury(), premium, {'from': customer})
 
+    # check funds before application
+    assert testCoin.balanceOf(feeOwner) == 0
+    assert testCoin.balanceOf(capitalOwner) == 0
+    balanceCustomerBefore = testCoin.balanceOf(customer)
+
     # create policy
     policy_tx = product.applyForPolicy(
         premium,
@@ -77,6 +90,15 @@ def test_create_policy(
         {'from': customer})
 
     policyId = policy_tx.return_value
+
+    # check funds after application
+    fees = premium /10 + 3
+    premiumAfterCost = premium - fees
+    
+    balanceCustomerAfter = testCoin.balanceOf(customer)
+    assert premium == balanceCustomerBefore - balanceCustomerAfter
+    assert testCoin.balanceOf(feeOwner) == fees
+    assert testCoin.balanceOf(capitalOwner) == premiumAfterCost
 
     # record balances after policy creation
     product_policies_after = product.policies()

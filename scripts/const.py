@@ -22,7 +22,7 @@ LICENSE_NAME = 'License'
 POLICY_CONTROLLER_NAME = 'PolicyController'
 POLICY_NAME = 'Policy'
 
-POLICY_FLOW_DEFAULT_NAME = 'PolicyFlowDefault'
+POLICY_DEFAULT_FLOW_NAME = 'PolicyDefaultFlow'
 POOL_NAME = 'Pool'
 
 QUERY_CONTROLLER_NAME = 'QueryController'
@@ -37,7 +37,6 @@ COMPONENT_OWNER_SERVICE_NAME = 'ComponentOwnerService'
 PRODUCT_SERVICE_NAME = 'ProductService'
 RISKPOOL_SERVICE_NAME = 'RiskpoolService'
 ORACLE_SERVICE_NAME = 'OracleService'
-POLICY_FLOW_DEFAULT_NAME = 'PolicyFlowDefault'
 INSTANCE_OPERATOR_SERVICE_NAME = 'InstanceOperatorService'
 INSTANCE_SERVICE_NAME = 'InstanceService'
 

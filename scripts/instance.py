@@ -27,7 +27,7 @@ from brownie import (
     RiskpoolService,
     ComponentController,
     ComponentOwnerService,
-    PolicyFlowDefault,
+    PolicyDefaultFlow,
     InstanceOperatorService,
     InstanceService,
     network
@@ -143,7 +143,7 @@ class GifInstance(GifRegistry):
         self.treasury = deployGifModuleV2("Treasury", TreasuryModule, registry, owner, publishSource)
 
         # TODO these contracts do not work with proxy pattern
-        self.policyFlow = deployGifService(PolicyFlowDefault, registry, owner, publishSource)
+        self.policyFlow = deployGifService(PolicyDefaultFlow, registry, owner, publishSource)
 
         # services
         self.instanceService = deployGifModuleV2("InstanceService", InstanceService, registry, owner, publishSource)
@@ -179,7 +179,7 @@ class GifInstance(GifRegistry):
         self.riskpoolService = self.contractFromGifRegistry(RiskpoolService, "RiskpoolService")
         self.productService = self.contractFromGifRegistry(ProductService, "ProductService")
 
-        self.policyFlow = self.contractFromGifRegistry(PolicyFlowDefault, "PolicyFlowDefault")
+        self.policyFlow = self.contractFromGifRegistry(PolicyDefaultFlow, "PolicyDefaultFlow")
         self.componentOwnerService = self.contractFromGifRegistry(ComponentOwnerService)
         self.instanceOperatorService = self.contractFromGifRegistry(InstanceOperatorService)
 
@@ -211,7 +211,7 @@ class GifInstance(GifRegistry):
     def getPolicy(self) -> PolicyController:
         return self.policy
     
-    def getPolicyFlowDefault(self) -> PolicyFlowDefault:
+    def getPolicyDefaultFlow(self) -> PolicyDefaultFlow:
         return self.policyFlow
 
     def getPool(self) -> PoolController:

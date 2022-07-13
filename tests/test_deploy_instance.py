@@ -9,7 +9,7 @@ from scripts.const import (
     COMPONENT_NAME,
     LICENSE_NAME,
     POLICY_NAME,
-    POLICY_FLOW_DEFAULT_NAME,
+    POLICY_DEFAULT_FLOW_NAME,
     POOL_NAME,
     TREASURY_NAME,
     COMPONENT_OWNER_SERVICE_NAME,
@@ -110,20 +110,20 @@ def test_Policy(instance: GifInstance, owner):
         assert policy.foo({'from': owner})
 
 
-def test_PolicyFlowDefault(instance: GifInstance, owner):
+def test_PolicyDefaultFlow(instance: GifInstance, owner):
     registry = instance.getRegistry()
-    policyFlowDefault = instance.getPolicyFlowDefault()
+    policyDefaultFlow = instance.getPolicyDefaultFlow()
 
-    policyFlowDefaultAddress = registry.getContract(s2b32(POLICY_FLOW_DEFAULT_NAME))
+    policyDefaultFlowAddress = registry.getContract(s2b32(POLICY_DEFAULT_FLOW_NAME))
 
-    assert policyFlowDefault.address == policyFlowDefaultAddress
-    assert policyFlowDefault.address != 0x0
+    assert policyDefaultFlow.address == policyDefaultFlowAddress
+    assert policyDefaultFlow.address != 0x0
 
     with brownie.reverts('ERROR:POC-051:APPLICATION_DOES_NOT_EXIST'):
-        policyFlowDefault.decline(s2b32(''))
+        policyDefaultFlow.decline(s2b32(''))
 
     with pytest.raises(AttributeError):
-        assert policyFlowDefault.foo({'from': owner})
+        assert policyDefaultFlow.foo({'from': owner})
 
 
 def test_Pool(instance: GifInstance, owner):

@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 contract TestProduct is 
     Product 
 {
-    bytes32 public constant POLICY_FLOW = "PolicyFlowDefault";
+    bytes32 public constant POLICY_FLOW = "PolicyDefaultFlow";
     string public constant ORACLE_CALLBACK_METHOD_NAME = "oracleCallback";
 
     ERC20 private _token;
