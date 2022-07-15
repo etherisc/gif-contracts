@@ -98,8 +98,10 @@ gifProduct = GifTestProduct(
 riskpool = gifRiskpool.getContract()
 oracle = gifOracle.getContract()
 product = gifProduct.getContract()
+treasury = instance.getTreasury()
 
 # --- fund riskpool ---
+testCoin.approve(treasury, 3000, {'from': riskpoolKeeper})
 riskpool.createBundle(bytes(0), 1000, {'from':riskpoolKeeper})
 riskpool.createBundle(bytes(0), 2000, {'from':riskpoolKeeper})
 

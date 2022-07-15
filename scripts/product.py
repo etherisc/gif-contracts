@@ -85,6 +85,20 @@ class GifTestRiskpool(object):
             self.riskpool.getId(),
             capitalOwner,
             {'from': instance.getOwner()})
+
+        # 6) setup capital fees
+        fixedFee = 42
+        fractionalFee = instanceService.getFeeFractionFullUnit() / 20 # corresponds to 5%
+        feeSpec = operatorService.createFeeSpecification(
+            self.riskpool.getId(),
+            fixedFee,
+            fractionalFee,
+            b'',
+            {'from': instance.getOwner()}) 
+
+        operatorService.setCapitalFees(
+            feeSpec,
+            {'from': instance.getOwner()}) 
     
     def getId(self) -> int:
         return self.riskpool.getId()

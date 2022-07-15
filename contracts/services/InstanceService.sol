@@ -167,19 +167,23 @@ contract InstanceService is
     }
 
     /* treasury */
-    function getInstanceWallet() external view returns(address) { 
+    function getTreasuryAddress() external override view returns(address) { 
+        return address(_treasury);
+    }
+
+    function getInstanceWallet() external override view returns(address) { 
         return _treasury.getInstanceWallet();
     }
 
-    function getRiskpoolWallet(uint256 riskpoolId) external view returns(address) { 
+    function getRiskpoolWallet(uint256 riskpoolId) external override view returns(address) { 
         return _treasury.getRiskpoolWallet(riskpoolId);
     }
 
-    function getProductToken(uint256 productId) external view returns(IERC20) { 
-        return _treasury.getProductToken(productId);
+    function getComponentToken(uint256 componentId) external override view returns(IERC20) { 
+        return _treasury.getComponentToken(componentId);
     }
 
-    function getFeeFractionFullUnit() external view returns(uint256) {
+    function getFeeFractionFullUnit() external override view returns(uint256) {
         return _treasury.getFractionFullUnit();
     }
 

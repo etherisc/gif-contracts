@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
 import "../modules/PoolController.sol";
-import "../modules/ITreasury.sol";
 import "../modules/TreasuryModule.sol";
 import "../shared/CoreController.sol";
 import "../test/TestProduct.sol";
@@ -11,6 +10,7 @@ import "../test/TestProduct.sol";
 import "@gif-interface/contracts/components/IComponent.sol";
 import "@gif-interface/contracts/components/IProduct.sol";
 import "@gif-interface/contracts/modules/IQuery.sol";
+import "@gif-interface/contracts/modules/ITreasury.sol";
 import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -155,21 +155,21 @@ contract InstanceOperatorService is
 
     /* treasury */
     function setInstanceWallet(address walletAddress) 
-        external // override // TODO add to IInstanceService in gif-interface
+        external override
         onlyOwner
     {
         _treasury.setInstanceWallet(walletAddress);
     }
 
     function setRiskpoolWallet(uint256 riskpoolId, address riskpoolWalletAddress) 
-        external // override // TODO add to IInstanceService in gif-interface
+        external override
         onlyOwner
     {
         _treasury.setRiskpoolWallet(riskpoolId, riskpoolWalletAddress);
     }
 
     function setProductToken(uint256 productId, address erc20Address) 
-        external // override // TODO add to IInstanceService in gif-interface
+        external override
         onlyOwner
     {
         _treasury.setProductToken(productId, erc20Address);
@@ -181,7 +181,7 @@ contract InstanceOperatorService is
         uint256 fractionalFee,
         bytes calldata feeCalculationData
     )
-        external // override
+        external override
         view 
         returns(ITreasury.FeeSpecification memory)
     {
@@ -194,11 +194,16 @@ contract InstanceOperatorService is
     }
     
     function setPremiumFees(ITreasury.FeeSpecification calldata feeSpec) 
-        external // override
+        external override
         onlyOwner
     {
         _treasury.setPremiumFees(feeSpec);
     }
 
-
+    function setCapitalFees(ITreasury.FeeSpecification calldata feeSpec) 
+        external override
+        onlyOwner
+    {
+        _treasury.setCapitalFees(feeSpec);
+    }
 }

@@ -138,7 +138,7 @@ def gifTestOracle(instance: GifInstance, oracleProvider: Account) -> GifTestOrac
 
 @pytest.fixture(scope="module")
 def gifTestRiskpool(instance: GifInstance, riskpoolKeeper: Account, capitalOwner: Account, owner: Account) -> GifTestRiskpool:
-    capitalization = 10000
+    capitalization = 10**18
     return GifTestRiskpool(instance, riskpoolKeeper, capitalOwner, capitalization)
 
 

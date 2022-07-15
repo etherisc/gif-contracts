@@ -53,14 +53,21 @@ def test_create_policy(
     testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
     testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
 
-    # actual bundle creation
+    # actual riskpool bundle creation
     riskpool.createBundle(
         applicationFilter, 
         initialFunding, 
         {'from': riskpoolKeeper})
 
+    # check funds after capitalization
+    capitalFees = initialFunding / 20 + 42
+    capitalAfterCost = initialFunding - capitalFees
+
+    assert testCoin.balanceOf(feeOwner) == capitalFees
+    assert testCoin.balanceOf(capitalOwner) == capitalAfterCost
+
     assert riskpool.bundles() == 1
-    assert riskpool.getCapacity() == initialFunding
+    assert riskpool.getCapacity() == capitalAfterCost
 
     # record number of policies before policy creation
     product = gifTestProduct.getContract()
@@ -77,8 +84,6 @@ def test_create_policy(
     testCoin.approve(instance.getTreasury(), premium, {'from': customer})
 
     # check funds before application
-    assert testCoin.balanceOf(feeOwner) == 0
-    assert testCoin.balanceOf(capitalOwner) == 0
     balanceCustomerBefore = testCoin.balanceOf(customer)
 
     # create policy
@@ -92,18 +97,18 @@ def test_create_policy(
     policyId = policy_tx.return_value
 
     # check funds after application
-    fees = premium /10 + 3
-    premiumAfterCost = premium - fees
-    
+    premiumFees = premium /10 + 3
+    premiumAfterCost = premium - premiumFees
+
     balanceCustomerAfter = testCoin.balanceOf(customer)
     assert premium == balanceCustomerBefore - balanceCustomerAfter
-    assert testCoin.balanceOf(feeOwner) == fees
-    assert testCoin.balanceOf(capitalOwner) == premiumAfterCost
+    assert testCoin.balanceOf(feeOwner) == capitalFees + premiumFees
+    assert testCoin.balanceOf(capitalOwner) == capitalAfterCost + premiumAfterCost
 
     # record balances after policy creation
     product_policies_after = product.policies()
 
-    assert riskpool.getCapacity() == initialFunding - sumInsured
+    assert riskpool.getCapacity() == capitalAfterCost - sumInsured
     assert product_policies_before == 0
     assert product_policies_after == 1
 
@@ -154,6 +159,11 @@ def test_create_and_expire_policy(
 
     applicationFilter = bytes(0)
     initialFunding = 10000
+
+    # transfer funds to riskpool keeper and create allowance
+    testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
+    testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
+
     riskpool.createBundle(
         applicationFilter, 
         initialFunding, 
@@ -182,9 +192,13 @@ def test_create_and_expire_policy(
 
     policyId = policy_tx.return_value
 
+    # check funds after capitalization
+    capitalFees = initialFunding / 20 + 42
+    capitalAfterCost = initialFunding - capitalFees
+
     # record balances after policy creation
     assert product.policies() == 1
-    assert riskpool.getCapacity() == initialFunding - sumInsured
+    assert riskpool.getCapacity() == capitalAfterCost - sumInsured
 
     # expire policy
     product.expire(
@@ -193,7 +207,7 @@ def test_create_and_expire_policy(
 
     # check that capacity is restored to initial level
     assert product.policies() == 1
-    assert riskpool.getCapacity() == initialFunding
+    assert riskpool.getCapacity() == capitalAfterCost
 
     policyController = instance.getPolicy()
     policy = policyController.getPolicy(policyId).dict()
@@ -214,7 +228,7 @@ def test_create_and_expire_policy(
 
     # check that capacity remains at initial level
     assert product.policies() == 1
-    assert riskpool.getCapacity() == initialFunding
+    assert riskpool.getCapacity() == capitalAfterCost
 
 
 def test_application_with_insufficient_premium_funding(
@@ -231,13 +245,22 @@ def test_application_with_insufficient_premium_funding(
 
     applicationFilter = bytes(0)
     initialFunding = 10000
+
+    # transfer funds to riskpool keeper and create allowance
+    testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
+    testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
+
     riskpool.createBundle(
         applicationFilter, 
         initialFunding, 
         {'from': riskpoolKeeper})
 
+    # check funds after capitalization
+    capitalFees = initialFunding / 20 + 42
+    capitalAfterCost = initialFunding - capitalFees
+
     assert riskpool.bundles() == 1
-    assert riskpool.getCapacity() == initialFunding
+    assert riskpool.getCapacity() == capitalAfterCost
 
     # record number of policies before policy creation
     product = gifTestProduct.getContract()
@@ -262,6 +285,9 @@ def test_application_with_insufficient_premium_funding(
             metaData,
             applicationData,
             {'from': customer})
+
+    assert product.policies() == 0
+    assert riskpool.getCapacity() == capitalAfterCost
 
 
 def test_product_inactive(
@@ -304,7 +330,9 @@ def test_product_inactive(
 
 def test_riskpool_inactive(
     instance: GifInstance, 
+    testCoin,
     gifTestProduct: GifTestProduct, 
+    owner: Account,
     riskpoolKeeper: Account,
     customer: Account
 ):
@@ -319,13 +347,17 @@ def test_riskpool_inactive(
 
     applicationFilter = bytes(0)
     initialFunding = 10000
+
+    # transfer funds to riskpool keeper and create allowance
+    testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
+    testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
+
     riskpool.createBundle(
         applicationFilter, 
         initialFunding, 
         {'from': riskpoolKeeper})
 
     assert riskpool.bundles() == 1
-    assert riskpool.getCapacity() == initialFunding
 
     # ComponentState {Created,Proposed,Declined,Active,Paused,Suspended}
     assert product.policies() == 0
@@ -391,7 +423,9 @@ def test_empty_riskpool(
 
 def test_insufficient_capital(
     instance: GifInstance, 
+    testCoin,
     gifTestProduct: GifTestProduct, 
+    owner: Account,
     riskpoolKeeper: Account,
     customer: Account
 ):
@@ -404,13 +438,17 @@ def test_insufficient_capital(
 
     applicationFilter = bytes(0)
     initialFunding = 50
+
+    # transfer funds to riskpool keeper and create allowance
+    testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
+    testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
+
     riskpool.createBundle(
         applicationFilter, 
         initialFunding, 
         {'from': riskpoolKeeper})
 
     assert riskpool.bundles() == 1
-    assert riskpool.getCapacity() == initialFunding
     assert product.applications() == 0
     assert product.policies() == 0
     

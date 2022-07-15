@@ -78,9 +78,6 @@ contract BundleController is
             "ERROR:BUC-003:BUNDLE_CLOSED"
         );
 
-        // TODO add collection of tokens from investor/sender
-        // TODO implement fee collection/distribution
-
         bundle.capital += amount;
         bundle.balance += amount;
 

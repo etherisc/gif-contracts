@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "./ITreasury.sol";
 import "./ComponentController.sol";
 import "./PolicyController.sol";
+import "./BundleController.sol";
 import "./PoolController.sol";
 import "../shared/CoreController.sol";
 
 import "@gif-interface/contracts/components/IComponent.sol";
 import "@gif-interface/contracts/modules/IPolicy.sol";
+import "@gif-interface/contracts/modules/ITreasury.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TreasuryModule is 
@@ -20,8 +21,9 @@ contract TreasuryModule is
     address private _instanceWalletAddress;
     mapping(uint256 => address) private _riskpoolWallet; // riskpoolId => walletAddress
     mapping(uint256 => FeeSpecification) private _fees; // componentId => fee specification
-    mapping(uint256 => IERC20) private _productToken; // productId => erc20Address
+    mapping(uint256 => IERC20) private _componentToken; // productId/riskpoolId => erc20Address
 
+    BundleController private _bundle;
     ComponentController private _component;
     PolicyController private _policy;
     PoolController private _pool;
@@ -33,6 +35,7 @@ contract TreasuryModule is
             uint256 allowance);
 
     function _afterInitialize() internal override onlyInitializing {
+        _bundle = BundleController(_getContractAddress("Bundle"));
         _component = ComponentController(_getContractAddress("Component"));
         _policy = PolicyController(_getContractAddress("Policy"));
         _pool = PoolController(_getContractAddress("Pool"));
@@ -42,14 +45,19 @@ contract TreasuryModule is
         external override
         onlyInstanceOperator
     {
+        require(erc20Address != address(0), "ERROR:TRS-001:TOKEN_ADDRESS_ZERO");
+
         IComponent component = _component.getComponent(productId);
         require(component.isProduct(), "ERROR:TRS-002:NOT_PRODUCT");
-        require(address(_productToken[productId]) == address(0), "ERROR:TRS-002:TOKEN_ALREADY_SET");
-        require(erc20Address != address(0), "ERROR:TRS-001:TOKEN_ADDRESS_ZERO");
+        require(address(_componentToken[productId]) == address(0), "ERROR:TRS-002:PRODUCT_TOKEN_ALREADY_SET");
     
-        _productToken[productId] = IERC20(erc20Address);
+        uint256 riskpoolId = _pool.getRiskPoolForProduct(productId);
+        require(address(_componentToken[riskpoolId]) == address(0), "ERROR:TRS-002:RISKPOOL_TOKEN_ALREADY_SET");
 
-        emit LogTreasuryProductTokenSet(productId, erc20Address);
+        _componentToken[productId] = IERC20(erc20Address);
+        _componentToken[riskpoolId] = IERC20(erc20Address);
+
+        emit LogTreasuryProductTokenSet(productId, riskpoolId, erc20Address);
     }
 
     function setInstanceWallet(address instanceWalletAddress) 
@@ -109,6 +117,7 @@ contract TreasuryModule is
             feeSpec.fractionalFee);
     }
 
+
     function setCapitalFees(FeeSpecification calldata feeSpec) 
         external override
         onlyInstanceOperator
@@ -139,16 +148,17 @@ contract TreasuryModule is
         require(feeAmount <= application.premiumAmount, "ERROR:TRS-002:FEE_LARGER_THAN_PREMIUM");
 
         // ensure allowance covers total premium
-        IERC20 token = _productToken[metadata.productId];
+        IERC20 token = _componentToken[metadata.productId];
 
-        uint256 allowance = token.allowance(
-                metadata.owner, 
-                address(this));
+        // // TODO cleanup
+        // uint256 allowance = token.allowance(
+        //         metadata.owner, 
+        //         address(this));
         
-        emit LogTreasuryDebugAllowance(
-            address(token), 
-            metadata.owner, 
-            address(this), allowance);
+        // emit LogTreasuryDebugAllowance(
+        //     address(token), 
+        //     metadata.owner, 
+        //     address(this), allowance);
         
         require(
             token.allowance(
@@ -177,45 +187,57 @@ contract TreasuryModule is
     }
 
 
-    function _calculatePremiumFee(
-        FeeSpecification memory feeSpec, 
-        bytes32 processId
-    )
-        internal
-        view
-        returns (
-            IPolicy.Application memory application, 
-            uint256 feeAmount
-        )
-    {
-        if (feeSpec.feeCalculationData.length > 0) {
-            revert("ERROR:TRS-002:FEE_CALCULATION_DATA_NOT_SUPPORTED");
-        }
-
-        application =  _policy.getApplication(processId);
-        feeAmount = feeSpec.fixedFee;
-
-        if (feeSpec.fractionalFee > 0) {
-            feeAmount += (feeSpec.fractionalFee * application.premiumAmount) / FRACTION_FULL_UNIT;
-        }
-    } 
-
-
     function processCapital(uint256 bundleId, uint256 capitalAmount) 
         external override 
-        returns(bool success) 
+        returns(
+            bool success,
+            uint256 capitalAfterFees
+        )
     {
-        revert("FUNCTION_NOT_IMPLEMENTED");
+        // obtain relevant fee specification
+        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
+        FeeSpecification memory feeSpec = getFeeSpecification(bundle.riskpoolId);
+        require(feeSpec.createdAt > 0, "ERROR:TRS-002:FEE_SPEC_UNDEFINED");
+
+        // obtain relevant token for product/riskpool pair
+        IERC20 token = _componentToken[bundle.riskpoolId];
+        require(
+            token.allowance(
+                bundle.owner, 
+                address(this)) >= capitalAmount,
+            "ERROR:TRS-002:ALLOWANCE_SMALLER_THAN_CAPITAL"
+        );
+
+        // calculate and transfer capital fees
+        uint256 feeAmount = _calculateFee(feeSpec, capitalAmount);
+        capitalAfterFees = capitalAmount - feeAmount;
+        success = token.transferFrom(bundle.owner, _instanceWalletAddress, feeAmount);
+
+        emit LogTreasuryFeesTransferred(bundle.owner, _instanceWalletAddress, feeAmount, success);
+        require(success, "ERROR:TRS-002:FEE_TRANSFER_FAILED");
+
+        if (success) {
+            address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
+            require(riskpoolWallet != address(0), "ERROR:TRS-002:RISKPOOL_WITHOUT_WALLET");
+
+            uint256 amountAfterFees = capitalAmount - feeAmount;
+            success = token.transferFrom(bundle.owner, riskpoolWallet, amountAfterFees);
+            emit LogTreasuryCapitalTransferred(bundle.owner, riskpoolWallet, amountAfterFees, success);
+            require(success, "ERROR:TRS-002:CAPITAL_TRANSFER_FAILED");
+        }
+
+        emit LogTreasuryCapitalProcessed(bundle.riskpoolId, bundleId, capitalAmount, success);
     }
 
-    function getProductToken(uint256 productId) 
+
+    function getComponentToken(uint256 componentId) 
         external override
         view
         returns(IERC20 token) 
     {
-        IComponent component = _component.getComponent(productId);
-        require(component.isProduct(), "ERROR:TRS-002:NOT_PRODUCT");
-        return _productToken[productId];
+        IComponent component = _component.getComponent(componentId);
+        require(component.isProduct() || component.isProduct(), "ERROR:TRS-002:NOT_PRODUCT_OR_RISKPOOL");
+        return _componentToken[componentId];
     }
 
     function getFeeSpecification(uint256 componentId) public override view returns(FeeSpecification memory) {
@@ -233,4 +255,40 @@ contract TreasuryModule is
     function getRiskpoolWallet(uint256 riskpoolId) public override view returns(address) {
         return _riskpoolWallet[riskpoolId];
     }
+
+
+    function _calculatePremiumFee(
+        FeeSpecification memory feeSpec, 
+        bytes32 processId
+    )
+        internal
+        view
+        returns (
+            IPolicy.Application memory application, 
+            uint256 feeAmount
+        )
+    {
+        application =  _policy.getApplication(processId);
+        feeAmount = _calculateFee(feeSpec, application.premiumAmount);
+    } 
+
+
+    function _calculateFee(
+        FeeSpecification memory feeSpec, 
+        uint256 amount
+    )
+        internal
+        pure
+        returns (uint256 feeAmount)
+    {
+        if (feeSpec.feeCalculationData.length > 0) {
+            revert("ERROR:TRS-002:FEE_CALCULATION_DATA_NOT_SUPPORTED");
+        }
+
+        feeAmount = feeSpec.fixedFee;
+
+        if (feeSpec.fractionalFee > 0) {
+            feeAmount += (feeSpec.fractionalFee * amount) / FRACTION_FULL_UNIT;
+        }
+    } 
 }

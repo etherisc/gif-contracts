@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "../modules/BundleController.sol";
 import "../modules/ComponentController.sol";
+import "../modules/TreasuryModule.sol";
 import "../shared/CoreController.sol";
 
 import "@gif-interface/contracts/components/IComponent.sol";
@@ -17,6 +18,7 @@ contract RiskpoolService is
 
     ComponentController private _component;
     BundleController private _bundle;
+    TreasuryModule private _treasury;
 
     modifier onlyRiskpool() {
         IComponent component = IComponent(_msgSender());
@@ -27,18 +29,31 @@ contract RiskpoolService is
         _;
     }
 
+
     function _afterInitialize() internal override onlyInitializing {
-        _component = ComponentController(_getContractAddress("Component"));
         _bundle = BundleController(_getContractAddress("Bundle"));
+        _component = ComponentController(_getContractAddress("Component"));
+        _treasury = TreasuryModule(_getContractAddress("Treasury"));
     }
 
-    function createBundle(address owner, bytes calldata filter, uint256 amount) 
+
+    function createBundle(
+        address owner, 
+        bytes calldata filter, 
+        uint256 initialCapital
+    ) 
         external override
         onlyRiskpool
         returns(uint256 bundleId)
     {
         uint256 riskpoolId = _component.getComponentId(_msgSender());
-        bundleId = _bundle.create(owner, riskpoolId, filter, amount);
+        bundleId = _bundle.create(owner, riskpoolId, filter, 0);
+
+        (bool success, uint256 capitalAfterFees) = _treasury.processCapital(bundleId, initialCapital);
+
+        if (success) {
+            _bundle.fund(bundleId, capitalAfterFees);
+        }
     }
 
     function unlockCapital(uint256 bundleId, bytes32 processId)

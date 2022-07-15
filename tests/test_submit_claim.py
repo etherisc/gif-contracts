@@ -40,7 +40,7 @@ def test_claim_submission(
     productOwner: Account,
     riskpoolKeeper: Account
 ):
-    fund_riskpool(gifTestProduct, riskpoolKeeper)
+    fund_riskpool(instance, gifTestProduct, owner, riskpoolKeeper, testCoin, 10000)
 
     premium = 100
     sumInsured = 5000
@@ -100,7 +100,7 @@ def test_claim_submission_for_expired_policy(
     productOwner: Account,
     riskpoolKeeper: Account
 ):
-    fund_riskpool(gifTestProduct, riskpoolKeeper)
+    fund_riskpool(instance, gifTestProduct, owner, riskpoolKeeper, testCoin, 10000)
 
     premium = 100
     sumInsured = 5000
@@ -139,7 +139,9 @@ def test_multiple_claim_submission(
     productOwner: Account,
     riskpoolKeeper: Account
 ):
-    fund_riskpool(gifTestProduct, riskpoolKeeper)
+    fund_riskpool(instance, gifTestProduct, owner, riskpoolKeeper, testCoin, 20000)
+
+    instanceService = instance.getInstanceService()
 
     premium = 100
     sumInsured = 5000
@@ -163,6 +165,11 @@ def test_multiple_claim_submission(
     
     assert policy1_id is not None 
 
+    # ensure successful policy creation
+    assert testProduct.applications() == 1
+    assert testProduct.policies() == 1
+    assert testProduct.claims() == 0
+
     # TODO add assertions to check coin balance
 
     # create 2nd policy
@@ -181,17 +188,17 @@ def test_multiple_claim_submission(
     # TODO add assertions to check coin balance
 
     # ensure successful policy creation
+    assert testProduct.applications() == 2
     assert testProduct.policies() == 2
     assert testProduct.claims() == 0
 
-    instanceService = instance.getInstanceService()
     assert instanceService.claims(policy1_id) == 0
     assert instanceService.payouts(policy1_id) == 0
     assert instanceService.claims(policy2_id) == 0
     assert instanceService.payouts(policy2_id) == 0
     
     # submit claim for 1st policy
-    testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': customer})
+    testProduct.submitClaim(policy1_id, 2*premium, {'from': customer})
     assert testProduct.claims() == 1
     assert testProduct.getClaimId(policy1_id) == 0
 
@@ -201,7 +208,7 @@ def test_multiple_claim_submission(
     assert instanceService.payouts(policy2_id) == 0
     
     # submit claim for 1st policy (every 2nd claim does not have any payout)
-    testProduct.submitClaim(policy2_id, Wei('0.1 ether'), {'from': customer})
+    testProduct.submitClaim(policy2_id, premium/2, {'from': customer})
     assert testProduct.claims() == 2
     assert testProduct.getClaimId(policy2_id) == 0
 
@@ -211,7 +218,7 @@ def test_multiple_claim_submission(
     assert instanceService.payouts(policy2_id) == 0
     
     # submit 2nd claim for 1st policy
-    testProduct.submitClaim(policy1_id, Wei('0.1 ether'), {'from': customer})
+    testProduct.submitClaim(policy1_id, premium/2, {'from': customer})
     assert testProduct.claims() == 3
     assert testProduct.getClaimId(policy1_id) == 1
 
@@ -221,14 +228,23 @@ def test_multiple_claim_submission(
     assert instanceService.payouts(policy2_id) == 0
 
 
-def fund_riskpool(gifTestProduct: GifTestProduct, bundleOwner: Account):
+def fund_riskpool(
+    instance: GifInstance, 
+    gifTestProduct: GifTestProduct, 
+    owner: Account,
+    bundleOwner: Account,
+    testCoin,
+    initialFunding: int 
+):
     # add bundle with funding to riskpool
     testRiskpool = gifTestProduct.getRiskpool()
     riskpool = testRiskpool.getContract()
 
-    applicationFilter = bytes(0)
-    initialFunding = 10000
+    # transfer funds to riskpool keeper and create allowance
+    testCoin.transfer(bundleOwner, initialFunding, {'from': owner})
+    testCoin.approve(instance.getTreasury(), initialFunding, {'from': bundleOwner})
 
+    applicationFilter = bytes(0)
     riskpool.createBundle(
         applicationFilter, 
         initialFunding, 

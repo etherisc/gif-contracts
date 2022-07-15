@@ -51,8 +51,13 @@ def test_deploy_simple(
     assert instanceService.riskpools() == 1
 
     # asssertions for initialized product
-    assert instanceService.getProductToken(product.getId()) == testCoin
+    assert instanceService.getComponentToken(product.getId()) == testCoin
     assert instanceService.getRiskpoolWallet(gifTestRiskpool.getId()) == capitalOwner
+
+    # check capitalization for riskpool
+    riskpool = gifTestRiskpool.getContract()
+    assert riskpool.getCollateralizationLevel() == riskpool.getFullCollateralizationLevel()
+
 
 
 def test_deploy_approve_product(
