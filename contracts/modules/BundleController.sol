@@ -15,7 +15,13 @@ contract BundleController is
     PolicyController private _policy;
     BundleToken private _token; 
 
+    // bundleId => Bundle
     mapping(uint256 => Bundle) private _bundles;
+
+    // bundleId => activePolicyCount
+    mapping(uint256 => uint256) private _activePolicies;
+
+    // (bundleId => processId => lockedCapitalAmount)
     mapping(uint256 => mapping(bytes32 => uint256)) private _valueLockedPerPolicy;
 
     uint256 private _bundleCount;
@@ -44,9 +50,11 @@ contract BundleController is
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.createdAt == 0, "ERROR:BUC-002:BUNDLE_ALREADY_EXISTS");
 
-        // register initial bundle data
+        // mint corresponding nft with bundleId as nft
+        uint256 tokenId = _token.mint(bundleId, owner_);
+
         bundle.id = bundleId;
-        bundle.owner = owner_;
+        bundle.tokenId = tokenId;
         bundle.riskpoolId = riskpoolId_;
         bundle.state = BundleState.Active;
         bundle.filter = filter_;
@@ -55,40 +63,36 @@ contract BundleController is
         bundle.createdAt = block.timestamp;
         bundle.updatedAt = block.timestamp;
 
-        // mint corresponding nft with bundleId as nft id and sender as owner
-
-        // TODO analyze, fix and uncomment
-        // in brownie console this leads to 
-        // oz tx revert: ERC721: transfer to non ERC721Receiver implementer
-        // _token.mint(owner_, bundleId);
-
         // update bundle count
         _bundleCount += 1;
 
-        emit LogBundleCreated(bundle.id, riskpoolId_, bundle.owner, bundle.state, bundle.capital);
+        emit LogBundleCreated(bundle.id, riskpoolId_, owner_, bundle.state, bundle.capital);
     }
 
     // TODO decide + implement authz for risk bundle creation
     // funding can come from nft owner or various 2nd level risk pool owners
-    // consequently, bundle needs to keep track which investor is related to what share in funding
-    function fund(uint256 bundleId, uint256 amount) external override {
+    function fund(uint256 bundleId, uint256 amount)
+        external override 
+        onlyRiskpoolService
+    {
         Bundle storage bundle = _bundles[bundleId];
-        require(
-            bundle.state != IBundle.BundleState.Closed, 
-            "ERROR:BUC-003:BUNDLE_CLOSED"
-        );
+        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-003:BUNDLE_CLOSED");
 
         bundle.capital += amount;
         bundle.balance += amount;
+        bundle.updatedAt = block.timestamp;
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
         emit LogBundleCapitalProvided(bundleId, _msgSender(), amount, capacityAmount);
     }
 
-    // TODO decide + implement authz for risk bundle creation
-    // should this be onlyOwner?
-    function withdraw(uint256 bundleId, uint256 amount) external override {
+    function defund(uint256 bundleId, uint256 amount) 
+        external override 
+        onlyRiskpoolService
+    {
         Bundle storage bundle = _bundles[bundleId];
+        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
         require(
             bundle.capital >= bundle.lockedCapital + amount, 
             "ERROR:BUC-004:CAPACITY_TOO_LOW"
@@ -96,24 +100,31 @@ contract BundleController is
 
         bundle.capital -= amount;
         bundle.balance -= amount;
-
-        // TODO implement fee collection/distribution
-        // TODO add distribution of tokens to investor/sender
+        bundle.updatedAt = block.timestamp;
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
         emit LogBundleCapitalWithdrawn(bundleId, _msgSender(), amount, capacityAmount);
     }
 
-    function lock(uint256 bundleId) external override {
+    function lock(uint256 bundleId)
+        external override
+        onlyRiskpoolService
+    {
         _changeState(bundleId, BundleState.Locked);
     }
 
-    function unlock(uint256 bundleId) external override {
+    function unlock(uint256 bundleId)
+        external override
+        onlyRiskpoolService
+    {
         _changeState(bundleId, BundleState.Active);
     }
 
-    function close(uint256 bundleId) external override {
-        revert("ERROR:BUC-991:CLOSE_NOT_IMPLEMENTED");
+    function close(uint256 bundleId)
+        external override
+        onlyRiskpoolService
+    {
+        _changeState(bundleId, BundleState.Closed);
     }
 
     function collateralizePolicy(uint256 bundleId, bytes32 processId, uint256 amount)
@@ -121,51 +132,79 @@ contract BundleController is
         onlyRiskpoolService
     {
         Bundle storage bundle = _bundles[bundleId];
-        require(
-            bundle.state == IBundle.BundleState.Active, 
-            "ERROR:BUC-005:BUNDLE_NOT_ACTIVE"
-        );
-        
-        require(
-            bundle.capital >= bundle.lockedCapital + amount, 
-            "ERROR:BUC-006:CAPACITY_TOO_LOW"
-        );
+        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.state == IBundle.BundleState.Active, "ERROR:BUC-005:BUNDLE_NOT_ACTIVE");        
+        require(bundle.capital >= bundle.lockedCapital + amount, "ERROR:BUC-006:CAPACITY_TOO_LOW");
 
         bundle.lockedCapital += amount;
+        bundle.updatedAt = block.timestamp;
+
+        _activePolicies[bundleId] += 1;
         _valueLockedPerPolicy[bundleId][processId] += amount;
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
         emit LogBundlePolicyCollateralized(bundleId, processId, amount, capacityAmount);
     }
 
-    function expirePolicy(uint256 bundleId, bytes32 processId) 
+
+    function increaseBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyRiskpoolService
+    {
+        Bundle storage bundle = _bundles[bundleId];
+        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-005:BUNDLE_CLOSED");
+
+        bundle.balance += amount;
+        bundle.updatedAt = block.timestamp;
+    }
+
+
+    function decreaseBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyRiskpoolService
+    {
+        Bundle storage bundle = _bundles[bundleId];
+        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
+
+        revert("NOT_IMPLEMENTED_YET:decreaseBalance(...)");
+    }
+
+    function releasePolicy(uint256 bundleId, bytes32 processId) 
         external override 
         onlyRiskpoolService
         returns(uint256 collateralAmount)
     {
-        // make sure bundle exists
+        // make sure bundle exists and is not yet closed
         Bundle storage bundle = _bundles[bundleId];
-        require(
-            bundle.createdAt > 0, 
-            "ERROR:BUC-007:BUNDLE_DOES_NOT_EXIST"
-        );
+        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
+        require(_activePolicies[bundleId] > 0, "ERROR:BUC-007:NO_ACTIVE_POLICIES_FOR_BUNDLE");
+
+        collateralAmount = _valueLockedPerPolicy[bundleId][processId];
+        require(collateralAmount > 0, "ERROR:BUC-007:NOT_COLLATERALIZED_BY_BUNDLE");
 
         // this should never ever fail ...
-        collateralAmount = _valueLockedPerPolicy[bundleId][processId];
         require(
             bundle.lockedCapital >= collateralAmount,
             "PANIC:BUC-008:UNLOCK_CAPITAL_TOO_BIG"
         );
 
+        // policy no longer relevant for bundle
+        _activePolicies[bundleId] -= 1;
         delete _valueLockedPerPolicy[bundleId][processId];
+
+        // update bundle capital
         bundle.lockedCapital -= collateralAmount;
+        bundle.updatedAt = block.timestamp;
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
         emit LogBundlePolicyExpired(bundleId, processId, collateralAmount, capacityAmount);
     }
 
-    function owner(uint256 bundleId) external view returns(address) { 
-        return getBundle(bundleId).owner; 
+
+    function owner(uint256 bundleId) public view returns(address) { 
+        uint256 tokenId = getBundle(bundleId).tokenId;
+        return _token.ownerOf(tokenId); 
     }
 
     function state(uint256 bundleId) external view returns(BundleState) {
@@ -187,6 +226,10 @@ contract BundleController is
 
     function price(uint256 bundleId) external view returns(uint256) {
         return getBundle(bundleId).balance;   
+    }
+
+    function getToken() external view returns(BundleToken) {
+        return _token;
     }
 
     function getBundle(uint256 bundleId) public view returns(Bundle memory) {
@@ -211,6 +254,7 @@ contract BundleController is
 
     function _setState(uint256 bundleId, BundleState newState) internal {
         _bundles[bundleId].state = newState;
+        _bundles[bundleId].updatedAt = block.timestamp;
     }
 
     function _checkStateTransition(BundleState oldState, BundleState newState) 

@@ -28,12 +28,6 @@ contract TreasuryModule is
     PolicyController private _policy;
     PoolController private _pool;
 
-    event LogTreasuryDebugAllowance(
-            address token, 
-            address owner, 
-            address spender, 
-            uint256 allowance);
-
     function _afterInitialize() internal override onlyInitializing {
         _bundle = BundleController(_getContractAddress("Bundle"));
         _component = ComponentController(_getContractAddress("Component"));
@@ -49,10 +43,10 @@ contract TreasuryModule is
 
         IComponent component = _component.getComponent(productId);
         require(component.isProduct(), "ERROR:TRS-002:NOT_PRODUCT");
-        require(address(_componentToken[productId]) == address(0), "ERROR:TRS-002:PRODUCT_TOKEN_ALREADY_SET");
+        require(address(_componentToken[productId]) == address(0), "ERROR:TRS-003:PRODUCT_TOKEN_ALREADY_SET");
     
         uint256 riskpoolId = _pool.getRiskPoolForProduct(productId);
-        require(address(_componentToken[riskpoolId]) == address(0), "ERROR:TRS-002:RISKPOOL_TOKEN_ALREADY_SET");
+        require(address(_componentToken[riskpoolId]) == address(0), "ERROR:TRS-004:RISKPOOL_TOKEN_ALREADY_SET");
 
         _componentToken[productId] = IERC20(erc20Address);
         _componentToken[riskpoolId] = IERC20(erc20Address);
@@ -64,7 +58,7 @@ contract TreasuryModule is
         external override
         onlyInstanceOperator
     {
-        require(instanceWalletAddress != address(0), "ERROR:TRS-001:WALLET_ADDRESS_ZERO");
+        require(instanceWalletAddress != address(0), "ERROR:TRS-005:WALLET_ADDRESS_ZERO");
         _instanceWalletAddress = instanceWalletAddress;
 
         emit LogTreasuryInstanceWalletSet (instanceWalletAddress);
@@ -75,8 +69,8 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(riskpoolId);
-        require(component.isRiskpool(), "ERROR:TRS-002:NOT_RISKPOOL");
-        require(riskpoolWalletAddress != address(0), "ERROR:TRS-003:WALLET_ADDRESS_ZERO");
+        require(component.isRiskpool(), "ERROR:TRS-006:NOT_RISKPOOL");
+        require(riskpoolWalletAddress != address(0), "ERROR:TRS-007:WALLET_ADDRESS_ZERO");
         _riskpoolWallet[riskpoolId] = riskpoolWalletAddress;
 
         emit LogTreasuryRiskpoolWalletSet (riskpoolId, riskpoolWalletAddress);
@@ -92,7 +86,7 @@ contract TreasuryModule is
         view 
         returns(FeeSpecification memory)
     {
-        // TODO add requires
+        // TODO add requires TRS-01x
         return FeeSpecification(
             componentId,
             fixedFee,
@@ -108,7 +102,7 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(feeSpec.componentId);
-        require(component.isProduct(), "ERROR:TRS-002:NOT_PRODUCT");
+        require(component.isProduct(), "ERROR:TRS-020:NOT_PRODUCT");
 
         _fees[feeSpec.componentId] = feeSpec;
         emit LogTreasuryPremiumFeesSet (
@@ -123,7 +117,7 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(feeSpec.componentId);
-        require(component.isRiskpool(), "ERROR:TRS-002:NOT_RISKPOOL");
+        require(component.isRiskpool(), "ERROR:TRS-021:NOT_RISKPOOL");
 
         _fees[feeSpec.componentId] = feeSpec;
         emit LogTreasuryCapitalFeesSet (
@@ -132,34 +126,38 @@ contract TreasuryModule is
             feeSpec.fractionalFee);
     }
 
+
+    function calculateFee(uint256 componentId, uint256 amount)
+        public 
+        view
+        returns(uint256 feeAmount, uint256 netAmount)
+    {
+        FeeSpecification memory feeSpec = getFeeSpecification(componentId);
+        require(feeSpec.createdAt > 0, "ERROR:TRS-022:FEE_SPEC_UNDEFINED");
+        feeAmount = _calculateFee(feeSpec, amount);
+
+        // no underflow risk without this require. just simple revert without any plain text information
+        require(feeAmount <= amount, "ERROR:TRS-023:FEE_LARGER_THAN_PREMIUM");
+        netAmount = amount - feeAmount;
+    }
     
+
     function processPremium(bytes32 processId) 
         external override 
-        returns(bool success) 
+        returns(bool success, uint256 netPremiumAmount) 
     {
         // retrieve relevant fee spec
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
-        FeeSpecification memory feeSpec = getFeeSpecification(metadata.productId);
-        require(feeSpec.createdAt > 0, "ERROR:TRS-002:FEE_SPEC_UNDEFINED");
+        IPolicy.Application memory application =  _policy.getApplication(processId);
 
-        // get application and calculate fee
-        (IPolicy.Application memory application, uint256 feeAmount) 
-            = _calculatePremiumFee(feeSpec, processId);
-        require(feeAmount <= application.premiumAmount, "ERROR:TRS-002:FEE_LARGER_THAN_PREMIUM");
+        // calculate premium fees
+        uint256 feeAmount;
+
+        (feeAmount, netPremiumAmount) 
+            = calculateFee(metadata.productId, application.premiumAmount);
 
         // ensure allowance covers total premium
-        IERC20 token = _componentToken[metadata.productId];
-
-        // // TODO cleanup
-        // uint256 allowance = token.allowance(
-        //         metadata.owner, 
-        //         address(this));
-        
-        // emit LogTreasuryDebugAllowance(
-        //     address(token), 
-        //     metadata.owner, 
-        //     address(this), allowance);
-        
+        IERC20 token = getComponentToken(metadata.productId);        
         require(
             token.allowance(
                 metadata.owner, 
@@ -167,19 +165,22 @@ contract TreasuryModule is
             "ERROR:TRS-002:ALLOWANCE_SMALLER_THAN_PREMIUM"
         );
 
+        // collect premium fees
         success = token.transferFrom(metadata.owner, _instanceWalletAddress, feeAmount);
         emit LogTreasuryFeesTransferred(metadata.owner, _instanceWalletAddress, feeAmount, success);
         require(success, "ERROR:TRS-002:FEE_TRANSFER_FAILED");
 
+        // transfer premium net amount to riskpool for product
         if (success) {
             uint256 riskpoolId = _pool.getRiskPoolForProduct(metadata.productId);
             require(riskpoolId > 0, "ERROR:TRS-002:PRODUCT_WITHOUT_RISKPOOL");
             address riskpoolWalletAddress = _riskpoolWallet[riskpoolId];
             require(riskpoolWalletAddress != address(0), "ERROR:TRS-002:RISKPOOL_WITHOUT_WALLET");
 
-            uint256 premiumAfterFees = application.premiumAmount - feeAmount;
-            success = token.transferFrom(metadata.owner, riskpoolWalletAddress, premiumAfterFees);
-            emit LogTreasuryPremiumTransferred(metadata.owner, riskpoolWalletAddress, premiumAfterFees, success);
+            // actual transfer of net premium to riskpool
+            success = token.transferFrom(metadata.owner, riskpoolWalletAddress, netPremiumAmount);
+
+            emit LogTreasuryPremiumTransferred(metadata.owner, riskpoolWalletAddress, netPremiumAmount, success);
             require(success, "ERROR:TRS-002:PREMIUM_TRANSFER_FAILED");
         }
 
@@ -196,6 +197,8 @@ contract TreasuryModule is
     {
         // obtain relevant fee specification
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
+        address bundleOwner = _bundle.owner(bundleId);
+
         FeeSpecification memory feeSpec = getFeeSpecification(bundle.riskpoolId);
         require(feeSpec.createdAt > 0, "ERROR:TRS-002:FEE_SPEC_UNDEFINED");
 
@@ -203,7 +206,7 @@ contract TreasuryModule is
         IERC20 token = _componentToken[bundle.riskpoolId];
         require(
             token.allowance(
-                bundle.owner, 
+                bundleOwner, 
                 address(this)) >= capitalAmount,
             "ERROR:TRS-002:ALLOWANCE_SMALLER_THAN_CAPITAL"
         );
@@ -211,9 +214,9 @@ contract TreasuryModule is
         // calculate and transfer capital fees
         uint256 feeAmount = _calculateFee(feeSpec, capitalAmount);
         capitalAfterFees = capitalAmount - feeAmount;
-        success = token.transferFrom(bundle.owner, _instanceWalletAddress, feeAmount);
+        success = token.transferFrom(bundleOwner, _instanceWalletAddress, feeAmount);
 
-        emit LogTreasuryFeesTransferred(bundle.owner, _instanceWalletAddress, feeAmount, success);
+        emit LogTreasuryFeesTransferred(bundleOwner, _instanceWalletAddress, feeAmount, success);
         require(success, "ERROR:TRS-002:FEE_TRANSFER_FAILED");
 
         if (success) {
@@ -221,8 +224,8 @@ contract TreasuryModule is
             require(riskpoolWallet != address(0), "ERROR:TRS-002:RISKPOOL_WITHOUT_WALLET");
 
             uint256 amountAfterFees = capitalAmount - feeAmount;
-            success = token.transferFrom(bundle.owner, riskpoolWallet, amountAfterFees);
-            emit LogTreasuryCapitalTransferred(bundle.owner, riskpoolWallet, amountAfterFees, success);
+            success = token.transferFrom(bundleOwner, riskpoolWallet, amountAfterFees);
+            emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, amountAfterFees, success);
             require(success, "ERROR:TRS-002:CAPITAL_TRANSFER_FAILED");
         }
 
@@ -230,8 +233,19 @@ contract TreasuryModule is
     }
 
 
-    function getComponentToken(uint256 componentId) 
+    function processWithdrawl(uint256 bundleId, uint256 amount) 
         external override
+        returns(
+            bool success,
+            uint256 netAmount
+        )
+    {
+        
+    }
+
+
+    function getComponentToken(uint256 componentId) 
+        public override
         view
         returns(IERC20 token) 
     {

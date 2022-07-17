@@ -102,11 +102,12 @@ contract TestProduct is
         }
     }
 
-    function expire(bytes32 policyId) 
-        external
-        onlyOwner
-    {
+    function expire(bytes32 policyId) external onlyOwner {
         _expire(policyId);
+    }
+
+    function close(bytes32 policyId) external onlyOwner {
+        _close(policyId);
     }
 
     function submitClaim(bytes32 policyId, uint256 claimAmount) 

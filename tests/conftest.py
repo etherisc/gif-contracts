@@ -11,6 +11,7 @@ from brownie import (
     RiskpoolToken,
     AccessController,
     BundleController,
+    BundleToken,
     RegistryController,
     LicenseController,
     PolicyController,
@@ -195,6 +196,10 @@ def registry(registryController, owner) -> RegistryController:
 @pytest.fixture(scope="module")
 def testCoin(owner) -> TestCoin:
     return TestCoin.deploy({'from': owner})
+
+@pytest.fixture(scope="module")
+def bundleToken(owner) -> BundleToken:
+    return BundleToken.deploy({'from': owner})
 
 @pytest.fixture(scope="module")
 def testCoinSetup(testCoin, owner, customer) -> TestCoin:

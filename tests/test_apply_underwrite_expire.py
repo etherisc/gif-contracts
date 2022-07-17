@@ -18,6 +18,11 @@ from scripts.util import (
     s2b32,
 )
 
+from scripts.setup import (
+    fund_riskpool,
+    apply_for_policy,
+)
+
 from scripts.instance import (
     GifInstance,
 )
@@ -42,22 +47,10 @@ def test_create_policy(
     feeOwner: Account,
     capitalOwner: Account
 ):
-    # add bundle with funding to riskpool
-    testRiskpool = gifTestProduct.getRiskpool()
-    riskpool = testRiskpool.getContract()
-
-    applicationFilter = bytes(0)
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
-
-    # transfer funds to riskpool keeper and create allowance
-    testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
-    testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
-
-    # actual riskpool bundle creation
-    riskpool.createBundle(
-        applicationFilter, 
-        initialFunding, 
-        {'from': riskpoolKeeper})
+    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     # check funds after capitalization
     capitalFees = initialFunding / 20 + 42
@@ -144,7 +137,7 @@ def test_create_policy(
     assert policy['updatedAt'] >= policy['createdAt']
 
 
-def test_create_and_expire_policy(
+def test_create_expire_and_close_policy(
     instance: GifInstance, 
     testCoin,
     gifTestProduct: GifTestProduct, 
@@ -153,44 +146,21 @@ def test_create_and_expire_policy(
     owner: Account,
     customer: Account
 ):
-    # add bundle with funding to riskpool
-    testRiskpool = gifTestProduct.getRiskpool()
-    riskpool = testRiskpool.getContract()
-
-    applicationFilter = bytes(0)
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
+    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
-    # transfer funds to riskpool keeper and create allowance
-    testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
-    testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
-
-    riskpool.createBundle(
-        applicationFilter, 
-        initialFunding, 
-        {'from': riskpoolKeeper})
-
-    # record number of policies before policy creation
+    # build and use policy application
     product = gifTestProduct.getContract()
     assert product.policies() == 0
 
-    # create policy
     premium = 100
     sumInsured = 5000
-    metaData = s2b32('meta')
-    applicationData = s2b32('application')
-
-    # transfer funds to customer and create allowance
-    testCoin.transfer(customer, premium, {'from': owner})
-    testCoin.approve(instance.getTreasury(), premium, {'from': customer})
-
-    policy_tx = product.applyForPolicy(
-        premium,
-        sumInsured,
-        metaData,
-        applicationData,
-        {'from': customer})
-
-    policyId = policy_tx.return_value
+    policyId = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
+    
+    assert policyId is not None 
+    assert product.policies() == 1
 
     # check funds after capitalization
     capitalFees = initialFunding / 20 + 42
@@ -200,22 +170,21 @@ def test_create_and_expire_policy(
     assert product.policies() == 1
     assert riskpool.getCapacity() == capitalAfterCost - sumInsured
 
-    # expire policy
-    product.expire(
-        policyId,
-        {'from': productOwner})
+    # close policy
+    product.expire(policyId, {'from': productOwner})
+
+    # PolicyState {Active, Expired, Closed}
+    policy = _getPolicyDict(instance, policyId)
+    assert policy['state'] == 1
+
+    product.close(policyId, {'from': productOwner})
 
     # check that capacity is restored to initial level
     assert product.policies() == 1
     assert riskpool.getCapacity() == capitalAfterCost
 
-    policyController = instance.getPolicy()
-    policy = policyController.getPolicy(policyId).dict()
-
-    # ensure policy data is updated properly
-    assert policy is not None
-    # PolicyState {Active, Expired}
-    assert policy['state'] == 1
+    policy = _getPolicyDict(instance, policyId)
+    assert policy['state'] == 2
     assert policy['claimsCount'] == 0
     assert policy['payoutsCount'] == 0
     assert policy['updatedAt'] > policy['createdAt']
@@ -230,7 +199,6 @@ def test_create_and_expire_policy(
     assert product.policies() == 1
     assert riskpool.getCapacity() == capitalAfterCost
 
-
 def test_application_with_insufficient_premium_funding(
     instance: GifInstance, 
     testCoin,
@@ -239,43 +207,26 @@ def test_application_with_insufficient_premium_funding(
     owner: Account,
     customer: Account
 ):
-    # add bundle with funding to riskpool
-    testRiskpool = gifTestProduct.getRiskpool()
-    riskpool = testRiskpool.getContract()
-
-    applicationFilter = bytes(0)
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
+    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
-    # transfer funds to riskpool keeper and create allowance
-    testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
-    testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
-
-    riskpool.createBundle(
-        applicationFilter, 
-        initialFunding, 
-        {'from': riskpoolKeeper})
-
-    # check funds after capitalization
-    capitalFees = initialFunding / 20 + 42
-    capitalAfterCost = initialFunding - capitalFees
-
-    assert riskpool.bundles() == 1
-    assert riskpool.getCapacity() == capitalAfterCost
-
-    # record number of policies before policy creation
+    # build and use policy application
     product = gifTestProduct.getContract()
-    product_policies_before = product.policies()
-    
-    # application spec
-    premium = 100
-    sumInsured = 5000
-    metaData = s2b32('meta')
-    applicationData = s2b32('application')
+    assert product.policies() == 0
 
-    # transfer funds to customer and create allowance
+    premium = 100
+    premiumHalf = premium/2
+    sumInsured = 5000
+
+    # transfer premium funds to customer and create allowance
     testCoin.transfer(customer, premium, {'from': owner})
-    # allow only half of required premium
-    testCoin.approve(instance.getTreasury(), premium/2, {'from': customer})
+    testCoin.approve(instance.getTreasury(), premiumHalf, {'from': customer})
+
+    # create minimal policy application
+    metaData = bytes(0)
+    applicationData = bytes(0)
 
     # ensure policy creation is not possible
     with brownie.reverts('ERROR:TRS-002:ALLOWANCE_SMALLER_THAN_PREMIUM'):
@@ -285,6 +236,9 @@ def test_application_with_insufficient_premium_funding(
             metaData,
             applicationData,
             {'from': customer})
+
+    capitalFees = initialFunding / 20 + 42
+    capitalAfterCost = initialFunding - capitalFees
 
     assert product.policies() == 0
     assert riskpool.getCapacity() == capitalAfterCost
@@ -336,33 +290,19 @@ def test_riskpool_inactive(
     riskpoolKeeper: Account,
     customer: Account
 ):
-    componentOwnerService = instance.getComponentOwnerService()
-    gifRiskpool = gifTestProduct.getRiskpool()
-    riskpool = gifRiskpool.getContract()
-    product = gifTestProduct.getContract()
-
-    # add bundle with funding to riskpool
-    testRiskpool = gifTestProduct.getRiskpool()
-    riskpool = testRiskpool.getContract()
-
-    applicationFilter = bytes(0)
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
-
-    # transfer funds to riskpool keeper and create allowance
-    testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
-    testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
-
-    riskpool.createBundle(
-        applicationFilter, 
-        initialFunding, 
-        {'from': riskpoolKeeper})
+    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     assert riskpool.bundles() == 1
 
+    product = gifTestProduct.getContract()
     # ComponentState {Created,Proposed,Declined,Active,Paused,Suspended}
     assert product.policies() == 0
     assert riskpool.getState() == 3
 
+    componentOwnerService = instance.getComponentOwnerService()
     componentOwnerService.pause(
         riskpool.getId(), 
         {'from': riskpoolKeeper})
@@ -376,7 +316,7 @@ def test_riskpool_inactive(
     applicationData = s2b32('application')
 
     # check that inactive product does not lead to policy creation
-    with brownie.reverts('ERROR:POL-006:RISKPOOL_NOT_ACTIVE'):
+    with brownie.reverts('ERROR:POL-021:RISKPOOL_NOT_ACTIVE'):
         apply_tx = product.applyForPolicy(
             premium,
             sumInsured,
@@ -429,42 +369,30 @@ def test_insufficient_capital(
     riskpoolKeeper: Account,
     customer: Account
 ):
-    product = gifTestProduct.getContract()
-
-    # create bundle for riskpool with some capital but 
-    # not enough to cover the application
-    testRiskpool = gifTestProduct.getRiskpool()
-    riskpool = testRiskpool.getContract()
-
-    applicationFilter = bytes(0)
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 50
+    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
-    # transfer funds to riskpool keeper and create allowance
-    testCoin.transfer(riskpoolKeeper, initialFunding, {'from': owner})
-    testCoin.approve(instance.getTreasury(), initialFunding, {'from': riskpoolKeeper})
-
-    riskpool.createBundle(
-        applicationFilter, 
-        initialFunding, 
-        {'from': riskpoolKeeper})
+    product = gifTestProduct.getContract()
 
     assert riskpool.bundles() == 1
     assert product.applications() == 0
     assert product.policies() == 0
-    
-    # create policy: should not work as not enough collateral
-    # is made available in the bundle
+
+    # build and use policy application
+    product = gifTestProduct.getContract()
+    assert product.policies() == 0
+
     premium = 100
     sumInsured = 5000
-    metaData = s2b32('meta')
-    applicationData = s2b32('application')
-
-    apply_tx = product.applyForPolicy(
-        premium,
-        sumInsured,
-        metaData,
-        applicationData,
-        {'from': customer})
-
+    policyId = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
+    
+    assert policyId is not None     
     assert product.applications() == 1
     assert product.policies() == 0
+
+
+def _getPolicyDict(instance, policyId):
+    policyController = instance.getPolicy()
+    return policyController.getPolicy(policyId).dict()

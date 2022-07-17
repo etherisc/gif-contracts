@@ -29,8 +29,21 @@ contract RiskpoolService is
         _;
     }
 
+    modifier onlyOwningRiskpool(uint256 bundleId) {
+        IComponent component = IComponent(_msgSender());
+        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
+        require(
+            component.isRiskpool() && component.getId() == bundle.riskpoolId,
+            "ERROR:RPS-002:NOT_OWNING_RISKPOOL"
+        );
+        _;
+    }
 
-    function _afterInitialize() internal override onlyInitializing {
+
+    function _afterInitialize() 
+        internal override 
+        onlyInitializing 
+    {
         _bundle = BundleController(_getContractAddress("Bundle"));
         _component = ComponentController(_getContractAddress("Component"));
         _treasury = TreasuryModule(_getContractAddress("Treasury"));
@@ -56,30 +69,76 @@ contract RiskpoolService is
         }
     }
 
-    function unlockCapital(uint256 bundleId, bytes32 processId)
-        external
-        onlyRiskpool
-        returns(uint256 collateralAmount)
-    {
 
+    function fundBundle(uint256 bundleId, uint256 amount)
+        external override
+        onlyOwningRiskpool(bundleId)  
+    {
+        (bool success, uint256 netAmount) = _treasury.processCapital(bundleId, amount);
+
+        if (success) {
+            _bundle.fund(bundleId, netAmount);
+        }
     }
+
+
+    function defundBundle(uint256 bundleId, uint256 amount)
+        external override
+        onlyOwningRiskpool(bundleId)  
+    {
+        _bundle.defund(bundleId, amount);
+        _treasury.processWithdrawl(bundleId, amount);
+    }
+
+
+    function lockBundle(uint256 bundleId)
+        external override
+        onlyOwningRiskpool(bundleId)  
+    {
+        _bundle.lock(bundleId);
+    }
+
+
+    function unlockBundle(uint256 bundleId)
+        external override
+        onlyOwningRiskpool(bundleId)  
+    {
+        _bundle.unlock(bundleId);
+    }
+
+
+    function closeBundle(uint256 bundleId)
+        external override
+        onlyOwningRiskpool(bundleId)  
+    {
+        _bundle.close(bundleId);
+    }
+
     
     function collateralizePolicy(uint256 bundleId, bytes32 processId, uint256 collateralAmount) 
         external override
-        onlyRiskpool
+        onlyOwningRiskpool(bundleId)  
     {
-        // TODO refactor reqruire below into modifier onlyAssociatedRiskpool
-        uint256 riskpoolId = _component.getComponentId(_msgSender());
-        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
-        require(
-            riskpoolId == bundle.riskpoolId,
-            "ERROR:RPS-002:NOT_ASSOCIATED_RISKPOOL"
-        );
-
         _bundle.collateralizePolicy(bundleId, processId, collateralAmount);
     }
 
-    function expirePolicy(uint256 bundleId, bytes32 processId)
+
+    function increaseBundleBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyOwningRiskpool(bundleId)  
+    {        
+        _bundle.increaseBalance(bundleId, processId, amount);
+    }
+
+
+    function decreaseBundleBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyOwningRiskpool(bundleId)  
+    {
+        revert("NOT_IMPLEMENTED_YET:decreaseBundleBalance(...)");
+    }
+
+    function releasePolicy(uint256 bundleId, bytes32 processId)
         external override
         onlyRiskpool
         returns(uint256 collateralAmount)
@@ -92,6 +151,6 @@ contract RiskpoolService is
             "ERROR:RPS-003:NOT_ASSOCIATED_RISKPOOL"
         );
 
-        collateralAmount = _bundle.expirePolicy(bundleId, processId);
+        collateralAmount = _bundle.releasePolicy(bundleId, processId);
     }
 }

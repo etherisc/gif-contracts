@@ -18,6 +18,7 @@ import "@gif-interface/contracts/services/IOracleService.sol";
 import "@gif-interface/contracts/services/IProductService.sol";
 import "@gif-interface/contracts/services/IRiskpoolService.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 contract InstanceService is 
     IInstanceService, 
@@ -158,6 +159,11 @@ contract InstanceService is
     }
 
     /* bundle */
+    function getBundleToken() external override view returns(IERC721 token) {
+        BundleToken bundleToken = _bundle().getToken();
+        token = IERC721(bundleToken);
+    }
+    
     function getBundle(uint256 bundleId) external override view returns (IBundle.Bundle memory bundle) {
         bundle = _bundle().getBundle(bundleId);
     }

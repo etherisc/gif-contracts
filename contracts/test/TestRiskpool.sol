@@ -27,4 +27,5 @@ contract TestRiskpool is BasicRiskpool {
     {
         isMatching = true;
     }
+
 }

@@ -158,7 +158,8 @@ class GifInstance(GifRegistry):
         # the address of the instance operator service to its true address
         self.instanceOperatorService = deployGifModuleV2("InstanceOperatorService", InstanceOperatorService, registry, owner, publishSource)
 
-        # needs to be called during instance setup
+        # post deploy wiring steps
+        self.bundleToken.setBundleModule(self.bundle)
         self.access.setDefaultAdminRole(self.instanceOperatorService.address, {'from': owner})
 
 
@@ -201,6 +202,9 @@ class GifInstance(GifRegistry):
 
     def getBundle(self) -> BundleController:
         return self.bundle
+
+    def getBundleToken(self) -> BundleToken:
+        return self.bundleToken
 
     def getComponent(self) -> ComponentController:
         return self.component

@@ -36,6 +36,15 @@ contract PolicyDefaultFlow is
         _;
     }
 
+    modifier onlyExpiredPolicy(bytes32 processId) {
+        PolicyController policy = getPolicyContract();
+        require(
+            policy.getPolicy(processId).state == IPolicy.PolicyState.Expired,
+            "ERROR:PFD-001:POLICY_NOT_EXPIRED"
+        );
+        _;
+    }
+
     // solhint-disable-next-line no-empty-blocks
     constructor(address _registry) 
         WithRegistry(_registry) 
@@ -63,36 +72,59 @@ contract PolicyDefaultFlow is
             applicationData);
     }
 
+    function revoke(bytes32 processId) external {
+        IPolicy policy = getPolicyContract();
+        policy.revokeApplication(processId);
+    }
+
     /* success implies the successful creation of a policy */
     function underwrite(bytes32 processId) external returns(bool success) {
         // attempt to get the collateral to secure the policy
-        IPool pool = getPoolContract();
+        PoolController pool = getPoolContract();
         success = pool.underwrite(processId);
 
         if (success) {
             // once collateral is secured transfer premium amount
-            ITreasury treasury = getTreasuryContract();
-            success = treasury.processPremium(processId);
+            TreasuryModule treasury = getTreasuryContract();
+            uint256 netPremiumAmount;
+            (success, netPremiumAmount) = treasury.processPremium(processId);
 
             // if premium transfer not successful revert so no funds are transferred
             require(success, "ERROR:PFD-004:PREMIUM_TRANSFER_FAILED");
 
-            // application underwritten, premium funds transferred 
+            // inform pool to include net premium in its balance
+            pool.increaseBalance(processId, netPremiumAmount);
+
+            // all green: application underwritten, premium funds transferred 
             // so we can create the policy now
             IPolicy policy = getPolicyContract();
-            policy.setApplicationState(processId, IPolicy.ApplicationState.Underwritten);
+            policy.underwriteApplication(processId);
             policy.createPolicy(processId);
         }
     }
 
     function decline(bytes32 processId) external {
-        PolicyController policy = getPolicyContract();
-        require(
-            policy.getApplication(processId).state == IPolicy.ApplicationState.Applied,
-            "ERROR:PFD-005:INVALID_APPLICATION_STATE"
-        );
+        IPolicy policy = getPolicyContract();
+        policy.declineApplication(processId);
+    }
 
-        policy.setApplicationState(processId, IPolicy.ApplicationState.Declined);
+    function expire(bytes32 processId) 
+        external
+        onlyActivePolicy(processId)
+    {
+        IPolicy policy = getPolicyContract();
+        policy.expirePolicy(processId);
+    }
+
+    function close(bytes32 processId) 
+        external
+        onlyExpiredPolicy(processId)
+    {
+        IPolicy policy = getPolicyContract();
+        policy.closePolicy(processId);
+
+        IPool pool = getPoolContract();
+        pool.release(processId);
     }
 
     function newClaim(
@@ -115,7 +147,10 @@ contract PolicyDefaultFlow is
         uint256 claimId,
         uint256 payoutAmount,
         bytes calldata data
-    ) external returns (uint256 _payoutId) {
+    ) 
+        external 
+        returns (uint256 payoutId) 
+    {
         PolicyController policy = getPolicyContract();
         require(
             policy.getClaim(processId, claimId).state ==
@@ -123,31 +158,14 @@ contract PolicyDefaultFlow is
             "ERROR:PFD-010:INVALID_CLAIM_STATE"
         );
 
-        policy.setClaimState(processId, claimId, IPolicy.ClaimState.Confirmed);
+        policy.confirmClaim(processId, claimId);
 
-        _payoutId = policy.createPayout(processId, claimId, payoutAmount, data);
+        payoutId = policy.createPayout(processId, claimId, payoutAmount, data);
     }
 
-    function declineClaim(bytes32 processId, uint256 _claimId) external {
+    function declineClaim(bytes32 processId, uint256 claimId) external {
         PolicyController policy = getPolicyContract();
-        require(
-            policy.getClaim(processId, _claimId).state ==
-            IPolicy.ClaimState.Applied,
-            "ERROR:PFD-011:INVALID_CLAIM_STATE"
-        );
-
-        policy.setClaimState(processId, _claimId, IPolicy.ClaimState.Declined);
-    }
-
-    function expire(bytes32 processId) 
-        external
-        onlyActivePolicy(processId)
-    {
-        IPool pool = getPoolContract();
-        pool.expire(processId);
-
-        IPolicy policy = getPolicyContract();
-        policy.setPolicyState(processId, IPolicy.PolicyState.Expired);
+        policy.declineClaim(processId, claimId);
     }
 
     function processPayout(
@@ -209,8 +227,8 @@ contract PolicyDefaultFlow is
         return ILicense(getContractFromRegistry("License"));
     }
 
-    function getPoolContract() internal view returns (IPool) {
-        return IPool(getContractFromRegistry("Pool"));
+    function getPoolContract() internal view returns (PoolController) {
+        return PoolController(getContractFromRegistry("Pool"));
     }
 
     function getPolicyContract() internal view returns (PolicyController) {
@@ -221,8 +239,8 @@ contract PolicyDefaultFlow is
         return IQuery(getContractFromRegistry("Query"));
     }
 
-    function getTreasuryContract() internal view returns (ITreasury) {
-        return ITreasury(getContractFromRegistry("Treasury"));
+    function getTreasuryContract() internal view returns (TreasuryModule) {
+        return TreasuryModule(getContractFromRegistry("Treasury"));
     }
 
     // function getContractFromRegistry(bytes32 moduleName) internal view returns(address) {

@@ -28,6 +28,14 @@ contract PoolController is
         _;
     }
 
+    modifier onlyTreasury() {
+        require(
+            _msgSender() == _getContractAddress("Treasury"),
+            "ERROR:POL-002:NOT_TREASURY"
+        );
+        _;
+    }
+
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
         _policy = PolicyController(_getContractAddress("Policy"));
@@ -40,9 +48,9 @@ contract PoolController is
         IComponent product = _component.getComponent(productId);
         IComponent riskpool = _component.getComponent(riskpoolId);
 
-        require(product.isProduct(), "ERROR:POL-002:NOT_PRODUCT");
-        require(riskpool.isRiskpool(), "ERROR:POL-002:NOT_RISKPOOL");
-        require(_riskpoolIdForProductId[productId] == 0, "ERROR:POL-004:RISKPOOL_ALREADY_SET");
+        require(product.isProduct(), "ERROR:POL-010:NOT_PRODUCT");
+        require(riskpool.isRiskpool(), "ERROR:POL-011:NOT_RISKPOOL");
+        require(_riskpoolIdForProductId[productId] == 0, "ERROR:POL-012:RISKPOOL_ALREADY_SET");
         
         _riskpools.push(riskpoolId);
         _riskpoolIdForProductId[productId] = riskpoolId;
@@ -57,7 +65,7 @@ contract PoolController is
         IPolicy.Application memory application = _policy.getApplication(processId);
         require(
             application.state == IPolicy.ApplicationState.Applied,
-            "ERROR:POL-005:INVALID_APPLICATION_STATE"
+            "ERROR:POL-020:INVALID_APPLICATION_STATE"
         );
 
         // determine riskpool responsible for application
@@ -65,7 +73,7 @@ contract PoolController is
         IRiskpool riskpool = _getRiskpool(metadata);
         require(
             riskpool.getState() == ComponentState.Active, 
-            "ERROR:POL-006:RISKPOOL_NOT_ACTIVE"
+            "ERROR:POL-021:RISKPOOL_NOT_ACTIVE"
         );
 
         // ask riskpool to secure application
@@ -81,20 +89,40 @@ contract PoolController is
     }
 
 
-    function expire(bytes32 processId) 
+    function release(bytes32 processId) 
         external override
         onlyPolicyFlow("Pool")
     {
         // check that policy is in aciive state
         IPolicy.Policy memory policy = _policy.getPolicy(processId);
         require(
-            policy.state == IPolicy.PolicyState.Active,
+            policy.state == IPolicy.PolicyState.Closed,
             "ERROR:POL-007:INVALID_POLICY_STATE"
         );
 
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         IRiskpool riskpool = _getRiskpool(metadata);
-        riskpool.expirePolicy(processId);
+        riskpool.releasePolicy(processId);
+    }
+
+
+    function increaseBalance(bytes32 processId, uint256 amount) 
+        external override
+        onlyPolicyFlow("Pool")
+    {
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
+        IRiskpool riskpool = _getRiskpool(metadata);
+        riskpool.increaseBalance(processId, amount);
+    }
+
+
+    function decreaseBalance(bytes32 processId, uint256 amount) 
+        external override
+        onlyPolicyFlow("Pool")
+    {
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
+        IRiskpool riskpool = _getRiskpool(metadata);
+        riskpool.decreaseBalance(processId, amount);
     }
 
     
@@ -116,6 +144,10 @@ contract PoolController is
         uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
         require(riskpoolId > 0, "ERROR:POL-009:RISKPOOL_DOES_NOT_EXIST");
 
+        riskpool = _getRiskpoolForId(riskpoolId);
+    }
+
+    function _getRiskpoolForId(uint256 riskpoolId) internal view returns (IRiskpool riskpool) {
         IComponent cmp = _component.getComponent(riskpoolId);
         require(cmp.isRiskpool(), "ERROR:POL-010:COMPONENT_NOT_RISKPOOL");
         
