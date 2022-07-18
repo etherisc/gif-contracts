@@ -188,7 +188,8 @@ def test_close_bundle(
     riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
 
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    bundleOwner = riskpoolKeeper
+    fund_riskpool(instance, owner, riskpool, bundleOwner, testCoin, initialFunding)
 
     premium = 100
     sumInsured = 5000
@@ -205,8 +206,11 @@ def test_close_bundle(
     assert _getBundleDict(riskpool, 0)['balance'] == bundleBalance
 
     # check that bundle may not be closed with non-closed policies
+    with brownie.reverts('ERROR:BUC-001:NOT_BUNDLE_OWNER'):
+        riskpool.closeBundle(bundleId, {'from': owner})
+
     with brownie.reverts('ERROR:BUC-015:BUNDLE_WITH_ACTIVE_POLICIES'):
-        riskpool.closeBundle(bundleId)
+        riskpool.closeBundle(bundleId, {'from': bundleOwner})
 
     assert _getPolicyDict(instance, policyId)['state'] == 1
 
@@ -227,7 +231,10 @@ def test_close_bundle(
     assert bundle['balance'] == bundleBalance
 
     # check that is now ok to close the bundle
-    riskpool.closeBundle(bundleId)
+    with brownie.reverts('ERROR:BUC-001:NOT_BUNDLE_OWNER'):
+        riskpool.closeBundle(bundleId, {'from': owner})
+    
+    riskpool.closeBundle(bundleId, {'from': bundleOwner})
 
     bundle = _getBundleDict(riskpool, 0)
     assert bundle['state'] == 2 # BundleState { Active, Locked, Closed }
@@ -235,15 +242,19 @@ def test_close_bundle(
     assert bundle['lockedCapital'] == 0
     assert bundle['balance'] == bundleBalance
 
-    # check that close is final state
+    # check that close results in blocking most actions on the bundle
     with brownie.reverts('ERROR:BUC-014:CLOSED_IS_FINAL_STATE'):
-        riskpool.closeBundle(bundleId)
+        riskpool.closeBundle(bundleId, {'from': bundleOwner})
 
     with brownie.reverts('ERROR:BUC-014:CLOSED_IS_FINAL_STATE'):
-        riskpool.lockBundle(bundleId)
+        riskpool.lockBundle(bundleId, {'from': bundleOwner})
 
     with brownie.reverts('ERROR:BUC-014:CLOSED_IS_FINAL_STATE'):
-        riskpool.unlockBundle(bundleId)
+        riskpool.unlockBundle(bundleId, {'from': bundleOwner})
+
+    with brownie.reverts('ERROR:RPS-003:BUNDLE_CLOSED'):
+        fundingAmount = 100000
+        riskpool.fundBundle(bundleId, fundingAmount, {'from': bundleOwner})
 
 
 # TODO implement test

@@ -74,6 +74,9 @@ contract RiskpoolService is
         external override
         onlyOwningRiskpool(bundleId)  
     {
+        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
+        require(bundle.state != IBundle.BundleState.Closed, "ERROR:RPS-003:BUNDLE_CLOSED");
+
         (bool success, uint256 netAmount) = _treasury.processCapital(bundleId, amount);
         if (success) {
             _bundle.fund(bundleId, netAmount);
