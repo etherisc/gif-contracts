@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/modules/IComponentEvents.sol";
+
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/modules/IComponentEvents.sol";
 
 contract ComponentController is
     IComponentEvents,
@@ -64,7 +65,7 @@ contract ComponentController is
 
         // update component state
         component.setId(id);
-        _changeState(component, ComponentStatus.Proposed);
+        _changeState(component, ComponentState.Proposed);
 
         // update controller book keeping
         _componentById[id] = component;
@@ -77,12 +78,17 @@ contract ComponentController is
         else if (component.isRiskpool()) { _riskpools.push(id); }
     }
 
+    function exists(uint256 id) public view returns(bool) {
+        IComponent component = _componentById[id];
+        return (address(component) != address(0));
+    }
+
     function approve(uint256 id) 
         external
         onlyInstanceOperatorService 
     {
         IComponent component = getComponent(id);
-        _changeState(component, ComponentStatus.Active);
+        _changeState(component, ComponentState.Active);
         emit LogComponentApproved(id);
         
         // inform component about successful approval
@@ -94,7 +100,7 @@ contract ComponentController is
         onlyInstanceOperatorService 
     {
         IComponent component = getComponent(id);
-        _changeState(component, ComponentStatus.Declined);
+        _changeState(component, ComponentState.Declined);
         emit LogComponentDeclined(id);
         
         // inform component about decline
@@ -106,7 +112,7 @@ contract ComponentController is
         onlyInstanceOperatorService 
     {
         IComponent component = getComponent(id);
-        _changeState(component, ComponentStatus.Suspended);
+        _changeState(component, ComponentState.Suspended);
         emit LogComponentSuspended(id);
         
         // inform component about suspending
@@ -118,7 +124,7 @@ contract ComponentController is
         onlyInstanceOperatorService 
     {
         IComponent component = getComponent(id);
-        _changeState(component, ComponentStatus.Active);
+        _changeState(component, ComponentState.Active);
         emit LogComponentResumed(id);
         
         // inform component about resuming
@@ -130,7 +136,7 @@ contract ComponentController is
         onlyComponentOwnerService 
     {
         IComponent component = getComponent(id);
-        _changeState(component, ComponentStatus.Paused);
+        _changeState(component, ComponentState.Paused);
         emit LogComponentPaused(id);
         
         // inform component about pausing
@@ -142,7 +148,7 @@ contract ComponentController is
         onlyComponentOwnerService 
     {
         IComponent component = getComponent(id);
-        _changeState(component, ComponentStatus.Active);
+        _changeState(component, ComponentState.Active);
         emit LogComponentUnpaused(id);
         
         // inform component about unpausing
@@ -164,29 +170,29 @@ contract ComponentController is
     function oracles() public view returns (uint256 count) { return _oracles.length; }
     function riskpools() public view returns (uint256 count) { return _riskpools.length; }
 
-    function _changeState(IComponent component, ComponentStatus newStatus) internal {
-        ComponentStatus oldStatus = component.getStatus();
+    function _changeState(IComponent component, ComponentState newState) internal {
+        ComponentState oldState = component.getState();
 
-        _checkStateTransition(oldStatus, newStatus);
-        component.setStatus(newStatus);
+        _checkStateTransition(oldState, newState);
+        component.setState(newState);
 
         // log entry for successful component state change
-        emit LogComponentStateChanged(component.getId(), oldStatus, newStatus);
+        emit LogComponentStateChanged(component.getId(), oldState, newState);
     }
 
-    function _checkStateTransition(ComponentStatus oldStatus, ComponentStatus newStatus) internal pure {
-        if (oldStatus == ComponentStatus.Created) {
-            require(newStatus == ComponentStatus.Proposed, "ERROR:CMP-012:CREATED_INVALID_TRANSITION");
-        } else if (oldStatus == ComponentStatus.Proposed) {
-            require(newStatus == ComponentStatus.Active || newStatus == ComponentStatus.Declined, "ERROR:CMP-013:PROPOSED_INVALID_TRANSITION");
-        } else if (oldStatus == ComponentStatus.Declined) {
+    function _checkStateTransition(ComponentState oldState, ComponentState newState) internal pure {
+        if (oldState == ComponentState.Created) {
+            require(newState == ComponentState.Proposed, "ERROR:CMP-012:CREATED_INVALID_TRANSITION");
+        } else if (oldState == ComponentState.Proposed) {
+            require(newState == ComponentState.Active || newState == ComponentState.Declined, "ERROR:CMP-013:PROPOSED_INVALID_TRANSITION");
+        } else if (oldState == ComponentState.Declined) {
             revert("ERROR:CMP-014:DECLINED_IS_FINAL_STATE");
-        } else if (oldStatus == ComponentStatus.Active) {
-            require(newStatus == ComponentStatus.Paused || newStatus == ComponentStatus.Suspended, "ERROR:CMP-015:ACTIVE_INVALID_TRANSITION");
-        } else if (oldStatus == ComponentStatus.Paused) {
-            require(newStatus == ComponentStatus.Active, "ERROR:CMP-016:PAUSED_INVALID_TRANSITION");
-        } else if (oldStatus == ComponentStatus.Suspended) {
-            require(newStatus == ComponentStatus.Active, "ERROR:CMP-017:SUSPENDED_INVALID_TRANSITION");
+        } else if (oldState == ComponentState.Active) {
+            require(newState == ComponentState.Paused || newState == ComponentState.Suspended, "ERROR:CMP-015:ACTIVE_INVALID_TRANSITION");
+        } else if (oldState == ComponentState.Paused) {
+            require(newState == ComponentState.Active, "ERROR:CMP-016:PAUSED_INVALID_TRANSITION");
+        } else if (oldState == ComponentState.Suspended) {
+            require(newState == ComponentState.Active, "ERROR:CMP-017:SUSPENDED_INVALID_TRANSITION");
         } else {
             revert("ERROR:CMP-018:INITIAL_STATE_NOT_HANDLED");
         }

@@ -2,9 +2,17 @@
 pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
+import "../modules/PoolController.sol";
+import "../modules/TreasuryModule.sol";
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/modules/IQuery.sol";
-import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
+import "../test/TestProduct.sol";
+
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IProduct.sol";
+import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
+import "@etherisc/gif-interface/contracts/modules/ITreasury.sol";
+import "@etherisc/gif-interface/contracts/services/IInstanceOperatorService.sol";
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract InstanceOperatorService is 
@@ -13,9 +21,14 @@ contract InstanceOperatorService is
     Ownable 
 {
     ComponentController private _component;
+    PoolController private _pool;
+    TreasuryModule private _treasury;
 
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
+        _pool = PoolController(_getContractAddress("Pool"));
+        _treasury = TreasuryModule(_getContractAddress("Treasury"));
+
         _transferOwnership(_msgSender());
     }
 
@@ -87,6 +100,14 @@ contract InstanceOperatorService is
         onlyOwner 
     {
         _component.approve(id);
+
+        IComponent component = _component.getComponent(id);
+        if (component.isProduct()) {
+            IProduct product = IProduct(address(component));
+            _pool.setRiskpoolForProduct(
+                component.getId(),
+                product.getRiskpoolId());
+        }
     }
 
     function decline(uint256 id) 
@@ -131,5 +152,59 @@ contract InstanceOperatorService is
         onlyOwner
     {
         revert("ERROR:IOS-002:IMPLEMENATION_MISSING");
+    }
+
+    /* treasury */
+    function setInstanceWallet(address walletAddress) 
+        external override
+        onlyOwner
+    {
+        _treasury.setInstanceWallet(walletAddress);
+    }
+
+    function setRiskpoolWallet(uint256 riskpoolId, address riskpoolWalletAddress) 
+        external override
+        onlyOwner
+    {
+        _treasury.setRiskpoolWallet(riskpoolId, riskpoolWalletAddress);
+    }
+
+    function setProductToken(uint256 productId, address erc20Address) 
+        external override
+        onlyOwner
+    {
+        _treasury.setProductToken(productId, erc20Address);
+    }
+
+    function createFeeSpecification(
+        uint256 componentId,
+        uint256 fixedFee,
+        uint256 fractionalFee,
+        bytes calldata feeCalculationData
+    )
+        external override
+        view 
+        returns(ITreasury.FeeSpecification memory)
+    {
+        return _treasury.createFeeSpecification(
+            componentId,
+            fixedFee,
+            fractionalFee,
+            feeCalculationData
+        );
+    }
+    
+    function setPremiumFees(ITreasury.FeeSpecification calldata feeSpec) 
+        external override
+        onlyOwner
+    {
+        _treasury.setPremiumFees(feeSpec);
+    }
+
+    function setCapitalFees(ITreasury.FeeSpecification calldata feeSpec) 
+        external override
+        onlyOwner
+    {
+        _treasury.setCapitalFees(feeSpec);
     }
 }

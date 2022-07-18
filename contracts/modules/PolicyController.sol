@@ -2,7 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/modules/IPolicy.sol";
+
+import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 
 contract PolicyController is 
     IPolicy, 
@@ -25,81 +26,127 @@ contract PolicyController is
     // Payouts
     mapping(bytes32 => mapping(uint256 => Payout)) public payouts;
 
-    bytes32[] public bpKeys;
+    bytes32[] private _processIds;
 
     /* Metadata */
-    function createPolicyFlow(uint256 _productId, bytes32 _bpKey)
+    function createPolicyFlow(
+        address owner,
+        bytes32 processId, 
+        uint256 productId,
+        bytes calldata data
+    )
         external override
         onlyPolicyFlow("Policy")
     {
-        Metadata storage meta = metadata[_bpKey];
+        Metadata storage meta = metadata[processId];
         require(meta.createdAt == 0, "ERROR:POC-001:METADATA_ALREADY_EXISTS");
 
-        meta.productId = _productId;
+        meta.owner = owner;
+        meta.productId = productId;
         meta.state = PolicyFlowState.Started;
+        meta.data = data;
         meta.createdAt = block.timestamp;
         meta.updatedAt = block.timestamp;
-        bpKeys.push(_bpKey);
+        _processIds.push(processId);
 
-        emit LogNewMetadata(_productId, _bpKey, PolicyFlowState.Started);
+        emit LogMetadataCreated(owner, processId, productId, PolicyFlowState.Started);
     }
 
-    function setPolicyFlowState(bytes32 _bpKey, PolicyFlowState _state)
+    function setPolicyFlowState(
+        bytes32 processId, 
+        PolicyFlowState state
+    )
         external override
         onlyPolicyFlow("Policy")
     {
-        Metadata storage meta = metadata[_bpKey];
+        Metadata storage meta = metadata[processId];
         require(meta.createdAt > 0, "ERROR:POC-002:METADATA_DOES_NOT_EXIST");
 
-        meta.state = _state;
+        meta.state = state;
         meta.updatedAt = block.timestamp;
 
-        emit LogMetadataStateChanged(_bpKey, _state);
+        emit LogMetadataStateChanged(processId, state);
     }
 
     /* Application */
-    function createApplication(bytes32 _bpKey, bytes calldata _data)
+    function createApplication(
+        bytes32 processId, 
+        uint256 premiumAmount,
+        uint256 sumInsuredAmount,
+        bytes calldata data
+    )
         external override
         onlyPolicyFlow("Policy")
     {
-        Metadata storage meta = metadata[_bpKey];
+        Metadata storage meta = metadata[processId];
         require(meta.createdAt > 0, "ERROR:POC-010:METADATA_DOES_NOT_EXIST");
 
-        Application storage application = applications[_bpKey];
+        Application storage application = applications[processId];
         require(application.createdAt == 0, "ERROR:POC-011:APPLICATION_ALREADY_EXISTS");
 
         application.state = ApplicationState.Applied;
-        application.data = _data;
+        application.premiumAmount = premiumAmount;
+        application.sumInsuredAmount = sumInsuredAmount;
+        application.data = data;
         application.createdAt = block.timestamp;
         application.updatedAt = block.timestamp;
 
         meta.updatedAt = block.timestamp;
 
-        emit LogNewApplication(meta.productId, _bpKey);
+        emit LogApplicationCreated(processId, premiumAmount, sumInsuredAmount);
     }
 
-    function setApplicationState(bytes32 _bpKey, ApplicationState _state)
+    function revokeApplication(bytes32 processId)
         external override
         onlyPolicyFlow("Policy")
     {
-        Application storage application = applications[_bpKey];
+        Application storage application = applications[processId];
         require(application.createdAt > 0, "ERROR:POC-012:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Applied, "ERROR:POC-012:INVALID_APPLICATION_STATE");
 
-        application.state = _state;
+        application.state = ApplicationState.Revoked;
         application.updatedAt = block.timestamp;
 
-        emit LogApplicationStateChanged(_bpKey, _state);
+        emit LogApplicationRevoked(processId);
+    }
+
+    function underwriteApplication(bytes32 processId)
+        external override
+        onlyPolicyFlow("Policy")
+    {
+        Application storage application = applications[processId];
+        require(application.createdAt > 0, "ERROR:POC-012:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Applied, "ERROR:POC-012:INVALID_APPLICATION_STATE");
+
+        application.state = ApplicationState.Underwritten;
+        application.updatedAt = block.timestamp;
+
+        emit LogApplicationUnderwritten(processId);
+    }
+
+    function declineApplication(bytes32 processId)
+        external override
+        onlyPolicyFlow("Policy")
+    {
+        Application storage application = applications[processId];
+        require(application.createdAt > 0, "ERROR:POC-012:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Applied, "ERROR:POC-012:INVALID_APPLICATION_STATE");
+
+        application.state = ApplicationState.Declined;
+        application.updatedAt = block.timestamp;
+
+        emit LogApplicationDeclined(processId);
     }
 
     /* Policy */
-    function createPolicy(bytes32 _bpKey) 
+    function createPolicy(bytes32 processId) 
         external override 
         onlyPolicyFlow("Policy")
     {
-        Metadata storage meta = metadata[_bpKey];
+        Metadata storage meta = metadata[processId];
         require(meta.createdAt > 0, "ERROR:POC-020:METADATA_DOES_NOT_EXIST");
 
-        Policy storage policy = policies[_bpKey];
+        Policy storage policy = policies[processId];
         require(policy.createdAt == 0, "ERROR:POC-021:POLICY_ALREADY_EXISTS");
 
         policy.state = PolicyState.Active;
@@ -108,186 +155,226 @@ contract PolicyController is
 
         meta.updatedAt = block.timestamp;
 
-        emit LogNewPolicy(_bpKey);
+        emit LogPolicyCreated(processId);
     }
 
-    function setPolicyState(bytes32 _bpKey, PolicyState _state)
+    function expirePolicy(bytes32 processId)
         external override
         onlyPolicyFlow("Policy")
     {
-        Policy storage policy = policies[_bpKey];
+        Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-022:POLICY_DOES_NOT_EXIST");
+        require(policy.state == PolicyState.Active, "ERROR:POC-022:INVALID_APPLICATION_STATE");
 
-        policy.state = _state;
+        policy.state = PolicyState.Expired;
         policy.updatedAt = block.timestamp;
 
-        emit LogPolicyStateChanged(_bpKey, _state);
+        emit LogPolicyExpired(processId);
+    }
+
+    function closePolicy(bytes32 processId)
+        external override
+        onlyPolicyFlow("Policy")
+    {
+        Policy storage policy = policies[processId];
+        require(policy.createdAt > 0, "ERROR:POC-022:POLICY_DOES_NOT_EXIST");
+        require(policy.state == PolicyState.Expired, "ERROR:POC-022:INVALID_APPLICATION_STATE");
+
+        // TODO add requires to ensure there are no open claims or payments
+
+        policy.state = PolicyState.Closed;
+        policy.updatedAt = block.timestamp;
+
+        emit LogPolicyClosed(processId);
     }
 
     /* Claim */
-    function createClaim(bytes32 _bpKey, bytes calldata _data)
+    function createClaim(
+        bytes32 processId, 
+        uint256 claimAmount,
+        bytes calldata data
+    )
         external override
         onlyPolicyFlow("Policy")
-        returns (uint256 _claimId)
+        returns (uint256 claimId)
     {
-        Policy storage policy = policies[_bpKey];
+        Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-030:POLICY_DOES_NOT_EXIST");
         require(policy.state == IPolicy.PolicyState.Active, "ERROR:POC-031:POLICY_NOT_ACTIVE");
 
-        _claimId = policy.claimsCount;
-        Claim storage claim = claims[_bpKey][_claimId];
+        claimId = policy.claimsCount;
+        Claim storage claim = claims[processId][claimId];
         require(claim.createdAt == 0, "ERROR:POC-032:CLAIM_ALREADY_EXISTS");
 
         claim.state = ClaimState.Applied;
-        claim.data = _data;
+        claim.claimAmount = claimAmount;
+        claim.data = data;
         claim.createdAt = block.timestamp;
         claim.updatedAt = block.timestamp;
 
         policy.claimsCount += 1;
+        policy.openClaimsCount += 1;
         policy.updatedAt = block.timestamp;
 
-        emit LogNewClaim(_bpKey, _claimId, ClaimState.Applied);
+        emit LogClaimCreated(processId, claimId);
     }
 
-    function setClaimState(
-        bytes32 _bpKey,
-        uint256 _claimId,
-        ClaimState _state
-    ) 
-        external override 
+    function confirmClaim(bytes32 processId, uint256 claimId) 
+        external override
         onlyPolicyFlow("Policy") 
     {
-        Claim storage claim = claims[_bpKey][_claimId];
-        require(claim.createdAt > 0, "ERROR:POC-033:CLAIM_DOES_NOT_EXIST");
+        Policy storage policy = policies[processId];
+        require(policy.createdAt > 0, "ERROR:POC-033:POLICY_DOES_NOT_EXIST");
+        require(policy.openClaimsCount > 0, "ERROR:POC-034:NO_OPEN_CLAIMS");
 
-        claim.state = _state;
+        Claim storage claim = claims[processId][claimId];
+        require(claim.createdAt > 0, "ERROR:POC-035:CLAIM_DOES_NOT_EXIST");
+        require(claim.state == ClaimState.Applied, "ERROR:POC-036:INVALID_CLAIM_STATE");
+
+        claim.state = ClaimState.Confirmed;
         claim.updatedAt = block.timestamp;
 
-        emit LogClaimStateChanged(_bpKey, _claimId, _state);
+        policy.openClaimsCount -= 1;
+        policy.updatedAt = block.timestamp;
+
+        emit LogClaimConfirmed(processId, claimId);
+    }
+
+    function declineClaim(bytes32 processId, uint256 claimId)
+        external override
+        onlyPolicyFlow("Policy") 
+    {
+        Policy storage policy = policies[processId];
+        require(policy.createdAt > 0, "ERROR:POC-033:POLICY_DOES_NOT_EXIST");
+        require(policy.openClaimsCount > 0, "ERROR:POC-034:NO_OPEN_CLAIMS");
+
+        Claim storage claim = claims[processId][claimId];
+        require(claim.createdAt > 0, "ERROR:POC-035:CLAIM_DOES_NOT_EXIST");
+        require(claim.state == ClaimState.Applied, "ERROR:POC-036:INVALID_CLAIM_STATE");
+
+        claim.state = ClaimState.Declined;
+        claim.updatedAt = block.timestamp;
+
+        policy.openClaimsCount -= 1;
+        policy.updatedAt = block.timestamp;
+
+        emit LogClaimDeclined(processId, claimId);
     }
 
     /* Payout */
     function createPayout(
-        bytes32 _bpKey,
-        uint256 _claimId,
-        bytes calldata _data
+        bytes32 processId,
+        uint256 claimId,
+        uint256 payoutAmount,
+        bytes calldata data
     )
         external override 
         onlyPolicyFlow("Policy") 
-        returns (uint256 _payoutId)
+        returns (uint256 payoutId)
     {
-        Policy storage policy = policies[_bpKey];
+        Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-040:POLICY_DOES_NOT_EXIST");
 
-        Claim memory claim = claims[_bpKey][_claimId];
+        Claim memory claim = claims[processId][claimId];
         require(claim.createdAt > 0, "ERROR:POC-041:CLAIM_DOES_NOT_EXIST");
 
-        _payoutId = policy.payoutsCount;
-        Payout storage payout = payouts[_bpKey][_payoutId];
+        payoutId = policy.payoutsCount;
+        Payout storage payout = payouts[processId][payoutId];
         require(payout.createdAt == 0, "ERROR:POC-042:PAYOUT_ALREADY_EXISTS");
 
-        payout.claimId = _claimId;
-        payout.data = _data;
+        payout.claimId = claimId;
+        payout.payoutAmount = payoutAmount;
+        payout.data = data;
         payout.state = PayoutState.Expected;
         payout.createdAt = block.timestamp;
         payout.updatedAt = block.timestamp;
 
         policy.payoutsCount += 1;
+        policy.openPayoutsCount += 1;
         policy.updatedAt = block.timestamp;
 
-        emit LogNewPayout(_bpKey, _claimId, _payoutId, PayoutState.Expected);
+        emit LogPayoutCreated(processId, claimId, payoutId);
     }
 
-    function payOut(
-        bytes32 _bpKey,
-        uint256 _payoutId,
-        bool _fullPayout,
-        bytes calldata _data
+    function processPayout(
+        bytes32 processId,
+        uint256 payoutId,
+        bool isComplete,
+        bytes calldata data
     )
         external override 
         onlyPolicyFlow("Policy")
     {
-        Policy memory policy = policies[_bpKey];
+        Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-043:POLICY_DOES_NOT_EXIST");
+        require(policy.openPayoutsCount > 0, "ERROR:POC-044:NO_OPEN_PAYOUTS");
 
-        Payout storage payout = payouts[_bpKey][_payoutId];
-        require(payout.createdAt > 0, "ERROR:POC-044:PAYOUT_DOES_NOT_EXIST");
-        require(payout.state == PayoutState.Expected, "ERROR:POC-045:PAYOUT_ALREADY_COMPLETED");
+        Payout storage payout = payouts[processId][payoutId];
+        require(payout.createdAt > 0, "ERROR:POC-045:PAYOUT_DOES_NOT_EXIST");
+        require(payout.state == PayoutState.Expected, "ERROR:POC-046:PAYOUT_ALREADY_COMPLETED");
 
-        payout.data = _data;
+        payout.data = data;
         payout.updatedAt = block.timestamp;
 
-        if (_fullPayout) {
+        if (isComplete) {
             payout.state = PayoutState.PaidOut;
-            emit LogPayoutCompleted(_bpKey, _payoutId, payout.state);
+
+            policy.openPayoutsCount -= 1;
+            policy.updatedAt = block.timestamp;
+
+            emit LogPayoutCompleted(processId, payoutId);
         } else {
-            emit LogPartialPayout(_bpKey, _payoutId, payout.state);
+            emit LogPayoutProcessed(processId, payoutId);
         }
     }
 
-    function setPayoutState(
-        bytes32 _bpKey,
-        uint256 _payoutId,
-        PayoutState _state
-    ) 
-        external override 
-        onlyPolicyFlow("Policy")
-    {
-        Payout storage payout = payouts[_bpKey][_payoutId];
-        require(payout.createdAt > 0, "ERROR:POC-046:PAYOUT_DOES_NOT_EXIST");
 
-        payout.state = _state;
-        payout.updatedAt = block.timestamp;
-
-        emit LogPayoutStateChanged(_bpKey, _payoutId, _state);
-    }
-
-    function getMetadata(bytes32 _bpKey)
-        public override
+    function getMetadata(bytes32 processId)
+        public
         view
         returns (IPolicy.Metadata memory _metadata)
     {
-        _metadata = metadata[_bpKey];
+        _metadata = metadata[processId];
         require(_metadata.createdAt > 0,  "ERROR:POC-050:METADATA_DOES_NOT_EXIST");
     }
 
-    function getApplication(bytes32 _bpKey)
-        public override
+    function getApplication(bytes32 processId)
+        public
         view
-        returns (IPolicy.Application memory _application)
+        returns (IPolicy.Application memory application)
     {
-        _application = applications[_bpKey];
-        require(_application.createdAt > 0, "ERROR:POC-051:APPLICATION_DOES_NOT_EXIST");        
+        application = applications[processId];
+        require(application.createdAt > 0, "ERROR:POC-051:APPLICATION_DOES_NOT_EXIST");        
     }
 
-    function getPolicy(bytes32 _bpKey)
-        public override
+    function getPolicy(bytes32 processId)
+        public
         view
-        returns (IPolicy.Policy memory _policy)
+        returns (IPolicy.Policy memory policy)
     {
-        _policy = policies[_bpKey];
-        require(_policy.createdAt > 0, "ERROR:POC-052:POLICY_DOES_NOT_EXIST");        
+        policy = policies[processId];
+        require(policy.createdAt > 0, "ERROR:POC-052:POLICY_DOES_NOT_EXIST");        
     }
 
-    function getClaim(bytes32 _bpKey, uint256 _claimId)
-        public override
+    function getClaim(bytes32 processId, uint256 claimId)
+        public
         view
-        returns (IPolicy.Claim memory _claim)
+        returns (IPolicy.Claim memory claim)
     {
-        _claim = claims[_bpKey][_claimId];
-        require(_claim.createdAt > 0, "ERROR:POC-053:CLAIM_DOES_NOT_EXIST");        
+        claim = claims[processId][claimId];
+        require(claim.createdAt > 0, "ERROR:POC-053:CLAIM_DOES_NOT_EXIST");        
     }
 
-    function getPayout(bytes32 _bpKey, uint256 _payoutId)
-        public override
+    function getPayout(bytes32 processId, uint256 payoutId)
+        public
         view
-        returns (IPolicy.Payout memory _payout)
+        returns (IPolicy.Payout memory payout)
     {
-        _payout = payouts[_bpKey][_payoutId];
-        require(_payout.createdAt > 0, "ERROR:POC-054:PAYOUT_DOES_NOT_EXIST");        
+        payout = payouts[processId][payoutId];
+        require(payout.createdAt > 0, "ERROR:POC-054:PAYOUT_DOES_NOT_EXIST");        
     }
 
-    function getBpKeyCount() external override view returns (uint256 _count) {
-        return bpKeys.length;
+    function processIds() external view returns (uint256) {
+        return _processIds.length;
     }
 }

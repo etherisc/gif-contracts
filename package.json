@@ -1,0 +1,21 @@
+{
+  "name": "@etherisc/gif-contracts",
+  "version": "v1.5.0-staging-k",
+  "description": "This repository holds the GIF core contracts and tools to develop, test and deploy GIF instances.",
+  "main": "index.js",
+  "files": [
+    "contracts/*"
+  ],
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/etherisc/gif-contracts.git"
+  },
+  "keywords": [],
+  "author": "Etherisc project",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/etherisc/gif-contracts#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.7.0"
+  }
+}

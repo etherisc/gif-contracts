@@ -13,6 +13,7 @@ from scripts.const import (
     INSTANCE_SERVICE_NAME,
     ORACLE_SERVICE_NAME,
     PRODUCT_SERVICE_NAME,
+    RISKPOOL_SERVICE_NAME,
     ZERO_ADDRESS
 )
 
@@ -21,15 +22,8 @@ from scripts.util import (
     s2b32,
 )
 
-def test_non_existing_functionality(instanceService, owner):
-    with pytest.raises(AttributeError):
-        assert instanceService.foo({'from': owner})
-
-def test_owner(instanceService, owner):
-    assert instanceService.getOwner() == owner
-    assert owner != 0x0
-
-def test_services_against_registry(instanceService, owner):
+def test_services_against_registry(instance, owner):
+    instanceService = instance.getInstanceService()
     registryAddress = instanceService.getRegistry()
     registry = contractFromAddress(interface.IRegistry, registryAddress)
     isAddressFromRegistry = _addressFrom(registry, INSTANCE_SERVICE_NAME)
@@ -37,13 +31,17 @@ def test_services_against_registry(instanceService, owner):
     assert instanceService.address == isAddressFromRegistry
     assert instanceService.address != 0x0
 
+    psAddress = _addressFrom(registry, PRODUCT_SERVICE_NAME)
+    assert psAddress != ZERO_ADDRESS
+    assert instanceService.getProductService() == psAddress
+
     osAddress = _addressFrom(registry, ORACLE_SERVICE_NAME)
     assert osAddress != ZERO_ADDRESS
     assert instanceService.getOracleService() == osAddress
 
-    psAddress = _addressFrom(registry, PRODUCT_SERVICE_NAME)
-    assert psAddress != ZERO_ADDRESS
-    assert instanceService.getProductService() == psAddress
+    rsAddress = _addressFrom(registry, RISKPOOL_SERVICE_NAME)
+    assert rsAddress != ZERO_ADDRESS
+    assert instanceService.getRiskpoolService() == rsAddress
 
     cosAddress = _addressFrom(registry, COMPONENT_OWNER_SERVICE_NAME)
     assert cosAddress != ZERO_ADDRESS

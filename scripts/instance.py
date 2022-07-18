@@ -10,17 +10,24 @@ from brownie.network.account import Account
 from brownie import (
     Wei,
     Contract, 
+    BundleToken,
+    RiskpoolToken,
     CoreProxy,
     AccessController,
     RegistryController,
     LicenseController,
     PolicyController,
     QueryController,
+    PoolController,
+    BundleController,
+    PoolController,
+    TreasuryModule,
     ProductService,
     OracleService,
+    RiskpoolService,
     ComponentController,
     ComponentOwnerService,
-    PolicyFlowDefault,
+    PolicyDefaultFlow,
     InstanceOperatorService,
     InstanceService,
     network
@@ -37,6 +44,7 @@ from scripts.util import (
     s2b32,
     deployGifModule,
     deployGifService,
+    deployGifToken,
     deployGifModuleV2,
     deployGifServiceV2,
     contractFromAddress,
@@ -87,6 +95,7 @@ class GifInstance(GifRegistry):
     def __init__(
         self, 
         owner: Account = None, 
+        instanceWallet: Account = None, 
         registryAddress = None,
         publishSource: bool = False
     ):
@@ -103,7 +112,11 @@ class GifInstance(GifRegistry):
                 self.registry, 
                 owner,
                 publishSource)
-
+                    
+            self.instanceOperatorService.setInstanceWallet(
+                instanceWallet,
+                {'from': owner})
+            
         else:
             raise ValueError('either owner or registry_address need to be provided')
 
@@ -114,44 +127,60 @@ class GifInstance(GifRegistry):
         owner: Account,
         publishSource: bool
     ):
-        # modules
+        # gif instance tokens
+        self.bundleToken = deployGifToken("BundleToken", BundleToken, registry, owner, publishSource)
+        self.riskpoolToken = deployGifToken("RiskpoolToken", RiskpoolToken, registry, owner, publishSource)
+
+        # modules (need to be deployed first)
+        # deploy order needs to respect module dependencies
         self.access = deployGifModuleV2("Access", AccessController, registry, owner, publishSource)
         self.component = deployGifModuleV2("Component", ComponentController, registry, owner, publishSource)
         self.query = deployGifModuleV2("Query", QueryController, registry, owner, publishSource)
-        self.licence = deployGifModuleV2("License", LicenseController, registry, owner, publishSource)
+        self.license = deployGifModuleV2("License", LicenseController, registry, owner, publishSource)
         self.policy = deployGifModuleV2("Policy", PolicyController, registry, owner, publishSource)
+        self.bundle = deployGifModuleV2("Bundle", BundleController, registry, owner, publishSource)
+        self.pool = deployGifModuleV2("Pool", PoolController, registry, owner, publishSource)
+        self.treasury = deployGifModuleV2("Treasury", TreasuryModule, registry, owner, publishSource)
+
+        # TODO these contracts do not work with proxy pattern
+        self.policyFlow = deployGifService(PolicyDefaultFlow, registry, owner, publishSource)
 
         # services
-        self.componentOwnerService = deployGifModuleV2("ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
         self.instanceService = deployGifModuleV2("InstanceService", InstanceService, registry, owner, publishSource)
+        self.componentOwnerService = deployGifModuleV2("ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
         self.oracleService = deployGifModuleV2("OracleService", OracleService, registry, owner, publishSource)
+        self.riskpoolService = deployGifModuleV2("RiskpoolService", RiskpoolService, registry, owner, publishSource)
 
-        # self.productService = deployGifModuleV2("ProductService", ProductService, registry, owner, publishSource)
-        # self.policyFlow = deployGifModuleV2("PolicyFlowDefault", PolicyFlowDefault, registry, owner, publishSource)
         # TODO these contracts do not work with proxy pattern
-        self.policyFlow = deployGifService(PolicyFlowDefault, registry, owner, publishSource)
         self.productService = deployGifService(ProductService, registry, owner, publishSource)
 
         # needs to be the last module to register as it will change
         # the address of the instance operator service to its true address
         self.instanceOperatorService = deployGifModuleV2("InstanceOperatorService", InstanceOperatorService, registry, owner, publishSource)
 
-        # needs to be called during instance setup
+        # post deploy wiring steps
+        self.bundleToken.setBundleModule(self.bundle)
         self.access.setDefaultAdminRole(self.instanceOperatorService.address, {'from': owner})
 
 
     def fromRegistryAddress(self, registry_address):
         self.registry = contractFromAddress(RegistryController, registry_address)
+        self.access = self.contractFromGifRegistry(AccessController, "Access")
+        self.component = self.contractFromGifRegistry(AccessController, "Component")
 
         self.query = self.contractFromGifRegistry(QueryController, "Query")
-        self.licence = self.contractFromGifRegistry(LicenseController, "License")
+        self.license = self.contractFromGifRegistry(LicenseController, "License")
         self.policy = self.contractFromGifRegistry(PolicyController, "Policy")
+        self.bundle = self.contractFromGifRegistry(BundleController, "Bundle")
+        self.pool = self.contractFromGifRegistry(PoolController, "Pool")
+        self.treasury = self.contractFromGifRegistry(TreasuryModule, "Treasury")
 
         self.instanceService = self.contractFromGifRegistry(InstanceService, "InstanceService")
         self.oracleService = self.contractFromGifRegistry(OracleService, "OracleService")
+        self.riskpoolService = self.contractFromGifRegistry(RiskpoolService, "RiskpoolService")
         self.productService = self.contractFromGifRegistry(ProductService, "ProductService")
 
-        self.policyFlow = self.contractFromGifRegistry(PolicyFlowDefault, "PolicyFlowDefault")
+        self.policyFlow = self.contractFromGifRegistry(PolicyDefaultFlow, "PolicyDefaultFlow")
         self.componentOwnerService = self.contractFromGifRegistry(ComponentOwnerService)
         self.instanceOperatorService = self.contractFromGifRegistry(InstanceOperatorService)
 
@@ -168,26 +197,53 @@ class GifInstance(GifRegistry):
     def getRegistry(self) -> GifRegistry:
         return self.registry
 
+    def getAccess(self) -> AccessController:
+        return self.access
+
+    def getBundle(self) -> BundleController:
+        return self.bundle
+
+    def getBundleToken(self) -> BundleToken:
+        return self.bundleToken
+
+    def getComponent(self) -> ComponentController:
+        return self.component
+
+    def getLicense(self) -> LicenseController:
+        return self.license
+
+    def getPolicy(self) -> PolicyController:
+        return self.policy
+    
+    def getPolicyDefaultFlow(self) -> PolicyDefaultFlow:
+        return self.policyFlow
+
+    def getPool(self) -> PoolController:
+        return self.pool
+
+    def getTreasury(self) -> TreasuryModule:
+        return self.treasury
+
+    def getQuery(self) -> QueryController:
+        return self.query
+
     def getInstanceOperatorService(self) -> InstanceOperatorService:
         return self.instanceOperatorService
 
     def getInstanceService(self) -> InstanceService:
         return self.instanceService
     
+    def getRiskpoolService(self) -> RiskpoolService:
+        return self.riskpoolService
+    
     def getProductService(self) -> ProductService:
         return self.productService
-    
-    def getPolicyFlowDefault(self) -> PolicyFlowDefault:
-        return self.policyFlow
     
     def getComponentOwnerService(self) -> ComponentOwnerService:
         return self.componentOwnerService
     
     def getOracleService(self) -> OracleService:
         return self.oracleService
-
-    def getPolicyController(self) -> PolicyController:
-        return self.policy
 
 
 def dump_sources(registryAddress=None):
@@ -222,10 +278,12 @@ def dump_sources(registryAddress=None):
     contracts.append(dump_single(PolicyController, instance))
     contracts.append(dump_single(Query, instance))
     contracts.append(dump_single(QueryController, instance))
+    contracts.append(dump_single(Pool, instance))
+    contracts.append(dump_single(PoolController, instance))
 
     contracts.append(dump_single(PolicyFlowDefault, instance))
     contracts.append(dump_single(ProductService, instance))
-    contracts.append(dump_single(OracleOwnerService, instance))
+    contracts.append(dump_single(ComponentOwnerService, instance))
     contracts.append(dump_single(OracleService, instance))
     contracts.append(dump_single(InstanceOperatorService, instance))
 
@@ -244,7 +302,7 @@ def dump_single(contract, instance=None) -> str:
     compiler = info['compiler_version']
     optimizer = info['optimizer_enabled']
     runs = info['optimizer_runs']
-    licence = info['license_identifier']
+    license = info['license_identifier']
     address = 'no_address'
     name = info['contract_name']
 
@@ -256,4 +314,4 @@ def dump_single(contract, instance=None) -> str:
     with open(dump_sources_contract_file,'w') as f: 
         f.write(json.dumps(contract.get_verification_info()['standard_json_input']))
 
-    return '{} {} {} {} {} {} {}'.format(netw, compiler, optimizer, runs, licence, address, name)
+    return '{} {} {} {} {} {} {}'.format(netw, compiler, optimizer, runs, license, address, name)

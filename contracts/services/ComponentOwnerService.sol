@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/services/IComponentOwnerService.sol";
+
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/services/IComponentOwnerService.sol";
 
 contract ComponentOwnerService is 
     IComponentOwnerService,

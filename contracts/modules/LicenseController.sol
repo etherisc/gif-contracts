@@ -3,9 +3,10 @@ pragma solidity ^0.8.0;
 
 import "./ComponentController.sol";
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/components/IProduct.sol";
-import "@gif-interface/contracts/modules/ILicense.sol";
+
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IProduct.sol";
+import "@etherisc/gif-interface/contracts/modules/ILicense.sol";
 
 
 contract LicenseController is
@@ -38,7 +39,7 @@ contract LicenseController is
     }
 
     function _isValidCall(IComponent component) internal view returns (bool) {
-        return component.getStatus() == ComponentStatus.Active;
+        return component.getState() == ComponentState.Active;
     }
 
     function _getProduct(uint256 id) internal view returns (IProduct product) {

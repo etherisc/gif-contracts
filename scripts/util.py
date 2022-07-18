@@ -81,6 +81,27 @@ def deployGifModule(
     return contractFromAddress(controllerClass, storage.address)
 
 
+
+# gif token deployment
+def deployGifToken(
+    tokenName,
+    tokenClass,
+    registry,
+    owner,
+    publishSource
+):
+    print('token {} deploy'.format(tokenName))
+    token = tokenClass.deploy(
+        {'from': owner},
+        publish_source=publishSource)
+
+    tokenNameB32 = s2b32(tokenName)
+    print('token {} register'.format(tokenName))
+    registry.register(tokenNameB32, token.address, {'from': owner})
+
+    return token
+
+
 # generic open zeppelin upgradable gif module deployment
 def deployGifModuleV2(
     moduleName,
@@ -89,6 +110,7 @@ def deployGifModuleV2(
     owner,
     publishSource
 ):
+    print('module {} deploy controller'.format(moduleName))
     controller = controllerClass.deploy(
         {'from': owner},
         publish_source=publishSource)
@@ -97,6 +119,7 @@ def deployGifModuleV2(
         registry.address,
         initializer=controller.initialize)
 
+    print('module {} deploy proxy'.format(moduleName))
     proxy = CoreProxy.deploy(
         controller.address, 
         encoded_initializer, 
@@ -106,7 +129,9 @@ def deployGifModuleV2(
     moduleNameB32 = s2b32(moduleName)
     controllerNameB32 = s2b32('{}Controller'.format(moduleName))[:32]
 
+    print('module {} register controller'.format(moduleName))
     registry.register(controllerNameB32, controller.address, {'from': owner})
+    print('module {} register proxy'.format(moduleName))
     registry.register(moduleNameB32, proxy.address, {'from': owner})
 
     return contractFromAddress(controllerClass, proxy.address)
@@ -146,3 +171,48 @@ def deployGifServiceV2(
 
 def contractFromAddress(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
+
+# def fund_riskpool(
+#     instance: GifInstance, 
+#     owner: Account,
+#     riskpool,
+#     bundleOwner: Account,
+#     coin,
+#     amount: int 
+# ):
+#     # transfer funds to riskpool keeper and create allowance
+#     coin.transfer(bundleOwner, amount, {'from': owner})
+#     coin.approve(instance.getTreasury(), amount, {'from': bundleOwner})
+
+#     applicationFilter = bytes(0)
+#     riskpool.createBundle(
+#         applicationFilter, 
+#         amount, 
+#         {'from': bundleOwner})
+
+# def apply_for_policy(
+#     instance: GifInstance, 
+#     owner: Account,
+#     product, 
+#     customer: Account,
+#     coin,
+#     premium: int,
+#     sumInsured: int
+# ):
+#     # transfer premium funds to customer and create allowance
+#     coin.transfer(customer, premium, {'from': owner})
+#     coin.approve(instance.getTreasury(), premium, {'from': customer})
+
+#     # create minimal policy application
+#     metaData = bytes(0)
+#     applicationData = bytes(0)
+
+#     tx = product.applyForPolicy(
+#         premium,
+#         sumInsured,
+#         metaData,
+#         applicationData,
+#         {'from': customer})
+    
+#     # returns policy id
+#     return tx.return_value

@@ -55,59 +55,70 @@ Example session inside the Brownie console
 * Deployment and usage of Test oracle and product
 
 ```bash
-from scripts.instance import GifInstance
-from scripts.product import GifTestOracle
-from scripts.product import GifTestProduct
-from scripts.util import s2b32
+# --- imports ---
+import uuid
+from scripts.product import GifInstance, GifTestOracle, GifTestProduct, GifTestRiskpool
+from scripts.util import s2b, b2s
 
-print('instance deployment')
-owner = accounts[0]
-instance = GifInstance(owner)
+# --- create instance and accounts setup ---
+owner=accounts[0]
+riskpoolKeeper=accounts[1]
+oracleProvider=accounts[2]
+productOwner=accounts[3]
+customer=accounts[4]
+capitalOwner=accounts[5]
+feeOwner=accounts[6]
 
-print('accounts setup')
-oracleOwner = accounts[1]
-productOwner = accounts[2]
-consumer1 = accounts[3]
-consumer2 = accounts[4]
+# --- dummy coin setup ---
+testCoin = TestCoin.deploy({'from': owner})
+testCoin.transfer(riskpoolKeeper, 10**6, {'from': owner})
+testCoin.transfer(customer, 10**6, {'from': owner})
 
-print('deploy gif test oracle and product')
-oracle = GifTestOracle(instance, oracleOwner)
-product = GifTestProduct(instance, oracle, productOwner)
-productContract = product.getProductContract()
+# --- create instance setup ---
+# instance=GifInstance(registryAddress='0xe7D6c54cf8Bd798edA9E9A3Aa094Fb01EF34C251', owner=owner)
+instance = GifInstance(owner, feeOwner)
+service = instance.getInstanceService()
 
-print('check balances')
-Wei(consumer1.balance()).to('ether')
-Wei(productContract.balance()).to('ether')
+instance.getRegistry()
 
-print('create policies')
-premium = Wei('0.5 ether')
-tx1 = productContract.applyForPolicy({'from': consumer1, 'amount': premium})
-tx2 = productContract.applyForPolicy({'from': consumer1, 'amount': premium})
-policyId1 = tx1.return_value
-policyId2 = tx2.return_value
-print('ids of created policies:\n{}\n{}'.format(policyId1, policyId2))
+# --- deploy product (and oracle) ---
+capitalization = 10000
+gifRiskpool = GifTestRiskpool(instance, riskpoolKeeper, capitalOwner, capitalization)
+gifOracle = GifTestOracle(instance, oracleProvider, name=str(uuid.uuid4())[:8])
+gifProduct = GifTestProduct(
+  instance,
+  testCoin,
+  capitalOwner,
+  feeOwner,
+  productOwner,
+  gifOracle,
+  gifRiskpool,
+  name=str(uuid.uuid4())[:8])
 
-print('balances after policy creation')
-Wei(consumer1.balance()).to('ether')
-Wei(productContract.balance()).to('ether')
+riskpool = gifRiskpool.getContract()
+oracle = gifOracle.getContract()
+product = gifProduct.getContract()
+treasury = instance.getTreasury()
 
-print('show events and subcalls for policy creation')
-tx1.events
-tx1.subcalls
+# --- fund riskpool ---
+testCoin.approve(treasury, 3000, {'from': riskpoolKeeper})
+riskpool.createBundle(bytes(0), 1000, {'from':riskpoolKeeper})
+riskpool.createBundle(bytes(0), 2000, {'from':riskpoolKeeper})
 
-print('submit claims')
-tx_claim1 = productContract.submitClaim(policyId1, {'from': consumer1})
-tx_claim2 = productContract.submitClaim(policyId2, {'from': consumer1})
+# --- policy application spec  ---
+premium = 100
+sumInsured = 1000
+metaData = s2b('')
+applicationData = s2b('')
 
-print('show events for claim submission')
-tx_claim1.events
-tx_claim2.events
+# --- premium funding setup
+treasuryAddress = instance.getTreasury().address
+testCoin.transfer(customer, premium, {'from': owner})
+testCoin.approve(treasuryAddress, premium, {'from': customer})
 
-pc = instance.getPolicyController()
-pc.getPolicy(policyId1)
-pc.getPolicy(policyId2)
-pc.getClaim(policyId1, 0)
-pc.getClaim(policyId2, 0)
+# --- create policies ---
+txPolicy1 = product.applyForPolicy(premium, sumInsured, metaData, applicationData, {'from':customer})
+txPolicy2 = product.applyForPolicy(premium, sumInsured, metaData, applicationData, {'from':customer})
 ```
 
 In case things go wrong you can information regarding the last transaction via history.

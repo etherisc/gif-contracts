@@ -2,7 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/modules/IAccess.sol";
+
+import "@etherisc/gif-interface/contracts/modules/IAccess.sol";
+
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
@@ -30,6 +32,8 @@ contract AccessController is
         _populateValidRoles();
     }
 
+    function _getName() internal override pure returns(bytes32) { return "Access"; }
+
     // IMPORTANT this method must be called during initial setup of the GIF instance
     // otherwise any caller might set the default role admin to any addressS
     function setDefaultAdminRole(address defaultAdmin) 
@@ -40,34 +44,6 @@ contract AccessController is
 
         _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
     }
-
-    //--- enforce role ownership --------------------------------------------//
-    // function enforceProductOwnerRole(address principal) public view {
-    //     enforceRole(PRODUCT_OWNER_ROLE, principal);
-    // }
-
-    // function enforceOracleProviderRole(address principal) public view {
-    //     enforceRole(ORACLE_PROVIDER_ROLE, principal);
-    // }
-
-    // function enforceRiskpoolKeeperRole(address principal) public view {
-    //     enforceRole(RISKPOOL_KEEPER_ROLE, principal);
-    // }
-
-    // // adapted from oz AccessControl._checkRole
-    // function enforceRole(bytes32 role, address principal) public view {
-    //     require(
-    //         hasRole(role, principal),
-    //         string(
-    //             abi.encodePacked(
-    //                 "AccessController.enforceRole: account ",
-    //                 Strings.toHexString(uint160(principal), 20),
-    //                 " is missing role ",
-    //                 Strings.toHexString(uint256(role), 32)
-    //             )
-    //         )
-    //     );
-    // }    
 
     //--- manage role ownership ---------------------------------------------//
     function grantRole(bytes32 role, address principal) 

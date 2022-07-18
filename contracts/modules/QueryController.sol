@@ -3,9 +3,10 @@ pragma solidity ^0.8.0;
 
 import "./ComponentController.sol";
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/components/IOracle.sol";
-import "@gif-interface/contracts/modules/IQuery.sol";
+
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IOracle.sol";
+import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
 
 
 contract QueryController is 
@@ -42,80 +43,74 @@ contract QueryController is
     /* Oracle Request */
     // 1->1
     function request(
-        bytes32 _bpKey,
-        bytes calldata _input,
-        string calldata _callbackMethodName,
-        address _callbackContractAddress,
-        uint256 _responsibleOracleId
+        bytes32 processId,
+        bytes calldata input,
+        string calldata callbackMethodName,
+        address callbackContractAddress,
+        uint256 responsibleOracleId
     ) 
         external 
         override 
         onlyPolicyFlow("Query") 
-        returns (uint256 _requestId) 
+        returns (uint256 requestId) 
     {
         // TODO: validate
 
-        _requestId = oracleRequests.length;
+        requestId = oracleRequests.length;
         oracleRequests.push();
 
         // TODO: get token from product
 
-        OracleRequest storage req = oracleRequests[_requestId];
-        req.bpKey = _bpKey;
-        req.data = _input;
-        req.callbackMethodName = _callbackMethodName;
-        req.callbackContractAddress = _callbackContractAddress;
-        req.responsibleOracleId = _responsibleOracleId;
+        OracleRequest storage req = oracleRequests[requestId];
+        req.processId = processId;
+        req.data = input;
+        req.callbackMethodName = callbackMethodName;
+        req.callbackContractAddress = callbackContractAddress;
+        req.responsibleOracleId = responsibleOracleId;
         req.createdAt = block.timestamp;
 
-        _getOracle(_responsibleOracleId).request(
-            _requestId,
-            _input
+        _getOracle(responsibleOracleId).request(
+            requestId,
+            input
         );
 
-        emit LogOracleRequested(_bpKey, _requestId, _responsibleOracleId);
+        emit LogOracleRequested(processId, requestId, responsibleOracleId);
     }
 
     /* Oracle Response */
     function respond(
-        uint256 _requestId,
-        address _responder,
-        bytes calldata _data
+        uint256 requestId,
+        address responder,
+        bytes calldata data
     ) 
         external override 
         onlyOracleService 
-        onlyResponsibleOracle(_requestId, _responder) 
+        onlyResponsibleOracle(requestId, responder) 
     {
-        OracleRequest storage req = oracleRequests[_requestId];
+        OracleRequest storage req = oracleRequests[requestId];
         string memory functionSignature = string(
             abi.encodePacked(
                 req.callbackMethodName,
                 "(uint256,bytes32,bytes)"
             ));
-        bytes32 bpKey = req.bpKey;
+        bytes32 processId = req.processId;
 
         (bool success, ) =
             req.callbackContractAddress.call(
                 abi.encodeWithSignature(
-                    // string(
-                    //     abi.encodePacked(
-                    //         req.callbackMethodName,
-                    //         "(uint256,bytes32,bytes)"
-                    //     )
-                    // ),
                     functionSignature,
-                    _requestId,
-                    bpKey,
-                    _data
+                    requestId,
+                    processId,
+                    data
                 )
             );
 
         require(success, "ERROR:QUC-004:UNSUCCESSFUL_PRODUCT_CALLBACK");
-        delete oracleRequests[_requestId];
+        delete oracleRequests[requestId];
 
         // TODO implement reward payment
 
-        emit LogOracleResponded(bpKey, _requestId, _responder, success);
+        emit LogOracleResponded(processId, requestId, responder, success);
     }
 
     function getOracleRequestCount() public view returns (uint256 _count) {
