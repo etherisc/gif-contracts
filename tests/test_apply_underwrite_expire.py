@@ -50,7 +50,7 @@ def test_create_policy(
     # prepare funded riskpool
     riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     # check funds after capitalization
     capitalFees = initialFunding / 20 + 42
@@ -144,12 +144,13 @@ def test_create_expire_and_close_policy(
     productOwner: Account,
     riskpoolKeeper: Account,
     owner: Account,
-    customer: Account
+    customer: Account,
+    capitalOwner: Account
 ):
     # prepare funded riskpool
     riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     # build and use policy application
     product = gifTestProduct.getContract()
@@ -205,12 +206,13 @@ def test_application_with_insufficient_premium_funding(
     gifTestProduct: GifTestProduct, 
     riskpoolKeeper: Account,
     owner: Account,
-    customer: Account
+    customer: Account,
+    capitalOwner: Account
 ):
     # prepare funded riskpool
     riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     # build and use policy application
     product = gifTestProduct.getContract()
@@ -288,12 +290,13 @@ def test_riskpool_inactive(
     gifTestProduct: GifTestProduct, 
     owner: Account,
     riskpoolKeeper: Account,
-    customer: Account
+    customer: Account,
+    capitalOwner: Account
 ):
     # prepare funded riskpool
     riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     assert riskpool.bundles() == 1
 
@@ -367,12 +370,13 @@ def test_insufficient_capital(
     gifTestProduct: GifTestProduct, 
     owner: Account,
     riskpoolKeeper: Account,
-    customer: Account
+    customer: Account,
+    capitalOwner: Account
 ):
     # prepare funded riskpool
     riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 50
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     product = gifTestProduct.getContract()
 

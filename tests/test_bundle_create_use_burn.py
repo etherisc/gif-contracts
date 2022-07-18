@@ -50,7 +50,7 @@ def test_create_bundle(
     riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
 
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     riskpool.bundles() == 1
     bundle = riskpool.getBundle(0)
@@ -116,7 +116,7 @@ def test_use_bundle(
 
     initialFunding = 10000
     bundleOwner = riskpoolKeeper
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     bundle = _getBundleDict(riskpool, 0)
     capitalFee = initialFunding / 20 + 42
@@ -173,7 +173,7 @@ def test_use_bundle(
     assert bundleToken.getBundleId(tokenId) == bundleId
 
 
-def test_close_bundle(
+def test_close_and_burn_bundle(
     instance: GifInstance, 
     testCoin,
     gifTestProduct: GifTestProduct, 
@@ -189,7 +189,7 @@ def test_close_bundle(
     initialFunding = 10000
 
     bundleOwner = riskpoolKeeper
-    fund_riskpool(instance, owner, riskpool, bundleOwner, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, bundleOwner, testCoin, initialFunding)
 
     premium = 100
     sumInsured = 5000
@@ -197,8 +197,8 @@ def test_close_bundle(
 
     bundle = _getBundleDict(riskpool, 0)
     bundleId = bundle['id']
-    bundleBalance = bundle['balance']
     bundleCapital = bundle['capital']
+    bundleBalance = bundle['balance']
 
     product.expire(policyId, {'from': productOwner})
 
@@ -237,27 +237,87 @@ def test_close_bundle(
     riskpool.closeBundle(bundleId, {'from': bundleOwner})
 
     bundle = _getBundleDict(riskpool, 0)
-    assert bundle['state'] == 2 # BundleState { Active, Locked, Closed }
+    assert bundle['state'] == 2 # BundleState { Active, Locked, Closed, Burned }
     assert bundle['capital'] == bundleCapital
     assert bundle['lockedCapital'] == 0
     assert bundle['balance'] == bundleBalance
 
-    # check that close results in blocking most actions on the bundle
-    with brownie.reverts('ERROR:BUC-014:CLOSED_IS_FINAL_STATE'):
+    # check associated nft
+    bundleToken = instance.getBundleToken()
+    tokenId = bundle['tokenId']
+
+    assert bundleToken.exists(tokenId) == True
+    assert bundleToken.burned(tokenId) == False
+    assert bundleToken.ownerOf(tokenId) == bundleOwner
+    assert bundleToken.getBundleId(tokenId) == bundleId
+    
+    # check that defunding works even when bundle is closed
+    riskpoolWalletBefore = testCoin.balanceOf(capitalOwner)
+    bundleOwnerBefore = testCoin.balanceOf(bundleOwner)
+
+    withdrawalAmount = 999
+    tx = riskpool.defundBundle(bundleId, withdrawalAmount, {'from': bundleOwner})
+    (success, netWithdrawalAmount) = tx.return_value
+
+    assert success
+    assert netWithdrawalAmount == withdrawalAmount
+
+    expectedBalance = bundleBalance - netWithdrawalAmount
+    bundle = _getBundleDict(riskpool, 0)
+    assert bundle['capital'] == bundleCapital - netWithdrawalAmount
+    assert bundle['balance'] == expectedBalance
+
+    assert testCoin.balanceOf(capitalOwner) == expectedBalance
+    assert testCoin.balanceOf(bundleOwner) == bundleOwnerBefore + netWithdrawalAmount
+
+    # check that close results in blocking all other actions on the bundle
+    with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):
         riskpool.closeBundle(bundleId, {'from': bundleOwner})
 
-    with brownie.reverts('ERROR:BUC-014:CLOSED_IS_FINAL_STATE'):
+    with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):
         riskpool.lockBundle(bundleId, {'from': bundleOwner})
 
-    with brownie.reverts('ERROR:BUC-014:CLOSED_IS_FINAL_STATE'):
+    with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):
         riskpool.unlockBundle(bundleId, {'from': bundleOwner})
 
     with brownie.reverts('ERROR:RPS-003:BUNDLE_CLOSED'):
         fundingAmount = 100000
         riskpool.fundBundle(bundleId, fundingAmount, {'from': bundleOwner})
 
+    # attempt to burn bundle with imposter
+    with brownie.reverts('ERROR:BUC-001:NOT_BUNDLE_OWNER'):
+        riskpool.burnBundle(bundleId, {'from': customer})
 
-# TODO implement test
+    assert bundleToken.exists(tokenId) == True
+    assert bundleToken.burned(tokenId) == False
+    assert bundleToken.ownerOf(tokenId) == bundleOwner
+    assert bundleToken.getBundleId(tokenId) == bundleId
+    
+    bundle = _getBundleDict(riskpool, 0)
+    print(bundle)
+
+    # bundle owner buring her/his token
+    riskpool.burnBundle(bundleId, {'from': bundleOwner})
+
+    assert bundleToken.exists(tokenId) == True
+    assert bundleToken.burned(tokenId) == True
+    assert bundleToken.getBundleId(tokenId) == bundleId
+
+    with brownie.reverts('ERC721: invalid token ID'):
+        bundleToken.ownerOf(tokenId) == bundleOwner
+
+    bundle = _getBundleDict(riskpool, 0)
+    assert bundle['capital'] == 0
+    assert bundle['lockedCapital'] == 0
+    assert bundle['balance'] == 0
+
+    assert riskpool.getCapital() == 0
+    assert riskpool.getTotalValueLocked() == 0
+    assert riskpool.getBalance() == 0
+
+    assert testCoin.balanceOf(capitalOwner) == 0
+
+
 def test_fund_defund_bundle(
     instance: GifInstance, 
     testCoin,
@@ -269,7 +329,57 @@ def test_fund_defund_bundle(
     feeOwner: Account,
     capitalOwner: Account
 ):
-    pass
+    product = gifTestProduct.getContract()
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    initialFunding = 10000
+
+    bundleOwner = riskpoolKeeper
+    fund_riskpool(instance, owner, capitalOwner, riskpool, bundleOwner, testCoin, initialFunding)
+
+    premium = 100
+    sumInsured = 5000
+    policyId = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
+
+    bundle = _getBundleDict(riskpool, 0)
+    bundleId = bundle['id']
+    bundleCapital = bundle['capital']
+    bundleBalance = bundle['balance']
+
+    assert riskpool.getBalance() == bundleBalance
+    assert testCoin.balanceOf(capitalOwner) == bundleBalance
+
+    withdrawalAmount = 999
+    # (success, netWithdrawlAmount) = riskpool.defundBundle(bundleId, withdrawalAmount, {'from': bundleOwner})
+    tx = riskpool.defundBundle(bundleId, withdrawalAmount, {'from': bundleOwner})
+    (success, netWithdrawlAmount) = tx.return_value
+
+    assert success
+    assert netWithdrawlAmount == withdrawalAmount
+
+    bundle = _getBundleDict(riskpool, 0)
+    expectedCapital = bundleCapital - netWithdrawlAmount
+    expectedBalance = bundleBalance - netWithdrawlAmount
+    assert bundle['capital'] == expectedCapital
+    assert bundle['balance'] == expectedBalance
+    assert riskpool.getCapital() == expectedCapital
+    assert riskpool.getBalance() == expectedBalance
+    assert testCoin.balanceOf(capitalOwner) == expectedBalance
+
+    fundingAmount = 2000
+    tx = riskpool.fundBundle(bundleId, fundingAmount, {'from': bundleOwner})
+    (success, netFundingAmount) = tx.return_value
+
+    assert success
+    assert netFundingAmount == fundingAmount - (fundingAmount / 20 + 42)
+
+    bundle = _getBundleDict(riskpool, 0)
+    expectedCapital = bundleCapital - netWithdrawlAmount + netFundingAmount
+    expectedBalance = bundleBalance - netWithdrawlAmount + netFundingAmount
+    assert bundle['capital'] == expectedCapital
+    assert bundle['balance'] == expectedBalance
+    assert riskpool.getCapital() == expectedCapital
+    assert riskpool.getBalance() == expectedBalance
+    assert testCoin.balanceOf(capitalOwner) == expectedBalance
 
 
 def _getApplicationDict(instance, policyId):

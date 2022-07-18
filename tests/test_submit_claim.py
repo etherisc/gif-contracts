@@ -43,12 +43,13 @@ def test_claim_submission(
     owner: Account,
     customer: Account, 
     productOwner: Account,
-    riskpoolKeeper: Account
+    riskpoolKeeper: Account,
+    capitalOwner: Account
 ):
     # prepare funded riskpool
     riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     # build and use policy application
     product = gifTestProduct.getContract()
@@ -89,12 +90,13 @@ def test_claim_submission_for_expired_policy(
     owner: Account,
     customer: Account, 
     productOwner: Account,
-    riskpoolKeeper: Account
+    riskpoolKeeper: Account,
+    capitalOwner: Account
 ):
     # prepare funded riskpool
     riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 10000
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     # build and use policy application
     product = gifTestProduct.getContract()
@@ -120,12 +122,13 @@ def test_multiple_claim_submission(
     owner: Account,
     customer: Account, 
     productOwner: Account,
-    riskpoolKeeper: Account
+    riskpoolKeeper: Account,
+    capitalOwner: Account
 ):
     # prepare funded riskpool
     riskpool = gifTestProduct.getRiskpool().getContract()
     initialFunding = 20000
-    fund_riskpool(instance, owner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     # build and use policy application
     product = gifTestProduct.getContract()

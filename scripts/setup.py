@@ -4,14 +4,20 @@ from scripts.instance import GifInstance
 def fund_riskpool(
     instance: GifInstance, 
     owner: Account,
+    capitalOwner: Account,
     riskpool,
     bundleOwner: Account,
     coin,
     amount: int 
 ):
     # transfer funds to riskpool keeper and create allowance
-    coin.transfer(bundleOwner, amount, {'from': owner})
-    coin.approve(instance.getTreasury(), amount, {'from': bundleOwner})
+    safetyFactor = 2
+    coin.transfer(bundleOwner, safetyFactor * amount, {'from': owner})
+    coin.approve(instance.getTreasury(), safetyFactor * amount, {'from': bundleOwner})
+
+    # create approval for treasury from capital owner to allow for withdrawls
+    maxUint256 = 2**256-1
+    coin.approve(instance.getTreasury(), maxUint256, {'from': capitalOwner})
 
     applicationFilter = bytes(0)
     riskpool.createBundle(

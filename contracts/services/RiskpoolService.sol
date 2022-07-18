@@ -72,12 +72,13 @@ contract RiskpoolService is
 
     function fundBundle(uint256 bundleId, uint256 amount)
         external override
-        onlyOwningRiskpool(bundleId)  
+        onlyOwningRiskpool(bundleId)
+        returns(bool success, uint256 netAmount)
     {
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
         require(bundle.state != IBundle.BundleState.Closed, "ERROR:RPS-003:BUNDLE_CLOSED");
 
-        (bool success, uint256 netAmount) = _treasury.processCapital(bundleId, amount);
+        (success, netAmount) = _treasury.processCapital(bundleId, amount);
         if (success) {
             _bundle.fund(bundleId, netAmount);
         }
@@ -86,11 +87,15 @@ contract RiskpoolService is
 
     function defundBundle(uint256 bundleId, uint256 amount)
         external override
-        onlyOwningRiskpool(bundleId)  
+        onlyOwningRiskpool(bundleId)
+        returns(bool success, uint256 netAmount)
     {
-        (bool success, uint256 netAmount) = _treasury.processWithdrawl(bundleId, amount);
+        (success, netAmount) = _treasury.processWithdrawal(bundleId, amount);
+        require(success, "ERROR:RPS-004:BUNDLE_DEFUNDING_FAILED");
+        require(netAmount == amount, "UUPS");
+
         if (success) {
-            _bundle.defund(bundleId, netAmount);
+            _bundle.defund(bundleId, amount);
         }
     }
 
@@ -118,28 +123,29 @@ contract RiskpoolService is
         _bundle.close(bundleId);
     }
 
+    function burnBundle(uint256 bundleId)
+        external override
+        onlyOwningRiskpool(bundleId)  
+    {
+        // ensure bundle is closed
+        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
+        require(bundle.state == IBundle.BundleState.Closed, "ERROR:RPS-004:BUNDLE_NOT_CLOSED");
+
+        // withdraw remaining balance
+        (bool success, uint256 netAmount) = _treasury.processWithdrawal(bundleId, bundle.balance);
+        require(success, "ERROR:RPS-005:WITHDRAWAL_FAILED");
+
+        if (success) {
+            _bundle.defund(bundleId, bundle.balance);
+            _bundle.burn(bundleId);
+        }
+    }
     
     function collateralizePolicy(uint256 bundleId, bytes32 processId, uint256 collateralAmount) 
         external override
         onlyOwningRiskpool(bundleId)  
     {
         _bundle.collateralizePolicy(bundleId, processId, collateralAmount);
-    }
-
-
-    function increaseBundleBalance(uint256 bundleId, bytes32 processId, uint256 amount)
-        external override
-        onlyOwningRiskpool(bundleId)  
-    {        
-        _bundle.increaseBalance(bundleId, processId, amount);
-    }
-
-
-    function decreaseBundleBalance(uint256 bundleId, bytes32 processId, uint256 amount)
-        external override
-        onlyOwningRiskpool(bundleId)  
-    {
-        revert("NOT_IMPLEMENTED_YET:decreaseBundleBalance(...)");
     }
 
     function releasePolicy(uint256 bundleId, bytes32 processId)
@@ -156,5 +162,21 @@ contract RiskpoolService is
         );
 
         collateralAmount = _bundle.releasePolicy(bundleId, processId);
+    }
+
+
+    function increaseBundleBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyOwningRiskpool(bundleId)  
+    {        
+        _bundle.increaseBalance(bundleId, processId, amount);
+    }
+
+
+    function decreaseBundleBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyOwningRiskpool(bundleId)  
+    {
+        revert("NOT_IMPLEMENTED_YET:decreaseBundleBalance(...)");
     }
 }

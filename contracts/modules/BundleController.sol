@@ -69,8 +69,7 @@ contract BundleController is
         emit LogBundleCreated(bundle.id, riskpoolId_, owner_, bundle.state, bundle.capital);
     }
 
-    // TODO decide + implement authz for risk bundle creation
-    // funding can come from nft owner or various 2nd level risk pool owners
+
     function fund(uint256 bundleId, uint256 amount)
         external override 
         onlyRiskpoolService
@@ -87,6 +86,7 @@ contract BundleController is
         emit LogBundleCapitalProvided(bundleId, _msgSender(), amount, capacityAmount);
     }
 
+
     function defund(uint256 bundleId, uint256 amount) 
         external override 
         onlyRiskpoolService
@@ -94,11 +94,14 @@ contract BundleController is
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-013:BUNDLE_DOES_NOT_EXIST");
         require(
-            bundle.capital >= bundle.lockedCapital + amount, 
-            "ERROR:BUC-014:CAPACITY_TOO_LOW"
+            bundle.capital >= bundle.lockedCapital + amount
+            || (bundle.lockedCapital == 0 && bundle.balance >= amount),
+            "ERROR:BUC-014:CAPACITY_OR_BALANCE_TOO_LOW"
         );
 
-        bundle.capital -= amount;
+        if (bundle.capital >= amount) { bundle.capital -= amount; } 
+        else                          { bundle.capital = 0; }
+
         bundle.balance -= amount;
         bundle.updatedAt = block.timestamp;
 
@@ -128,14 +131,28 @@ contract BundleController is
         _changeState(bundleId, BundleState.Closed);
     }
 
+    function burn(uint256 bundleId)    
+        external override
+        onlyRiskpoolService
+    {
+        Bundle storage bundle = _bundles[bundleId];
+        require(bundle.state == BundleState.Closed, "ERROR:BUC-016:BUNDLE_NOT_CLOSED");
+        require(bundle.balance == 0, "ERROR:BUC-016:BUNDLE_HAS_BALANCE");
+
+        // burn corresponding nft -> as a result bundle looses its owner
+        _token.burn(bundleId);
+
+        _changeState(bundleId, BundleState.Burned);
+    }
+
     function collateralizePolicy(uint256 bundleId, bytes32 processId, uint256 amount)
         external override 
         onlyRiskpoolService
     {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
-        require(bundle.state == IBundle.BundleState.Active, "ERROR:BUC-005:BUNDLE_NOT_ACTIVE");        
-        require(bundle.capital >= bundle.lockedCapital + amount, "ERROR:BUC-006:CAPACITY_TOO_LOW");
+        require(bundle.createdAt > 0, "ERROR:BUC-020:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.state == IBundle.BundleState.Active, "ERROR:BUC-021:BUNDLE_NOT_ACTIVE");        
+        require(bundle.capital >= bundle.lockedCapital + amount, "ERROR:BUC-022:CAPACITY_TOO_LOW");
 
         bundle.lockedCapital += amount;
         bundle.updatedAt = block.timestamp;
@@ -155,16 +172,16 @@ contract BundleController is
     {
         // make sure bundle exists and is not yet closed
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
-        require(_activePolicies[bundleId] > 0, "ERROR:BUC-007:NO_ACTIVE_POLICIES_FOR_BUNDLE");
+        require(bundle.createdAt > 0, "ERROR:BUC-023:BUNDLE_DOES_NOT_EXIST");
+        require(_activePolicies[bundleId] > 0, "ERROR:BUC-024:NO_ACTIVE_POLICIES_FOR_BUNDLE");
 
         collateralAmount = _valueLockedPerPolicy[bundleId][processId];
-        require(collateralAmount > 0, "ERROR:BUC-007:NOT_COLLATERALIZED_BY_BUNDLE");
+        require(collateralAmount > 0, "ERROR:BUC-025:NOT_COLLATERALIZED_BY_BUNDLE");
 
         // this should never ever fail ...
         require(
             bundle.lockedCapital >= collateralAmount,
-            "PANIC:BUC-008:UNLOCK_CAPITAL_TOO_BIG"
+            "PANIC:BUC-026:UNLOCK_CAPITAL_TOO_BIG"
         );
 
         // policy no longer relevant for bundle
@@ -185,8 +202,8 @@ contract BundleController is
         onlyRiskpoolService
     {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
-        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-005:BUNDLE_CLOSED");
+        require(bundle.createdAt > 0, "ERROR:BUC-031:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-032:BUNDLE_CLOSED");
 
         bundle.balance += amount;
         bundle.updatedAt = block.timestamp;
@@ -198,7 +215,7 @@ contract BundleController is
         onlyRiskpoolService
     {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.createdAt > 0, "ERROR:BUC-033:BUNDLE_DOES_NOT_EXIST");
 
         revert("NOT_IMPLEMENTED_YET:decreaseBalance(...)");
     }
@@ -236,7 +253,7 @@ contract BundleController is
 
     function getBundle(uint256 bundleId) public view returns(Bundle memory) {
         Bundle memory bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.createdAt > 0, "ERROR:BUC-040:BUNDLE_DOES_NOT_EXIST");
         return bundle;
     }
 
@@ -266,17 +283,22 @@ contract BundleController is
         if (oldState == BundleState.Active) {
             require(
                 newState == BundleState.Locked || newState == BundleState.Closed, 
-                "ERROR:BUC-013:ACTIVE_INVALID_TRANSITION"
+                "ERROR:BUC-050:ACTIVE_INVALID_TRANSITION"
             );
         } else if (oldState == BundleState.Locked) {
             require(
                 newState == BundleState.Active || newState == BundleState.Closed, 
-                "ERROR:BUC-013:LOCKED_INVALID_TRANSITION"
+                "ERROR:BUC-051:LOCKED_INVALID_TRANSITION"
             );
         } else if (oldState == BundleState.Closed) {
-            revert("ERROR:BUC-014:CLOSED_IS_FINAL_STATE");
+            require(
+                newState == BundleState.Burned, 
+                "ERROR:BUC-052:CLOSED_INVALID_TRANSITION"
+            );
+        } else if (oldState == BundleState.Burned) {
+            revert("ERROR:BUC-053:BURNED_IS_FINAL_STATE");
         } else {
-            revert("ERROR:BOC-018:INITIAL_STATE_NOT_HANDLED");
+            revert("ERROR:BOC-054:INITIAL_STATE_NOT_HANDLED");
         }
     }
     

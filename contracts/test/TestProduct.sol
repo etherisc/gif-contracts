@@ -5,6 +5,7 @@ import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 import "@etherisc/gif-interface/contracts/services/IProductService.sol";
 import "@etherisc/gif-interface/contracts/services/IInstanceService.sol";
 import "@etherisc/gif-interface/contracts/components/Product.sol";
+
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract TestProduct is 

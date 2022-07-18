@@ -234,11 +234,11 @@ contract TreasuryModule is
         emit LogTreasuryCapitalProcessed(bundle.riskpoolId, bundleId, capitalAmount, success);
     }
 
-    // TODO remove once at ITreasury
-    event LogTreasuryWithdrawlTransferred(address riskpoolWalletAddress, address to, uint256 amount, bool success);
-    event LogTreasuryWithdrawlProcessed(uint256 riskpoolId, uint256 bundleId, uint256 amount, bool success);
+    // // TODO cleanup remove once at ITreasury
+    // event LogTreasuryWithdrawalTransferred(address riskpoolWalletAddress, address to, uint256 amount, bool success);
+    // event LogTreasuryWithdrawalProcessed(uint256 riskpoolId, uint256 bundleId, uint256 amount, bool success);
 
-    function processWithdrawl(uint256 bundleId, uint256 amount) 
+    function processWithdrawal(uint256 bundleId, uint256 amount) 
         external override
         returns(
             bool success,
@@ -248,8 +248,9 @@ contract TreasuryModule is
         // obtain relevant bundle info
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
         require(
-            bundle.capital >= bundle.lockedCapital + amount,
-            "ERROR:TRS-002:CAPACITY_SMALLER_THAN_WITHDRAWL"
+            bundle.capital >= bundle.lockedCapital + amount
+            || (bundle.lockedCapital == 0 && bundle.balance >= amount),
+            "ERROR:TRS-002:CAPACITY_OR_BALANCE_SMALLER_THAN_WITHDRAWAL"
         );
 
         // obtain relevant token for product/riskpool pair
@@ -260,17 +261,17 @@ contract TreasuryModule is
             token.allowance(
                 riskpoolWallet, 
                 address(this)) >= amount,
-            "ERROR:TRS-002:ALLOWANCE_SMALLER_THAN_WITHDRAWL"
+            "ERROR:TRS-002:ALLOWANCE_SMALLER_THAN_WITHDRAWAL"
         );
 
-        // TODO consider to introduce withdrawl fees
+        // TODO consider to introduce withdrawal fees
         netAmount = amount;
         success = token.transferFrom(riskpoolWallet, bundleOwner, netAmount);
 
-        emit LogTreasuryWithdrawlTransferred(riskpoolWallet, bundleOwner, netAmount, success);
-        require(success, "ERROR:TRS-002:WITHDRAWL_TRANSFER_FAILED");
+        emit LogTreasuryWithdrawalTransferred(riskpoolWallet, bundleOwner, netAmount, success);
+        require(success, "ERROR:TRS-002:WITHDRAWAL_TRANSFER_FAILED");
 
-        emit LogTreasuryWithdrawlProcessed(bundle.riskpoolId, bundleId, netAmount, success);
+        emit LogTreasuryWithdrawalProcessed(bundle.riskpoolId, bundleId, netAmount, success);
     }
 
 
