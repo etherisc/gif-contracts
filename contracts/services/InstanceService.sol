@@ -8,15 +8,16 @@ import "../modules/TreasuryModule.sol";
 import "../shared/CoreController.sol";
 import "../services/InstanceOperatorService.sol";
 
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/modules/IPolicy.sol";
-import "@gif-interface/contracts/modules/IRegistry.sol";
-import "@gif-interface/contracts/services/IComponentOwnerService.sol";
-import "@gif-interface/contracts/services/IInstanceService.sol";
-import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
-import "@gif-interface/contracts/services/IOracleService.sol";
-import "@gif-interface/contracts/services/IProductService.sol";
-import "@gif-interface/contracts/services/IRiskpoolService.sol";
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
+import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
+import "@etherisc/gif-interface/contracts/services/IComponentOwnerService.sol";
+import "@etherisc/gif-interface/contracts/services/IInstanceService.sol";
+import "@etherisc/gif-interface/contracts/services/IInstanceOperatorService.sol";
+import "@etherisc/gif-interface/contracts/services/IOracleService.sol";
+import "@etherisc/gif-interface/contracts/services/IProductService.sol";
+import "@etherisc/gif-interface/contracts/services/IRiskpoolService.sol";
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 

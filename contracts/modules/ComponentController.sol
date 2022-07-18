@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/modules/IComponentEvents.sol";
+
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/modules/IComponentEvents.sol";
 
 contract ComponentController is
     IComponentEvents,

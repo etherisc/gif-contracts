@@ -2,7 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/modules/IPolicy.sol";
+
+import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 
 contract PolicyController is 
     IPolicy, 
@@ -178,6 +179,8 @@ contract PolicyController is
         Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-022:POLICY_DOES_NOT_EXIST");
         require(policy.state == PolicyState.Expired, "ERROR:POC-022:INVALID_APPLICATION_STATE");
+
+        // TODO add requires to ensure there are no open claims or payments
 
         policy.state = PolicyState.Closed;
         policy.updatedAt = block.timestamp;

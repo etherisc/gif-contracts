@@ -5,9 +5,9 @@ import "./ComponentController.sol";
 import "./PolicyController.sol";
 import "../shared/CoreController.sol";
 
-import "@gif-interface/contracts/modules/IPool.sol";
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/components/IRiskpool.sol";
+import "@etherisc/gif-interface/contracts/modules/IPool.sol";
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IRiskpool.sol";
 
 
 contract PoolController is

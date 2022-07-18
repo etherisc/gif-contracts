@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 
 import "../shared/WithRegistry.sol";
 // import "../shared/CoreController.sol";
-import "@gif-interface/contracts/modules/ILicense.sol";
+import "@etherisc/gif-interface/contracts/modules/ILicense.sol";
+
 import "@openzeppelin/contracts/utils/Context.sol";
 
 contract ProductService is 

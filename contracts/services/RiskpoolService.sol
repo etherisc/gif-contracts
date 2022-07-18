@@ -6,9 +6,9 @@ import "../modules/ComponentController.sol";
 import "../modules/TreasuryModule.sol";
 import "../shared/CoreController.sol";
 
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/modules/IBundle.sol";
-import "@gif-interface/contracts/services/IRiskpoolService.sol";
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
+import "@etherisc/gif-interface/contracts/services/IRiskpoolService.sol";
 
 contract RiskpoolService is
     IRiskpoolService, 
@@ -62,10 +62,10 @@ contract RiskpoolService is
         uint256 riskpoolId = _component.getComponentId(_msgSender());
         bundleId = _bundle.create(owner, riskpoolId, filter, 0);
 
-        (bool success, uint256 capitalAfterFees) = _treasury.processCapital(bundleId, initialCapital);
+        (bool success, uint256 netCapital) = _treasury.processCapital(bundleId, initialCapital);
 
         if (success) {
-            _bundle.fund(bundleId, capitalAfterFees);
+            _bundle.fund(bundleId, netCapital);
         }
     }
 
@@ -75,7 +75,6 @@ contract RiskpoolService is
         onlyOwningRiskpool(bundleId)  
     {
         (bool success, uint256 netAmount) = _treasury.processCapital(bundleId, amount);
-
         if (success) {
             _bundle.fund(bundleId, netAmount);
         }
@@ -86,8 +85,10 @@ contract RiskpoolService is
         external override
         onlyOwningRiskpool(bundleId)  
     {
-        _bundle.defund(bundleId, amount);
-        _treasury.processWithdrawl(bundleId, amount);
+        (bool success, uint256 netAmount) = _treasury.processWithdrawl(bundleId, amount);
+        if (success) {
+            _bundle.defund(bundleId, netAmount);
+        }
     }
 
 

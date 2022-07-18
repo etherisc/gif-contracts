@@ -2,7 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/modules/IRegistry.sol";
+
+import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
+
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 

@@ -3,9 +3,10 @@ pragma solidity ^0.8.0;
 
 import "./ComponentController.sol";
 import "../shared/CoreController.sol";
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/components/IOracle.sol";
-import "@gif-interface/contracts/modules/IQuery.sol";
+
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IOracle.sol";
+import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
 
 
 contract QueryController is 

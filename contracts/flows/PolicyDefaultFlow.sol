@@ -6,11 +6,12 @@ import "../modules/PolicyController.sol";
 import "../modules/TreasuryModule.sol";
 import "../shared/WithRegistry.sol";
 // import "../shared/CoreController.sol";
-import "@gif-interface/contracts/modules/ILicense.sol";
-import "@gif-interface/contracts/modules/IPolicy.sol";
-import "@gif-interface/contracts/modules/IQuery.sol";
-import "@gif-interface/contracts/modules/IRegistry.sol";
-import "@gif-interface/contracts/modules/IPool.sol";
+
+import "@etherisc/gif-interface/contracts/modules/ILicense.sol";
+import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
+import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
+import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
+import "@etherisc/gif-interface/contracts/modules/IPool.sol";
 
 /*
  * PolicyFlowDefault is a delegate of ProductService.sol.

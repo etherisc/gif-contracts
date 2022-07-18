@@ -13,6 +13,7 @@ compiler:
         remappings:
           - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.7.0"
           - "@gif-interface=etherisc/gif-interface@1.7.0-staging-k"
+          - "@etherisc/gif-interface=etherisc/gif-interface@1.7.0-staging-k"
     vyper:
         version: null
 

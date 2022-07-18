@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@gif-interface/contracts/components/Oracle.sol";
+import "@etherisc/gif-interface/contracts/components/Oracle.sol";
 
 contract TestOracle is Oracle {
 

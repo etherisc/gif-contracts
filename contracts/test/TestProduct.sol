@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@gif-interface/contracts/modules/IPolicy.sol";
-import "@gif-interface/contracts/services/IProductService.sol";
-import "@gif-interface/contracts/services/IInstanceService.sol";
-import "@gif-interface/contracts/components/Product.sol";
+import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
+import "@etherisc/gif-interface/contracts/services/IProductService.sol";
+import "@etherisc/gif-interface/contracts/services/IInstanceService.sol";
+import "@etherisc/gif-interface/contracts/components/Product.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract TestProduct is 

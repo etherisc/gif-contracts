@@ -5,7 +5,7 @@ import "./PolicyController.sol";
 import "../shared/CoreController.sol";
 import "../tokens/BundleToken.sol";
 
-import "@gif-interface/contracts/modules/IBundle.sol";
+import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
 
 contract BundleController is 
     IBundle,
@@ -48,7 +48,7 @@ contract BundleController is
         // this helps in maps where a bundleId equals a non-existing entry
         bundleId = _bundleCount + 1;
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt == 0, "ERROR:BUC-002:BUNDLE_ALREADY_EXISTS");
+        require(bundle.createdAt == 0, "ERROR:BUC-010:BUNDLE_ALREADY_EXISTS");
 
         // mint corresponding nft with bundleId as nft
         uint256 tokenId = _token.mint(bundleId, owner_);
@@ -76,8 +76,8 @@ contract BundleController is
         onlyRiskpoolService
     {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
-        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-003:BUNDLE_CLOSED");
+        require(bundle.createdAt > 0, "ERROR:BUC-011:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-012:BUNDLE_CLOSED");
 
         bundle.capital += amount;
         bundle.balance += amount;
@@ -92,10 +92,10 @@ contract BundleController is
         onlyRiskpoolService
     {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.createdAt > 0, "ERROR:BUC-013:BUNDLE_DOES_NOT_EXIST");
         require(
             bundle.capital >= bundle.lockedCapital + amount, 
-            "ERROR:BUC-004:CAPACITY_TOO_LOW"
+            "ERROR:BUC-014:CAPACITY_TOO_LOW"
         );
 
         bundle.capital -= amount;
@@ -124,6 +124,7 @@ contract BundleController is
         external override
         onlyRiskpoolService
     {
+        require(_activePolicies[bundleId] == 0, "ERROR:BUC-015:BUNDLE_WITH_ACTIVE_POLICIES");
         _changeState(bundleId, BundleState.Closed);
     }
 
@@ -146,29 +147,6 @@ contract BundleController is
         emit LogBundlePolicyCollateralized(bundleId, processId, amount, capacityAmount);
     }
 
-
-    function increaseBalance(uint256 bundleId, bytes32 processId, uint256 amount)
-        external override
-        onlyRiskpoolService
-    {
-        Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
-        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-005:BUNDLE_CLOSED");
-
-        bundle.balance += amount;
-        bundle.updatedAt = block.timestamp;
-    }
-
-
-    function decreaseBalance(uint256 bundleId, bytes32 processId, uint256 amount)
-        external override
-        onlyRiskpoolService
-    {
-        Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
-
-        revert("NOT_IMPLEMENTED_YET:decreaseBalance(...)");
-    }
 
     function releasePolicy(uint256 bundleId, bytes32 processId) 
         external override 
@@ -202,29 +180,53 @@ contract BundleController is
     }
 
 
-    function owner(uint256 bundleId) public view returns(address) { 
+    function increaseBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyRiskpoolService
+    {
+        Bundle storage bundle = _bundles[bundleId];
+        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-005:BUNDLE_CLOSED");
+
+        bundle.balance += amount;
+        bundle.updatedAt = block.timestamp;
+    }
+
+
+    function decreaseBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyRiskpoolService
+    {
+        Bundle storage bundle = _bundles[bundleId];
+        require(bundle.createdAt > 0, "ERROR:BUC-001:BUNDLE_DOES_NOT_EXIST");
+
+        revert("NOT_IMPLEMENTED_YET:decreaseBalance(...)");
+    }
+
+
+    function getOwner(uint256 bundleId) public view returns(address) { 
         uint256 tokenId = getBundle(bundleId).tokenId;
         return _token.ownerOf(tokenId); 
     }
 
-    function state(uint256 bundleId) external view returns(BundleState) {
+    function getState(uint256 bundleId) public view returns(BundleState) {
         return getBundle(bundleId).state;   
     }
 
-    function filter(uint256 bundleId) external view returns(bytes memory) {
+    function getFilter(uint256 bundleId) public view returns(bytes memory) {
         return getBundle(bundleId).filter;
     }   
 
-    function capacity(uint256 bundleId) external view returns(uint256) {
+    function getCapacity(uint256 bundleId) public view returns(uint256) {
         Bundle memory bundle = getBundle(bundleId);
         return bundle.capital - bundle.lockedCapital;
     }
 
-    function totalValueLocked(uint256 bundleId) external view returns(uint256) {
+    function getTotalValueLocked(uint256 bundleId) public view returns(uint256) {
         return getBundle(bundleId).lockedCapital;   
     }
 
-    function price(uint256 bundleId) external view returns(uint256) {
+    function getBalance(uint256 bundleId) public view returns(uint256) {
         return getBundle(bundleId).balance;   
     }
 
@@ -243,7 +245,7 @@ contract BundleController is
     }
 
     function _changeState(uint256 bundleId, BundleState newState) internal {
-        BundleState oldState = this.state(bundleId);
+        BundleState oldState = getState(bundleId);
 
         _checkStateTransition(oldState, newState);
         _setState(bundleId, newState);

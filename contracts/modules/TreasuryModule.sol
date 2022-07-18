@@ -7,9 +7,10 @@ import "./BundleController.sol";
 import "./PoolController.sol";
 import "../shared/CoreController.sol";
 
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/modules/IPolicy.sol";
-import "@gif-interface/contracts/modules/ITreasury.sol";
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
+import "@etherisc/gif-interface/contracts/modules/ITreasury.sol";
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TreasuryModule is 
@@ -197,7 +198,7 @@ contract TreasuryModule is
     {
         // obtain relevant fee specification
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
-        address bundleOwner = _bundle.owner(bundleId);
+        address bundleOwner = _bundle.getOwner(bundleId);
 
         FeeSpecification memory feeSpec = getFeeSpecification(bundle.riskpoolId);
         require(feeSpec.createdAt > 0, "ERROR:TRS-002:FEE_SPEC_UNDEFINED");
@@ -211,27 +212,31 @@ contract TreasuryModule is
             "ERROR:TRS-002:ALLOWANCE_SMALLER_THAN_CAPITAL"
         );
 
-        // calculate and transfer capital fees
+        // calculate and transfer fees
         uint256 feeAmount = _calculateFee(feeSpec, capitalAmount);
-        capitalAfterFees = capitalAmount - feeAmount;
         success = token.transferFrom(bundleOwner, _instanceWalletAddress, feeAmount);
 
         emit LogTreasuryFeesTransferred(bundleOwner, _instanceWalletAddress, feeAmount, success);
         require(success, "ERROR:TRS-002:FEE_TRANSFER_FAILED");
 
         if (success) {
+            // transfer net capital
             address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
             require(riskpoolWallet != address(0), "ERROR:TRS-002:RISKPOOL_WITHOUT_WALLET");
 
-            uint256 amountAfterFees = capitalAmount - feeAmount;
-            success = token.transferFrom(bundleOwner, riskpoolWallet, amountAfterFees);
-            emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, amountAfterFees, success);
+            capitalAfterFees = capitalAmount - feeAmount;
+            success = token.transferFrom(bundleOwner, riskpoolWallet, capitalAfterFees);
+
+            emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, capitalAfterFees, success);
             require(success, "ERROR:TRS-002:CAPITAL_TRANSFER_FAILED");
         }
 
         emit LogTreasuryCapitalProcessed(bundle.riskpoolId, bundleId, capitalAmount, success);
     }
 
+    // TODO remove once at ITreasury
+    event LogTreasuryWithdrawlTransferred(address riskpoolWalletAddress, address to, uint256 amount, bool success);
+    event LogTreasuryWithdrawlProcessed(uint256 riskpoolId, uint256 bundleId, uint256 amount, bool success);
 
     function processWithdrawl(uint256 bundleId, uint256 amount) 
         external override
@@ -240,7 +245,32 @@ contract TreasuryModule is
             uint256 netAmount
         )
     {
-        
+        // obtain relevant bundle info
+        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
+        require(
+            bundle.capital >= bundle.lockedCapital + amount,
+            "ERROR:TRS-002:CAPACITY_SMALLER_THAN_WITHDRAWL"
+        );
+
+        // obtain relevant token for product/riskpool pair
+        address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
+        address bundleOwner = _bundle.getOwner(bundleId);
+        IERC20 token = _componentToken[bundle.riskpoolId];
+        require(
+            token.allowance(
+                riskpoolWallet, 
+                address(this)) >= amount,
+            "ERROR:TRS-002:ALLOWANCE_SMALLER_THAN_WITHDRAWL"
+        );
+
+        // TODO consider to introduce withdrawl fees
+        netAmount = amount;
+        success = token.transferFrom(riskpoolWallet, bundleOwner, netAmount);
+
+        emit LogTreasuryWithdrawlTransferred(riskpoolWallet, bundleOwner, netAmount, success);
+        require(success, "ERROR:TRS-002:WITHDRAWL_TRANSFER_FAILED");
+
+        emit LogTreasuryWithdrawlProcessed(bundle.riskpoolId, bundleId, netAmount, success);
     }
 
 

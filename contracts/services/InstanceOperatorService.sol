@@ -7,11 +7,12 @@ import "../modules/TreasuryModule.sol";
 import "../shared/CoreController.sol";
 import "../test/TestProduct.sol";
 
-import "@gif-interface/contracts/components/IComponent.sol";
-import "@gif-interface/contracts/components/IProduct.sol";
-import "@gif-interface/contracts/modules/IQuery.sol";
-import "@gif-interface/contracts/modules/ITreasury.sol";
-import "@gif-interface/contracts/services/IInstanceOperatorService.sol";
+import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IProduct.sol";
+import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
+import "@etherisc/gif-interface/contracts/modules/ITreasury.sol";
+import "@etherisc/gif-interface/contracts/services/IInstanceOperatorService.sol";
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract InstanceOperatorService is 

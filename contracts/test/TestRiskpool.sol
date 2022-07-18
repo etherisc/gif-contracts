@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@gif-interface/contracts/components/BasicRiskpool.sol";
-import "@gif-interface/contracts/modules/IBundle.sol";
-import "@gif-interface/contracts/modules/IPolicy.sol";
+import "@etherisc/gif-interface/contracts/components/BasicRiskpool.sol";
+import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
+import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 
 contract TestRiskpool is BasicRiskpool {
 

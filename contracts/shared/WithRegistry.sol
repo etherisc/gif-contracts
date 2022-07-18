@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "@gif-interface/contracts/modules/IRegistry.sol";
+import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
 
 contract WithRegistry {
     IRegistry public registry;
