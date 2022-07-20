@@ -195,3 +195,27 @@ def test_multiple_claim_submission(
     assert instanceService.payouts(policy1_id) == 2
     assert instanceService.claims(policy2_id) == 1
     assert instanceService.payouts(policy2_id) == 0
+
+
+def _create_policy(
+    instance: GifInstance, 
+    owner: Account,
+    gifTestProduct: GifTestProduct, 
+    customer: Account, 
+    testCoin,
+    funding: int,
+    premium: int,
+    sumInsured: int 
+):
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    initialFunding = 10000
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # build and use policy application
+    product = gifTestProduct.getContract()
+    premium = 100
+    sumInsured = 5000
+    policy_id = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
+
+    return policy_id
