@@ -29,7 +29,10 @@ from brownie import (
     TestOracle,
     TestProduct,
     TestRiskpool,
-    TestRegistryControllerUpdated
+    TestRegistryControllerUpdated,
+    AreaYieldIndexOracle,
+    ClOperator,
+    AreaYieldIndexProduct,
 )
 
 from brownie.network import accounts
@@ -63,6 +66,11 @@ from scripts.product import (
     GifTestRiskpool,
     GifTestOracle,
     GifTestProduct,
+)
+
+from scripts.area_yield_index import (
+    GifAreaYieldIndexOracle,
+    GifAreaYieldIndexProduct
 )
 
 from scripts.util import (
@@ -117,9 +125,15 @@ def customer(accounts) -> Account:
     return owner
 
 @pytest.fixture(scope="module")
+def customer2(accounts) -> Account:
+    owner = get_account(ACCOUNTS_MNEMONIC, CUSTOMER_ACCOUNT_NO)
+    accounts[5].transfer(owner, "10 ether")
+    return owner
+
+@pytest.fixture(scope="module")
 def capitalOwner(accounts) -> Account:
     owner = get_account(ACCOUNTS_MNEMONIC, CAPITAL_ACCOUNT_NO)
-    accounts[5].transfer(owner, "10 ether")
+    accounts[6].transfer(owner, "10 ether")
     return owner
 
 @pytest.fixture(scope="module")
@@ -161,6 +175,43 @@ def gifTestProduct(
         feeOwner,
         productOwner,
         gifTestOracle,
+        gifTestRiskpool)
+
+
+@pytest.fixture(scope="module")
+def gifAreaYieldIndexOracle(
+    instance: GifInstance, 
+    oracleProvider: Account, 
+    testCoin
+) -> GifAreaYieldIndexOracle:
+    return GifAreaYieldIndexOracle(
+        instance, 
+        oracleProvider, 
+        testCoin)
+
+
+@pytest.fixture(scope="module")
+def gifAreaYieldIndexProduct(
+    instance: GifInstance, 
+    testCoin,
+    capitalOwner: Account, 
+    feeOwner: Account, 
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    customer: Account,
+    gifAreaYieldIndexOracle: GifAreaYieldIndexOracle,
+    gifTestRiskpool: GifTestRiskpool,
+    owner
+) -> GifAreaYieldIndexProduct:
+    return GifAreaYieldIndexProduct(
+        instance, 
+        testCoin,
+        capitalOwner,
+        feeOwner,
+        productOwner,
+        riskpoolKeeper,
+        customer,
+        gifAreaYieldIndexOracle,
         gifTestRiskpool)
 
 

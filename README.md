@@ -66,8 +66,9 @@ riskpoolKeeper=accounts[1]
 oracleProvider=accounts[2]
 productOwner=accounts[3]
 customer=accounts[4]
-capitalOwner=accounts[5]
-feeOwner=accounts[6]
+customer2=accounts[5]
+capitalOwner=accounts[6]
+feeOwner=accounts[7]
 
 # --- dummy coin setup ---
 testCoin = TestCoin.deploy({'from': owner})
@@ -82,7 +83,7 @@ service = instance.getInstanceService()
 instance.getRegistry()
 
 # --- deploy product (and oracle) ---
-capitalization = 10000
+capitalization = 10**18
 gifRiskpool = GifTestRiskpool(instance, riskpoolKeeper, capitalOwner, capitalization)
 gifOracle = GifTestOracle(instance, oracleProvider, name=str(uuid.uuid4())[:8])
 gifProduct = GifTestProduct(
@@ -120,6 +121,79 @@ testCoin.approve(treasuryAddress, premium, {'from': customer})
 txPolicy1 = product.applyForPolicy(premium, sumInsured, metaData, applicationData, {'from':customer})
 txPolicy2 = product.applyForPolicy(premium, sumInsured, metaData, applicationData, {'from':customer})
 ```
+
+```shell
+from scripts.area_yield_index import GifAreaYieldIndexOracle, GifAreaYieldIndexProduct
+
+#--- area yield product
+collateralization = 10**18
+gifTestRiskpool = GifTestRiskpool(
+  instance, 
+  riskpoolKeeper, 
+  capitalOwner, 
+  collateralization)
+
+gifAreaYieldIndexOracle = GifAreaYieldIndexOracle(
+  instance, 
+  oracleProvider, 
+  testCoin)
+
+gifAreaYieldIndexProduct = GifAreaYieldIndexProduct(
+  instance, 
+  testCoin,
+  capitalOwner,
+  feeOwner,
+  productOwner,
+  riskpoolKeeper,
+  customer,
+  gifAreaYieldIndexOracle,
+  gifTestRiskpool)
+
+
+riskpool = gifTestRiskpool.getContract()
+oracle = gifAreaYieldIndexOracle.getContract()
+product = gifAreaYieldIndexProduct.getContract()
+
+# funding of riskpool and customers
+riskpoolWallet = capitalOwner
+investor = riskpoolKeeper # investor=bundleOwner
+insurer = productOwner # role required by area yield index product
+
+token = gifAreaYieldIndexProduct.getToken()
+riskpoolFunding = 200000
+fund_riskpool(
+    instance, 
+    owner, 
+    riskpoolWallet, 
+    riskpool, 
+    investor, 
+    token, 
+    riskpoolFunding)
+
+customerFunding = 500
+fund_customer(instance, owner, customer, token, customerFunding)
+fund_customer(instance, owner, customer2, token, customerFunding)
+
+uai1 = '1'
+uai2 = '2'
+cropId1 = 1001
+cropId2 = 1002
+premium1 = 200
+premium2 = 300
+sumInsured = 60000
+
+token.allowance(customer, instance.getTreasury()) == customerFunding
+token.allowance(customer2, instance.getTreasury()) == customerFunding
+
+product.applyForPolicy(
+    [
+        create_peril(uai1, cropId1, premium1, sumInsured, customer),
+        # create_peril(uai2, cropId2, premium2, sumInsured, customer2),
+    ],
+    {'from': insurer})
+
+```
+
 
 In case things go wrong you can information regarding the last transaction via history.
 

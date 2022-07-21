@@ -26,6 +26,17 @@ def fund_riskpool(
         {'from': bundleOwner})
 
 
+def fund_customer(
+    instance: GifInstance, 
+    owner: Account,
+    customer: Account,
+    coin,
+    amount: int
+):
+    coin.transfer(customer, amount, {'from': owner})
+    coin.approve(instance.getTreasury(), amount, {'from': customer})
+
+
 def apply_for_policy(
     instance: GifInstance, 
     owner: Account,
