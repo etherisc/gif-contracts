@@ -46,12 +46,12 @@ contract AreaYieldIndexProduct is Product, AccessControl {
     uint256 public oracleId;
     uint256 public riskpoolId; // mzi
 
-    event ReceiveInvestment(address indexed investor, uint amount);
-    event ReceivePremium(address indexed insurer, address indexed insuree, uint amount);
-    event TriggerResolutions(uint32 UAI);
-    event Resolution(bytes32 indexed policyId, uint32 AAAY);
-    event ResolutionProcessing(bytes32 indexed policyId, uint amount);
-    event Withdraw(uint remainder);
+    event LogAYIReceiveInvestment(address indexed investor, uint amount);
+    event LogAYIReceivePremium(address indexed insurer, address indexed insuree, uint amount);
+    event LogAYITriggerResolutions(uint32 UAI);
+    event LogAYIResolution(bytes32 indexed policyId, uint32 AAAY);
+    event LogAYIResolutionProcessing(bytes32 indexed policyId, uint amount);
+    event LogAYIWithdraw(uint remainder);
 
     constructor(
         bytes32 _productName,
@@ -73,11 +73,12 @@ contract AreaYieldIndexProduct is Product, AccessControl {
         paymentToken = IERC20(_paymentToken);
     }
 
-    function receiveInvestment(uint amount) external onlyRole(INVESTOR_ROLE) {
-        totalReceivedInvestments += amount;
-        paymentToken.safeTransferFrom(msg.sender, address(this), amount);
-        emit ReceiveInvestment(msg.sender, amount);
-    }
+    // mzi handled by gif framework
+    // function receiveInvestment(uint amount) external onlyRole(INVESTOR_ROLE) {
+    //     totalReceivedInvestments += amount;
+    //     paymentToken.safeTransferFrom(msg.sender, address(this), amount);
+    //     emit LogAYIReceiveInvestment(msg.sender, amount);
+    // }
 
     function applyForPolicy(Peril[] calldata _perils) 
         external 
@@ -124,7 +125,7 @@ contract AreaYieldIndexProduct is Product, AccessControl {
             totalReceivedPremiums += peril.premiumAmount;
             totalSumInsured += peril.sumInsuredAmount;
 
-            emit ReceivePremium(policyOwner, peril.payoutAddress, peril.premiumAmount);
+            emit LogAYIReceivePremium(policyOwner, peril.payoutAddress, peril.premiumAmount);
         }
 
         // done by by policydefaultflow treasury and riskpool
@@ -132,21 +133,24 @@ contract AreaYieldIndexProduct is Product, AccessControl {
     }
 
     // TODO: limit access
-    function triggerResolutions(uint32 UAI) external {
+    function triggerResolutions(uint32 UAI) 
+        external 
+        returns(uint256 requestId)
+    {
         bytes memory UAIBytes = abi.encodePacked(UAI);
         bytes32 UAIBytes32;
         assembly {
             UAIBytes32 := mload(add(UAIBytes, 32))
         }
 
-        _request(
+       requestId = _request(
             UAIBytes32, // the index of the request
             UAIBytes, // input to oracle
             "triggerResolutionsCallback",
             oracleId
         );
 
-        emit TriggerResolutions(UAI);
+        emit LogAYITriggerResolutions(UAI);
     }
 
     // TODO: limit access to oracle operator
@@ -180,7 +184,7 @@ contract AreaYieldIndexProduct is Product, AccessControl {
             // decode and cache the result.
             (AAAY) = abi.decode(abi.encodePacked(AAAYBytes32), (uint));
             resolutions[policyId] = uint32(AAAY);
-            emit Resolution(policyId, uint32(AAAY));
+            emit LogAYIResolution(policyId, uint32(AAAY));
         }
     }
 
@@ -191,7 +195,7 @@ contract AreaYieldIndexProduct is Product, AccessControl {
             require(activePolicies[policyId].ID != 0, "no active policy exists");
 
             uint payoutAmount = calculatePayout(activePolicies[policyId], resolutions[policyId]);
-            emit ResolutionProcessing(policyId, payoutAmount);
+            emit LogAYIResolutionProcessing(policyId, payoutAmount);
 
             if (payoutAmount > 0) {
                 totalPayouts += payoutAmount;
@@ -206,13 +210,14 @@ contract AreaYieldIndexProduct is Product, AccessControl {
         }
     }
 
-    function withdrawRemainder() external onlyRole(INVESTOR_ROLE) {
-        require(numActivePolicies == 0, "active policies exists");
+    // mzi handled by gif framework
+    // function withdrawRemainder() external onlyRole(INVESTOR_ROLE) {
+    //     require(numActivePolicies == 0, "active policies exists");
 
-        uint remainder = paymentToken.balanceOf(address(this));
-        paymentToken.safeTransfer(msg.sender, remainder);
-        emit Withdraw(remainder);
-    }
+    //     uint remainder = paymentToken.balanceOf(address(this));
+    //     paymentToken.safeTransfer(msg.sender, remainder);
+    //     emit LogAYIWithdraw(remainder);
+    // }
 
     // TODO: make safe
     function calculatePayoutPercentage(Peril memory _peril, uint32 _AAAY, uint precisionMultiplier) public pure returns (uint) {

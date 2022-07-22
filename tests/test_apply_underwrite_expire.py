@@ -231,7 +231,7 @@ def test_application_with_insufficient_premium_funding(
     applicationData = bytes(0)
 
     # ensure policy creation is not possible
-    with brownie.reverts('ERROR:TRS-002:ALLOWANCE_SMALLER_THAN_PREMIUM'):
+    with brownie.reverts('ERROR:TRS-031:ALLOWANCE_SMALLER_THAN_PREMIUM'):
         policy_tx = product.applyForPolicy(
             premium,
             sumInsured,

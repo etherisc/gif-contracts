@@ -14,8 +14,8 @@ from brownie import (
     InstanceOperatorService,
     TestRiskpool,
     AreaYieldIndexOracle,
-    TestToken,
     ClOperator,
+    ClToken,
     AreaYieldIndexProduct
 )
 
@@ -114,7 +114,6 @@ class GifAreaYieldIndexOracle(object):
     def __init__(self, 
         instance: GifInstance, 
         oracleOwner: Account, 
-        testCoin,
         publishSource=False
     ):
         instanceService = instance.getInstanceService()
@@ -129,14 +128,22 @@ class GifAreaYieldIndexOracle(object):
             oracleOwner, 
             {'from': instance.getOwner()})
 
-        # 2a) chainlink operator deploy
+        # 2a) chainlink dummy token deploy
+        clTokenOwner = oracleOwner
+        clTokenSupply = 10**20
+        self.clToken = ClToken.deploy(
+            clTokenOwner,
+            clTokenSupply,
+            {'from': oracleOwner})
+
+        # 2b) chainlink operator deploy
         self.chainlinkOperator = ClOperator.deploy(
-            testCoin,
+            self.clToken,
             oracleOwner,
             {'from': oracleOwner})
-        
-        # 2b) oracle provider creates oracle
-        chainLinkTokenAddress = testCoin.address
+
+        # 2c) oracle provider creates oracle
+        chainLinkTokenAddress = self.clToken.address
         chainLinkOracleAddress = self.chainlinkOperator.address
         chainLinkJobId = s2b32('1')
         chainLinkPaymentAmount = 0
@@ -148,8 +155,9 @@ class GifAreaYieldIndexOracle(object):
             chainLinkOracleAddress,
             chainLinkJobId,
             chainLinkPaymentAmount,
-            {'from': oracleOwner},
-            publish_source=publishSource)
+            {'from': oracleOwner})
+            # {'from': oracleOwner},
+            # publish_source=publishSource)
 
         # 3) oracle owner proposes oracle to instance
         componentOwnerService.propose(

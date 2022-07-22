@@ -41,14 +41,14 @@ def test_sanity_flow(
     instanceService = instance.getInstanceService()
 
     product = gifAreaYieldIndexProduct.getContract()
-    riskpoolId = product.getRiskpoolId()
-    component = instanceService.getComponent(riskpoolId)
-    riskpool = contractFromAddress(interface.IRiskpool, component) 
+    oracle = gifAreaYieldIndexProduct.getOracle().getContract()
+    riskpool = gifAreaYieldIndexProduct.getRiskpool().getContract()
 
     riskpoolWallet = capitalOwner
     investor = riskpoolKeeper # investor=bundleOwner
     insurer = productOwner # role required by area yield index product
 
+    print('--- test setup funding riskpool --------------------------')
     token = gifAreaYieldIndexProduct.getToken()
     riskpoolFunding = 200000
     fund_riskpool(
@@ -60,10 +60,12 @@ def test_sanity_flow(
         token, 
         riskpoolFunding)
     
+    print('--- test setup funding customers -------------------------')
     customerFunding = 500
     fund_customer(instance, owner, customer, token, customerFunding)
     fund_customer(instance, owner, customer2, token, customerFunding)
 
+    print('--- test step apply for policy ---------------------------')
     uai1 = '1'
     uai2 = '2'
     cropId1 = 1001
@@ -102,10 +104,31 @@ def test_sanity_flow(
     assert application2['sumInsuredAmount'] == sumInsured
     assert application2['state'] == 2
 
-    # TODO it("trigger resolutions", async function () { ...
+    print('--- step trigger resolutions (call chainlin oracle) ------')
+    txTrigger = product.triggerResolutions(uai1, {'from': insurer})
+    requestId = txTrigger.return_value
 
+    # ensure event emitted as chainlink client
+    assert 'OracleRequest' in txTrigger.events
+    assert len(txTrigger.events['OracleRequest']) == 1
+
+    # check event attributes
+    clRequestEvent = txTrigger.events['OracleRequest'][0]
+    assert clRequestEvent['requester'] == oracle.address
+    assert clRequestEvent['requester'] == clRequestEvent['callbackAddr']
+
+    # check that gif request id corresponds to expected chainlink request id
+    assert 'LogAYIRequest' in txTrigger.events
+    assert len(txTrigger.events['LogAYIRequest']) == 1
+
+    requestEvent = txTrigger.events['LogAYIRequest'][0]
+    assert requestEvent['requestId'] == requestId
+    assert requestEvent['chainlinkRequestId'] == clRequestEvent['requestId']
+
+    print('--- step trigger resolutions -----------------------------')
     # TODO it("trigger resolutions processing", async function () { ...
 
+    print('--- step withdraw reminder -------------------------------')
     # TODO it("withdraw remainder", async function () { ...
     
 

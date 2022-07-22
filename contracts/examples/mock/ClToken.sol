@@ -7,8 +7,8 @@ abstract contract ERC677Receiver {
     function onTokenTransfer (address _sender, uint _value, bytes calldata _data) public virtual;
 }
 
-contract TestToken is ERC20 {
-    constructor(address owner, uint256 supply) ERC20("Test", "tst"){
+contract ClToken is ERC20 {
+    constructor(address owner, uint256 supply) ERC20("Chainlink Dummy Token", "CDT"){
         _mint(owner, supply);
     }
 

@@ -122,8 +122,13 @@ txPolicy1 = product.applyForPolicy(premium, sumInsured, metaData, applicationDat
 txPolicy2 = product.applyForPolicy(premium, sumInsured, metaData, applicationData, {'from':customer})
 ```
 
+Brownie console commands to deploy/use the example product
+
 ```shell
 from scripts.area_yield_index import GifAreaYieldIndexOracle, GifAreaYieldIndexProduct
+
+from scripts.setup import fund_riskpool, fund_customer
+from tests.test_area_yield import create_peril 
 
 #--- area yield product
 collateralization = 10**18
@@ -135,8 +140,7 @@ gifTestRiskpool = GifTestRiskpool(
 
 gifAreaYieldIndexOracle = GifAreaYieldIndexOracle(
   instance, 
-  oracleProvider, 
-  testCoin)
+  oracleProvider)
 
 gifAreaYieldIndexProduct = GifAreaYieldIndexProduct(
   instance, 
@@ -182,15 +186,18 @@ premium1 = 200
 premium2 = 300
 sumInsured = 60000
 
-token.allowance(customer, instance.getTreasury()) == customerFunding
-token.allowance(customer2, instance.getTreasury()) == customerFunding
-
-product.applyForPolicy(
-    [
+# batched policy creation
+perils = [
         create_peril(uai1, cropId1, premium1, sumInsured, customer),
-        # create_peril(uai2, cropId2, premium2, sumInsured, customer2),
-    ],
-    {'from': insurer})
+        create_peril(uai2, cropId2, premium2, sumInsured, customer2),
+    ]
+
+tx = product.applyForPolicy(perils, {'from': insurer})
+
+# returns tuple for created process ids
+processIds = tx.return_value
+
+product.triggerResolutions(uai1, {'from': insurer})
 
 ```
 

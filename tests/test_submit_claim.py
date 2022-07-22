@@ -46,19 +46,6 @@ def test_claim_submission(
     riskpoolKeeper: Account,
     capitalOwner: Account
 ):
-    # # prepare funded riskpool
-    # riskpool = gifTestProduct.getRiskpool().getContract()
-    # initialFunding = 10000
-    # fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
-
-    # # build and use policy application
-    # product = gifTestProduct.getContract()
-    # premium = 100
-    # sumInsured = 5000
-    # policy_id = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
-    
-    # assert policy_id is not None 
-
     instanceService = instance.getInstanceService()
     product = gifTestProduct.getContract()
     riskpoolWallet = capitalOwner
@@ -94,7 +81,6 @@ def test_claim_submission(
     # check claim info
     claim = instanceService.getClaim(policy_id, claim_id)
     print(claim)
-    assert False
 
 
 def test_claim_submission_for_expired_policy(
