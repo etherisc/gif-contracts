@@ -14,9 +14,9 @@ from brownie import (
     InstanceOperatorService,
     TestRiskpool,
     AreaYieldIndexOracle,
+    AreaYieldIndexProduct,
     ClOperator,
     ClToken,
-    AreaYieldIndexProduct
 )
 
 from scripts.const import (
@@ -113,7 +113,7 @@ class GifAreaYieldIndexOracle(object):
 
     def __init__(self, 
         instance: GifInstance, 
-        oracleOwner: Account, 
+        oracleProvider: Account, 
         publishSource=False
     ):
         instanceService = instance.getInstanceService()
@@ -125,22 +125,25 @@ class GifAreaYieldIndexOracle(object):
         providerRole = instanceService.oracleProviderRole()
         operatorService.grantRole(
             providerRole, 
-            oracleOwner, 
+            oracleProvider, 
             {'from': instance.getOwner()})
 
         # 2a) chainlink dummy token deploy
-        clTokenOwner = oracleOwner
+        clTokenOwner = oracleProvider
         clTokenSupply = 10**20
         self.clToken = ClToken.deploy(
             clTokenOwner,
             clTokenSupply,
-            {'from': oracleOwner})
+            {'from': oracleProvider})
 
         # 2b) chainlink operator deploy
         self.chainlinkOperator = ClOperator.deploy(
             self.clToken,
-            oracleOwner,
-            {'from': oracleOwner})
+            oracleProvider,
+            {'from': oracleProvider})
+
+        # set oracleProvider as authorized to call fullfill on operator
+        self.chainlinkOperator.setAuthorizedSenders([oracleProvider])
 
         # 2c) oracle provider creates oracle
         chainLinkTokenAddress = self.clToken.address
@@ -155,14 +158,14 @@ class GifAreaYieldIndexOracle(object):
             chainLinkOracleAddress,
             chainLinkJobId,
             chainLinkPaymentAmount,
-            {'from': oracleOwner})
-            # {'from': oracleOwner},
+            {'from': oracleProvider})
+            # {'from': oracleProvider},
             # publish_source=publishSource)
 
         # 3) oracle owner proposes oracle to instance
         componentOwnerService.propose(
             self.oracle,
-            {'from': oracleOwner})
+            {'from': oracleProvider})
 
         # 4) instance operator approves oracle
         operatorService.approve(
@@ -171,6 +174,9 @@ class GifAreaYieldIndexOracle(object):
     
     def getId(self) -> int:
         return self.oracle.getId()
+    
+    def getClOperator(self) -> ClOperator:
+        return self.chainlinkOperator
     
     def getContract(self) -> AreaYieldIndexOracle:
         return self.oracle

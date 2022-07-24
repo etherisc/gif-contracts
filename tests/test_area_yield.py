@@ -34,6 +34,7 @@ def test_sanity_flow(
     gifAreaYieldIndexProduct: GifAreaYieldIndexProduct,
     capitalOwner,
     productOwner,
+    oracleProvider,
     riskpoolKeeper,
     customer,
     customer2
@@ -47,6 +48,8 @@ def test_sanity_flow(
     riskpoolWallet = capitalOwner
     investor = riskpoolKeeper # investor=bundleOwner
     insurer = productOwner # role required by area yield index product
+
+    clOperator = gifAreaYieldIndexProduct.getOracle().getClOperator()
 
     print('--- test setup funding riskpool --------------------------')
     token = gifAreaYieldIndexProduct.getToken()
@@ -114,6 +117,7 @@ def test_sanity_flow(
 
     # check event attributes
     clRequestEvent = txTrigger.events['OracleRequest'][0]
+    print('chainlink requestEvent {}'.format(clRequestEvent))
     assert clRequestEvent['requester'] == oracle.address
     assert clRequestEvent['requester'] == clRequestEvent['callbackAddr']
 
@@ -122,8 +126,27 @@ def test_sanity_flow(
     assert len(txTrigger.events['LogAYIRequest']) == 1
 
     requestEvent = txTrigger.events['LogAYIRequest'][0]
+    print('ayi requestEvent {}'.format(requestEvent))
     assert requestEvent['requestId'] == requestId
     assert requestEvent['chainlinkRequestId'] == clRequestEvent['requestId']
+
+    # TODO fix call setup below
+    # brownie.exceptions.VirtualMachineError: revert: Response must be > 32 bytes
+
+    # payment = 0
+    # txOperator = clOperator.fulfillOracleRequest2(
+    #     clRequestEvent['requestId'],
+    #     clRequestEvent['payment'],
+    #     clRequestEvent['callbackAddr'],
+    #     clRequestEvent['callbackFunctionId'],
+    #     clRequestEvent['cancelExpiration'],
+    #     clRequestEvent['data'],
+    #     {'from': oracleProvider }
+    # )
+
+    # success = txOperator.return_value
+    # assert success
+
 
     print('--- step trigger resolutions -----------------------------')
     # TODO it("trigger resolutions processing", async function () { ...

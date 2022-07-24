@@ -19,21 +19,29 @@ contract AreaYieldIndexProduct is Product, AccessControl {
     bytes32 public constant INVESTOR_ROLE = keccak256("INVESTOR");
     bytes32 public constant INSURER_ROLE = keccak256("INSURER");
 
+    // TODO refactor use gif infra where available and move rest to a Risk structure
+    // Risk(projectId, UAI, cropId, trigger, exit, TSI, APH)
+
+    // TODO check if we need projectId as well (or whatever is needed to be 
+    // unique over multiple aggregators and seasons)
+
+    // this corresponds to a policy record
     struct Peril {
-        bytes32 ID; // UUID
+        bytes32 ID; // UUID (corresponds to a policyId)
         uint32 UAI; // Unit Area of Insurance, comprising one or more AEZs
         uint32 cropID;
         uint32 trigger; // The threshold below which the farmers receive a payout
         uint32 exit; // The threshold below which farmers receive the max possible payout
-        uint32 TSI; // Total Sum Insured At Exit; The maximum possible payout
+        uint32 TSI; // Total Sum Insured At Exit; The maximum possible payout (in % of sum insured)
         uint32 APH; // Average Production History
         uint sumInsuredAmount;
         uint premiumAmount;
-        address payoutAddress;
+        address payoutAddress; // policy holder
     }
 
-    mapping(bytes32 /* policyId */ => Peril) public activePolicies;
+    mapping(bytes32 /* policyId (Peril.ID) */ => Peril) public activePolicies;
     uint numActivePolicies;
+
     mapping(bytes32 /* policyId */ => uint32 /* AAAY */) public resolutions;
 
     IERC20 public paymentToken;
@@ -94,8 +102,13 @@ contract AreaYieldIndexProduct is Product, AccessControl {
             Peril calldata peril = _perils[i];
 
             address policyOwner = peril.payoutAddress;
+
+            // TODO processId most likely redundant to Peril.ID. if so -> delete
             bytes32 processId = uniqueId(policyOwner);
             bytes memory metaData = "";
+
+            // TODO check if "" doesn't do the trick
+            // most likely metadata should hold pointer to Risk
             bytes memory applicationData = abi.encode(policyOwner, peril.ID);
 
             _newApplication(
@@ -106,6 +119,7 @@ contract AreaYieldIndexProduct is Product, AccessControl {
                 metaData,
                 applicationData);
 
+            // TODO might be redundant to peril.ID
             // add processId to result list
             processIds[i] = processId;
 
@@ -132,6 +146,14 @@ contract AreaYieldIndexProduct is Product, AccessControl {
         // paymentToken.safeTransferFrom(msg.sender, address(this), premiumsAmount);
     }
 
+    // TODO check if this is sufficient, uai probably is not enough
+    // likely project and cropId are needed as well
+
+    // TODO: discuss if/how oracle could be integrated in a more meaningufl way
+    // having a function decoupled from policy activation leads to the question
+    // why oracle data is not directly injected into the contract by an authorized entity ...
+    // especially for a product that needs data once at the end of the season
+
     // TODO: limit access
     function triggerResolutions(uint32 UAI) 
         external 
@@ -153,7 +175,12 @@ contract AreaYieldIndexProduct is Product, AccessControl {
         emit LogAYITriggerResolutions(UAI);
     }
 
-    // TODO: limit access to oracle operator
+    // TODO limit access to query module (= onlyOracle)
+    // TODO refactor for gif semantics
+    // current implementation too far away from gif semantics
+    // - _index intended for processId=policyId
+    // - unclear where oracle has info regarding which policyId are involved with which uai
+    // - check if remodeling for risk is more appropriate
     function triggerResolutionsCallback(uint256 _requestId, bytes32 _index, bytes memory _response) public {
         uint32 UAI = uint32(bytes4(_index));
 
