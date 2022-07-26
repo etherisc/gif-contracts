@@ -14,7 +14,6 @@ contract TestProduct is
     bytes32 public constant POLICY_FLOW = "PolicyDefaultFlow";
     string public constant ORACLE_CALLBACK_METHOD_NAME = "oracleCallback";
 
-    ERC20 private _token;
     address private _capitalOwner;
     address private _feeOwner;
     uint256 private _testOracleId;
@@ -39,37 +38,13 @@ contract TestProduct is
         uint256 riskpoolId,
         address registryAddress
     )
-        Product(productName, POLICY_FLOW, registryAddress)
+        Product(productName, tokenAddress, POLICY_FLOW, riskpoolId, registryAddress)
     {
         require(tokenAddress != address(0), "ERROR:TI-2:TOKEN_ADDRESS_ZERO");
-        _token = ERC20(tokenAddress);
         _capitalOwner = capitalOwner;
         _feeOwner = feeOwner;
         _testOracleId = oracleId;
         _testRiskpoolId = riskpoolId;
-    }
-
-    function getApplicationDataStructure() public override view returns(string memory dataStructure) {
-        dataStructure = "(address policyHolder)";
-    }
-
-    function getClaimDataStructure() public override view returns(string memory dataStructure) {
-        dataStructure = "()";
-    }
-
-    function getPayoutDataStructure() public override view returns(string memory dataStructure) {
-        dataStructure = "()";
-    }
-
-    function getRiskpoolId() public override view returns(uint256) {
-        return _testRiskpoolId;
-    }
-
-    function riskPoolCapacityCallback(uint256 capacity)
-        public override
-        // onlyRiskpool // TODO implement
-    {
-        // whatever product specific logic
     }
 
     function applyForPolicy(
@@ -101,6 +76,20 @@ contract TestProduct is
         if (success) {
             _policies.push(processId);
         }
+    }
+
+    function collectPremium(bytes32 policyId) 
+        external 
+        returns(bool success, uint256 fee, uint256 netPremium)
+    {
+        (success, fee, netPremium) = _collectPremium(policyId);
+    }
+
+    function collectPremium(bytes32 policyId, uint256 amount) 
+        external 
+        returns(bool success, uint256 fee, uint256 netPremium)
+    {
+        (success, fee, netPremium) = _collectPremium(policyId, amount);
     }
 
     function expire(bytes32 policyId) external onlyOwner {

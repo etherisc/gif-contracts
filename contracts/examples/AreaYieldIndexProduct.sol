@@ -70,7 +70,7 @@ contract AreaYieldIndexProduct is Product, AccessControl {
         address _investor,
         address _insurer
     )
-    Product(_productName, POLICY_FLOW, _registry)
+        Product(_productName, _paymentToken, POLICY_FLOW, _riskpoolId, _registry)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(INVESTOR_ROLE, _investor);
@@ -260,23 +260,23 @@ contract AreaYieldIndexProduct is Product, AccessControl {
     }
 
     // mzi begin
-    function getApplicationDataStructure() external override view returns(string memory dataStructure) {
-        return "(address policyOwner, bytes32 perilId)";
-    }    
-    function getClaimDataStructure() external override view returns(string memory dataStructure) {
-        return "";
-    }    
-    function getPayoutDataStructure() external override view returns(string memory dataStructure) {
-        return "";
-    }
+    // function getApplicationDataStructure() external override view returns(string memory dataStructure) {
+    //     return "(address policyOwner, bytes32 perilId)";
+    // }    
+    // function getClaimDataStructure() external override view returns(string memory dataStructure) {
+    //     return "";
+    // }    
+    // function getPayoutDataStructure() external override view returns(string memory dataStructure) {
+    //     return "";
+    // }
 
-    function getRiskpoolId() external override view returns(uint256) {
-        return riskpoolId;
-    }
+    // function getRiskpoolId() external override view returns(uint256) {
+    //     return riskpoolId;
+    // }
 
-    function riskPoolCapacityCallback(uint256 capacity) external override {
+    // function riskPoolCapacityCallback(uint256 capacity) external override {
         
-    }
+    // }
     // mzi end
 
     function uniqueId(address _addr) internal returns (bytes32 _uniqueId) {

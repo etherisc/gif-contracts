@@ -200,7 +200,8 @@ def test_create_expire_and_close_policy(
     assert product.policies() == 1
     assert riskpool.getCapacity() == capitalAfterCost
 
-def test_application_with_insufficient_premium_funding(
+
+def test_application_with_delayed_premium_payment(
     instance: GifInstance, 
     testCoin,
     gifTestProduct: GifTestProduct, 
@@ -216,34 +217,138 @@ def test_application_with_insufficient_premium_funding(
 
     # build and use policy application
     product = gifTestProduct.getContract()
+    assert product.applications() == 0
     assert product.policies() == 0
 
-    premium = 100
-    premiumHalf = premium/2
-    sumInsured = 5000
-
-    # transfer premium funds to customer and create allowance
-    testCoin.transfer(customer, premium, {'from': owner})
-    testCoin.approve(instance.getTreasury(), premiumHalf, {'from': customer})
-
     # create minimal policy application
+    premium = 100
+    sumInsured = 5000
     metaData = bytes(0)
     applicationData = bytes(0)
 
     # ensure policy creation is not possible
-    with brownie.reverts('ERROR:TRS-031:ALLOWANCE_SMALLER_THAN_PREMIUM'):
-        policy_tx = product.applyForPolicy(
-            premium,
-            sumInsured,
-            metaData,
-            applicationData,
-            {'from': customer})
+    policy_tx = product.applyForPolicy(
+        premium,
+        sumInsured,
+        metaData,
+        applicationData,
+        {'from': customer})
 
-    capitalFees = initialFunding / 20 + 42
-    capitalAfterCost = initialFunding - capitalFees
+    policyId = policy_tx.return_value
 
+    assert product.applications() == 1
+    assert product.policies() == 1
+
+    # verify premium and sum insured
+    policyController = instance.getPolicy()
+    application = policyController.getApplication(policyId).dict()
+    assert application['premiumAmount'] == premium
+    assert application['sumInsuredAmount'] == sumInsured
+    
+    # verify that no premium is payed so far
+    policy = policyController.getPolicy(policyId).dict()
+    assert policy['premiumExpectedAmount'] == premium
+    assert policy['premiumPaidAmount'] == 0
+
+    # transfer premium funds to customer and create allowance
+    testCoin.transfer(customer, premium, {'from': owner})
+    testCoin.approve(instance.getTreasury(), premium, {'from': customer})
+
+    # verify premium collection
+    premium_tx = product.collectPremium(policyId)
+    (success, fee, netPremium) = premium_tx.return_value
+    assert success
+    assert premium == fee + netPremium
+
+    policy = policyController.getPolicy(policyId).dict()
+    assert policy['premiumExpectedAmount'] == premium
+    assert policy['premiumPaidAmount'] == premium
+
+
+
+def test_application_with_premium_payment_in_bits(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    riskpoolKeeper: Account,
+    owner: Account,
+    customer: Account,
+    capitalOwner: Account
+):
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    initialFunding = 10000
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # build and use policy application
+    product = gifTestProduct.getContract()
+    assert product.applications() == 0
     assert product.policies() == 0
-    assert riskpool.getCapacity() == capitalAfterCost
+
+    # create minimal policy application
+    premium = 100
+    sumInsured = 5000
+    metaData = bytes(0)
+    applicationData = bytes(0)
+
+    # ensure policy creation is not possible
+    policy_tx = product.applyForPolicy(
+        premium,
+        sumInsured,
+        metaData,
+        applicationData,
+        {'from': customer})
+
+    policyId = policy_tx.return_value
+
+    assert product.applications() == 1
+    assert product.policies() == 1
+    
+    # verify that no premium is payed so far
+    policyController = instance.getPolicy()
+    policy = policyController.getPolicy(policyId).dict()
+    assert policy['premiumExpectedAmount'] == premium
+    assert policy['premiumPaidAmount'] == 0
+
+    # transfer premium funds to customer and create allowance
+    testCoin.transfer(customer, premium, {'from': owner})
+    testCoin.approve(instance.getTreasury(), premium, {'from': customer})
+
+    # verify premium collection
+    premiumPart1 = 20
+    premiumPart2 = 50
+    premiumPart3 = 30
+    
+    # 1st part
+    premium_tx = product.collectPremium(policyId, premiumPart1)
+    (success, fee, netPremium) = premium_tx.return_value
+    assert success
+    assert premiumPart1 == fee + netPremium
+
+    policy = policyController.getPolicy(policyId).dict()
+    assert policy['premiumExpectedAmount'] == premium
+    assert policy['premiumPaidAmount'] == premiumPart1
+    
+    # 2nd part
+    premium_tx = product.collectPremium(policyId, premiumPart2)
+    (success, fee, netPremium) = premium_tx.return_value
+    assert success
+    assert premiumPart2 == fee + netPremium
+
+    policy = policyController.getPolicy(policyId).dict()
+    assert policy['premiumExpectedAmount'] == premium
+    assert policy['premiumPaidAmount'] == premiumPart1 + premiumPart2
+    
+    # 3rd part
+    premium_tx = product.collectPremium(policyId, premiumPart3)
+    (success, fee, netPremium) = premium_tx.return_value
+    assert success
+    assert premiumPart3 == fee + netPremium
+
+    policy = policyController.getPolicy(policyId).dict()
+    assert policy['premiumExpectedAmount'] == premium
+    assert policy['premiumPaidAmount'] == premiumPart1 + premiumPart2 + premiumPart3
+    assert policy['premiumPaidAmount'] == policy['premiumExpectedAmount']
 
 
 def test_product_inactive(

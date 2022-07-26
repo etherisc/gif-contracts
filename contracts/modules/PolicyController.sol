@@ -96,13 +96,26 @@ contract PolicyController is
         emit LogApplicationCreated(processId, premiumAmount, sumInsuredAmount);
     }
 
+    function collectPremium(bytes32 processId, uint256 amount) 
+        external override
+    {
+        Policy storage policy = policies[processId];
+        require(policy.createdAt > 0, "ERROR:POC-012:POLICY_DOES_NOT_EXIST");
+        require(policy.premiumPaidAmount + amount <= policy.premiumExpectedAmount, "ERROR:POC-013:AMOUNT_TOO_BIG");
+
+        policy.premiumPaidAmount += amount;
+        policy.updatedAt = block.timestamp;
+    
+        emit LogPremiumCollected(processId, amount);
+    }
+
     function revokeApplication(bytes32 processId)
         external override
         onlyPolicyFlow("Policy")
     {
         Application storage application = applications[processId];
-        require(application.createdAt > 0, "ERROR:POC-012:APPLICATION_DOES_NOT_EXIST");
-        require(application.state == ApplicationState.Applied, "ERROR:POC-012:INVALID_APPLICATION_STATE");
+        require(application.createdAt > 0, "ERROR:POC-014:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Applied, "ERROR:POC-015:INVALID_APPLICATION_STATE");
 
         application.state = ApplicationState.Revoked;
         application.updatedAt = block.timestamp;
@@ -115,8 +128,8 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Application storage application = applications[processId];
-        require(application.createdAt > 0, "ERROR:POC-012:APPLICATION_DOES_NOT_EXIST");
-        require(application.state == ApplicationState.Applied, "ERROR:POC-012:INVALID_APPLICATION_STATE");
+        require(application.createdAt > 0, "ERROR:POC-016:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Applied, "ERROR:POC-017:INVALID_APPLICATION_STATE");
 
         application.state = ApplicationState.Underwritten;
         application.updatedAt = block.timestamp;
@@ -129,8 +142,8 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Application storage application = applications[processId];
-        require(application.createdAt > 0, "ERROR:POC-012:APPLICATION_DOES_NOT_EXIST");
-        require(application.state == ApplicationState.Applied, "ERROR:POC-012:INVALID_APPLICATION_STATE");
+        require(application.createdAt > 0, "ERROR:POC-018:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Applied, "ERROR:POC-019:INVALID_APPLICATION_STATE");
 
         application.state = ApplicationState.Declined;
         application.updatedAt = block.timestamp;
@@ -143,17 +156,17 @@ contract PolicyController is
         external override 
         onlyPolicyFlow("Policy")
     {
-        Metadata storage meta = metadata[processId];
-        require(meta.createdAt > 0, "ERROR:POC-020:METADATA_DOES_NOT_EXIST");
+        Application memory application = applications[processId];
+        require(application.createdAt > 0, "ERROR:POC-021:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Underwritten, "ERROR:POC-022:APPLICATION_NOT_UNDERWRITTEN");
 
         Policy storage policy = policies[processId];
-        require(policy.createdAt == 0, "ERROR:POC-021:POLICY_ALREADY_EXISTS");
+        require(policy.createdAt == 0, "ERROR:POC-023:POLICY_ALREADY_EXISTS");
 
         policy.state = PolicyState.Active;
+        policy.premiumExpectedAmount = application.premiumAmount;
         policy.createdAt = block.timestamp;
         policy.updatedAt = block.timestamp;
-
-        meta.updatedAt = block.timestamp;
 
         emit LogPolicyCreated(processId);
     }
@@ -163,8 +176,8 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-022:POLICY_DOES_NOT_EXIST");
-        require(policy.state == PolicyState.Active, "ERROR:POC-022:INVALID_APPLICATION_STATE");
+        require(policy.createdAt > 0, "ERROR:POC-024:POLICY_DOES_NOT_EXIST");
+        require(policy.state == PolicyState.Active, "ERROR:POC-025:INVALID_APPLICATION_STATE");
 
         policy.state = PolicyState.Expired;
         policy.updatedAt = block.timestamp;
@@ -177,8 +190,8 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-022:POLICY_DOES_NOT_EXIST");
-        require(policy.state == PolicyState.Expired, "ERROR:POC-022:INVALID_APPLICATION_STATE");
+        require(policy.createdAt > 0, "ERROR:POC-026:POLICY_DOES_NOT_EXIST");
+        require(policy.state == PolicyState.Expired, "ERROR:POC-027:INVALID_APPLICATION_STATE");
 
         // TODO add requires to ensure there are no open claims or payments
 
@@ -327,7 +340,6 @@ contract PolicyController is
             emit LogPayoutProcessed(processId, payoutId);
         }
     }
-
 
     function getMetadata(bytes32 processId)
         public

@@ -40,11 +40,10 @@ contract AyiiProduct is
     }
 
     uint256 private _oracleId;
-    uint256 private _riskpoolId;
 
     mapping(bytes32 /* riskId */ => Risk) private _risks;
-    bytes32 [] private _applications; // useful for debugging, might need to get rid of this
     mapping(bytes32 /* riskId */ => bytes32 [] /*policyIds*/) private _policies;
+    bytes32 [] private _applications; // useful for debugging, might need to get rid of this
 
     event LogAyiiPolicyCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiRiskDataCreated(bytes32 riskId, bytes32 productId, bytes32 uaiId, bytes32 cropId);
@@ -63,14 +62,14 @@ contract AyiiProduct is
     constructor(
         bytes32 productName,
         address registry,
+        address token,
         uint256 oracleId,
         uint256 riskpoolId,
         address insurer
     )
-        Product(productName, POLICY_FLOW, registry)
+        Product(productName, token, POLICY_FLOW, riskpoolId, registry)
     {
         _oracleId = oracleId;
-        _riskpoolId = riskpoolId;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(INSURER_ROLE, insurer);
@@ -137,7 +136,7 @@ contract AyiiProduct is
     {
         Risk storage risk = _risks[riskId];
         require(risk.createdAt > 0, "ERROR:AYI-002:RISK_UNDEFINED");
-        require(policyHolder != address(0), "ERROR:AYI-003:POLICY_OWNER_ZERO");
+        require(policyHolder != address(0), "ERROR:AYI-003:POLICY_HOLDER_ZERO");
 
         processId = uniqueId(policyHolder);
         bytes memory metaData = "";
@@ -163,35 +162,43 @@ contract AyiiProduct is
                 policyHolder, 
                 premium, 
                 sumInsured);
-
-            // trigger oracle if policy linked to new risk
-            if (risk.requestId == 0) {
-                bytes memory queryData = abi.encode(
-                    risk.projectId,
-                    risk.uaiId,
-                    risk.cropId
-                );
-
-                risk.requestId = _request(
-                        processId,
-                        queryData,
-                        "oracleCallback",
-                        _oracleId
-                    );
-
-                emit LogAyiiRiskDataRequested(
-                    risk.requestId, 
-                    risk.id, 
-                    risk.projectId, 
-                    risk.uaiId, 
-                    risk.cropId);
-            }    
         }
     }
 
+    function triggerOracle(bytes32 riskId) 
+        external
+        onlyRole(INSURER_ROLE)
+    {
+        Risk storage risk = _risks[riskId];
+        require(risk.createdAt > 0, "ERROR:AYI-010:RISK_UNDEFINED");
+        require(risk.requestId == 0, "ERROR:AYI-011:ORACLE_ALREADY_TRIGGERED");
+
+        bytes memory queryData = abi.encode(
+            risk.projectId,
+            risk.uaiId,
+            risk.cropId
+        );
+
+        risk.requestId = _request(
+                riskId,
+                queryData,
+                "oracleCallback",
+                _oracleId
+            );
+
+        risk.updatedAt = block.timestamp;
+
+        emit LogAyiiRiskDataRequested(
+            risk.requestId, 
+            risk.id, 
+            risk.projectId, 
+            risk.uaiId, 
+            risk.cropId);
+    }    
+
     function oracleCallback(
         uint256 requestId, 
-        bytes32 policyId, 
+        bytes32 riskId, 
         bytes calldata responseData
     ) 
         external 
@@ -204,11 +211,12 @@ contract AyiiProduct is
             uint256 aaay
         ) = abi.decode(responseData, (bytes32, bytes32, bytes32, uint256));
 
-        bytes32 riskId = getRiskId(projectId, uaiId, cropId);
+        require(riskId == getRiskId(projectId, uaiId, cropId), "ERROR:AYI-020:RISK_ID_MISMATCH");
+
         Risk storage risk = _risks[riskId];
-        require(risk.createdAt > 0, "ERROR:AYI-010:RISK_UNDEFINED");
-        require(risk.requestId == requestId, "ERROR:AYI-011:REQUEST_ID_MISMATCH");
-        require(risk.responseAt == 0, "ERROR:AYI-011:EXISTING_CALLBACK");
+        require(risk.createdAt > 0, "ERROR:AYI-021:RISK_UNDEFINED");
+        require(risk.requestId == requestId, "ERROR:AYI-022:REQUEST_ID_MISMATCH");
+        require(risk.responseAt == 0, "ERROR:AYI-023:EXISTING_CALLBACK");
 
         // update risk using aaay info
         risk.aaay = aaay;
@@ -224,7 +232,7 @@ contract AyiiProduct is
         _processPoliciesForRisk(risk);
     }
 
-    // TODO think of something better or amend to allow for
+    // TODO verify this is good enough or if we need to allow for
     // external batch processing
     function _processPoliciesForRisk(Risk memory risk)
         internal
@@ -291,21 +299,8 @@ contract AyiiProduct is
         return keccak256(abi.encode(_addr, _applications.length));
     }
 
-    // TODO default implementations for the functions below should
-    // be pushed into Product contract
-    function getApplicationDataStructure() external override view returns(string memory dataStructure) {
-        return "(bytes32 riskId)";
-    }    
-    function getClaimDataStructure() external override view returns(string memory dataStructure) {
-        return "";
-    }    
-    function getPayoutDataStructure() external override view returns(string memory dataStructure) {
-        return "";
-    }
-
-    function getRiskpoolId() external override view returns(uint256) {
-        return _riskpoolId;
-    }
-
-    function riskPoolCapacityCallback(uint256 capacity) external override { }
+    // TODO comment out once function declared as virtual in product contract
+    // function getApplicationDataStructure() external override view returns(string memory dataStructure) {
+    //     return "(bytes32 riskId)";
+    // }
 }

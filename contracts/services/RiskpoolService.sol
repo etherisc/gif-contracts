@@ -62,7 +62,7 @@ contract RiskpoolService is
         uint256 riskpoolId = _component.getComponentId(_msgSender());
         bundleId = _bundle.create(owner, riskpoolId, filter, 0);
 
-        (bool success, uint256 netCapital) = _treasury.processCapital(bundleId, initialCapital);
+        (bool success, uint256 fee, uint256 netCapital) = _treasury.processCapital(bundleId, initialCapital);
 
         if (success) {
             _bundle.fund(bundleId, netCapital);
@@ -78,7 +78,8 @@ contract RiskpoolService is
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
         require(bundle.state != IBundle.BundleState.Closed, "ERROR:RPS-003:BUNDLE_CLOSED");
 
-        (success, netAmount) = _treasury.processCapital(bundleId, amount);
+        uint256 feeAmount;
+        (success, feeAmount, netAmount) = _treasury.processCapital(bundleId, amount);
         if (success) {
             _bundle.fund(bundleId, netAmount);
         }
@@ -90,7 +91,8 @@ contract RiskpoolService is
         onlyOwningRiskpool(bundleId)
         returns(bool success, uint256 netAmount)
     {
-        (success, netAmount) = _treasury.processWithdrawal(bundleId, amount);
+        uint256 feeAmount;
+        (success, feeAmount, netAmount) = _treasury.processWithdrawal(bundleId, amount);
         require(success, "ERROR:RPS-004:BUNDLE_DEFUNDING_FAILED");
         require(netAmount == amount, "UUPS");
 
@@ -132,7 +134,7 @@ contract RiskpoolService is
         require(bundle.state == IBundle.BundleState.Closed, "ERROR:RPS-004:BUNDLE_NOT_CLOSED");
 
         // withdraw remaining balance
-        (bool success, uint256 netAmount) = _treasury.processWithdrawal(bundleId, bundle.balance);
+        (bool success, uint256 feeAmount, uint256 netAmount) = _treasury.processWithdrawal(bundleId, bundle.balance);
         require(success, "ERROR:RPS-005:WITHDRAWAL_FAILED");
 
         if (success) {

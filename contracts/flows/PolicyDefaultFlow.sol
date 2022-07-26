@@ -79,28 +79,45 @@ contract PolicyDefaultFlow is
     }
 
     /* success implies the successful creation of a policy */
-    function underwrite(bytes32 processId) external returns(bool success) {
+    function underwrite(bytes32 processId) 
+        external 
+        returns(bool success) 
+    {
         // attempt to get the collateral to secure the policy
         PoolController pool = getPoolContract();
         success = pool.underwrite(processId);
 
         if (success) {
-            // once collateral is secured transfer premium amount
-            TreasuryModule treasury = getTreasuryContract();
-            uint256 netPremiumAmount;
-            (success, netPremiumAmount) = treasury.processPremium(processId);
+            PolicyController policyController = getPolicyContract();
+            policyController.underwriteApplication(processId);
+            policyController.createPolicy(processId);
 
-            // if premium transfer not successful revert so no funds are transferred
-            require(success, "ERROR:PFD-004:PREMIUM_TRANSFER_FAILED");
+            // attempt to transfer premium amount
 
-            // inform pool to include net premium in its balance
-            pool.increaseBalance(processId, netPremiumAmount);
+            IPolicy.Policy memory policy = policyController.getPolicy(processId);
+            collectPremium(processId, policy.premiumExpectedAmount);
+        }
+    }
 
-            // all green: application underwritten, premium funds transferred 
-            // so we can create the policy now
+    /* success implies the successful collection of the premium amof the policy */
+    function collectPremium(bytes32 processId, uint256 amount) 
+        public 
+        returns(
+            bool success, 
+            uint256 feeAmount, 
+            uint256 netPremiumAmount
+        ) 
+    {
+        TreasuryModule treasury = getTreasuryContract();
+        (success, feeAmount, netPremiumAmount) = treasury.processPremium(processId, amount);
+
+        // if premium collected: update book keeping of policy and riskpool
+        if (success) {
             IPolicy policy = getPolicyContract();
-            policy.underwriteApplication(processId);
-            policy.createPolicy(processId);
+            policy.collectPremium(processId, netPremiumAmount + feeAmount);
+
+            PoolController pool = getPoolContract();
+            pool.increaseBalance(processId, netPremiumAmount);
         }
     }
 
