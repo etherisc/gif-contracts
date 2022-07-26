@@ -33,6 +33,8 @@ from brownie import (
     AreaYieldIndexOracle,
     ClOperator,
     AreaYieldIndexProduct,
+    AyiiProduct,
+    AyiiOracle,
 )
 
 from brownie.network import accounts
@@ -70,7 +72,9 @@ from scripts.product import (
 
 from scripts.area_yield_index import (
     GifAreaYieldIndexOracle,
-    GifAreaYieldIndexProduct
+    GifAreaYieldIndexProduct,
+    GifAyiiProduct,
+    GifAyiiOracle,
 )
 
 from scripts.util import (
@@ -212,6 +216,43 @@ def gifAreaYieldIndexProduct(
         riskpoolKeeper,
         customer,
         gifAreaYieldIndexOracle,
+        gifTestRiskpool)
+
+
+@pytest.fixture(scope="module")
+def gifAyiiOracle(
+    instance: GifInstance, 
+    oracleProvider: Account, 
+    testCoin
+) -> GifAyiiOracle:
+    return GifAyiiOracle(
+        instance, 
+        oracleProvider, 
+        testCoin)
+
+
+@pytest.fixture(scope="module")
+def gifAyiiProduct(
+    instance: GifInstance, 
+    testCoin,
+    capitalOwner: Account, 
+    feeOwner: Account, 
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    customer: Account,
+    gifAyiiOracle: GifAyiiOracle,
+    gifTestRiskpool: GifTestRiskpool,
+    owner
+) -> GifAyiiProduct:
+    return GifAyiiProduct(
+        instance, 
+        testCoin,
+        capitalOwner,
+        feeOwner,
+        productOwner,
+        riskpoolKeeper,
+        customer,
+        gifAyiiOracle,
         gifTestRiskpool)
 
 

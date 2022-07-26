@@ -44,10 +44,11 @@ contract AyiiProduct is
     mapping(bytes32 /* riskId */ => Risk) private _risks;
     mapping(bytes32 /* riskId */ => bytes32 [] /*policyIds*/) private _policies;
     bytes32 [] private _applications; // useful for debugging, might need to get rid of this
+    bytes32 [] private _expiredPolicies;
 
     event LogAyiiPolicyCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiRiskDataCreated(bytes32 riskId, bytes32 productId, bytes32 uaiId, bytes32 cropId);
-    event LogAyiiRiskDataRequested(uint256 requestId, bytes32 projectId, bytes32 riskId, bytes32 uaiId, bytes32 cropId);
+    event LogAyiiRiskDataRequested(uint256 requestId, bytes32 riskId, bytes32 projectId, bytes32 uaiId, bytes32 cropId);
     event LogAyiiRiskDataReceived(uint256 requestId, bytes32 riskId, uint256 aaay);
     event LogAyiiRiskProcessed(bytes32 riskId, uint256 policies);
     event LogAyiiPolicyProcessed(bytes32 policyId);
@@ -168,6 +169,7 @@ contract AyiiProduct is
     function triggerOracle(bytes32 riskId) 
         external
         onlyRole(INSURER_ROLE)
+        returns(uint256 requestId)
     {
         Risk storage risk = _risks[riskId];
         require(risk.createdAt > 0, "ERROR:AYI-010:RISK_UNDEFINED");
@@ -179,13 +181,14 @@ contract AyiiProduct is
             risk.cropId
         );
 
-        risk.requestId = _request(
+        requestId = _request(
                 riskId,
                 queryData,
                 "oracleCallback",
                 _oracleId
             );
 
+        risk.requestId = requestId;
         risk.updatedAt = block.timestamp;
 
         emit LogAyiiRiskDataRequested(
@@ -228,22 +231,32 @@ contract AyiiProduct is
             requestId, 
             riskId,
             aaay);
-
-        _processPoliciesForRisk(risk);
     }
 
-    // TODO verify this is good enough or if we need to allow for
-    // external batch processing
-    function _processPoliciesForRisk(Risk memory risk)
-        internal
+    function processPoliciesForRisk(bytes32 riskId, uint256 batchSize)
+        external
+        returns(bytes32 [] memory processedPolicies)
     {
-        bytes32 [] memory policyIds = _policies[risk.id];
+        Risk memory risk = _risks[riskId];
+        require(risk.responseAt > 0, "ERROR:AYI-030:ORACLE_RESPONSE_MISSING");
 
-        for (uint256 i; i < policyIds.length; i++) {
-            _processPolicy(policyIds[i], risk);
+        bytes32 [] storage policyIds = _policies[riskId];
+        uint256 elements = policyIds.length;
+
+        if (batchSize == 0) { batchSize = elements; } 
+        else                { batchSize = min(batchSize, elements); }
+
+        processedPolicies = new bytes32[](batchSize);
+        for (uint256 i = 0; i < batchSize; i++) {
+            bytes32 policyId = policyIds[batchSize - i - 1];
+            _processPolicy(policyId, risk);
+            _expire(policyId);
+
+            processedPolicies[i] = policyId;
+            policyIds.pop();
         }
 
-        emit LogAyiiRiskProcessed(risk.id, policyIds.length);
+        emit LogAyiiRiskProcessed(riskId, batchSize);
     }
 
     function _processPolicy(bytes32 policyId, Risk memory risk)
@@ -284,11 +297,11 @@ contract AyiiProduct is
         payout = min(risk.tsi, nominator * PERCENTAGE_MULTIPLIER / denominator);
     }
 
-    function max(uint a, uint b) private pure returns (uint) {
+    function max(uint256 a, uint256 b) private pure returns (uint256) {
         return a >= b ? a : b;
     }
 
-    function min(uint a, uint b) private pure returns (uint) {
+    function min(uint256 a, uint256 b) private pure returns (uint256) {
         return a <= b ? a : b;
     }
 
@@ -299,8 +312,23 @@ contract AyiiProduct is
         return keccak256(abi.encode(_addr, _applications.length));
     }
 
-    // TODO comment out once function declared as virtual in product contract
-    // function getApplicationDataStructure() external override view returns(string memory dataStructure) {
-    //     return "(bytes32 riskId)";
-    // }
+    function getRisk(bytes32 riskId)
+        external
+        view
+        returns(Risk memory risk)
+    {
+        return _risks[riskId];
+    }
+
+    function policies(bytes32 riskId) external view returns(uint256 policyCount) {
+        return _policies[riskId].length;
+    }
+
+    function getPolicyId(bytes32 riskId, uint256 policyIdx) external view returns(bytes32 policyId) {
+        return _policies[riskId][policyIdx];
+    }
+
+    function getApplicationDataStructure() external override view returns(string memory dataStructure) {
+        return "(bytes32 riskId)";
+    }
 }

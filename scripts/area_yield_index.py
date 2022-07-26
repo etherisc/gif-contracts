@@ -15,6 +15,8 @@ from brownie import (
     TestRiskpool,
     AreaYieldIndexOracle,
     AreaYieldIndexProduct,
+    AyiiProduct,
+    AyiiOracle,
     ClOperator,
     ClToken,
 )
@@ -227,21 +229,15 @@ class GifAreaYieldIndexProduct(object):
             {'from': productOwner},
             publish_source=publishSource)
 
-        print('after deploy {} {} {}'.format(self.product.getId(), self.product.getName(), self.product.getState()))
-
         # 3) product owner proposes product to instance
         componentOwnerService.propose(
             self.product,
             {'from': productOwner})
 
-        print('after propose {} {} {}'.format(self.product.getId(), self.product.getName(), self.product.getState()))
-
         # 4) instance operator approves product
         operatorService.approve(
             self.product.getId(),
             {'from': instance.getOwner()})
-
-        print('after approve {} {} {}'.format(self.product.getId(), self.product.getName(), self.product.getState()))
 
         # 5) instance owner sets token in treasury
         operatorService.setProductToken(
@@ -277,6 +273,176 @@ class GifAreaYieldIndexProduct(object):
         return self.riskpool
     
     def getContract(self) -> AreaYieldIndexProduct:
+        return self.product
+
+    def getPolicy(self, policyId: str):
+        return self.policy.getPolicy(policyId)
+
+# ------------------------------------
+# AyiiOracle
+
+
+class GifAyiiOracle(object):
+
+    def __init__(self, 
+        instance: GifInstance, 
+        oracleProvider: Account, 
+        publishSource=False
+    ):
+        instanceService = instance.getInstanceService()
+        operatorService = instance.getInstanceOperatorService()
+        componentOwnerService = instance.getComponentOwnerService()
+        oracleService = instance.getOracleService()
+
+        # 1) add oracle provider role to owner
+        providerRole = instanceService.oracleProviderRole()
+        operatorService.grantRole(
+            providerRole, 
+            oracleProvider, 
+            {'from': instance.getOwner()})
+
+        # 2a) chainlink dummy token deploy
+        clTokenOwner = oracleProvider
+        clTokenSupply = 10**20
+        self.clToken = ClToken.deploy(
+            clTokenOwner,
+            clTokenSupply,
+            {'from': oracleProvider})
+
+        # 2b) chainlink operator deploy
+        self.chainlinkOperator = ClOperator.deploy(
+            self.clToken,
+            oracleProvider,
+            {'from': oracleProvider})
+
+        # set oracleProvider as authorized to call fullfill on operator
+        self.chainlinkOperator.setAuthorizedSenders([oracleProvider])
+
+        # 2c) oracle provider creates oracle
+        chainLinkTokenAddress = self.clToken.address
+        chainLinkOracleAddress = self.chainlinkOperator.address
+        chainLinkJobId = s2b32('1')
+        chainLinkPaymentAmount = 0
+        
+        self.oracle = AyiiOracle.deploy(
+            s2b32('AyiiOracle'),
+            instance.getRegistry(),
+            chainLinkTokenAddress,
+            chainLinkOracleAddress,
+            chainLinkJobId,
+            chainLinkPaymentAmount,
+            {'from': oracleProvider})
+            # {'from': oracleProvider},
+            # publish_source=publishSource)
+
+        # 3) oracle owner proposes oracle to instance
+        componentOwnerService.propose(
+            self.oracle,
+            {'from': oracleProvider})
+
+        # 4) instance operator approves oracle
+        operatorService.approve(
+            self.oracle.getId(),
+            {'from': instance.getOwner()})
+    
+    def getId(self) -> int:
+        return self.oracle.getId()
+    
+    def getClOperator(self) -> ClOperator:
+        return self.chainlinkOperator
+    
+    def getContract(self) -> AyiiOracle:
+        return self.oracle
+
+
+class GifAyiiProduct(object):
+
+    def __init__(self, 
+        instance: GifInstance, 
+        token, 
+        capitalOwner: Account, 
+        feeOwner: Account, 
+        productOwner: Account, 
+        riskpoolKeeper: Account,
+        customer: Account,
+        oracle: GifAyiiOracle, 
+        riskpool: GifTestRiskpool, 
+        publishSource=False
+    ):
+        self.policy = instance.getPolicy()
+        self.oracle = oracle
+        self.riskpool = riskpool
+        self.token = token
+
+        instanceService = instance.getInstanceService()
+        operatorService = instance.getInstanceOperatorService()
+        componentOwnerService = instance.getComponentOwnerService()
+        registry = instance.getRegistry()
+
+        # 1) add product owner role to owner
+        ownerRole = instanceService.productOwnerRole()
+        operatorService.grantRole(
+            ownerRole,
+            productOwner, 
+            {'from': instance.getOwner()})
+
+        # 2) product owner creates product
+        investor = riskpoolKeeper
+        insurer = productOwner
+        self.product = AyiiProduct.deploy(
+            s2b32('AyiiProduct'),
+            registry,
+            token.address,
+            oracle.getId(),
+            riskpool.getId(),
+            insurer,
+            {'from': productOwner},
+            publish_source=publishSource)
+
+        # 3) product owner proposes product to instance
+        componentOwnerService.propose(
+            self.product,
+            {'from': productOwner})
+
+        # 4) instance operator approves product
+        operatorService.approve(
+            self.product.getId(),
+            {'from': instance.getOwner()})
+
+        # 5) instance owner sets token in treasury
+        operatorService.setProductToken(
+            self.product.getId(), 
+            token,
+            {'from': instance.getOwner()}) 
+
+        # 5) instance owner creates and sets product fee spec
+        fixedFee = 3
+        fractionalFee = instanceService.getFeeFractionFullUnit() / 10 # corresponds to 10%
+        feeSpec = operatorService.createFeeSpecification(
+            self.product.getId(),
+            fixedFee,
+            fractionalFee,
+            b'',
+            {'from': instance.getOwner()}) 
+
+        operatorService.setPremiumFees(
+            feeSpec,
+            {'from': instance.getOwner()}) 
+
+    
+    def getId(self) -> int:
+        return self.product.getId()
+
+    def getToken(self):
+        return self.token
+
+    def getOracle(self) -> GifAyiiOracle:
+        return self.oracle
+
+    def getRiskpool(self) -> GifTestRiskpool:
+        return self.riskpool
+    
+    def getContract(self) -> AyiiProduct:
         return self.product
 
     def getPolicy(self, policyId: str):
