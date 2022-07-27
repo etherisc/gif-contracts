@@ -22,13 +22,15 @@ from scripts.setup import (
 from scripts.instance import GifInstance
 from scripts.util import s2b32, contractFromAddress
 
+UNIT_MULTIPLIER = 10**10
+
 # enforce function isolation for tests below
 @pytest.fixture(autouse=True)
 def isolation(fn_isolation):
     pass
 
 
-def test_sanity_flow(
+def test_happy_path(
     instance: GifInstance, 
     owner, 
     gifAyiiProduct: GifAyiiProduct,
@@ -64,8 +66,6 @@ def test_sanity_flow(
         riskpoolFunding)
 
     print('--- test setup risks -------------------------------------')
-
-    UNIT_MULTIPLIER = 10**10
 
     projectId = s2b32('2022.kenya.wfp.ayii')
     uaiId = [s2b32('1234'), s2b32('2345')]
@@ -192,7 +192,8 @@ def test_sanity_flow(
     assert risk['responseAt'] == 0
     assert risk['aaay'] == 0
 
-    # simulate callback from oracle node
+    # create aaay data for oracle response
+    # aaay value selected triggers a payout
     aaayFloat = 1.1
     aaay = UNIT_MULTIPLIER * aaayFloat
 
@@ -204,6 +205,7 @@ def test_sanity_flow(
         aaay
     )
 
+    # simulate callback from oracle node
     tx = clOperator.fulfillOracleRequest2(
         clRequestEvent['requestId'],
         clRequestEvent['payment'],
@@ -235,37 +237,132 @@ def test_sanity_flow(
     # TODO test payoutFactor
 
     print('--- step test process policies ---------------------------')
-    # TODO add setup and assertions
+
+    # claim processing for policies associated with the specified risk
+    # batch size=0 triggers processing of all policies for this risk
+    tx = product.processPoliciesForRisk(riskId[0], 0)
+    policyIds = tx.return_value
+
+    assert len(policyIds) == 1
+    assert policyIds[0] == policyId[0]
+
+    assert instanceService.claims(policyId[1]) == 0 # not triggered -> no claim
+    assert instanceService.claims(policyId[0]) == 1 # triggered -> claim
+
+    policy = instanceService.getPolicy(policyId[0]).dict()
+    print('policy {}'.format(policy))
+    assert policy['state'] == 1 # enum PolicyState {Active, Expired, Closed}
+    assert policy['claimsCount'] == 1
+    assert policy['openClaimsCount'] == 0
+    assert policy['payoutsCount'] == 1
+    assert policy['openPayoutsCount'] == 0
+    assert policy['createdAt'] > 0
+    assert policy['updatedAt'] >= policy['createdAt']
+
+    claim = instanceService.getClaim(policyId[0], 0).dict()
+    print('claim {}'.format(claim))
+    assert claim['state'] == 1 # ClaimState {Applied, Confirmed, Declined}
+    assert claim['claimAmount'] > 0
+    assert claim['createdAt'] >= policy['createdAt']
+    assert claim['updatedAt'] == claim['createdAt']
+
+    assert instanceService.payouts(policyId[0]) == 1 
+
+    payout = instanceService.getPayout(policyId[0], 0).dict()
+    print('payout {}'.format(payout))
+    assert payout['claimId'] == 0
+    assert payout['state'] == 1 # PayoutState {Expected, PaidOut}
+    assert payout['payoutAmount'] == claim['claimAmount']
+    assert payout['createdAt'] == claim['createdAt']
+    assert payout['updatedAt'] == payout['createdAt']
+
+    print(tx.info())
+    assert False
+
+    # TODO add tests for actual payout
+    # bundle and riskpool decrease of balance by payout amount
+    # customer increase of balance by payout amount
 
     print('--- step test close bundle -------------------------------')
     # TODO add setup and assertions
     
 
+def test_payout_calculation(gifAyiiProduct: GifAyiiProduct):
 
-def create_peril(
-    id:str, 
-    cropId:int, 
-    premium:int, 
-    sumInsured:int, 
-    customer: Account
+    product = gifAyiiProduct.getContract()
+    multiplier = product.getPercentageMultiplier()
+
+    # pula example values
+    tsi = 0.9
+    trigger = 0.75
+    exit = 0.1
+
+    # random example values
+    # expected payout = 0.091093117, aph = 1.9, aaay = 1.3
+    assert get_payout_delta(0.091093117, 1.9, 1.3, tsi, trigger, exit, product, multiplier) < 0.00000001
+
+    # run through pula example table
+    assert get_payout_delta(0, 100.0, 110.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0, 100.0, 100.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0, 100.0,  95.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0, 100.0,  90.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0, 100.0,  85.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0, 100.0,  80.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0, 100.0,  75.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.06923073, 100.0,  70.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.13846153, 100.0,  65.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.20769232, 100.0,  60.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.27692312, 100.0,  55.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.34615379, 100.0,  50.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.41538459, 100.0,  45.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.48461532, 100.0,  40.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.55384612, 100.0,  35.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.62307691, 100.0,  30.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.69230759, 100.0,  25.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.76153838, 100.0,  20.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.83076918, 100.0,  15.0, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.9, 100.0,  10.0, tsi, trigger, exit, product, multiplier) < 0.0000001
+    assert get_payout_delta(0.9, 100.0,   5.0, tsi, trigger, exit, product, multiplier) < 0.0000001
+    assert get_payout_delta(0.9, 100.0,   0.0, tsi, trigger, exit, product, multiplier) < 0.0000001
+
+    assert False
+
+def get_payout_delta(
+    expectedPayoutPercentage,
+    aph, aaay, 
+    tsi, trigger, exit, 
+    product, multiplier
 ):
-    UAI = 100;
-    AAAY = 1;
-    APH = 2;
-    precisionMultiplier = 10 ** 6
-    trigger = 0.75 * precisionMultiplier;
-    exit = 0.10 * precisionMultiplier;
-    TSI = 0.90 * precisionMultiplier;
+    calculatedPayout = product.calculatePayoutPercentage(
+        tsi * multiplier,
+        trigger * multiplier,
+        exit * multiplier,
+        aph * multiplier,
+        aaay * multiplier
+    )
 
-    return [
-        id, 
-        UAI, 
-        cropId, 
-        trigger, 
-        exit, 
-        TSI, 
-        APH, 
-        sumInsured, 
-        premium, 
-        customer
-    ]
+    return abs(expectedPayoutPercentage * multiplier - calculatedPayout) / multiplier
+
+def create_risk(
+    product,
+    aph:float,
+    projectId:str='2022.kenya.wfp.ayii',
+    uaiId:str='1234',
+    cropId:str='mixed',
+    trigger:float=0.75,
+    exit:float=0.1,
+    tsi:float=0.9,
+):
+    tx = product.createRisk(
+        s2b32(projectId), 
+        s2b32(uaiId), 
+        s2b32(cropId), 
+        UNIT_MULTIPLIER * trigger, 
+        UNIT_MULTIPLIER * exit, 
+        UNIT_MULTIPLIER * tsi, 
+        UNIT_MULTIPLIER * aph)
+    
+    riskId = tx.return_value
+    risk = product.getRisk(riskId)
+
+    return risk

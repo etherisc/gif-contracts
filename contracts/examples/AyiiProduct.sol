@@ -19,7 +19,7 @@ contract AyiiProduct is
 
     bytes32 public constant INSURER_ROLE = keccak256("INSURER");
 
-    uint256 public constant PERCENTAGE_MULTIPLIER = 2**18;
+    uint256 public constant PERCENTAGE_MULTIPLIER = 2**24;
 
     // group policy data structure
     struct Risk {
@@ -34,7 +34,7 @@ contract AyiiProduct is
         uint256 requestId;
         uint256 responseAt;
         uint256 aaay;
-        uint256 payoutFactor;
+        uint256 payoutPercentage;
         uint256 createdAt;
         uint256 updatedAt;
     }
@@ -223,7 +223,14 @@ contract AyiiProduct is
 
         // update risk using aaay info
         risk.aaay = aaay;
-        risk.payoutFactor = calculatePayoutFactor(risk);
+        risk.payoutPercentage = calculatePayoutPercentage(
+            risk.tsi,
+            risk.trigger,
+            risk.exit,
+            risk.aph,
+            risk.aaay
+        );
+
         risk.responseAt = block.timestamp;
         risk.updatedAt = block.timestamp;
 
@@ -265,9 +272,10 @@ contract AyiiProduct is
         IPolicy.Application memory application 
             = _getApplication(policyId);
 
-        uint256 claimFactor = risk.payoutFactor * application.sumInsuredAmount;
-        uint256 claimAmount = claimFactor / PERCENTAGE_MULTIPLIER;
-
+        uint256 claimAmount = calculatePayout(
+            risk.payoutPercentage, 
+            application.sumInsuredAmount);
+        
         uint256 claimId = _newClaim(policyId, claimAmount, "");
         emit LogAyiiClaimCreated(policyId, claimId, claimAmount);
 
@@ -286,20 +294,58 @@ contract AyiiProduct is
         emit LogAyiiPolicyProcessed(policyId);
     }
 
-    // TODO: make safe (add tests)
-    function calculatePayoutFactor(Risk memory risk)
-        public 
-        pure 
-        returns(uint256 payout)
+    // // TODO: make safe (add tests)
+    // function calculatePayoutFactor(Risk memory risk)
+    //     public 
+    //     pure 
+    //     returns(uint256 payout)
+    // {
+    //     uint nominator = risk.tsi * (risk.trigger - (PERCENTAGE_MULTIPLIER / risk.aph * risk.aaay));
+    //     uint denominator = PERCENTAGE_MULTIPLIER * (risk.trigger - risk.exit);
+    //     payout = min(risk.tsi, nominator * PERCENTAGE_MULTIPLIER / denominator);
+    // }
+
+    function calculatePayout(uint256 payoutPercentage, uint256 sumInsuredAmount)
+        public
+        pure
+        returns(uint256 payoutAmount)
     {
-        uint nominator = risk.tsi * (risk.trigger - (PERCENTAGE_MULTIPLIER / risk.aph * risk.aaay));
-        uint denominator = PERCENTAGE_MULTIPLIER * (risk.trigger - risk.exit);
-        payout = min(risk.tsi, nominator * PERCENTAGE_MULTIPLIER / denominator);
+        payoutAmount = payoutPercentage * sumInsuredAmount / PERCENTAGE_MULTIPLIER;
     }
 
-    function max(uint256 a, uint256 b) private pure returns (uint256) {
-        return a >= b ? a : b;
+    function calculatePayoutPercentage(
+        uint256 tsi, // max payout percentage
+        uint256 trigger, // at and above this haverst ratio no payout is made
+        uint256 exit, // at and below this harvest ration the max payout is made
+        uint256 aph, // average historical yield
+        uint256 aaay // this season's yield
+    )
+        public
+        pure
+        returns(uint256 payoutPercentage)
+    {
+        // this year's harvest at or above threshold for any payouts
+        if (aaay * PERCENTAGE_MULTIPLIER >= aph * trigger) {
+            return 0;
+        }
+
+        // this year's harvest at or below threshold for maximal payout
+        if (aaay * PERCENTAGE_MULTIPLIER <= aph * exit) {
+            return tsi;
+        }
+
+        // calculated payout between exit and trigger
+        uint256 harvestRatio = PERCENTAGE_MULTIPLIER * aaay / aph;
+        payoutPercentage = tsi * (trigger - harvestRatio) / (trigger - exit);
     }
+
+    function getPercentageMultiplier() external pure returns(uint256 multiplier) {
+        return PERCENTAGE_MULTIPLIER;
+    }
+
+    // function max(uint256 a, uint256 b) private pure returns (uint256) {
+    //     return a >= b ? a : b;
+    // }
 
     function min(uint256 a, uint256 b) private pure returns (uint256) {
         return a <= b ? a : b;
