@@ -132,9 +132,12 @@ def test_create_policy(
     # PolicyState {Active, Expired}
     assert policy['state'] == 0
     assert policy['claimsCount'] == 0
-    assert policy['payoutsCount'] == 0
     assert policy['createdAt'] >= application['createdAt']
     assert policy['updatedAt'] >= policy['createdAt']
+
+    instanceService = instance.getInstanceService()
+    assert instanceService.payouts(policyId) == 0
+
 
 
 def test_create_expire_and_close_policy(
@@ -187,8 +190,10 @@ def test_create_expire_and_close_policy(
     policy = _getPolicyDict(instance, policyId)
     assert policy['state'] == 2
     assert policy['claimsCount'] == 0
-    assert policy['payoutsCount'] == 0
     assert policy['updatedAt'] > policy['createdAt']
+
+    instanceService = instance.getInstanceService()
+    assert instanceService.payouts(policyId) == 0
 
     # check that policy can't be expired a 2nd time
     with brownie.reverts('ERROR:PFD-001:POLICY_NOT_ACTIVE'):

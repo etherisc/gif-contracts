@@ -179,6 +179,6 @@ contract RiskpoolService is
         external override
         onlyOwningRiskpool(bundleId)  
     {
-        revert("NOT_IMPLEMENTED_YET:decreaseBundleBalance(...)");
+        _bundle.decreaseBalance(bundleId, processId, amount);
     }
 }

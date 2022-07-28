@@ -43,13 +43,6 @@ from brownie.network.account import Account
 from scripts.const import (
     GIF_RELEASE,
     ACCOUNTS_MNEMONIC, 
-    INSTANCE_OPERATOR_ACCOUNT_NO,
-    RISKPOOL_KEEPER_ACCOUNT_NO,
-    ORACLE_PROVIDER_ACCOUNT_NO,
-    PRODUCT_OWNER_ACCOUNT_NO,
-    CUSTOMER_ACCOUNT_NO,
-    CAPITAL_ACCOUNT_NO,
-    FEE_ACCOUNT_NO,
     RISKPOOL_NAME,
     RIKSPOOL_ID,
     ORACLE_NAME,
@@ -98,52 +91,42 @@ PUBLISH_SOURCE = False
 # -- comments below may be used /w 'brownie console'
 # mnemonic = 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'
 # owner = accounts.from_mnemonic(mnemonic, count=1, offset=0)
+def get_filled_account(accounts, account_no, funding) -> Account:
+    owner = get_account(ACCOUNTS_MNEMONIC, account_no)
+    accounts[account_no].transfer(owner, funding)
+    return owner
+
 @pytest.fixture(scope="module")
 def owner(accounts) -> Account:
-    owner = get_account(ACCOUNTS_MNEMONIC, INSTANCE_OPERATOR_ACCOUNT_NO)
-    accounts[0].transfer(owner, "10 ether")
-    return owner
+    return get_filled_account(accounts, 0, "1 ether")
 
 @pytest.fixture(scope="module")
 def riskpoolKeeper(accounts) -> Account:
-    owner = get_account(ACCOUNTS_MNEMONIC, RISKPOOL_KEEPER_ACCOUNT_NO)
-    accounts[1].transfer(owner, "10 ether")
-    return owner
+    return get_filled_account(accounts, 1, "1 ether")
 
 @pytest.fixture(scope="module")
 def oracleProvider(accounts) -> Account:
-    owner = get_account(ACCOUNTS_MNEMONIC, ORACLE_PROVIDER_ACCOUNT_NO)
-    accounts[2].transfer(owner, "10 ether")
-    return owner
+    return get_filled_account(accounts, 2, "1 ether")
 
 @pytest.fixture(scope="module")
 def productOwner(accounts) -> Account:
-    owner = get_account(ACCOUNTS_MNEMONIC, PRODUCT_OWNER_ACCOUNT_NO)
-    accounts[3].transfer(owner, "10 ether")
-    return owner
+    return get_filled_account(accounts, 3, "1 ether")
 
 @pytest.fixture(scope="module")
 def customer(accounts) -> Account:
-    owner = get_account(ACCOUNTS_MNEMONIC, CUSTOMER_ACCOUNT_NO)
-    accounts[4].transfer(owner, "10 ether")
-    return owner
+    return get_filled_account(accounts, 4, "1 ether")
 
 @pytest.fixture(scope="module")
 def customer2(accounts) -> Account:
-    owner = get_account(ACCOUNTS_MNEMONIC, CUSTOMER_ACCOUNT_NO)
-    accounts[5].transfer(owner, "10 ether")
-    return owner
+    return get_filled_account(accounts, 5, "1 ether")
 
 @pytest.fixture(scope="module")
 def capitalOwner(accounts) -> Account:
-    owner = get_account(ACCOUNTS_MNEMONIC, CAPITAL_ACCOUNT_NO)
-    accounts[6].transfer(owner, "10 ether")
-    return owner
+    return get_filled_account(accounts, 6, "1 ether")
 
 @pytest.fixture(scope="module")
 def feeOwner(accounts) -> Account:
-    owner = get_account(ACCOUNTS_MNEMONIC, FEE_ACCOUNT_NO)
-    return owner
+    return get_filled_account(accounts, 7, "1 ether")
 
 @pytest.fixture(scope="module")
 def instance(owner, feeOwner) -> GifInstance:

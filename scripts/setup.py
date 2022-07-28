@@ -29,12 +29,12 @@ def fund_riskpool(
 def fund_customer(
     instance: GifInstance, 
     owner: Account,
-    customer: Account,
+    account: Account,
     coin,
     amount: int
 ):
-    coin.transfer(customer, amount, {'from': owner})
-    coin.approve(instance.getTreasury(), amount, {'from': customer})
+    coin.transfer(account, amount, {'from': owner})
+    coin.approve(instance.getTreasury(), amount, {'from': account})
 
 
 def apply_for_policy(

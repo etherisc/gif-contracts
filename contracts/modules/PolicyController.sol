@@ -20,11 +20,16 @@ contract PolicyController is
     // Policies
     mapping(bytes32 => Policy) public policies;
 
+    // TODO decide for current data structure or alternative
+    // alternative mapping(bytes32 => Claim []) 
     // Claims
     mapping(bytes32 => mapping(uint256 => Claim)) public claims;
 
+    // TODO decide for current data structure or alternative
+    // alternative mapping(bytes32 => Payout []) 
     // Payouts
     mapping(bytes32 => mapping(uint256 => Payout)) public payouts;
+    mapping(bytes32 => uint256) public payoutCount;
 
     bytes32[] private _processIds;
 
@@ -229,10 +234,14 @@ contract PolicyController is
         policy.openClaimsCount += 1;
         policy.updatedAt = block.timestamp;
 
-        emit LogClaimCreated(processId, claimId);
+        emit LogClaimCreated(processId, claimId, claimAmount);
     }
 
-    function confirmClaim(bytes32 processId, uint256 claimId) 
+    function confirmClaim(
+        bytes32 processId,
+        uint256 claimId,
+        uint256 confirmedAmount
+    ) 
         external override
         onlyPolicyFlow("Policy") 
     {
@@ -245,12 +254,12 @@ contract PolicyController is
         require(claim.state == ClaimState.Applied, "ERROR:POC-036:INVALID_CLAIM_STATE");
 
         claim.state = ClaimState.Confirmed;
+        claim.claimAmount = confirmedAmount;
         claim.updatedAt = block.timestamp;
 
-        policy.openClaimsCount -= 1;
         policy.updatedAt = block.timestamp;
 
-        emit LogClaimConfirmed(processId, claimId);
+        emit LogClaimConfirmed(processId, claimId, confirmedAmount);
     }
 
     function declineClaim(bytes32 processId, uint256 claimId)
@@ -268,10 +277,38 @@ contract PolicyController is
         claim.state = ClaimState.Declined;
         claim.updatedAt = block.timestamp;
 
-        policy.openClaimsCount -= 1;
         policy.updatedAt = block.timestamp;
 
         emit LogClaimDeclined(processId, claimId);
+    }
+
+    function closeClaim(bytes32 processId, uint256 claimId)
+        external override
+        onlyPolicyFlow("Policy") 
+    {
+        Policy storage policy = policies[processId];
+        require(policy.createdAt > 0, "ERROR:POC-033:POLICY_DOES_NOT_EXIST");
+        require(policy.openClaimsCount > 0, "ERROR:POC-034:NO_OPEN_CLAIMS");
+
+        Claim storage claim = claims[processId][claimId];
+        require(claim.createdAt > 0, "ERROR:POC-035:CLAIM_DOES_NOT_EXIST");
+        require(
+            claim.state == ClaimState.Confirmed 
+            || claim.state == ClaimState.Declined, 
+            "ERROR:POC-036:INVALID_CLAIM_STATE");
+
+        require(
+            claim.claimAmount == claim.paidAmount, 
+            "ERROR:POC-035:NOT_ALL_PAYOUTS_PROCESSED"
+        );
+
+        claim.state = ClaimState.Closed;
+        claim.updatedAt = block.timestamp;
+
+        policy.openClaimsCount -= 1;
+        policy.updatedAt = block.timestamp;
+
+        emit LogClaimClosed(processId, claimId);
     }
 
     /* Payout */
@@ -291,7 +328,7 @@ contract PolicyController is
         Claim memory claim = claims[processId][claimId];
         require(claim.createdAt > 0, "ERROR:POC-041:CLAIM_DOES_NOT_EXIST");
 
-        payoutId = policy.payoutsCount;
+        payoutId = payoutCount[processId];
         Payout storage payout = payouts[processId][payoutId];
         require(payout.createdAt == 0, "ERROR:POC-042:PAYOUT_ALREADY_EXISTS");
 
@@ -302,42 +339,44 @@ contract PolicyController is
         payout.createdAt = block.timestamp;
         payout.updatedAt = block.timestamp;
 
-        policy.payoutsCount += 1;
-        policy.openPayoutsCount += 1;
+        payoutCount[processId] += 1;
         policy.updatedAt = block.timestamp;
 
-        emit LogPayoutCreated(processId, claimId, payoutId);
+        emit LogPayoutCreated(processId, claimId, payoutId, payoutAmount);
     }
 
     function processPayout(
         bytes32 processId,
-        uint256 payoutId,
-        bool isComplete,
-        bytes calldata data
+        uint256 payoutId
     )
         external override 
         onlyPolicyFlow("Policy")
     {
         Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-043:POLICY_DOES_NOT_EXIST");
-        require(policy.openPayoutsCount > 0, "ERROR:POC-044:NO_OPEN_PAYOUTS");
+        require(policy.openClaimsCount > 0, "ERROR:POC-044:NO_OPEN_CLAIMS");
 
         Payout storage payout = payouts[processId][payoutId];
         require(payout.createdAt > 0, "ERROR:POC-045:PAYOUT_DOES_NOT_EXIST");
-        require(payout.state == PayoutState.Expected, "ERROR:POC-046:PAYOUT_ALREADY_COMPLETED");
+        require(payout.state == PayoutState.Expected, "ERROR:POC-046:PAYOUT_ALREADY_PAIDOUT");
 
-        payout.data = data;
+        payout.state = IPolicy.PayoutState.PaidOut;
         payout.updatedAt = block.timestamp;
 
-        if (isComplete) {
-            payout.state = PayoutState.PaidOut;
+        emit LogPayoutProcessed(processId, payoutId);
 
-            policy.openPayoutsCount -= 1;
+        Claim storage claim = claims[processId][payout.claimId];
+        claim.paidAmount += payout.payoutAmount;
+        claim.updatedAt = block.timestamp;
+
+        // check if claim can be closed
+        if (claim.claimAmount == claim.paidAmount) {
+            claim.state = IPolicy.ClaimState.Closed;
+
+            policy.openClaimsCount -= 1;
             policy.updatedAt = block.timestamp;
 
-            emit LogPayoutCompleted(processId, payoutId);
-        } else {
-            emit LogPayoutProcessed(processId, payoutId);
+            emit LogClaimClosed(processId, payout.claimId);
         }
     }
 
@@ -357,6 +396,14 @@ contract PolicyController is
     {
         application = applications[processId];
         require(application.createdAt > 0, "ERROR:POC-051:APPLICATION_DOES_NOT_EXIST");        
+    }
+
+    function getNumberOfClaims(bytes32 processId) external view returns(uint256 numberOfClaims) {
+        numberOfClaims = getPolicy(processId).claimsCount;
+    }
+    
+    function getNumberOfPayouts(bytes32 processId) external view returns(uint256 numberOfPayouts) {
+        numberOfPayouts = payoutCount[processId];
     }
 
     function getPolicy(bytes32 processId)

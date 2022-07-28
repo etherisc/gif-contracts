@@ -107,7 +107,7 @@ contract TestProduct is
 
         // increase claims counter
         // the oracle business logic will use this counter value 
-        // to determine if the claim is linke to a loss event or not
+        // to determine if the claim is linked to a loss event or not
         _claims += 1;
         
         // claim application
@@ -144,26 +144,20 @@ contract TestProduct is
             IPolicy.Application memory application 
                 = _getApplication(policyId);
 
-            // TODO refactor to ordinary attribute claimAmount
-            // once this is in gif-interface
-
             IPolicy.Claim memory claim 
                 = _getClaim(policyId, claimId);
 
-            // (uint256 premium, address payable policyHolder) = abi.decode(
-            //     _getApplicationData(policyId), (uint256, address));
-
-            // (uint256 payoutAmount) = abi.decode(
-            //     _getClaimData(policyId, claimId), (uint256));
-
             // specify payout data
-            bytes memory payoutData = abi.encode(0);
-            uint256 payoutId = _confirmClaim(policyId, claimId, claim.claimAmount, payoutData);
-            _policyIdToPayoutId[policyId] = payoutId;
+            uint256 confirmedAmount = claim.claimAmount;
+            _confirmClaim(policyId, claimId, confirmedAmount);
 
             // create payout record
-            bool isComplete = true;
-            _processPayout(policyId, payoutId, isComplete, payoutData);
+            uint256 payoutAmount = confirmedAmount;
+            bytes memory payoutData = abi.encode(0);
+            uint256 payoutId = _newPayout(policyId, claimId, payoutAmount, payoutData);
+            _policyIdToPayoutId[policyId] = payoutId;
+
+            _processPayout(policyId, payoutId);
 
             // TODO refactor to payout using erc-20 token
             // actual transfer of funds for payout of claim

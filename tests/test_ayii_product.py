@@ -22,8 +22,6 @@ from scripts.setup import (
 from scripts.instance import GifInstance
 from scripts.util import s2b32, contractFromAddress
 
-UNIT_MULTIPLIER = 10**10
-
 # enforce function isolation for tests below
 @pytest.fixture(autouse=True)
 def isolation(fn_isolation):
@@ -54,7 +52,10 @@ def test_happy_path(
     clOperator = gifAyiiProduct.getOracle().getClOperator()
 
     print('--- test setup funding riskpool --------------------------')
+
     token = gifAyiiProduct.getToken()
+    assert token.balanceOf(riskpoolWallet) == 0
+
     riskpoolFunding = 200000
     fund_riskpool(
         instance, 
@@ -64,6 +65,26 @@ def test_happy_path(
         investor, 
         token, 
         riskpoolFunding)
+
+    # check riskpool funds and book keeping after funding
+    riskpoolBalanceAfterFunding = token.balanceOf(riskpoolWallet)
+    riskpoolExpectedBalance = 0.95 * riskpoolFunding - 42
+    assert riskpoolBalanceAfterFunding == riskpoolExpectedBalance
+    assert riskpool.bundles() == 1
+    assert riskpool.getCapital() == riskpoolExpectedBalance
+    assert riskpool.getTotalValueLocked() == 0
+    assert riskpool.getCapacity() == riskpoolExpectedBalance
+    assert riskpool.getBalance() == riskpoolExpectedBalance
+
+    # check risk bundle in riskpool and book keeping after funding
+    bundleAfterFunding = riskpool.getBundle(0).dict()
+    assert bundleAfterFunding['id'] == 1
+    assert bundleAfterFunding['riskpoolId'] == riskpool.getId()
+    assert bundleAfterFunding['state'] == 0
+    assert bundleAfterFunding['capital'] == riskpoolExpectedBalance
+    assert bundleAfterFunding['lockedCapital'] == 0
+    assert bundleAfterFunding['balance'] == riskpoolExpectedBalance
+
 
     print('--- test setup risks -------------------------------------')
 
@@ -76,10 +97,11 @@ def test_happy_path(
     tsiFloat = 0.9
     aphFloat = [2.0, 1.8]
     
-    trigger = UNIT_MULTIPLIER * triggerFloat
-    exit = UNIT_MULTIPLIER * exitFloat
-    tsi = UNIT_MULTIPLIER * tsiFloat
-    aph = [UNIT_MULTIPLIER * aphFloat[0], UNIT_MULTIPLIER * aphFloat[1]]
+    multiplier = product.getPercentageMultiplier()
+    trigger = multiplier * triggerFloat
+    exit = multiplier * exitFloat
+    tsi = multiplier * tsiFloat
+    aph = [multiplier * aphFloat[0], multiplier * aphFloat[1]]
 
     tx = [None, None]
     tx[0] = product.createRisk(projectId, uaiId[0], cropId, trigger, exit, tsi, aph[0])
@@ -92,18 +114,50 @@ def test_happy_path(
     assert riskId[0] == product.getRiskId(projectId, uaiId[0], cropId)
     assert riskId[1] == product.getRiskId(projectId, uaiId[1], cropId)
     
+
     print('--- test setup funding customers -------------------------')
+
+    assert token.balanceOf(customer) == 0
+    assert token.balanceOf(customer2) == 0
+
     customerFunding = 500
     fund_customer(instance, owner, customer, token, customerFunding)
     fund_customer(instance, owner, customer2, token, customerFunding)
 
+    # check customer funds after funding
+    customerBalanceAfterFunding = token.balanceOf(customer)
+    customer2BalanceAfterFunding = token.balanceOf(customer2)
+    assert customerBalanceAfterFunding == customerFunding
+    assert customer2BalanceAfterFunding == customerFunding
+
+
     print('--- test create policies ---------------------------------')
 
-    premium = [200, 300]
-    sumInsured = [2200, 3300]
+    premium = [300, 400]
+    sumInsured = [2000, 3000]
 
     tx[0] = product.applyForPolicy(customer, premium[0], sumInsured[0], riskId[0])
     tx[1] = product.applyForPolicy(customer2, premium[1], sumInsured[1], riskId[1])
+
+    # check customer funds after application/paying premium
+    customerBalanceAfterPremium = token.balanceOf(customer)
+    customer2BalanceAfterPremium = token.balanceOf(customer2)
+    assert premium[0] + customerBalanceAfterPremium == customerBalanceAfterFunding 
+    assert premium[1] + customer2BalanceAfterPremium == customer2BalanceAfterFunding 
+
+    # check riskpool funds after application/paying premium
+    netPremium = [0.9 * premium[0] - 3, 0.9 * premium[1] - 3]
+    riskpoolBalanceAfterPremiums = token.balanceOf(riskpoolWallet)
+    assert riskpoolBalanceAfterPremiums == riskpoolBalanceAfterFunding + netPremium[0] + netPremium[1]
+
+    # check risk bundle after premium
+    bundleAfterPremium = riskpool.getBundle(0).dict()
+    assert bundleAfterPremium['id'] == 1
+    assert bundleAfterPremium['riskpoolId'] == riskpool.getId()
+    assert bundleAfterPremium['state'] == 0
+    assert bundleAfterPremium['capital'] == riskpoolExpectedBalance
+    assert bundleAfterPremium['lockedCapital'] == sumInsured[0] + sumInsured[1]
+    assert bundleAfterPremium['balance'] == riskpoolExpectedBalance + netPremium[0] + netPremium[1]
 
     policyId = [None, None]
     policyId = [tx[0].return_value, tx[1].return_value]
@@ -139,7 +193,7 @@ def test_happy_path(
  
     # check policy 2
     assert meta[1]['state'] == 0
-    assert meta[1]['owner'] == customer
+    assert meta[1]['owner'] == customer2
     assert meta[1]['productId'] == product.getId()
     assert application[1]['state'] == 2
     assert application[1]['premiumAmount'] == premium[1]
@@ -156,6 +210,7 @@ def test_happy_path(
     assert product.getPolicyId(riskId[0], 0) == policyId[0]
     assert product.getPolicyId(riskId[1], 0) == policyId[1]
  
+
     print('--- step trigger oracle (call chainlin node) -------------')
 
     tx[0] = product.triggerOracle(riskId[0])
@@ -168,6 +223,7 @@ def test_happy_path(
 
     # check event attributes
     clRequestEvent = tx[0].events['OracleRequest'][0]
+    clRequestEvent1 = tx[1].events['OracleRequest'][0]
     print('chainlink requestEvent {}'.format(clRequestEvent))
     assert clRequestEvent['requester'] == oracle.address
     assert clRequestEvent['requester'] == clRequestEvent['callbackAddr']
@@ -184,6 +240,7 @@ def test_happy_path(
     assert requestEvent['uaiId'] == uaiId[0]
     assert requestEvent['cropId'] == cropId
 
+
     print('--- step test oracle response ----------------------------')
 
     risk = product.getRisk(riskId[0]).dict()
@@ -195,9 +252,10 @@ def test_happy_path(
     # create aaay data for oracle response
     # aaay value selected triggers a payout
     aaayFloat = 1.1
-    aaay = UNIT_MULTIPLIER * aaayFloat
+    aaay = product.getPercentageMultiplier() * aaayFloat
 
-    data = oracle.encodeFulfillParameters(
+    data = [None, None]
+    data[0] = oracle.encodeFulfillParameters(
         clRequestEvent['requestId'], 
         projectId, 
         uaiId[0], 
@@ -205,23 +263,43 @@ def test_happy_path(
         aaay
     )
 
-    # simulate callback from oracle node
-    tx = clOperator.fulfillOracleRequest2(
+    # simulate callback from oracle node with call to chainlink operator contract
+    tx[0] = clOperator.fulfillOracleRequest2(
         clRequestEvent['requestId'],
         clRequestEvent['payment'],
         clRequestEvent['callbackAddr'],
         clRequestEvent['callbackFunctionId'],
         clRequestEvent['cancelExpiration'],
-        data
+        data[0]
     )
 
-    print(tx.info())
+    print(tx[0].info())
 
+    # simulate callback for 2nd risk
+    data[1] = oracle.encodeFulfillParameters(
+        clRequestEvent1['requestId'],
+        projectId, 
+        uaiId[1], 
+        cropId, 
+        aph[1] # setting aaay to aph will result in a 0 payout
+    )
+
+    # simulate callback from oracle node with call to chainlink operator contract
+    tx[1] = clOperator.fulfillOracleRequest2(
+        clRequestEvent1['requestId'],
+        clRequestEvent1['payment'],
+        clRequestEvent1['callbackAddr'],
+        clRequestEvent1['callbackFunctionId'],
+        clRequestEvent1['cancelExpiration'],
+        data[1]
+    )
+
+    # focus checks on oracle 1 response
     # verify in log entry that aaay data properly arrives in ayii product cotract
-    assert 'LogAyiiRiskDataReceived' in tx.events
-    assert len(tx.events['LogAyiiRiskDataReceived']) == 1
+    assert 'LogAyiiRiskDataReceived' in tx[0].events
+    assert len(tx[0].events['LogAyiiRiskDataReceived']) == 1
 
-    receivedEvent = tx.events['LogAyiiRiskDataReceived'][0]
+    receivedEvent = tx[0].events['LogAyiiRiskDataReceived'][0]
     print('ayii requestEvent {}'.format(receivedEvent))
     assert receivedEvent['requestId'] == requestId[0]
     assert receivedEvent['riskId'] == riskId[0]
@@ -234,9 +312,19 @@ def test_happy_path(
     assert risk['responseAt'] > risk['createdAt']
     assert risk['aaay'] == aaay
 
-    # TODO test payoutFactor
 
-    print('--- step test process policies ---------------------------')
+    print('--- step test process policies (risk[0]) -----------------')
+
+    print('balanceOf(riskpoolWallet): {}'.format(token.balanceOf(riskpoolWallet)))
+    print('sumInsured[0]: {}'.format(sumInsured[0]))
+    
+    assert token.balanceOf(riskpoolWallet) == riskpoolBalanceAfterPremiums
+    assert riskpoolBalanceAfterPremiums >= sumInsured[0]
+
+    # record riskpool state before processing
+    balanceBeforeProcessing = riskpool.getBalance()
+    valueLockedBeforeProcessing = riskpool.getTotalValueLocked()
+    capacityBeforeProcessing = riskpool.getCapacity()
 
     # claim processing for policies associated with the specified risk
     # batch size=0 triggers processing of all policies for this risk
@@ -251,18 +339,28 @@ def test_happy_path(
 
     policy = instanceService.getPolicy(policyId[0]).dict()
     print('policy {}'.format(policy))
-    assert policy['state'] == 1 # enum PolicyState {Active, Expired, Closed}
+    assert policy['state'] == 2 # enum PolicyState {Active, Expired, Closed}
     assert policy['claimsCount'] == 1
     assert policy['openClaimsCount'] == 0
-    assert policy['payoutsCount'] == 1
-    assert policy['openPayoutsCount'] == 0
     assert policy['createdAt'] > 0
     assert policy['updatedAt'] >= policy['createdAt']
 
+    expectedClaimPercentage = product.calculatePayoutPercentage(
+        risk['tsi'],
+        risk['trigger'],
+        risk['exit'],
+        risk['aph'],
+        risk['aaay'],
+    )
+
+    expectedPayoutAmount = int(expectedClaimPercentage * sumInsured[0] / product.getPercentageMultiplier())
+    assert expectedPayoutAmount > 0
+    assert expectedPayoutAmount <= sumInsured[0]
+
     claim = instanceService.getClaim(policyId[0], 0).dict()
     print('claim {}'.format(claim))
-    assert claim['state'] == 1 # ClaimState {Applied, Confirmed, Declined}
-    assert claim['claimAmount'] > 0
+    assert claim['state'] == 3 # ClaimState {Applied, Confirmed, Declined, Closed}
+    assert claim['claimAmount'] == expectedPayoutAmount
     assert claim['createdAt'] >= policy['createdAt']
     assert claim['updatedAt'] == claim['createdAt']
 
@@ -272,22 +370,77 @@ def test_happy_path(
     print('payout {}'.format(payout))
     assert payout['claimId'] == 0
     assert payout['state'] == 1 # PayoutState {Expected, PaidOut}
-    assert payout['payoutAmount'] == claim['claimAmount']
+    assert payout['payoutAmount'] == expectedPayoutAmount
     assert payout['createdAt'] == claim['createdAt']
     assert payout['updatedAt'] == payout['createdAt']
 
     print(tx.info())
-    assert False
 
-    # TODO add tests for actual payout
-    # bundle and riskpool decrease of balance by payout amount
-    # customer increase of balance by payout amount
+    # tests token balances for actual payout
+    # riskpool wallet decrease of balance by payout amount
+    assert token.balanceOf(riskpoolWallet) == riskpoolBalanceAfterPremiums - expectedPayoutAmount
+
+    # check customer increase of balance by payout amount (and no increase for customer2)
+    assert token.balanceOf(customer) == customerBalanceAfterPremium + expectedPayoutAmount 
+    assert token.balanceOf(customer2) == customer2BalanceAfterPremium
+
+    # check risk bundle after payout
+    bundleAfterPayout = riskpool.getBundle(0).dict()
+    assert bundleAfterPayout['id'] == 1
+    assert bundleAfterPayout['riskpoolId'] == riskpool.getId()
+    assert bundleAfterPayout['state'] == 0
+    assert bundleAfterPayout['capital'] == riskpoolExpectedBalance
+    assert bundleAfterPayout['lockedCapital'] == sumInsured[1]
+    assert bundleAfterPayout['balance'] == riskpoolExpectedBalance + netPremium[0] + netPremium[1] - expectedPayoutAmount
+
+    # record riskpool state after processing
+    balanceAfterProcessing = riskpool.getBalance()
+    valueLockedAfterProcessing = riskpool.getTotalValueLocked()
+    capacityAfterProcessing = riskpool.getCapacity()
+
+    # check book keeping on riskpool level
+    assert valueLockedAfterProcessing == valueLockedBeforeProcessing - sumInsured[0]
+    assert capacityAfterProcessing == capacityBeforeProcessing + sumInsured[0]
+    assert balanceAfterProcessing == balanceBeforeProcessing - expectedPayoutAmount
+
+    print('--- step test process policies (risk[1]) -----------------')
+
+    # process 2nd policy to have all policies closed
+    tx = product.processPoliciesForRisk(riskId[1], 0)
+    policyIds = tx.return_value
+    assert len(policyIds) == 1
+    assert policyIds[0] == policyId[1]
+
+    # high level checs
+    policy = instanceService.getPolicy(policyId[1]).dict()
+    assert policy['state'] == 2 # enum PolicyState {Active, Expired, Closed}
+    assert policy['claimsCount'] == 1
+    assert policy['openClaimsCount'] == 0
+
+    assert instanceService.payouts(policyId[1]) == 0
+
+    claim = instanceService.getClaim(policyId[1], 0).dict()
+    print('claim {}'.format(claim))
+    assert claim['state'] == 3 # ClaimState {Applied, Confirmed, Declined, Closed}
+    assert claim['claimAmount'] == 0
+
+    # check bundle state
+    bundleAfter2ndPayout = riskpool.getBundle(0).dict()
+    assert bundleAfter2ndPayout['capital'] == riskpoolExpectedBalance
+    assert bundleAfter2ndPayout['lockedCapital'] == 0
+    assert bundleAfter2ndPayout['balance'] == riskpoolExpectedBalance + netPremium[0] + netPremium[1] - expectedPayoutAmount
+
+    # check riskpool state
+    assert riskpool.getTotalValueLocked() == 0
+    assert riskpool.getBalance() == bundleAfter2ndPayout['balance']
 
     print('--- step test close bundle -------------------------------')
+
     # TODO add setup and assertions
+    # assert False
     
 
-def test_payout_calculation(gifAyiiProduct: GifAyiiProduct):
+def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
 
     product = gifAyiiProduct.getContract()
     multiplier = product.getPercentageMultiplier()
@@ -302,6 +455,7 @@ def test_payout_calculation(gifAyiiProduct: GifAyiiProduct):
     assert get_payout_delta(0.091093117, 1.9, 1.3, tsi, trigger, exit, product, multiplier) < 0.00000001
 
     # run through pula example table
+    # harvest ratio >= trigger (75%) give 0 payout 
     assert get_payout_delta(0, 100.0, 110.0, tsi, trigger, exit, product, multiplier) < 0.00000001
     assert get_payout_delta(0, 100.0, 100.0, tsi, trigger, exit, product, multiplier) < 0.00000001
     assert get_payout_delta(0, 100.0,  95.0, tsi, trigger, exit, product, multiplier) < 0.00000001
@@ -325,7 +479,34 @@ def test_payout_calculation(gifAyiiProduct: GifAyiiProduct):
     assert get_payout_delta(0.9, 100.0,   5.0, tsi, trigger, exit, product, multiplier) < 0.0000001
     assert get_payout_delta(0.9, 100.0,   0.0, tsi, trigger, exit, product, multiplier) < 0.0000001
 
-    assert False
+
+def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
+
+    product = gifAyiiProduct.getContract()
+    multiplier = product.getPercentageMultiplier()
+
+    # pula example values
+    tsi = 0.9
+    trigger = 0.75
+    exit = 0.1
+
+    expected_payout_percentage = 0.091093117 * multiplier
+    aph = 1.9
+    aaay = 1.3
+
+    payout_percentage = product.calculatePayoutPercentage(
+        tsi * multiplier,
+        trigger * multiplier,
+        exit * multiplier,
+        aph * multiplier,
+        aaay * multiplier
+    )
+    assert int(expected_payout_percentage + 0.5) == payout_percentage
+
+    sumInsuredAmount = 2200
+    expected_payout = int(expected_payout_percentage * sumInsuredAmount / multiplier)
+    assert expected_payout == product.calculatePayout(expected_payout_percentage, sumInsuredAmount)
+
 
 def get_payout_delta(
     expectedPayoutPercentage,
@@ -353,14 +534,15 @@ def create_risk(
     exit:float=0.1,
     tsi:float=0.9,
 ):
+    multiplier = product.getPercentageMultiplier()
     tx = product.createRisk(
         s2b32(projectId), 
         s2b32(uaiId), 
         s2b32(cropId), 
-        UNIT_MULTIPLIER * trigger, 
-        UNIT_MULTIPLIER * exit, 
-        UNIT_MULTIPLIER * tsi, 
-        UNIT_MULTIPLIER * aph)
+        multiplier * trigger, 
+        multiplier * exit, 
+        multiplier * tsi, 
+        multiplier * aph)
     
     riskId = tx.return_value
     risk = product.getRisk(riskId)

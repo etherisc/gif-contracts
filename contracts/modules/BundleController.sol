@@ -216,8 +216,11 @@ contract BundleController is
     {
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-033:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-034:BUNDLE_CLOSED");
+        require(bundle.balance >= amount, "ERROR:BUC-035:BUNDLE_BALANCE_TOO_SMALL");
 
-        revert("NOT_IMPLEMENTED_YET:decreaseBalance(...)");
+        bundle.balance -= amount;
+        bundle.updatedAt = block.timestamp;
     }
 
 

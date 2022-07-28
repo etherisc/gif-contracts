@@ -12,6 +12,7 @@ import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 import "@etherisc/gif-interface/contracts/modules/ITreasury.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract TreasuryModule is 
     ITreasury,
@@ -206,6 +207,57 @@ contract TreasuryModule is
         emit LogTreasuryPremiumProcessed(processId, amount, success);
     }
 
+
+    // TODO remove once available from gif-interface
+    event LogTreasuryPayoutTransferred(address riskpoolWalletAddress, address to, uint256 amount, bool success);
+    event LogTreasuryPayoutProcessed(uint256 riskpoolId, address to, uint256 amount, bool success);
+
+    function processPayout(bytes32 processId, uint256 payoutId) 
+        external override
+        returns(
+            bool success,
+            uint256 feeAmount,
+            uint256 netPayoutAmount
+        )
+    {
+        IPolicy.Payout memory payout =  _policy.getPayout(processId, payoutId);
+        require(
+            payout.state == IPolicy.PayoutState.Expected, 
+            "ERROR:TRS-030:PAYOUT_ALREADY_PROCESSED"
+        );
+
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
+        uint256 riskpoolId = _pool.getRiskPoolForProduct(metadata.productId);
+        require(riskpoolId > 0, "ERROR:TRS-033:PRODUCT_WITHOUT_RISKPOOL");
+        address riskpoolWalletAddress = _riskpoolWallet[riskpoolId];
+        require(riskpoolWalletAddress != address(0), "ERROR:TRS-034:RISKPOOL_WITHOUT_WALLET");
+
+        // check if allowance covers requested amount
+        IERC20 token = getComponentToken(metadata.productId);
+        require(
+            token.allowance(riskpoolWalletAddress, address(this)) >= payout.payoutAmount, 
+            "ERROR:TRS-034:RISKPOOL_ALLOWANCE_TOO_SMALL:"
+        );
+        require(
+            token.balanceOf(riskpoolWalletAddress) >= payout.payoutAmount, 
+            string(abi.encodePacked(
+                "ERROR:TRS-034:RISKPOOL_BALANCE_TOO_SMALL:BALANCE=",
+                Strings.toString(token.balanceOf(riskpoolWalletAddress)),
+                ":PAYOUT=",
+                Strings.toString(payout.payoutAmount)
+            ))
+        );
+
+        // actual payout to policy holder
+        success = token.transferFrom(riskpoolWalletAddress, metadata.owner, payout.payoutAmount);
+        feeAmount = 0;
+        netPayoutAmount = payout.payoutAmount;
+
+        emit LogTreasuryPayoutTransferred(riskpoolWalletAddress, metadata.owner, payout.payoutAmount, success);
+        require(success, "ERROR:TRS-035:PAYOUT_TRANSFER_FAILED");
+
+        emit LogTreasuryPayoutProcessed(riskpoolId,  metadata.owner, payout.payoutAmount, success);
+    }
 
     function processCapital(uint256 bundleId, uint256 capitalAmount) 
         external override 

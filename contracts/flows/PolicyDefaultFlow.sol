@@ -163,22 +163,12 @@ contract PolicyDefaultFlow is
     function confirmClaim(
         bytes32 processId,
         uint256 claimId,
-        uint256 payoutAmount,
-        bytes calldata data
+        uint256 confirmedAmount
     ) 
         external 
-        returns (uint256 payoutId) 
     {
         PolicyController policy = getPolicyContract();
-        require(
-            policy.getClaim(processId, claimId).state ==
-            IPolicy.ClaimState.Applied,
-            "ERROR:PFD-010:INVALID_CLAIM_STATE"
-        );
-
-        policy.confirmClaim(processId, claimId);
-
-        payoutId = policy.createPayout(processId, claimId, payoutAmount, data);
+        policy.confirmClaim(processId, claimId, confirmedAmount);
     }
 
     function declineClaim(bytes32 processId, uint256 claimId) external {
@@ -186,13 +176,46 @@ contract PolicyDefaultFlow is
         policy.declineClaim(processId, claimId);
     }
 
+    function closeClaim(bytes32 processId, uint256 claimId) external {
+        PolicyController policy = getPolicyContract();
+        policy.closeClaim(processId, claimId);
+    }
+
+    function newPayout(
+        bytes32 processId,
+        uint256 claimId,
+        uint256 amount,
+        bytes calldata data
+    ) 
+        external 
+        returns(uint256 payoutId)
+    {
+        payoutId = getPolicyContract()
+            .createPayout(processId, claimId, amount, data);
+    }
+
     function processPayout(
         bytes32 processId,
-        uint256 payoutId,
-        bool isComplete,
-        bytes calldata data
-    ) external {
-        getPolicyContract().processPayout(processId, payoutId, isComplete, data);
+        uint256 payoutId
+    )
+        external 
+        returns(
+            bool success,
+            uint256 feeAmount,
+            uint256 netPayoutAmount
+        )
+    {
+        TreasuryModule treasury = getTreasuryContract();
+        (success, feeAmount, netPayoutAmount) = treasury.processPayout(processId, payoutId);
+
+        // if payout successful: update book keeping of policy and riskpool
+        if (success) {
+            IPolicy policy = getPolicyContract();
+            policy.processPayout(processId, payoutId);
+
+            PoolController pool = getPoolContract();
+            pool.decreaseBalance(processId, netPayoutAmount + feeAmount);
+        }
     }
 
     function request(

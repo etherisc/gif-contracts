@@ -44,7 +44,6 @@ contract AyiiProduct is
     mapping(bytes32 /* riskId */ => Risk) private _risks;
     mapping(bytes32 /* riskId */ => bytes32 [] /*policyIds*/) private _policies;
     bytes32 [] private _applications; // useful for debugging, might need to get rid of this
-    bytes32 [] private _expiredPolicies;
 
     event LogAyiiPolicyCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiRiskDataCreated(bytes32 riskId, bytes32 productId, bytes32 uaiId, bytes32 cropId);
@@ -53,13 +52,8 @@ contract AyiiProduct is
     event LogAyiiRiskProcessed(bytes32 riskId, uint256 policies);
     event LogAyiiPolicyProcessed(bytes32 policyId);
     event LogAyiiClaimCreated(bytes32 policyId, uint256 claimId, uint256 payoutAmount);
-    event LogAyiiPayoutCreated(bytes32 policyId, uint256 payoutAmount);
+    event LogAyiiPayoutCreated(bytes32 policyId, uint256 payoutAmount, bool success);
 
-    // TODO decide if token address should be part of conxtructor
-    // and if product should have getToken() function
-    // "issue"/open question: product-token association currently 
-    // handled via gif. maybe better if product directly hardwires 
-    // with which token to work
     constructor(
         bytes32 productName,
         address registry,
@@ -257,7 +251,9 @@ contract AyiiProduct is
         for (uint256 i = 0; i < batchSize; i++) {
             bytes32 policyId = policyIds[batchSize - i - 1];
             _processPolicy(policyId, risk);
+
             _expire(policyId);
+            _close(policyId);
 
             processedPolicies[i] = policyId;
             policyIds.pop();
@@ -281,29 +277,25 @@ contract AyiiProduct is
 
         if (claimAmount > 0) {
             uint256 payoutAmount = claimAmount;
-            uint256 payoutId = _confirmClaim(policyId, claimId, payoutAmount, "");
+            _confirmClaim(policyId, claimId, payoutAmount);
 
-            bool isComplete = true;
-            _processPayout(policyId, payoutId, isComplete, "");
-            emit LogAyiiPayoutCreated(policyId, payoutAmount);
+            uint256 payoutId = _newPayout(policyId, claimId, payoutAmount, "");
+            (
+                bool success,
+                uint256 feeAmount,
+                uint256 netPayoutAmount
+            ) = _processPayout(policyId, payoutId);
+
+            emit LogAyiiPayoutCreated(policyId, payoutAmount, success);
+            require(success, "ERROR:AYI-031:PAYOUT_FAILED");
         }
         else {
             _declineClaim(policyId, claimId);
+            _closeClaim(policyId, claimId);
         }
 
         emit LogAyiiPolicyProcessed(policyId);
     }
-
-    // // TODO: make safe (add tests)
-    // function calculatePayoutFactor(Risk memory risk)
-    //     public 
-    //     pure 
-    //     returns(uint256 payout)
-    // {
-    //     uint nominator = risk.tsi * (risk.trigger - (PERCENTAGE_MULTIPLIER / risk.aph * risk.aaay));
-    //     uint denominator = PERCENTAGE_MULTIPLIER * (risk.trigger - risk.exit);
-    //     payout = min(risk.tsi, nominator * PERCENTAGE_MULTIPLIER / denominator);
-    // }
 
     function calculatePayout(uint256 payoutPercentage, uint256 sumInsuredAmount)
         public
@@ -342,10 +334,6 @@ contract AyiiProduct is
     function getPercentageMultiplier() external pure returns(uint256 multiplier) {
         return PERCENTAGE_MULTIPLIER;
     }
-
-    // function max(uint256 a, uint256 b) private pure returns (uint256) {
-    //     return a >= b ? a : b;
-    // }
 
     function min(uint256 a, uint256 b) private pure returns (uint256) {
         return a <= b ? a : b;
