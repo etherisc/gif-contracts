@@ -14,9 +14,6 @@ contract BundleToken is
     string public constant NAME = "GIF Bundle Token";
     string public constant SYMBOL = "BTK";
 
-    // event LogBundleTokenMinted(uint256 bundleId, uint256 tokenId, address tokenOwner);
-    // event LogBundleTokenBurned(uint256 bundleId, uint256 tokenId);   
-
     // tokenId => bundleId
     mapping(uint256 => uint256) private _bundleId;
     address private _bundleModule;
