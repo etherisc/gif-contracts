@@ -37,7 +37,7 @@ def test_deploy_and_propose(instance: GifInstance, owner, oracleProvider):
         {'from': oracleProvider})
     
     # assert that proposal fails with missing role
-    providerRole = instanceService.oracleProviderRole()
+    providerRole = instanceService.getOracleProviderRole()
     operatorService.revokeRole(
         providerRole, 
         oracleProvider,
@@ -73,7 +73,7 @@ def test_deploy_and_approve(instance: GifInstance, oracleProvider, productOwner)
         {'from': oracleProvider})
     
     # add granting role and propose
-    providerRole = instanceService.oracleProviderRole()
+    providerRole = instanceService.getOracleProviderRole()
     operatorService.grantRole(
         providerRole,
         oracleProvider, 

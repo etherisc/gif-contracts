@@ -4,15 +4,18 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-contract BundleToken is
+import "@etherisc/gif-interface/contracts/tokens/IBundleToken.sol";
+
+contract BundleToken is 
+    IBundleToken,
     ERC721,
     Ownable
 {
     string public constant NAME = "GIF Bundle Token";
     string public constant SYMBOL = "BTK";
 
-    event LogBundleTokenMinted(uint256 bundleId, uint256 tokenId, address tokenOwner);
-    event LogBundleTokenBurned(uint256 bundleId, uint256 tokenId);   
+    // event LogBundleTokenMinted(uint256 bundleId, uint256 tokenId, address tokenOwner);
+    // event LogBundleTokenBurned(uint256 bundleId, uint256 tokenId);   
 
     // tokenId => bundleId
     mapping(uint256 => uint256) private _bundleId;
@@ -63,14 +66,14 @@ contract BundleToken is
     }
 
     function burned(uint tokenId) 
-        external 
+        external override
         view 
         returns(bool isBurned)
     {
         isBurned = tokenId <= _tokens && !_exists(tokenId);
     }
 
-    function exists(uint256 tokenId) external view returns(bool) { return tokenId <= _tokens; }
-    function getBundleId(uint256 tokenId) external view returns(uint256) { return _bundleId[tokenId]; }
-    function tokens() external view returns(uint256 tokenCount) { return _tokens; }
+    function exists(uint256 tokenId) external override view returns(bool) { return tokenId <= _tokens; }
+    function getBundleId(uint256 tokenId) external override view returns(uint256) { return _bundleId[tokenId]; }
+    function tokens() external override view returns(uint256 tokenCount) { return _tokens; }
 }

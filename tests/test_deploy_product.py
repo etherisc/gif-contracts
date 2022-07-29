@@ -98,7 +98,7 @@ def test_deploy_approve_product(
         {'from': productOwner})
     
     # add granting role and propose
-    ownerRole = instanceService.productOwnerRole()
+    ownerRole = instanceService.getProductOwnerRole()
     operatorService.grantRole(
         ownerRole,
         productOwner, 

@@ -7,6 +7,7 @@ from brownie import (
     interface,
     AreaYieldIndexOracle,
     AyiiProduct,
+    BundleToken
 )
 
 from scripts.area_yield_index import (
@@ -77,7 +78,10 @@ def test_happy_path(
     assert riskpool.getBalance() == riskpoolExpectedBalance
 
     # check risk bundle in riskpool and book keeping after funding
-    bundleAfterFunding = riskpool.getBundle(0).dict()
+    bundleIdx = 0
+    bundleAfterFunding = riskpool.getBundle(bundleIdx).dict()
+    bundleId = bundleAfterFunding['id']
+
     assert bundleAfterFunding['id'] == 1
     assert bundleAfterFunding['riskpoolId'] == riskpool.getId()
     assert bundleAfterFunding['state'] == 0
@@ -85,6 +89,14 @@ def test_happy_path(
     assert bundleAfterFunding['lockedCapital'] == 0
     assert bundleAfterFunding['balance'] == riskpoolExpectedBalance
 
+    # cheeck bundle token (nft)
+    bundleNftId = bundleAfterFunding['tokenId']
+    bundleToken = contractFromAddress(BundleToken, instanceService.getBundleToken())
+    assert bundleToken.exists(bundleNftId) == True
+    assert bundleToken.burned(bundleNftId) == False
+    assert bundleToken.getBundleId(bundleNftId) == bundleId
+    assert bundleToken.balanceOf(investor) == 1
+    assert bundleToken.ownerOf(bundleNftId) == investor
 
     print('--- test setup risks -------------------------------------')
 
@@ -151,7 +163,7 @@ def test_happy_path(
     assert riskpoolBalanceAfterPremiums == riskpoolBalanceAfterFunding + netPremium[0] + netPremium[1]
 
     # check risk bundle after premium
-    bundleAfterPremium = riskpool.getBundle(0).dict()
+    bundleAfterPremium = riskpool.getBundle(bundleIdx).dict()
     assert bundleAfterPremium['id'] == 1
     assert bundleAfterPremium['riskpoolId'] == riskpool.getId()
     assert bundleAfterPremium['state'] == 0
@@ -370,7 +382,7 @@ def test_happy_path(
     print('payout {}'.format(payout))
     assert payout['claimId'] == 0
     assert payout['state'] == 1 # PayoutState {Expected, PaidOut}
-    assert payout['payoutAmount'] == expectedPayoutAmount
+    assert payout['amount'] == expectedPayoutAmount
     assert payout['createdAt'] == claim['createdAt']
     assert payout['updatedAt'] == payout['createdAt']
 
@@ -385,7 +397,7 @@ def test_happy_path(
     assert token.balanceOf(customer2) == customer2BalanceAfterPremium
 
     # check risk bundle after payout
-    bundleAfterPayout = riskpool.getBundle(0).dict()
+    bundleAfterPayout = riskpool.getBundle(bundleIdx).dict()
     assert bundleAfterPayout['id'] == 1
     assert bundleAfterPayout['riskpoolId'] == riskpool.getId()
     assert bundleAfterPayout['state'] == 0
@@ -425,7 +437,7 @@ def test_happy_path(
     assert claim['claimAmount'] == 0
 
     # check bundle state
-    bundleAfter2ndPayout = riskpool.getBundle(0).dict()
+    bundleAfter2ndPayout = riskpool.getBundle(bundleIdx).dict()
     assert bundleAfter2ndPayout['capital'] == riskpoolExpectedBalance
     assert bundleAfter2ndPayout['lockedCapital'] == 0
     assert bundleAfter2ndPayout['balance'] == riskpoolExpectedBalance + netPremium[0] + netPremium[1] - expectedPayoutAmount
@@ -436,8 +448,37 @@ def test_happy_path(
 
     print('--- step test close bundle -------------------------------')
 
-    # TODO add setup and assertions
-    # assert False
+    investorBalanceBeforeBundleClose = token.balanceOf(investor)
+
+    riskpool.closeBundle(bundleId)
+
+    investorBalanceBeforeTokenBurn = token.balanceOf(investor)    
+    assert investorBalanceBeforeBundleClose == investorBalanceBeforeTokenBurn
+
+    bundleBeforeBurn = riskpool.getBundle(bundleIdx).dict()
+    assert bundleBeforeBurn['state'] == 2 # enum BundleState { Active, Locked, Closed, Burned }
+
+    # cheeck bundle token (nft)
+    bundleNftId = bundleBeforeBurn['tokenId']
+    assert bundleToken.exists(bundleNftId) == True
+    assert bundleToken.burned(bundleNftId) == False
+    assert bundleToken.ownerOf(bundleNftId) == investor
+
+    tx = riskpool.burnBundle(bundleId)
+    print(tx.info())
+
+    # verify bundle is burned and has 0 balance
+    bundleAfterBurn = riskpool.getBundle(bundleIdx).dict()
+    assert bundleAfterBurn['state'] == 3 # enum BundleState { Active, Locked, Closed, Burned }
+    assert bundleAfterBurn['balance'] == 0
+
+    # verify bundle funds are now with investor
+    assert bundleToken.exists(bundleNftId) == True
+    assert bundleToken.burned(bundleNftId) == True
+    with brownie.reverts('ERC721: invalid token ID'):
+        assert bundleToken.ownerOf(bundleNftId) == investor
+    
+    assert token.balanceOf(investor) == investorBalanceBeforeTokenBurn + bundleBeforeBurn['balance']
     
 
 def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
@@ -445,7 +486,7 @@ def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
     product = gifAyiiProduct.getContract()
     multiplier = product.getPercentageMultiplier()
 
-    # pula example values
+    # product example values
     tsi = 0.9
     trigger = 0.75
     exit = 0.1
@@ -454,7 +495,7 @@ def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
     # expected payout = 0.091093117, aph = 1.9, aaay = 1.3
     assert get_payout_delta(0.091093117, 1.9, 1.3, tsi, trigger, exit, product, multiplier) < 0.00000001
 
-    # run through pula example table
+    # run through product example table
     # harvest ratio >= trigger (75%) give 0 payout 
     assert get_payout_delta(0, 100.0, 110.0, tsi, trigger, exit, product, multiplier) < 0.00000001
     assert get_payout_delta(0, 100.0, 100.0, tsi, trigger, exit, product, multiplier) < 0.00000001
@@ -485,7 +526,7 @@ def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
     product = gifAyiiProduct.getContract()
     multiplier = product.getPercentageMultiplier()
 
-    # pula example values
+    # product example values
     tsi = 0.9
     trigger = 0.75
     exit = 0.1

@@ -325,19 +325,27 @@ contract PolicyController is
         Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-040:POLICY_DOES_NOT_EXIST");
 
-        Claim memory claim = claims[processId][claimId];
+        Claim storage claim = claims[processId][claimId];
         require(claim.createdAt > 0, "ERROR:POC-041:CLAIM_DOES_NOT_EXIST");
+        require(claim.state == IPolicy.ClaimState.Confirmed, "ERROR:POC-042:CLAIM_NOT_CONFIRMED");
+        require(
+            claim.payoutsAmount + payoutAmount <= claim.claimAmount,
+            "ERROR:POC-043:PAYOUT_AMOUNT_TOO_BIG"
+        );
 
         payoutId = payoutCount[processId];
         Payout storage payout = payouts[processId][payoutId];
-        require(payout.createdAt == 0, "ERROR:POC-042:PAYOUT_ALREADY_EXISTS");
+        require(payout.createdAt == 0, "ERROR:POC-044:PAYOUT_ALREADY_EXISTS");
 
         payout.claimId = claimId;
-        payout.payoutAmount = payoutAmount;
+        payout.amount = payoutAmount;
         payout.data = data;
         payout.state = PayoutState.Expected;
         payout.createdAt = block.timestamp;
         payout.updatedAt = block.timestamp;
+
+        claim.payoutsAmount += payoutAmount;
+        claim.updatedAt = block.timestamp;
 
         payoutCount[processId] += 1;
         policy.updatedAt = block.timestamp;
@@ -353,12 +361,12 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-043:POLICY_DOES_NOT_EXIST");
-        require(policy.openClaimsCount > 0, "ERROR:POC-044:NO_OPEN_CLAIMS");
+        require(policy.createdAt > 0, "ERROR:POC-045:POLICY_DOES_NOT_EXIST");
+        require(policy.openClaimsCount > 0, "ERROR:POC-046:NO_OPEN_CLAIMS");
 
         Payout storage payout = payouts[processId][payoutId];
-        require(payout.createdAt > 0, "ERROR:POC-045:PAYOUT_DOES_NOT_EXIST");
-        require(payout.state == PayoutState.Expected, "ERROR:POC-046:PAYOUT_ALREADY_PAIDOUT");
+        require(payout.createdAt > 0, "ERROR:POC-047:PAYOUT_DOES_NOT_EXIST");
+        require(payout.state == PayoutState.Expected, "ERROR:POC-048:PAYOUT_ALREADY_PAIDOUT");
 
         payout.state = IPolicy.PayoutState.PaidOut;
         payout.updatedAt = block.timestamp;
@@ -366,7 +374,7 @@ contract PolicyController is
         emit LogPayoutProcessed(processId, payoutId);
 
         Claim storage claim = claims[processId][payout.claimId];
-        claim.paidAmount += payout.payoutAmount;
+        claim.paidAmount += payout.amount;
         claim.updatedAt = block.timestamp;
 
         // check if claim can be closed

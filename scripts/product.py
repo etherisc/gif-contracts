@@ -55,7 +55,7 @@ class GifTestRiskpool(object):
         riskpoolService = instance.getRiskpoolService()
 
         # 1) add role to keeper
-        keeperRole = instanceService.riskpoolKeeperRole()
+        keeperRole = instanceService.getRiskpoolKeeperRole()
         operatorService.grantRole(
             keeperRole, 
             riskpoolKeeper, 
@@ -121,7 +121,7 @@ class GifTestOracle(object):
         oracleService = instance.getOracleService()
 
         # 1) add oracle provider role to owner
-        providerRole = instanceService.oracleProviderRole()
+        providerRole = instanceService.getOracleProviderRole()
         operatorService.grantRole(
             providerRole, 
             oracleOwner, 
@@ -174,7 +174,7 @@ class GifTestProduct(object):
         registry = instance.getRegistry()
 
         # 1) add oracle provider role to owner
-        ownerRole = instanceService.productOwnerRole()
+        ownerRole = instanceService.getProductOwnerRole()
         operatorService.grantRole(
             ownerRole,
             productOwner, 

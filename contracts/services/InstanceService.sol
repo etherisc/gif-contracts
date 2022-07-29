@@ -17,6 +17,7 @@ import "@etherisc/gif-interface/contracts/services/IInstanceOperatorService.sol"
 import "@etherisc/gif-interface/contracts/services/IOracleService.sol";
 import "@etherisc/gif-interface/contracts/services/IProductService.sol";
 import "@etherisc/gif-interface/contracts/services/IRiskpoolService.sol";
+import "@etherisc/gif-interface/contracts/tokens/IBundleToken.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -73,15 +74,15 @@ contract InstanceService is
     }
 
     /* access */
-    function productOwnerRole() external override view returns(bytes32) {
+    function getProductOwnerRole() external override view returns(bytes32) {
         return _access.productOwnerRole();
     }
 
-    function oracleProviderRole() external override view returns(bytes32) {
+    function getOracleProviderRole() external override view returns(bytes32) {
         return _access.oracleProviderRole();
     }
 
-    function riskpoolKeeperRole() external override view returns(bytes32) {
+    function getRiskpoolKeeperRole() external override view returns(bytes32) {
         return _access.riskpoolKeeperRole();
     }
 
@@ -160,9 +161,9 @@ contract InstanceService is
     }
 
     /* bundle */
-    function getBundleToken() external override view returns(IERC721 token) {
+    function getBundleToken() external override view returns(IBundleToken token) {
         BundleToken bundleToken = _bundle().getToken();
-        token = IERC721(bundleToken);
+        token = IBundleToken(bundleToken);
     }
     
     function getBundle(uint256 bundleId) external override view returns (IBundle.Bundle memory bundle) {

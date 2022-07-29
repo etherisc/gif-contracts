@@ -46,7 +46,7 @@ def test_role_granting(instance, owner, productOwner, customer):
     instanceService = contractFromAddress(InstanceService, instanceServiceAddress)
 
     # verify that after setup productOwner account does not yet have product owner role
-    poRole = instanceService.productOwnerRole({'from': customer})
+    poRole = instanceService.getProductOwnerRole({'from': customer})
     assert not instanceService.hasRole(poRole, productOwner, {'from': customer})
 
     print('owner: {}'.format(owner))
