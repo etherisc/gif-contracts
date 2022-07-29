@@ -5,13 +5,11 @@ from brownie.network.account import Account
 
 from brownie import (
     interface,
-    AreaYieldIndexOracle,
     AyiiProduct,
     BundleToken
 )
 
-from scripts.area_yield_index import (
-    GifAreaYieldIndexOracle,
+from scripts.ayii_product import (
     GifAyiiProduct
 )
 

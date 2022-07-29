@@ -5,7 +5,7 @@ import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 
 import "@etherisc/gif-interface/contracts/components/Oracle.sol";
 
-contract AreaYieldIndexOracle is 
+contract ZAreaYieldIndexOracle is 
     // Ownable, Oracle, ChainlinkClient // mzi ownable is through oracle -> component
     Oracle, ChainlinkClient 
 {

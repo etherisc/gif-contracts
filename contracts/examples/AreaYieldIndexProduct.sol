@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@etherisc/gif-interface/contracts/components/Product.sol";
 import "../modules/AccessController.sol";
 
-contract AreaYieldIndexProduct is Product, AccessControl {
+contract ZAreaYieldIndexProduct is Product, AccessControl {
     using SafeERC20 for IERC20;
 
     bytes32 public constant NAME = "AreaYieldIndexProduct";

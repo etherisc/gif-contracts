@@ -30,9 +30,7 @@ from brownie import (
     TestProduct,
     TestRiskpool,
     TestRegistryControllerUpdated,
-    AreaYieldIndexOracle,
     ClOperator,
-    AreaYieldIndexProduct,
     AyiiProduct,
     AyiiOracle,
 )
@@ -63,9 +61,7 @@ from scripts.product import (
     GifTestProduct,
 )
 
-from scripts.area_yield_index import (
-    GifAreaYieldIndexOracle,
-    GifAreaYieldIndexProduct,
+from scripts.ayii_product import (
     GifAyiiProduct,
     GifAyiiOracle,
 )
@@ -162,43 +158,6 @@ def gifTestProduct(
         feeOwner,
         productOwner,
         gifTestOracle,
-        gifTestRiskpool)
-
-
-@pytest.fixture(scope="module")
-def gifAreaYieldIndexOracle(
-    instance: GifInstance, 
-    oracleProvider: Account, 
-    testCoin
-) -> GifAreaYieldIndexOracle:
-    return GifAreaYieldIndexOracle(
-        instance, 
-        oracleProvider, 
-        testCoin)
-
-
-@pytest.fixture(scope="module")
-def gifAreaYieldIndexProduct(
-    instance: GifInstance, 
-    testCoin,
-    capitalOwner: Account, 
-    feeOwner: Account, 
-    productOwner: Account,
-    riskpoolKeeper: Account,
-    customer: Account,
-    gifAreaYieldIndexOracle: GifAreaYieldIndexOracle,
-    gifTestRiskpool: GifTestRiskpool,
-    owner
-) -> GifAreaYieldIndexProduct:
-    return GifAreaYieldIndexProduct(
-        instance, 
-        testCoin,
-        capitalOwner,
-        feeOwner,
-        productOwner,
-        riskpoolKeeper,
-        customer,
-        gifAreaYieldIndexOracle,
         gifTestRiskpool)
 
 
