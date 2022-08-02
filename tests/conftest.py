@@ -30,6 +30,7 @@ from brownie import (
     TestProduct,
     TestRiskpool,
     TestRegistryControllerUpdated,
+    TestRegistryCompromisedController,
     ClOperator,
     AyiiProduct,
     AyiiOracle,
@@ -209,6 +210,10 @@ def registryController(RegistryController, owner) -> RegistryController:
 @pytest.fixture(scope="module")
 def registryControllerV2Test(TestRegistryControllerUpdated, owner) -> TestRegistryControllerUpdated:
     return TestRegistryControllerUpdated.deploy({'from': owner})
+
+@pytest.fixture(scope="module")
+def registryCompromisedControllerV2Test(TestRegistryCompromisedController, customer) -> TestRegistryCompromisedController:
+    return TestRegistryCompromisedController.deploy({'from': customer})
 
 @pytest.fixture(scope="module")
 def registry(registryController, owner) -> RegistryController:
