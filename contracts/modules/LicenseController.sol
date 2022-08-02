@@ -26,7 +26,7 @@ contract LicenseController is
         returns (uint256 productId, bool isAuthorized, address policyFlow)
     {
         productId = getProductId(productAddress);
-        isAuthorized = _isValidCall(IComponent(productAddress));
+        isAuthorized = _isValidCall(productAddress);
         policyFlow = _getProduct(productId).getPolicyFlow();
     }
 
@@ -38,8 +38,9 @@ contract LicenseController is
         productId = _component.getComponentId(sender);
     }
 
-    function _isValidCall(IComponent component) internal view returns (bool) {
-        return component.getState() == ComponentState.Active;
+    function _isValidCall(address componentAddress) internal view returns (bool) {
+        uint256 componentId = _component.getComponentId(componentAddress);
+        return _component.getComponentState(componentId) == IComponent.ComponentState.Active;
     }
 
     function _getProduct(uint256 id) internal view returns (IProduct product) {

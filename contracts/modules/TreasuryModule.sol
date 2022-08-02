@@ -432,11 +432,16 @@ contract TreasuryModule is
             revert("ERROR:TRS-090:FEE_CALCULATION_DATA_NOT_SUPPORTED");
         }
 
+        // start with fixed fee
         feeAmount = feeSpec.fixedFee;
 
+        // add fractional fee on top
         if (feeSpec.fractionalFee > 0) {
             feeAmount += (feeSpec.fractionalFee * amount) / FRACTION_FULL_UNIT;
         }
+
+        // require that fee is smaller than amount
+        require(feeAmount < amount, "ERROR:TRS-091:FEE_TOO_BIG");
     } 
 
     function _getRiskpoolWallet(bytes32 processId)

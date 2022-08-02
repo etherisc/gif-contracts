@@ -72,7 +72,7 @@ contract PoolController is
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         IRiskpool riskpool = _getRiskpool(metadata);
         require(
-            riskpool.getState() == ComponentState.Active, 
+            _component.getComponentState(riskpool.getId()) == IComponent.ComponentState.Active, 
             "ERROR:POL-021:RISKPOOL_NOT_ACTIVE"
         );
 

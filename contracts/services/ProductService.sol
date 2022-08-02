@@ -17,8 +17,15 @@ contract ProductService is
     // solhint-disable-next-line no-empty-blocks
     constructor(address _registry) WithRegistry(_registry) {}
 
+    event LogProductServiceDebug1();
+    event LogProductServiceDebug2();
+
     fallback() external {
+        emit LogProductServiceDebug1();
+
         (uint256 id, bool isAuthorized, address policyFlow) = _license().getAuthorizationStatus(_msgSender());
+
+        emit LogProductServiceDebug2();
 
         require(isAuthorized, "ERROR:PRS-001:NOT_AUTHORIZED");
         require(policyFlow != address(0),"ERROR:PRS-002:POLICY_FLOW_NOT_RESOLVED");

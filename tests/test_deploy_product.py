@@ -116,6 +116,10 @@ def test_deploy_approve_product(
         product,
         {'from': productOwner})
 
+    productId = product.getId()
+    assert instanceService.getComponentState(productId) == 1
+    assert product.getState() == 1
+
     # verify that oracleOwner or productOwner cannot approve the product
     with brownie.reverts():
         operatorService.approve(
@@ -131,3 +135,6 @@ def test_deploy_approve_product(
     operatorService.approve(
         product.getId(),
         {'from': instance.getOwner()})
+
+    assert instanceService.getComponentState(productId) == 3
+    assert product.getState() == 3

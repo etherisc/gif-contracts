@@ -36,9 +36,15 @@ contract InstanceService is
     bytes32 public constant PRODUCT_SERVICE_NAME = "ProductService";
     bytes32 public constant RISKPOOL_SERVICE_NAME = "RiskpoolService";
 
+    BundleController _bundle;
+    ComponentController _component;
+    PolicyController _policy;
     TreasuryModule private _treasury;
 
     function _afterInitialize() internal override onlyInitializing {
+        _bundle = BundleController(_getContractAddress("Bundle"));
+        _component = ComponentController(_getContractAddress("Component"));
+        _policy = PolicyController(_getContractAddress("Policy"));
         _treasury = TreasuryModule(_getContractAddress("Treasury"));
     }
 
@@ -95,19 +101,35 @@ contract InstanceService is
 
     /* component */
     function products() external override view returns(uint256) {
-        return _component().products();
+        return _component.products();
     }
 
     function oracles() external override view returns(uint256) {
-        return _component().oracles();
+        return _component.oracles();
     }
 
     function riskpools() external override view returns(uint256) {
-        return _component().riskpools();
+        return _component.riskpools();
     }
 
     function getComponent(uint256 id) external override view returns(IComponent) {
-        return _component().getComponent(id);
+        return _component.getComponent(id);
+    }
+
+    function getComponentType(uint256 componentId)
+        external override 
+        view 
+        returns(IComponent.ComponentType componentType)
+    {
+        return _component.getComponentType(componentId);
+    }
+
+    function getComponentState(uint256 componentId) 
+        external override
+        view 
+        returns(IComponent.ComponentState componentState)
+    {
+        componentState = _component.getComponentState(componentId);
     }
 
     /* service staking */
@@ -129,49 +151,49 @@ contract InstanceService is
 
     /* policy */
     function processIds() external override view returns(uint256 numberOfProcessIds) {
-        numberOfProcessIds = _policy().processIds();
+        numberOfProcessIds = _policy.processIds();
     }
 
     function getMetadata(bytes32 bpKey) external override view returns(IPolicy.Metadata memory metadata) {
-        metadata = _policy().getMetadata(bpKey);
+        metadata = _policy.getMetadata(bpKey);
     }
 
     function getApplication(bytes32 processId) external override view returns(IPolicy.Application memory application) {
-        application = _policy().getApplication(processId);
+        application = _policy.getApplication(processId);
     }
 
     function getPolicy(bytes32 processId) external override view returns(IPolicy.Policy memory policy) {
-        policy = _policy().getPolicy(processId);
+        policy = _policy.getPolicy(processId);
     }
     
     function claims(bytes32 processId) external override view returns(uint256 numberOfClaims) {
-        numberOfClaims = _policy().getNumberOfClaims(processId);
+        numberOfClaims = _policy.getNumberOfClaims(processId);
     }
     
     function payouts(bytes32 processId) external override view returns(uint256 numberOfPayouts) {
-        numberOfPayouts = _policy().getNumberOfPayouts(processId);
+        numberOfPayouts = _policy.getNumberOfPayouts(processId);
     }
     
     function getClaim(bytes32 processId, uint256 claimId) external override view returns (IPolicy.Claim memory claim) {
-        claim = _policy().getClaim(processId, claimId);
+        claim = _policy.getClaim(processId, claimId);
     }
     
     function getPayout(bytes32 processId, uint256 payoutId) external override view returns (IPolicy.Payout memory payout) {
-        payout = _policy().getPayout(processId, payoutId);
+        payout = _policy.getPayout(processId, payoutId);
     }
 
     /* bundle */
     function getBundleToken() external override view returns(IBundleToken token) {
-        BundleToken bundleToken = _bundle().getToken();
+        BundleToken bundleToken = _bundle.getToken();
         token = IBundleToken(bundleToken);
     }
     
     function getBundle(uint256 bundleId) external override view returns (IBundle.Bundle memory bundle) {
-        bundle = _bundle().getBundle(bundleId);
+        bundle = _bundle.getBundle(bundleId);
     }
 
     function bundles() external override view returns (uint256) {
-        return _bundle().bundles();
+        return _bundle.bundles();
     }
 
     /* treasury */
@@ -193,19 +215,5 @@ contract InstanceService is
 
     function getFeeFractionFullUnit() external override view returns(uint256) {
         return _treasury.getFractionFullUnit();
-    }
-
-    
-    /* internal functions */
-    function _bundle() internal view returns(BundleController) {
-        return BundleController(_getContractAddress(BUNDLE_NAME));
-    }
-
-    function _policy() internal view returns(PolicyController) {
-        return PolicyController(_getContractAddress(POLICY_NAME));
-    }
-
-    function _component() internal view returns(ComponentController) {
-        return ComponentController(_getContractAddress(COMPONENT_NAME));
     }
 }

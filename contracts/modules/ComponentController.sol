@@ -14,6 +14,9 @@ contract ComponentController is
     mapping(bytes32 => uint256) private _componentIdByName;
     mapping(address => uint256) private _componentIdByAddress;
 
+    mapping(uint256 => IComponent.ComponentType) private _componentType;
+    mapping(uint256 => IComponent.ComponentState) private _componentState;
+
     uint256 [] private _products;
     uint256 [] private _oracles;
     uint256 [] private _riskpools;
@@ -64,8 +67,9 @@ contract ComponentController is
         id = _componentCount;
 
         // update component state
+        _changeState(id, IComponent.ComponentState.Proposed);
+        _componentType[id] = component.getType();
         component.setId(id);
-        _changeState(component, ComponentState.Proposed);
 
         // update controller book keeping
         _componentById[id] = component;
@@ -87,11 +91,11 @@ contract ComponentController is
         external
         onlyInstanceOperatorService 
     {
-        IComponent component = getComponent(id);
-        _changeState(component, ComponentState.Active);
+        _changeState(id, IComponent.ComponentState.Active);
         emit LogComponentApproved(id);
         
         // inform component about successful approval
+        IComponent component = getComponent(id);
         component.approvalCallback();
     }
 
@@ -99,11 +103,11 @@ contract ComponentController is
         external
         onlyInstanceOperatorService 
     {
-        IComponent component = getComponent(id);
-        _changeState(component, ComponentState.Declined);
+        _changeState(id, IComponent.ComponentState.Declined);
         emit LogComponentDeclined(id);
         
         // inform component about decline
+        IComponent component = getComponent(id);
         component.declineCallback();
     }
 
@@ -111,11 +115,11 @@ contract ComponentController is
         external 
         onlyInstanceOperatorService 
     {
-        IComponent component = getComponent(id);
-        _changeState(component, ComponentState.Suspended);
+        _changeState(id, IComponent.ComponentState.Suspended);
         emit LogComponentSuspended(id);
         
         // inform component about suspending
+        IComponent component = getComponent(id);
         component.suspendCallback();
     }
 
@@ -123,11 +127,11 @@ contract ComponentController is
         external 
         onlyInstanceOperatorService 
     {
-        IComponent component = getComponent(id);
-        _changeState(component, ComponentState.Active);
+        _changeState(id, IComponent.ComponentState.Active);
         emit LogComponentResumed(id);
         
         // inform component about resuming
+        IComponent component = getComponent(id);
         component.resumeCallback();
     }
 
@@ -135,11 +139,11 @@ contract ComponentController is
         external 
         onlyComponentOwnerService 
     {
-        IComponent component = getComponent(id);
-        _changeState(component, ComponentState.Paused);
+        _changeState(id, IComponent.ComponentState.Paused);
         emit LogComponentPaused(id);
         
         // inform component about pausing
+        IComponent component = getComponent(id);
         component.pauseCallback();
     }
 
@@ -147,11 +151,11 @@ contract ComponentController is
         external 
         onlyComponentOwnerService 
     {
-        IComponent component = getComponent(id);
-        _changeState(component, ComponentState.Active);
+        _changeState(id, IComponent.ComponentState.Active);
         emit LogComponentUnpaused(id);
         
         // inform component about unpausing
+        IComponent component = getComponent(id);
         component.unpauseCallback();
     }
 
@@ -162,7 +166,15 @@ contract ComponentController is
 
     function getComponentId(address componentAddress) public view returns (uint256 id) {
         require(componentAddress != address(0), "ERROR:CCR-005:COMPONENT_ADDRESS_ZERO");
-        id = _componentIdByAddress[componentAddress];
+        return _componentIdByAddress[componentAddress];
+    }
+
+    function getComponentType(uint256 id) public view returns (IComponent.ComponentType componentType) {
+        return _componentType[id];
+    }
+
+    function getComponentState(uint256 id) public view returns (IComponent.ComponentState componentState) {
+        return _componentState[id];
     }
 
     function components() public view returns (uint256 count) { return _componentCount; }
@@ -170,29 +182,37 @@ contract ComponentController is
     function oracles() public view returns (uint256 count) { return _oracles.length; }
     function riskpools() public view returns (uint256 count) { return _riskpools.length; }
 
-    function _changeState(IComponent component, ComponentState newState) internal {
-        ComponentState oldState = component.getState();
+    function _changeState(uint256 componentId, IComponent.ComponentState newState) internal {
+        IComponent.ComponentState oldState = _componentState[componentId];
 
         _checkStateTransition(oldState, newState);
-        component.setState(newState);
+        _componentState[componentId] = newState;
 
         // log entry for successful component state change
-        emit LogComponentStateChanged(component.getId(), oldState, newState);
+        emit LogComponentStateChanged(componentId, oldState, newState);
     }
 
-    function _checkStateTransition(ComponentState oldState, ComponentState newState) internal pure {
-        if (oldState == ComponentState.Created) {
-            require(newState == ComponentState.Proposed, "ERROR:CMP-012:CREATED_INVALID_TRANSITION");
-        } else if (oldState == ComponentState.Proposed) {
-            require(newState == ComponentState.Active || newState == ComponentState.Declined, "ERROR:CMP-013:PROPOSED_INVALID_TRANSITION");
-        } else if (oldState == ComponentState.Declined) {
+    function _checkStateTransition(
+        IComponent.ComponentState oldState, 
+        IComponent.ComponentState newState
+    ) 
+        internal 
+        pure 
+    {
+        if (oldState == IComponent.ComponentState.Created) {
+            require(newState == IComponent.ComponentState.Proposed, "ERROR:CMP-012:CREATED_INVALID_TRANSITION");
+        } else if (oldState == IComponent.ComponentState.Proposed) {
+            require(newState == IComponent.ComponentState.Active 
+                || newState == IComponent.ComponentState.Declined, "ERROR:CMP-013:PROPOSED_INVALID_TRANSITION");
+        } else if (oldState == IComponent.ComponentState.Declined) {
             revert("ERROR:CMP-014:DECLINED_IS_FINAL_STATE");
-        } else if (oldState == ComponentState.Active) {
-            require(newState == ComponentState.Paused || newState == ComponentState.Suspended, "ERROR:CMP-015:ACTIVE_INVALID_TRANSITION");
-        } else if (oldState == ComponentState.Paused) {
-            require(newState == ComponentState.Active, "ERROR:CMP-016:PAUSED_INVALID_TRANSITION");
-        } else if (oldState == ComponentState.Suspended) {
-            require(newState == ComponentState.Active, "ERROR:CMP-017:SUSPENDED_INVALID_TRANSITION");
+        } else if (oldState == IComponent.ComponentState.Active) {
+            require(newState == IComponent.ComponentState.Paused 
+                || newState == IComponent.ComponentState.Suspended, "ERROR:CMP-015:ACTIVE_INVALID_TRANSITION");
+        } else if (oldState == IComponent.ComponentState.Paused) {
+            require(newState == IComponent.ComponentState.Active, "ERROR:CMP-016:PAUSED_INVALID_TRANSITION");
+        } else if (oldState == IComponent.ComponentState.Suspended) {
+            require(newState == IComponent.ComponentState.Active, "ERROR:CMP-017:SUSPENDED_INVALID_TRANSITION");
         } else {
             revert("ERROR:CMP-018:INITIAL_STATE_NOT_HANDLED");
         }

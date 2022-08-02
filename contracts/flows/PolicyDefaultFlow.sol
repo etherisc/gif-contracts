@@ -51,6 +51,9 @@ contract PolicyDefaultFlow is
         WithRegistry(_registry) 
     { }
 
+    event LogFlowDebug1(address productAddress);
+    event LogFlowDebug2(uint256 productId);
+
     function newApplication(
         address owner,
         bytes32 processId,
@@ -61,8 +64,12 @@ contract PolicyDefaultFlow is
     )
         external 
     {
+        emit LogFlowDebug1(msg.sender);
+
         ILicense license = getLicenseContract();
         uint256 productId = license.getProductId(msg.sender);
+
+        emit LogFlowDebug2(productId);
 
         IPolicy policy = getPolicyContract();
         policy.createPolicyFlow(owner, processId, productId, metaData);
