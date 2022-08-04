@@ -6,11 +6,13 @@ from brownie import (
     interface,
     Wei,
     TestProduct,
+    TestRiskpool,
 )
 
 from scripts.const import (
     PRODUCT_NAME,
     PRODUCT_ID,
+    RISKPOOL_NAME,
 )
 
 from scripts.util import (
@@ -157,8 +159,6 @@ def test_suspend_resume(
     gifTestProduct: GifTestProduct, 
     riskpoolKeeper: Account,
     owner: Account,
-    customer: Account,
-    feeOwner: Account,
     capitalOwner: Account
 ):
     riskpool = gifTestProduct.getRiskpool().getContract()
@@ -275,3 +275,79 @@ def test_suspend_resume(
     print(bundleFromCore)
 
     assert bundle2Id == bundleId + 1
+
+
+def test_propose_decline(
+    instance: GifInstance, 
+    riskpoolKeeper: Account,
+    capitalOwner: Account
+):
+    instanceService = instance.getInstanceService()
+    instanceOperatorService = instance.getInstanceOperatorService()
+    componentOwnerService = instance.getComponentOwnerService()
+    name="Test.Riskpool.ToBeDeclined"
+    collateralization = 10**18
+    publishSource=False
+
+    # 1) add role to keeper
+    keeperRole = instanceService.getRiskpoolKeeperRole()
+    instanceOperatorService.grantRole(
+        keeperRole, 
+        riskpoolKeeper, 
+        {'from': instance.getOwner()})
+
+    # 2) keeper deploys riskpool
+    riskpool = TestRiskpool.deploy(
+        s2b32(name),
+        collateralization,
+        capitalOwner,
+        instance.getRegistry(),
+        {'from': riskpoolKeeper},
+        publish_source=publishSource)
+
+    # 3) riskpool keeperproposes riskpool to instance
+    componentOwnerService.propose(
+        riskpool,
+        {'from': riskpoolKeeper})
+
+    riskpoolId = riskpool.getId()
+
+    # ensure component is proposed
+    assert instanceService.getComponentState(riskpoolId) == 1
+
+    # ensure that component owner may not decline riskpool
+    with brownie.reverts("ERROR:IOS-001:NOT_INSTANCE_OPERATOR"):
+        instanceOperatorService.decline(riskpoolId, {'from':riskpoolKeeper})
+
+    instanceOperatorService.decline(riskpoolId, {'from': instance.getOwner()})
+
+    # ensure component is declined
+    assert instanceService.getComponentState(riskpoolId) == 2
+
+    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+        instanceOperatorService.approve(
+            riskpoolId,
+            {'from': instance.getOwner()})
+    
+    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+        instanceOperatorService.suspend(
+            riskpoolId,
+            {'from': instance.getOwner()})
+
+    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+        instanceOperatorService.resume(
+            riskpoolId,
+            {'from': instance.getOwner()})
+        
+    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+        componentOwnerService.pause(
+            riskpoolId,
+            {'from': riskpoolKeeper})
+
+    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+        componentOwnerService.unpause(
+            riskpoolId,
+            {'from': riskpoolKeeper})
+    
+    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+        riskpool.createBundle(bytes(0), 50, {'from':riskpoolKeeper})
