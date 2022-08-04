@@ -43,6 +43,7 @@ def test_pause_unpause(
     instance: GifInstance, 
     testCoin,
     gifTestProduct: GifTestProduct, 
+    productOwner,
     riskpoolKeeper: Account,
     owner: Account,
     customer: Account,
@@ -98,6 +99,10 @@ def test_pause_unpause(
 
     componentOwnerService = instance.getComponentOwnerService()
 
+    # create test policy before riskpool is paused
+    product = gifTestProduct.getContract()
+    policyId = apply_for_policy(instance, owner, product, customer, testCoin, 100, 1000)
+
     # ensure that owner may not pause riskpool
     assert owner != riskpoolKeeper
     with brownie.reverts("ERROR:COS-004:NOT_OWNER"):
@@ -109,7 +114,7 @@ def test_pause_unpause(
     componentOwnerService.pause(riskpoolId, {'from':riskpoolKeeper})
     assert instanceService.getComponentState(riskpoolId) == 4
 
-    # ensure that riskpool actions are now blocked
+    # ensure that riskpool actions are blocked for paused riskpool
     with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
@@ -131,6 +136,17 @@ def test_pause_unpause(
     with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
         riskpool.burnBundle(bundleId, {'from':bundleOwner})
 
+    # ensure underwriting new policies is not possible for paused riskpool
+    with brownie.reverts("ERROR:POL-021:RISKPOOL_NOT_ACTIVE"):
+        policyId2 = apply_for_policy(instance, owner, product, customer, testCoin, 100, 1000)
+
+    # ensure existing policies may be closed while riskpool is paused
+    product.expire(policyId, {'from': productOwner})
+    product.close(policyId, {'from': productOwner})
+
+    # recored state of bundle 
+    bundleAftePolicy = instanceService.getBundle(bundleId).dict()
+
     # ensure that owner may not unpause riskpool
     with brownie.reverts("ERROR:COS-004:NOT_OWNER"):
         componentOwnerService.unpause(riskpoolId, {'from':owner})
@@ -143,8 +159,9 @@ def test_pause_unpause(
 
     # ensure that riskpol actions work again
     riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
+
     bundleDefunded = instanceService.getBundle(bundleId).dict()
-    assert bundleDefunded["balance"] == balance - 10
+    assert bundleDefunded["balance"] == bundleAftePolicy["balance"] - 10
 
     tx = riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
     bundle2Id = tx.return_value

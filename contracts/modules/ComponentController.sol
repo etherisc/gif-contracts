@@ -32,7 +32,7 @@ contract ComponentController is
     modifier onlyInstanceOperatorService() {
         require(
              _msgSender() == _getContractAddress("InstanceOperatorService"),
-            "ERROR:CCR-001:NOT_INSTANCE_OPERATOR_SERVICE");
+            "ERROR:CCR-002:NOT_INSTANCE_OPERATOR_SERVICE");
         _;
     }
 
@@ -41,8 +41,8 @@ contract ComponentController is
         onlyComponentOwnerService 
     {
         // input validation
-        require(_componentIdByAddress[address(component)] == 0, "ERROR:CCR-002:COMPONENT_ALREADY_EXISTS");
-        require(_componentIdByName[component.getName()] == 0, "ERROR:CCR-003:COMPONENT_NAME_ALREADY_EXISTS");
+        require(_componentIdByAddress[address(component)] == 0, "ERROR:CCR-003:COMPONENT_ALREADY_EXISTS");
+        require(_componentIdByName[component.getName()] == 0, "ERROR:CCR-004:COMPONENT_NAME_ALREADY_EXISTS");
 
         // assigning id and persisting component
         uint256 id = _persistComponent(component);
@@ -165,8 +165,10 @@ contract ComponentController is
     }
 
     function getComponentId(address componentAddress) public view returns (uint256 id) {
-        require(componentAddress != address(0), "ERROR:CCR-005:COMPONENT_ADDRESS_ZERO");
-        return _componentIdByAddress[componentAddress];
+        require(componentAddress != address(0), "ERROR:CCR-006:COMPONENT_ADDRESS_ZERO");
+        id = _componentIdByAddress[componentAddress];
+
+        require(id > 0, "ERROR:CCR-007:COMPONENT_UNKNOWN");
     }
 
     function getComponentType(uint256 id) public view returns (IComponent.ComponentType componentType) {
