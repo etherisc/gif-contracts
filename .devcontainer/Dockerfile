@@ -6,15 +6,25 @@ FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
 ARG NODE_VERSION="16"
 RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
+USER vscode
+
 # [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
 # COPY requirements.txt /tmp/pip-tmp/
 RUN wget https://raw.githubusercontent.com/eth-brownie/brownie/master/requirements.txt -O /tmp/pip-requirements.txt 
 
-RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-requirements.txt \
-   && rm -rf /tmp/pip-tmp
-RUN pip install eth-brownie \
-    && pip install fastapi \
-    && pip install uvicorn
+RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-requirements.txt 
+RUN pip3 install eth-brownie \
+    && pip3 install fastapi \
+    && pip3 install uvicorn
+
+
+RUN mkdir -p /tmp/brownie-setup
+COPY brownie-config.yaml /tmp/brownie-setup
+RUN cd /tmp/brownie-setup \
+    && brownie init dummy \
+    && cd dummy \
+    && cp ../brownie-config.yaml . \
+    && brownie compile --all
 
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
