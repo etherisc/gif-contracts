@@ -226,19 +226,26 @@ contract ComponentController is
         pure 
     {
         if (oldState == IComponent.ComponentState.Created) {
-            require(newState == IComponent.ComponentState.Proposed, "ERROR:CMP-012:CREATED_INVALID_TRANSITION");
+            require(newState == IComponent.ComponentState.Proposed, 
+                "ERROR:CMP-012:CREATED_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Proposed) {
             require(newState == IComponent.ComponentState.Active 
-                || newState == IComponent.ComponentState.Declined, "ERROR:CMP-013:PROPOSED_INVALID_TRANSITION");
+                || newState == IComponent.ComponentState.Declined, 
+                "ERROR:CMP-013:PROPOSED_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Declined) {
             revert("ERROR:CMP-014:DECLINED_IS_FINAL_STATE");
         } else if (oldState == IComponent.ComponentState.Active) {
             require(newState == IComponent.ComponentState.Paused 
-                || newState == IComponent.ComponentState.Suspended, "ERROR:CMP-015:ACTIVE_INVALID_TRANSITION");
+                || newState == IComponent.ComponentState.Suspended, 
+                "ERROR:CMP-015:ACTIVE_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Paused) {
-            require(newState == IComponent.ComponentState.Active, "ERROR:CMP-016:PAUSED_INVALID_TRANSITION");
+            require(newState == IComponent.ComponentState.Active
+                || newState == IComponent.ComponentState.Archived, 
+                "ERROR:CMP-016:PAUSED_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Suspended) {
-            require(newState == IComponent.ComponentState.Active, "ERROR:CMP-017:SUSPENDED_INVALID_TRANSITION");
+            require(newState == IComponent.ComponentState.Active
+                || newState == IComponent.ComponentState.Archived, 
+                "ERROR:CMP-017:SUSPENDED_INVALID_TRANSITION");
         } else {
             revert("ERROR:CMP-018:INITIAL_STATE_NOT_HANDLED");
         }
