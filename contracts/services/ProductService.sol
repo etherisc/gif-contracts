@@ -18,7 +18,6 @@ contract ProductService is
     constructor(address _registry) WithRegistry(_registry) {}
 
     fallback() external {
-
         (uint256 id, bool isAuthorized, address policyFlow) = _license().getAuthorizationStatus(_msgSender());
 
         require(isAuthorized, "ERROR:PRS-001:NOT_AUTHORIZED");

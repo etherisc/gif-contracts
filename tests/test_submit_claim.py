@@ -74,7 +74,7 @@ def test_claim_submission(
         {'from': customer})
     
     # expected id for new claim
-    claim_id = 0
+    claim_id = claim_tx.return_value
     assert product.claims() == 1
     assert product.getClaimId(policy_id) == claim_id
 
