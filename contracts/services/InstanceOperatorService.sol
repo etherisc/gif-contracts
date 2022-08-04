@@ -24,6 +24,11 @@ contract InstanceOperatorService is
     PoolController private _pool;
     TreasuryModule private _treasury;
 
+    modifier onlyInstanceOperatorAddress() {
+        require(owner() == _msgSender(), "ERROR:IOS-001:NOT_INSTANCE_OPERATOR");
+        _;
+    }
+
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
         _pool = PoolController(_getContractAddress("Pool"));
@@ -35,21 +40,21 @@ contract InstanceOperatorService is
     /* registry */
     function prepareRelease(bytes32 _newRelease) 
         external override 
-        onlyOwner 
+        onlyInstanceOperatorAddress 
     {
         _registry.prepareRelease(_newRelease);
     }
 
     function register(bytes32 _contractName, address _contractAddress)
         external override
-        onlyOwner
+        onlyInstanceOperatorAddress
     {
         _registry.register(_contractName, _contractAddress);
     }
 
     function deregister(bytes32 _contractName) 
         external override 
-        onlyOwner 
+        onlyInstanceOperatorAddress 
     {
         _registry.deregister(_contractName);
     }
@@ -60,14 +65,14 @@ contract InstanceOperatorService is
         address _contractAddress
     ) 
         external override 
-        onlyOwner 
+        onlyInstanceOperatorAddress 
     {
         _registry.registerInRelease(_release, _contractName, _contractAddress);
     }
 
     function deregisterInRelease(bytes32 _release, bytes32 _contractName)
         external override
-        onlyOwner
+        onlyInstanceOperatorAddress
     {
         _registry.deregisterInRelease(_release, _contractName);
     }
@@ -75,21 +80,21 @@ contract InstanceOperatorService is
     /* access */
     function createRole(bytes32 _role) 
         external override
-        onlyOwner 
+        onlyInstanceOperatorAddress 
     {
         _access.addRole(_role);
     }
 
     function grantRole(bytes32 role, address principal)
         external override
-        onlyOwner
+        onlyInstanceOperatorAddress
     {
         _access.grantRole(role, principal);
     }
 
     function revokeRole(bytes32 role, address principal) 
         external override 
-        onlyOwner 
+        onlyInstanceOperatorAddress 
     {
         _access.revokeRole(role, principal);
     }
@@ -97,7 +102,7 @@ contract InstanceOperatorService is
     /* component */
     function approve(uint256 id)
         external override 
-        onlyOwner 
+        onlyInstanceOperatorAddress 
     {
         _component.approve(id);
 
@@ -112,21 +117,21 @@ contract InstanceOperatorService is
 
     function decline(uint256 id) 
         external override 
-        onlyOwner 
+        onlyInstanceOperatorAddress 
     {
         _component.decline(id);
     }
 
     function suspend(uint256 id) 
         external override 
-        onlyOwner 
+        onlyInstanceOperatorAddress 
     {
         _component.suspend(id);
     }
 
     function resume(uint256 id) 
         external override 
-        onlyOwner 
+        onlyInstanceOperatorAddress 
     {
         _component.resume(id);
     }
@@ -138,9 +143,9 @@ contract InstanceOperatorService is
         bytes calldata data
     )
         external override
-        onlyOwner
+        onlyInstanceOperatorAddress
     {
-        revert("ERROR:IOS-001:IMPLEMENATION_MISSING");
+        revert("ERROR:IOS-010:IMPLEMENATION_MISSING");
     }
 
     // TODO implement adjustStakingRequirements staking
@@ -149,29 +154,29 @@ contract InstanceOperatorService is
         bytes calldata data
     )
         external override
-        onlyOwner
+        onlyInstanceOperatorAddress
     {
-        revert("ERROR:IOS-002:IMPLEMENATION_MISSING");
+        revert("ERROR:IOS-011:IMPLEMENATION_MISSING");
     }
 
     /* treasury */
     function setInstanceWallet(address walletAddress) 
         external override
-        onlyOwner
+        onlyInstanceOperatorAddress
     {
         _treasury.setInstanceWallet(walletAddress);
     }
 
     function setRiskpoolWallet(uint256 riskpoolId, address riskpoolWalletAddress) 
         external override
-        onlyOwner
+        onlyInstanceOperatorAddress
     {
         _treasury.setRiskpoolWallet(riskpoolId, riskpoolWalletAddress);
     }
 
     function setProductToken(uint256 productId, address erc20Address) 
         external override
-        onlyOwner
+        onlyInstanceOperatorAddress
     {
         _treasury.setProductToken(productId, erc20Address);
     }
@@ -196,14 +201,14 @@ contract InstanceOperatorService is
     
     function setPremiumFees(ITreasury.FeeSpecification calldata feeSpec) 
         external override
-        onlyOwner
+        onlyInstanceOperatorAddress
     {
         _treasury.setPremiumFees(feeSpec);
     }
 
     function setCapitalFees(ITreasury.FeeSpecification calldata feeSpec) 
         external override
-        onlyOwner
+        onlyInstanceOperatorAddress
     {
         _treasury.setCapitalFees(feeSpec);
     }
