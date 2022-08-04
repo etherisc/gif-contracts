@@ -8,3 +8,6 @@ dump_sources/
 node_modules
 
 **.pyc
+
+.DS_Store
+.vscode/launch.json
