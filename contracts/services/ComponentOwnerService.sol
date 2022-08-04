@@ -73,6 +73,13 @@ contract ComponentOwnerService is
         _component.unpause(id);
     }
 
+    function archive(uint256 id) 
+        external override 
+        onlyOwnerWithRole(id) 
+    {
+        _component.archiveFromComponentOwner(id);
+    }
+
     function getComponentId(address componentAddress) external returns(uint256 id) {
         _component.getComponentId(componentAddress);
     }

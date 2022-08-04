@@ -136,6 +136,13 @@ contract InstanceOperatorService is
         _component.resume(id);
     }
 
+    function archive(uint256 id) 
+        external override 
+        onlyInstanceOperatorAddress 
+    {
+        _component.archiveFromInstanceOperator(id);
+    }
+
     // service staking
     // TODO implement setDefaultStaking staking
     function setDefaultStaking(

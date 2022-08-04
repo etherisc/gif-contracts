@@ -355,6 +355,11 @@ def test_propose_decline(
         instanceOperatorService.resume(
             riskpoolId,
             {'from': instance.getOwner()})
+
+    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+        instanceOperatorService.archive(
+            riskpoolId,
+            {'from': instance.getOwner()})
         
     with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
         componentOwnerService.pause(
@@ -363,6 +368,11 @@ def test_propose_decline(
 
     with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
         componentOwnerService.unpause(
+            riskpoolId,
+            {'from': riskpoolKeeper})
+
+    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+        componentOwnerService.archive(
             riskpoolId,
             {'from': riskpoolKeeper})
     

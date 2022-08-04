@@ -159,6 +159,30 @@ contract ComponentController is
         component.unpauseCallback();
     }
 
+    function archiveFromComponentOwner(uint256 id) 
+        external 
+        onlyComponentOwnerService 
+    {
+        _changeState(id, IComponent.ComponentState.Archived);
+        emit LogComponentArchived(id);
+        
+        // inform component about archiving
+        IComponent component = getComponent(id);
+        component.archiveCallback();
+    }
+
+    function archiveFromInstanceOperator(uint256 id) 
+        external 
+        onlyInstanceOperatorService 
+    {
+        _changeState(id, IComponent.ComponentState.Archived);
+        emit LogComponentArchived(id);
+        
+        // inform component about archiving
+        IComponent component = getComponent(id);
+        component.archiveCallback();
+    }
+
     function getComponent(uint256 id) public view returns (IComponent component) {
         component = _componentById[id];
         require(address(component) != address(0), "ERROR:CCR-005:INVALID_COMPONENT_ID");
