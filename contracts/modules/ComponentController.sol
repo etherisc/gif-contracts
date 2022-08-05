@@ -225,6 +225,9 @@ contract ComponentController is
         internal 
         pure 
     {
+        require(newState != oldState, 
+            "ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL");
+        
         if (oldState == IComponent.ComponentState.Created) {
             require(newState == IComponent.ComponentState.Proposed, 
                 "ERROR:CMP-012:CREATED_INVALID_TRANSITION");

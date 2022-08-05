@@ -401,9 +401,17 @@ def test_suspend_archive(
     with brownie.reverts("ERROR:COS-004:NOT_OWNER"):
         componentOwnerService.unpause(riskpoolId, {'from':owner})
 
+    # ensure that component owner may not archive archived riskpool
+    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+        componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
+
     # ensure that component owner may not resume riskpool
     with brownie.reverts("ERROR:CMP-018:INITIAL_STATE_NOT_HANDLED"):
         instanceOperatorService.resume(riskpoolId, {'from':owner})
+
+    # ensure that instance operator may not archive archived riskpool
+    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+        instanceOperatorService.archive(riskpoolId, {'from':owner})
 
     # ensure that riskpol actions do not work 
     with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
@@ -528,6 +536,14 @@ def test_pause_archive_as_owner(
 
     assert instanceService.getComponentState(riskpoolId) == 6
 
+    # ensure that component owner may not archive archived riskpool
+    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+        componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
+    
+    # ensure that instance operator may not archive archived riskpool
+    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+        instanceOperatorService.archive(riskpoolId, {'from':owner})
+
     # ensure that riskpol actions do not work
     with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
         riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
@@ -651,12 +667,21 @@ def test_pause_archive_as_instance_operator(
 
     assert instanceService.getComponentState(riskpoolId) == 6
 
+        # ensure that component owner may not archive archived riskpool
+    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+        componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
+    
+    # ensure that instance operator may not archive archived riskpool
+    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+        instanceOperatorService.archive(riskpoolId, {'from':owner})
+
     # ensure that riskpol actions do not work again
     with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
         riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
 
     with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
+
 
 def test_propose_decline(
     instance: GifInstance, 
