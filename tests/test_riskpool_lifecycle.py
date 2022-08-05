@@ -355,15 +355,27 @@ def test_suspend_archive(
 
     # ensure that component owner may not archive riskpool
     assert owner != riskpoolKeeper
-    with brownie.reverts("ERROR:CMP-015:ACTIVE_INVALID_TRANSITION"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
-    with brownie.reverts("ERROR:CMP-015:ACTIVE_INVALID_TRANSITION"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
 
     assert instanceService.getComponentState(riskpoolId) == 3
 
     # ensure that instance operator may archive riskpool
+    instanceOperatorService.suspend(riskpoolId, {'from':owner})
+    assert instanceService.getComponentState(riskpoolId) == 5
+
+    # ensure that instance operator may not archive riskpool due to active bundles
+    with brownie.reverts("ERROR:POL-011:RISKPOOL_HAS_BUNDLES"):
+        instanceOperatorService.archive(riskpoolId, {'from':owner})
+
+    # ensure that riskpool can be archived by burning bundle
+    instanceOperatorService.resume(riskpoolId, {'from':owner})
+    assert instanceService.getComponentState(riskpoolId) == 3
+    riskpool.closeBundle(bundleId, {'from':bundleOwner})
+    riskpool.burnBundle(bundleId, {'from':bundleOwner})
     instanceOperatorService.suspend(riskpoolId, {'from':owner})
     assert instanceService.getComponentState(riskpoolId) == 5
 
@@ -375,24 +387,6 @@ def test_suspend_archive(
     with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.fundBundle(bundleId, 10, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.lockBundle(bundleId, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.unlockBundle(bundleId, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.closeBundle(bundleId, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.burnBundle(bundleId, {'from':bundleOwner})
-
     # ensure that a suspended component cannot be paused
     with brownie.reverts("ERROR:COS-004:NOT_OWNER"):
         componentOwnerService.pause(riskpoolId, {'from':owner})
@@ -402,7 +396,7 @@ def test_suspend_archive(
         componentOwnerService.unpause(riskpoolId, {'from':owner})
 
     # ensure that component owner may not archive archived riskpool
-    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
 
     # ensure that component owner may not resume riskpool
@@ -410,15 +404,8 @@ def test_suspend_archive(
         instanceOperatorService.resume(riskpoolId, {'from':owner})
 
     # ensure that instance operator may not archive archived riskpool
-    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
-
-    # ensure that riskpol actions do not work 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
     
 
 def test_pause_archive_as_owner(
@@ -482,21 +469,29 @@ def test_pause_archive_as_owner(
 
     componentOwnerService = instance.getComponentOwnerService()
 
-    # create test policy before riskpool is archived
-    product = gifTestProduct.getContract()
-    policyId = apply_for_policy(instance, owner, product, customer, testCoin, 100, 1000)
-
     # ensure that owner may not archive riskpool
     assert owner != riskpoolKeeper
-    with brownie.reverts("ERROR:CMP-015:ACTIVE_INVALID_TRANSITION"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
-    with brownie.reverts("ERROR:CMP-015:ACTIVE_INVALID_TRANSITION"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
 
     assert instanceService.getComponentState(riskpoolId) == 3
 
     # ensure that riskpool keeper may pause riskpool
+    componentOwnerService.pause(riskpoolId, {'from':riskpoolKeeper})
+    assert instanceService.getComponentState(riskpoolId) == 4
+
+    # ensure that instance operator may not archive riskpool due to active bundles
+    with brownie.reverts("ERROR:POL-011:RISKPOOL_HAS_BUNDLES"):
+        instanceOperatorService.archive(riskpoolId, {'from':owner})
+
+    # ensure that riskpool can be archived by burning bundle
+    componentOwnerService.unpause(riskpoolId, {'from':riskpoolKeeper})
+    assert instanceService.getComponentState(riskpoolId) == 3
+    riskpool.closeBundle(bundleId, {'from':bundleOwner})
+    riskpool.burnBundle(bundleId, {'from':bundleOwner})
     componentOwnerService.pause(riskpoolId, {'from':riskpoolKeeper})
     assert instanceService.getComponentState(riskpoolId) == 4
 
@@ -508,28 +503,6 @@ def test_pause_archive_as_owner(
     with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.fundBundle(bundleId, 10, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.lockBundle(bundleId, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.unlockBundle(bundleId, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.closeBundle(bundleId, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.burnBundle(bundleId, {'from':bundleOwner})
-
-    # ensure underwriting new policies is not possible for archived riskpool
-    with brownie.reverts("ERROR:POL-021:RISKPOOL_NOT_ACTIVE"):
-        policyId2 = apply_for_policy(instance, owner, product, customer, testCoin, 100, 1000)
-
     # ensure that owner may not unpause archived riskpool
     with brownie.reverts("ERROR:CMP-018:INITIAL_STATE_NOT_HANDLED"):
         componentOwnerService.unpause(riskpoolId, {'from':riskpoolKeeper})
@@ -537,19 +510,13 @@ def test_pause_archive_as_owner(
     assert instanceService.getComponentState(riskpoolId) == 6
 
     # ensure that component owner may not archive archived riskpool
-    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
     
     # ensure that instance operator may not archive archived riskpool
-    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
-    # ensure that riskpol actions do not work
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
 def test_pause_archive_as_instance_operator(
     instance: GifInstance, 
@@ -571,58 +538,20 @@ def test_pause_archive_as_instance_operator(
 
     initialFunding = 10000
     bundleOwner = riskpoolKeeper
-    fund_riskpool(instance, owner, capitalOwner, riskpool, bundleOwner, testCoin, initialFunding)
+    fund_riskpool(instance, owner, capitalOwner, riskpool, bundleOwner, testCoin, initialFunding, False)
 
-    riskpool.bundles() == 1
-    bundle = riskpool.getBundle(0)
-    print(bundle)
-
-    (
-        bundleId,
-        riskpoolId,
-        tokenId,
-        state,
-        filter,
-        capital,
-        lockedCapital,
-        balance,
-        createdAt,
-        updatedAt
-    ) = bundle
-
-    # check bundle values with expectation
-    assert bundleId == 1
+    assert 0 == riskpool.bundles()
     assert riskpoolId == riskpool.getId()
-
-    # verify that attributes directly from riskpool match with 
-    # bundle attributes from instance service
-    bundleFromCore = instanceService.getBundle(bundleId).dict()
-    print(bundleFromCore)
-
-    assert bundleFromCore["id"] == bundleId
-    assert bundleFromCore["riskpoolId"] == riskpoolId
-    assert bundleFromCore["tokenId"] == tokenId
-    assert bundleFromCore["state"] == state
-    assert bundleFromCore["filter"] == filter
-    assert bundleFromCore["capital"] == capital
-    assert bundleFromCore["lockedCapital"] == lockedCapital
-    assert bundleFromCore["balance"] == balance
-    assert bundleFromCore["createdAt"] == createdAt
-    assert bundleFromCore["updatedAt"] == updatedAt
 
     componentOwnerService = instance.getComponentOwnerService()
 
-    # create test policy before riskpool is archived
-    product = gifTestProduct.getContract()
-    policyId = apply_for_policy(instance, owner, product, customer, testCoin, 100, 1000)
-
     # ensure that instance operator may not archive active riskpool 
     assert owner != riskpoolKeeper
-    with brownie.reverts("ERROR:CMP-015:ACTIVE_INVALID_TRANSITION"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
     # ensure that owner may not archive active riskpool 
-    with brownie.reverts("ERROR:CMP-015:ACTIVE_INVALID_TRANSITION"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
 
     assert instanceService.getComponentState(riskpoolId) == 3
@@ -639,28 +568,6 @@ def test_pause_archive_as_instance_operator(
     with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.fundBundle(bundleId, 10, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.lockBundle(bundleId, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.unlockBundle(bundleId, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.closeBundle(bundleId, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.burnBundle(bundleId, {'from':bundleOwner})
-
-    # ensure underwriting new policies is not possible for archived riskpool
-    with brownie.reverts("ERROR:POL-021:RISKPOOL_NOT_ACTIVE"):
-        policyId2 = apply_for_policy(instance, owner, product, customer, testCoin, 100, 1000)
-
     # ensure that owner may not unpause archived riskpool
     with brownie.reverts("ERROR:CMP-018:INITIAL_STATE_NOT_HANDLED"):
         componentOwnerService.unpause(riskpoolId, {'from':riskpoolKeeper})
@@ -668,19 +575,12 @@ def test_pause_archive_as_instance_operator(
     assert instanceService.getComponentState(riskpoolId) == 6
 
         # ensure that component owner may not archive archived riskpool
-    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
     
     # ensure that instance operator may not archive archived riskpool
-    with brownie.reverts("ERROR:CMP-011:SOURCE_AND_TARGET_STATE_IDENTICAL"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
-
-    # ensure that riskpol actions do not work again
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
-
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
-        riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
 
 def test_propose_decline(
@@ -750,7 +650,7 @@ def test_propose_decline(
             {'from': instance.getOwner()})
 
     # ensure that declined riskpool cannot be archived by instance operator
-    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         instanceOperatorService.archive(
             riskpoolId,
             {'from': instance.getOwner()})
@@ -768,7 +668,7 @@ def test_propose_decline(
             {'from': riskpoolKeeper})
 
     # ensure that declined riskpool cannot be archived by owner
-    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+    with brownie.reverts("ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"):
         componentOwnerService.archive(
             riskpoolId,
             {'from': riskpoolKeeper})

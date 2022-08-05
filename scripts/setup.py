@@ -8,7 +8,8 @@ def fund_riskpool(
     riskpool,
     bundleOwner: Account,
     coin,
-    amount: int 
+    amount: int,
+    createBundle: bool = True 
 ):
     # transfer funds to riskpool keeper and create allowance
     safetyFactor = 2
@@ -20,10 +21,12 @@ def fund_riskpool(
     coin.approve(instance.getTreasury(), maxUint256, {'from': capitalOwner})
 
     applicationFilter = bytes(0)
-    riskpool.createBundle(
-        applicationFilter, 
-        amount, 
-        {'from': bundleOwner})
+
+    if (createBundle):
+        riskpool.createBundle(
+            applicationFilter, 
+            amount, 
+            {'from': bundleOwner})
 
 
 def fund_customer(

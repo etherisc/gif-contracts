@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./ComponentController.sol";
 import "./PolicyController.sol";
+import "./BundleController.sol";
 import "../shared/CoreController.sol";
 
 import "@etherisc/gif-interface/contracts/modules/IPool.sol";
@@ -19,6 +20,7 @@ contract PoolController is
 
     ComponentController private _component;
     PolicyController private _policy;
+    BundleController private _bundle;
 
     modifier onlyInstanceOperatorService() {
         require(
@@ -39,6 +41,7 @@ contract PoolController is
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
         _policy = PolicyController(_getContractAddress("Policy"));
+        _bundle = BundleController(_getContractAddress("Bundle"));
     }
 
     function setRiskpoolForProduct(uint256 productId, uint256 riskpoolId) 
@@ -125,6 +128,19 @@ contract PoolController is
         riskpool.decreaseBalance(processId, amount);
     }
 
+    function isArchivingAllowed(uint256 id) external view returns (bool) {
+        IRiskpool riskpool = _getRiskpoolForId(id);
+        uint256 riskpoolId = riskpool.getId();
+        require(
+            _component.getComponentState(riskpoolId) == IComponent.ComponentState.Paused
+            || _component.getComponentState(riskpoolId) == IComponent.ComponentState.Suspended, 
+            "ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"
+            );
+        require(
+            _bundle.unburntBundles(riskpoolId) == 0, 
+            "ERROR:POL-011:RISKPOOL_HAS_BUNDLES"
+            );
+    }
     
     function riskpools() external view returns(uint256 idx) { return _riskpools.length; }
 
@@ -132,7 +148,7 @@ contract PoolController is
         external view 
         returns(uint256) 
     { 
-        require(idx < _riskpools.length, "ERROR:POL-008:INDEX_TOO_LARGE");
+        require(idx < _riskpools.length, "ERROR:POL-020:INDEX_TOO_LARGE");
         return _riskpools[idx]; 
     }
 
@@ -142,14 +158,14 @@ contract PoolController is
 
     function _getRiskpool(IPolicy.Metadata memory metadata) internal view returns (IRiskpool riskpool) {
         uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
-        require(riskpoolId > 0, "ERROR:POL-009:RISKPOOL_DOES_NOT_EXIST");
+        require(riskpoolId > 0, "ERROR:POL-021:RISKPOOL_DOES_NOT_EXIST");
 
         riskpool = _getRiskpoolForId(riskpoolId);
     }
 
     function _getRiskpoolForId(uint256 riskpoolId) internal view returns (IRiskpool riskpool) {
         IComponent cmp = _component.getComponent(riskpoolId);
-        require(cmp.isRiskpool(), "ERROR:POL-010:COMPONENT_NOT_RISKPOOL");
+        require(cmp.isRiskpool(), "ERROR:POL-022:COMPONENT_NOT_RISKPOOL");
         
         riskpool = IRiskpool(address(cmp));
     }
