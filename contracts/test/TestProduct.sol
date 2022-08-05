@@ -124,6 +124,75 @@ contract TestProduct is
         );
     }
 
+<<<<<<< HEAD
+=======
+    function submitClaimWithDeferredResponse(bytes32 policyId, uint256 claimAmount) 
+        external
+        onlyPolicyHolder(policyId)
+        returns(uint256 claimId, uint256 requestId)
+    {
+
+        // increase claims counter
+        // the oracle business logic will use this counter value 
+        // to determine if the claim is linked to a loss event or not
+        _claims += 1;
+        
+        // claim application
+        claimId = _newClaim(policyId, claimAmount, "");
+        _policyIdToClaimId[policyId] = claimId;
+
+        // Request response to greeting via oracle call
+        bool immediateResponse = false;
+        bytes memory queryData = abi.encode(_claims, immediateResponse);
+        requestId = _request(
+            policyId,
+            queryData,
+            ORACLE_CALLBACK_METHOD_NAME,
+            _testOracleId
+        );
+    }
+
+    function confirmClaim(
+        bytes32 policyId, 
+        uint256 claimId, 
+        uint256 confirmedAmount
+    ) 
+        external
+        onlyOwner
+    {
+        _confirmClaim(policyId, claimId, confirmedAmount);
+    }
+
+    function declineClaim(
+        bytes32 policyId, 
+        uint256 claimId
+    ) 
+        external
+        onlyOwner
+    {
+        _declineClaim(policyId, claimId);
+    }
+
+    function createPayout(
+        bytes32 policyId, 
+        uint256 claimId, 
+        uint256 payoutAmount
+    ) 
+        external
+        onlyOwner
+        returns(uint256 payoutId)
+    {
+        payoutId = _newPayout(
+            policyId, 
+            claimId, 
+            payoutAmount, 
+            abi.encode(0));
+            
+        _processPayout(policyId, payoutId);
+    }
+
+
+>>>>>>> 581644b... add payout creation tests for claims in wrong state
     function oracleCallback(
         uint256 requestId, 
         bytes32 policyId, 
