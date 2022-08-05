@@ -6,29 +6,39 @@ FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
 ARG NODE_VERSION="16"
 RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
-USER vscode
+# USER vscode
 
 # [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
 # COPY requirements.txt /tmp/pip-tmp/
 RUN wget https://raw.githubusercontent.com/eth-brownie/brownie/master/requirements.txt -O /tmp/pip-requirements.txt 
 
-RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-requirements.txt 
-RUN pip3 install eth-brownie \
-    && pip3 install fastapi \
-    && pip3 install uvicorn
+RUN su vscode -c "pip install -r /tmp/pip-requirements.txt"
+RUN su vscode -c "pip install eth-brownie \
+    && pip install fastapi \
+    && pip install uvicorn"
 
+RUN su vscode -c "mkdir -p /tmp/brownie-setup"
+WORKDIR /tmp/brownie-setup
+COPY brownie-config.yaml .
+COPY .devcontainer/get_solidity.py .
 
-RUN mkdir -p /tmp/brownie-setup
-COPY brownie-config.yaml /tmp/brownie-setup
-RUN cd /tmp/brownie-setup \
-    && brownie init dummy \
+# download required solidity compiler
+RUN su vscode -c "python get_solidity.py"
+
+RUN su vscode -c "/home/vscode/.local/bin/brownie init dummy \
     && cd dummy \
     && cp ../brownie-config.yaml . \
-    && brownie compile --all
+    && /home/vscode/.local/bin/brownie compile --all"
 
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
 
 # [Optional] Uncomment this line to install global node packages.
-RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g ganache-cli" 2>&1
+RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g ganache-cli"
+
+# Install starship.rs prompt
+RUN curl -fsSL https://starship.rs/install.sh | sh -s -- --yes 
+RUN echo "eval \"\$(starship init bash)\"" >> ~/.bashrc && echo "eval \"\$(starship init zsh)\"" >> ~/.zshrc
+
+WORKDIR /workspace
