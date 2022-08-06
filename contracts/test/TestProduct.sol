@@ -115,7 +115,8 @@ contract TestProduct is
         _policyIdToClaimId[policyId] = claimId;
 
         // Request response to greeting via oracle call
-        bytes memory queryData = abi.encode(_claims);
+        bool immediateResponse = true;
+        bytes memory queryData = abi.encode(_claims, immediateResponse);
         uint256 requestId = _request(
             policyId,
             queryData,

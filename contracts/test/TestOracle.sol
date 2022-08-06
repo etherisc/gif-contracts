@@ -14,13 +14,15 @@ contract TestOracle is Oracle {
 
     function request(uint256 requestId, bytes calldata input) external override onlyQuery {
         // decode oracle input data
-        (uint256 counter) = abi.decode(input, (uint256));
+        (uint256 counter, bool immediateResponse) = abi.decode(input, (uint256, bool));
 
         // obtain data from oracle given the request data (counter)
         // for off chain oracles this happens outside the request
         // call in a separate asynchronous transaction
-        bool isLossEvent = _oracleCalculation(counter);
-        respond(requestId, isLossEvent);
+        if (immediateResponse) {
+            bool isLossEvent = _oracleCalculation(counter);
+            respond(requestId, isLossEvent);
+        }
     }
 
     // usually called by off-chain oracle (and not internally) 
