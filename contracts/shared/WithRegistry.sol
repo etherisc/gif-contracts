@@ -64,10 +64,6 @@ contract WithRegistry {
         registry = IRegistry(_registry);
     }
 
-    function assignRegistry(address _registry) external onlyInstanceOperator {
-        registry = IRegistry(_registry);
-    }
-
     function getContractFromRegistry(bytes32 _contractName)
         public
         // override
