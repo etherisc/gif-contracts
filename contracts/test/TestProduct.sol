@@ -124,8 +124,6 @@ contract TestProduct is
         );
     }
 
-<<<<<<< HEAD
-=======
     function submitClaimWithDeferredResponse(bytes32 policyId, uint256 claimAmount) 
         external
         onlyPolicyHolder(policyId)
@@ -192,7 +190,6 @@ contract TestProduct is
     }
 
 
->>>>>>> 581644b... add payout creation tests for claims in wrong state
     function oracleCallback(
         uint256 requestId, 
         bytes32 policyId, 
