@@ -1,6 +1,6 @@
 {
   "name": "@etherisc/gif-contracts",
-  "version": "v1.5.0-staging-k",
+  "version": "2.0.0-staging-l",
   "description": "This repository holds the GIF core contracts and tools to develop, test and deploy GIF instances.",
   "main": "index.js",
   "files": [

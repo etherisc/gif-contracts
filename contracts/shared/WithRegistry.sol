@@ -4,7 +4,14 @@ pragma solidity ^0.8.0;
 import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
 
 contract WithRegistry {
-    IRegistry public registry;
+
+/*
+ *  We can consider the registry address as immutable here as it contains the
+ *  root data structure for the whole GIF Instance.
+ *  We can therefore ensure that a policy flow cannot overwrite the address
+ *  neither by chance nor by intention.
+ */
+    IRegistry public immutable registry;
 
     modifier onlyInstanceOperator() {
         require(
@@ -54,10 +61,6 @@ contract WithRegistry {
     }
 
     constructor(address _registry) {
-        registry = IRegistry(_registry);
-    }
-
-    function assignRegistry(address _registry) external onlyInstanceOperator {
         registry = IRegistry(_registry);
     }
 
