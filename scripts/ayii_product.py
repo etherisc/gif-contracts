@@ -188,7 +188,6 @@ class GifAyiiProduct(object):
         instance: GifInstance, 
         token, 
         capitalOwner: Account, 
-        feeOwner: Account, 
         productOwner: Account, 
         riskpoolKeeper: Account,
         customer: Account,

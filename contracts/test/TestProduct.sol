@@ -15,7 +15,6 @@ contract TestProduct is
     string public constant ORACLE_CALLBACK_METHOD_NAME = "oracleCallback";
 
     address private _capitalOwner;
-    address private _feeOwner;
     uint256 private _testOracleId;
     uint256 private _testRiskpoolId;
 
@@ -33,7 +32,6 @@ contract TestProduct is
         bytes32 productName,
         address tokenAddress,
         address capitalOwner,
-        address feeOwner, // TODO feeOwner not product specific, move to instance
         uint256 oracleId,
         uint256 riskpoolId,
         address registryAddress
@@ -42,7 +40,6 @@ contract TestProduct is
     {
         require(tokenAddress != address(0), "ERROR:TI-2:TOKEN_ADDRESS_ZERO");
         _capitalOwner = capitalOwner;
-        _feeOwner = feeOwner;
         _testOracleId = oracleId;
         _testRiskpoolId = riskpoolId;
     }
