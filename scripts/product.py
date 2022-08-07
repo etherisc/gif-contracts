@@ -47,7 +47,8 @@ class GifTestRiskpool(object):
         capitalOwner: Account, 
         collateralization:int,
         name=RISKPOOL_NAME, 
-        publishSource=False
+        publishSource=False,
+        setRiskpoolWallet=True
     ):
         instanceService = instance.getInstanceService()
         operatorService = instance.getInstanceOperatorService()
@@ -62,6 +63,9 @@ class GifTestRiskpool(object):
             {'from': instance.getOwner()})
 
         # 2) keeper deploys riskpool
+        if not setRiskpoolWallet:
+            name += '_NO_WALLET'
+        
         self.riskpool = TestRiskpool.deploy(
             s2b32(name),
             collateralization,
@@ -81,10 +85,11 @@ class GifTestRiskpool(object):
             {'from': instance.getOwner()})
 
         # 5) instance operator assigns riskpool wallet
-        operatorService.setRiskpoolWallet(
-            self.riskpool.getId(),
-            capitalOwner,
-            {'from': instance.getOwner()})
+        if setRiskpoolWallet:
+            operatorService.setRiskpoolWallet(
+                self.riskpool.getId(),
+                capitalOwner,
+                {'from': instance.getOwner()})
 
         # 6) setup capital fees
         fixedFee = 42
@@ -159,10 +164,12 @@ class GifTestProduct(object):
         capitalOwner: Account, 
         feeOwner: Account, 
         productOwner: Account, 
+        riskpoolKeeper: Account, 
         oracle: GifTestOracle, 
         riskpool: GifTestRiskpool, 
         name=PRODUCT_NAME, 
-        publishSource=False
+        publishSource=False,
+        setRiskpoolWallet=True
     ):
         self.policy = instance.getPolicy()
         self.oracle = oracle
@@ -172,6 +179,16 @@ class GifTestProduct(object):
         operatorService = instance.getInstanceOperatorService()
         componentOwnerService = instance.getComponentOwnerService()
         registry = instance.getRegistry()
+
+        # special case (only testing, never productive)
+        if not setRiskpoolWallet:
+            collateralization = 10**18
+            riskpool = GifTestRiskpool(
+                instance, 
+                riskpoolKeeper, 
+                capitalOwner, 
+                collateralization,
+                setRiskpoolWallet=False)
 
         # 1) add oracle provider role to owner
         ownerRole = instanceService.getProductOwnerRole()
