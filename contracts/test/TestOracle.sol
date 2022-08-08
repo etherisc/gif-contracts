@@ -16,10 +16,10 @@ contract TestOracle is Oracle {
         // decode oracle input data
         (uint256 counter, bool immediateResponse) = abi.decode(input, (uint256, bool));
 
-        // obtain data from oracle given the request data (counter)
-        // for off chain oracles this happens outside the request
-        // call in a separate asynchronous transaction
         if (immediateResponse) {
+            // obtain data from oracle given the request data (counter)
+            // for off chain oracles this happens outside the request
+            // call in a separate asynchronous transaction
             bool isLossEvent = _oracleCalculation(counter);
             respond(requestId, isLossEvent);
         }
@@ -29,7 +29,7 @@ contract TestOracle is Oracle {
     // in which case the function modifier should be changed 
     // to external
     function respond(uint256 requestId, bool isLossEvent) 
-        internal
+        public
     {
         // encode data obtained from oracle
         bytes memory output = abi.encode(bool(isLossEvent));

@@ -166,6 +166,7 @@ contract TestCompromisedProduct is
     function resumeCallback() external override {}
     function pauseCallback() external override {}
     function unpauseCallback() external override {}
+    function archiveCallback() external override {}
 
     function _getAccess() private view returns (IAccess) {
         return IAccess(_getContractAddress("Access"));        

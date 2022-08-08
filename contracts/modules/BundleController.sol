@@ -24,6 +24,10 @@ contract BundleController is
     // (bundleId => processId => lockedCapitalAmount)
     mapping(uint256 => mapping(bytes32 => uint256)) private _valueLockedPerPolicy;
 
+    // (riskpoolId => numberOfUnburntBundles)
+    mapping(uint256 => uint256) private _unburntBundlesForRiskpoolId;
+
+
     uint256 private _bundleCount;
 
     modifier onlyRiskpoolService() {
@@ -65,6 +69,7 @@ contract BundleController is
 
         // update bundle count
         _bundleCount += 1;
+        _unburntBundlesForRiskpoolId[riskpoolId_] += 1;
 
         emit LogBundleCreated(bundle.id, riskpoolId_, owner_, bundle.state, bundle.capital);
     }
@@ -141,6 +146,7 @@ contract BundleController is
 
         // burn corresponding nft -> as a result bundle looses its owner
         _token.burn(bundleId);
+        _unburntBundlesForRiskpoolId[bundle.riskpoolId] -= 1;
 
         _changeState(bundleId, BundleState.Burned);
     }
@@ -262,6 +268,10 @@ contract BundleController is
 
     function bundles() public view returns(uint256) {
         return _bundleCount;
+    }
+
+    function unburntBundles(uint256 riskpoolId) external view returns(uint256) {
+        return _unburntBundlesForRiskpoolId[riskpoolId];
     }
 
     function _changeState(uint256 bundleId, BundleState newState) internal {

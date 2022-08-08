@@ -103,6 +103,7 @@ contract TestProduct is
     function submitClaim(bytes32 policyId, uint256 claimAmount) 
         external
         onlyPolicyHolder(policyId)
+        returns(uint256 claimId)
     {
 
         // increase claims counter
@@ -111,7 +112,7 @@ contract TestProduct is
         _claims += 1;
         
         // claim application
-        uint256 claimId = _newClaim(policyId, claimAmount, "");
+        claimId = _newClaim(policyId, claimAmount, "");
         _policyIdToClaimId[policyId] = claimId;
 
         // Request response to greeting via oracle call
@@ -189,7 +190,6 @@ contract TestProduct is
             
         _processPayout(policyId, payoutId);
     }
-
 
     function oracleCallback(
         uint256 requestId, 

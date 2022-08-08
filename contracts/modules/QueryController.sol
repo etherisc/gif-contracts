@@ -13,7 +13,8 @@ contract QueryController is
     IQuery, 
     CoreController
 {
-    OracleRequest[] public oracleRequests;
+    ComponentController private _component;
+    OracleRequest[] private _oracleRequests;
 
     modifier onlyOracleService() {
         require(
@@ -24,24 +25,30 @@ contract QueryController is
     }
 
     modifier onlyResponsibleOracle(uint256 requestId, address responder) {
-        OracleRequest memory oracleRequest = oracleRequests[requestId];
+        OracleRequest memory oracleRequest = _oracleRequests[requestId];
 
         require(
             oracleRequest.createdAt > 0,
-            "ERROR:QUC-002:INVALID_REQUEST_ID"
+            "ERROR:QUC-002:REQUEST_ID_INVALID"
         );
 
         uint256 oracleId = oracleRequest.responsibleOracleId;
         address oracleAddress = address(_getOracle(oracleId));
         require(
             oracleAddress == responder,
-            "ERROR:QUC-003:NOT_RESPONSIBLE_ORACLE"
+            "ERROR:QUC-003:ORACLE_NOT_RESPONSIBLE"
         );
         _;
     }
 
+    function _afterInitialize() internal override onlyInitializing {
+        _component = ComponentController(_getContractAddress("Component"));
+    }
+
     /* Oracle Request */
-    // 1->1
+    // request only works for active oracles
+    // function call _getOracle reverts if oracle is not active
+    // as a result all request call on oracles that are not active will revert
     function request(
         bytes32 processId,
         bytes calldata input,
@@ -49,19 +56,19 @@ contract QueryController is
         address callbackContractAddress,
         uint256 responsibleOracleId
     ) 
-        external 
+        external
         override 
         onlyPolicyFlow("Query") 
         returns (uint256 requestId) 
     {
         // TODO: validate
 
-        requestId = oracleRequests.length;
-        oracleRequests.push();
+        requestId = _oracleRequests.length;
+        _oracleRequests.push();
 
         // TODO: get token from product
 
-        OracleRequest storage req = oracleRequests[requestId];
+        OracleRequest storage req = _oracleRequests[requestId];
         req.processId = processId;
         req.data = input;
         req.callbackMethodName = callbackMethodName;
@@ -78,6 +85,10 @@ contract QueryController is
     }
 
     /* Oracle Response */
+    // respond only works for active oracles
+    // modifier onlyResponsibleOracle contains a function call to _getOracle 
+    // which reverts if oracle is not active
+    // as a result, all response calls by oracles that are not active will revert
     function respond(
         uint256 requestId,
         address responder,
@@ -87,7 +98,7 @@ contract QueryController is
         onlyOracleService 
         onlyResponsibleOracle(requestId, responder) 
     {
-        OracleRequest storage req = oracleRequests[requestId];
+        OracleRequest storage req = _oracleRequests[requestId];
         string memory functionSignature = string(
             abi.encodePacked(
                 req.callbackMethodName,
@@ -105,8 +116,8 @@ contract QueryController is
                 )
             );
 
-        require(success, "ERROR:QUC-004:UNSUCCESSFUL_PRODUCT_CALLBACK");
-        delete oracleRequests[requestId];
+        require(success, "ERROR:QUC-004:PRODUCT_CALLBACK_UNSUCCESSFUL");
+        delete _oracleRequests[requestId];
 
         // TODO implement reward payment
 
@@ -114,16 +125,21 @@ contract QueryController is
     }
 
     function getOracleRequestCount() public view returns (uint256 _count) {
-        return oracleRequests.length;
+        return _oracleRequests.length;
     }
 
     function _getOracle(uint256 id) internal view returns (IOracle oracle) {
-        IComponent cmp = _component().getComponent(id);
-        require(cmp.isOracle(), "ERROR:QUC-005:COMPONENT_NOT_ORACLE");
+        IComponent cmp = _component.getComponent(id);
         oracle = IOracle(address(cmp));
-    }
 
-    function _component() internal view returns (ComponentController) {
-        return ComponentController(_getContractAddress("Component"));
+        require(
+            _component.getComponentType(id) == IComponent.ComponentType.Oracle, 
+            "ERROR:QUC-005:COMPONENT_NOT_ORACLE"
+        );
+
+        require(
+            _component.getComponentState(id) == IComponent.ComponentState.Active, 
+            "ERROR:QUC-006:ORACLE_NOT_ACTIVE"
+        );
     }
 }
