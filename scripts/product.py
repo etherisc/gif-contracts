@@ -47,7 +47,8 @@ class GifTestRiskpool(object):
         capitalOwner: Account, 
         collateralization:int,
         name=RISKPOOL_NAME, 
-        publishSource=False
+        publishSource=False,
+        setRiskpoolWallet=True
     ):
         instanceService = instance.getInstanceService()
         operatorService = instance.getInstanceOperatorService()
@@ -62,6 +63,9 @@ class GifTestRiskpool(object):
             {'from': instance.getOwner()})
 
         # 2) keeper deploys riskpool
+        if not setRiskpoolWallet:
+            name += '_NO_WALLET'
+        
         self.riskpool = TestRiskpool.deploy(
             s2b32(name),
             collateralization,
@@ -81,10 +85,11 @@ class GifTestRiskpool(object):
             {'from': instance.getOwner()})
 
         # 5) instance operator assigns riskpool wallet
-        operatorService.setRiskpoolWallet(
-            self.riskpool.getId(),
-            capitalOwner,
-            {'from': instance.getOwner()})
+        if setRiskpoolWallet:
+            operatorService.setRiskpoolWallet(
+                self.riskpool.getId(),
+                capitalOwner,
+                {'from': instance.getOwner()})
 
         # 6) setup capital fees
         fixedFee = 42
@@ -157,7 +162,6 @@ class GifTestProduct(object):
         instance: GifInstance, 
         token: Account, 
         capitalOwner: Account, 
-        feeOwner: Account, 
         productOwner: Account, 
         oracle: GifTestOracle, 
         riskpool: GifTestRiskpool, 
@@ -185,7 +189,6 @@ class GifTestProduct(object):
             s2b32(name),
             token.address,
             capitalOwner,
-            feeOwner,
             oracle.getId(),
             riskpool.getId(),
             instance.getRegistry(),

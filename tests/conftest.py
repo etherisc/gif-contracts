@@ -129,24 +129,24 @@ def feeOwner(accounts) -> Account:
 def instance(owner, feeOwner) -> GifInstance:
     return GifInstance(owner, feeOwner)
 
+@pytest.fixture(scope="module")
+def instanceNoInstanceWallet(owner, feeOwner) -> GifInstance:
+    return GifInstance(owner, feeOwner, setInstanceWallet=False)
 
 @pytest.fixture(scope="module")
 def gifTestOracle(instance: GifInstance, oracleProvider: Account) -> GifTestOracle:
     return GifTestOracle(instance, oracleProvider)
-
 
 @pytest.fixture(scope="module")
 def gifTestRiskpool(instance: GifInstance, riskpoolKeeper: Account, capitalOwner: Account, owner: Account) -> GifTestRiskpool:
     capitalization = 10**18
     return GifTestRiskpool(instance, riskpoolKeeper, capitalOwner, capitalization)
 
-
 @pytest.fixture(scope="module")
 def gifTestProduct(
     instance: GifInstance, 
     testCoin,
     capitalOwner: Account, 
-    feeOwner: Account, 
     productOwner: Account,
     gifTestOracle: GifTestOracle,
     gifTestRiskpool: GifTestRiskpool,
@@ -156,11 +156,9 @@ def gifTestProduct(
         instance, 
         testCoin,
         capitalOwner,
-        feeOwner,
         productOwner,
         gifTestOracle,
         gifTestRiskpool)
-
 
 @pytest.fixture(scope="module")
 def gifAyiiOracle(
@@ -173,13 +171,11 @@ def gifAyiiOracle(
         oracleProvider, 
         testCoin)
 
-
 @pytest.fixture(scope="module")
 def gifAyiiProduct(
     instance: GifInstance, 
     testCoin,
     capitalOwner: Account, 
-    feeOwner: Account, 
     productOwner: Account,
     riskpoolKeeper: Account,
     customer: Account,
@@ -191,13 +187,11 @@ def gifAyiiProduct(
         instance, 
         testCoin,
         capitalOwner,
-        feeOwner,
         productOwner,
         riskpoolKeeper,
         customer,
         gifAyiiOracle,
         gifTestRiskpool)
-
 
 @pytest.fixture(scope="module")
 def testProduct(gifTestProduct: GifTestProduct):

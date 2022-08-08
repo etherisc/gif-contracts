@@ -97,7 +97,8 @@ class GifInstance(GifRegistry):
         owner: Account = None, 
         instanceWallet: Account = None, 
         registryAddress = None,
-        publishSource: bool = False
+        publishSource: bool = False,
+        setInstanceWallet: bool = True
     ):
         if registryAddress:
             self.fromRegistryAddress(registryAddress)
@@ -112,10 +113,11 @@ class GifInstance(GifRegistry):
                 self.registry, 
                 owner,
                 publishSource)
-                    
-            self.instanceOperatorService.setInstanceWallet(
-                instanceWallet,
-                {'from': owner})
+        
+            if setInstanceWallet:
+                self.instanceOperatorService.setInstanceWallet(
+                    instanceWallet,
+                    {'from': owner})
             
         else:
             raise ValueError('either owner or registry_address need to be provided')
