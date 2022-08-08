@@ -12,7 +12,7 @@ from brownie import (
     OracleService,
     ComponentOwnerService,
     InstanceOperatorService,
-    TestRiskpool,
+    AyiiRiskpool,
     AyiiProduct,
     AyiiOracle,
     ClOperator,
@@ -41,7 +41,7 @@ from scripts.instance import (
 )
 
 
-class GifTestRiskpool(object):
+class GifAyiiRiskpool(object):
 
     def __init__(self, 
         instance: GifInstance, 
@@ -64,7 +64,7 @@ class GifTestRiskpool(object):
             {'from': instance.getOwner()})
 
         # 2) keeper deploys riskpool
-        self.riskpool = TestRiskpool.deploy(
+        self.riskpool = AyiiRiskpool.deploy(
             s2b32(name),
             collateralization,
             capitalOwner,
@@ -105,7 +105,7 @@ class GifTestRiskpool(object):
     def getId(self) -> int:
         return self.riskpool.getId()
     
-    def getContract(self) -> TestRiskpool:
+    def getContract(self) -> AyiiRiskpool:
         return self.riskpool
 
 
@@ -192,7 +192,7 @@ class GifAyiiProduct(object):
         riskpoolKeeper: Account,
         customer: Account,
         oracle: GifAyiiOracle, 
-        riskpool: GifTestRiskpool, 
+        riskpool: GifAyiiRiskpool, 
         publishSource=False
     ):
         self.policy = instance.getPolicy()
@@ -265,7 +265,7 @@ class GifAyiiProduct(object):
     def getOracle(self) -> GifAyiiOracle:
         return self.oracle
 
-    def getRiskpool(self) -> GifTestRiskpool:
+    def getRiskpool(self) -> GifAyiiRiskpool:
         return self.riskpool
     
     def getContract(self) -> AyiiProduct:
