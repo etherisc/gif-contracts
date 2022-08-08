@@ -39,7 +39,7 @@ RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g ganache-c
 
 # Install starship.rs prompt
 # TODO fix starship for vscode user
-RUN curl -fsSL https://starship.rs/install.sh | sh -s -- --yes 
-RUN echo "eval \"\$(starship init bash)\"" >> ~/.bashrc && echo "eval \"\$(starship init zsh)\"" >> ~/.zshrc
+RUN su vscode -c "curl -fsSL https://starship.rs/install.sh | sh -s -- --yes"
+RUN su vscode -c 'echo "eval \"\$(starship init bash)\"" >> ~/.bashrc && echo "eval \"\$(starship init zsh)\"" >> ~/.zshrc'
 
 WORKDIR /workspace
