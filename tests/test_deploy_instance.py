@@ -159,7 +159,7 @@ def test_InstanceService(instance, registry, owner):
     instanceService = instance.getInstanceService()
 
     assert instanceService.address == registry.getContract(s2b32(INSTANCE_SERVICE_NAME))
-    assert instanceService.getOwner() == owner
+    assert instanceService.getInstanceOperator() == owner
     assert owner != 0x0
 
     with pytest.raises(AttributeError):

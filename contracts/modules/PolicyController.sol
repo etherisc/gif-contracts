@@ -31,18 +31,19 @@ contract PolicyController is
     mapping(bytes32 => mapping(uint256 => Payout)) public payouts;
     mapping(bytes32 => uint256) public payoutCount;
 
-    bytes32[] private _processIds;
+    uint256 private _processIds;
 
     /* Metadata */
     function createPolicyFlow(
         address owner,
-        bytes32 processId, 
         uint256 productId,
         bytes calldata data
     )
         external override
         onlyPolicyFlow("Policy")
+        returns(bytes32 processId)
     {
+        processId = _generateNextProcessId();
         Metadata storage meta = metadata[processId];
         require(meta.createdAt == 0, "ERROR:POC-001:METADATA_ALREADY_EXISTS");
 
@@ -52,7 +53,6 @@ contract PolicyController is
         meta.data = data;
         meta.createdAt = block.timestamp;
         meta.updatedAt = block.timestamp;
-        _processIds.push(processId);
 
         emit LogMetadataCreated(owner, processId, productId, PolicyFlowState.Started);
     }
@@ -442,6 +442,18 @@ contract PolicyController is
     }
 
     function processIds() external view returns (uint256) {
-        return _processIds.length;
+        return _processIds;
     }
+
+    function _generateNextProcessId() private returns(bytes32 processId) {
+        _processIds += 1;
+
+        processId = keccak256(
+            abi.encodePacked(
+                block.chainid, 
+                address(_registry),
+                _processIds
+            )
+        );
+    } 
 }

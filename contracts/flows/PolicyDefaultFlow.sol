@@ -53,19 +53,19 @@ contract PolicyDefaultFlow is
 
     function newApplication(
         address owner,
-        bytes32 processId,
         uint256 premiumAmount,
         uint256 sumInsuredAmount,
         bytes calldata metaData, 
         bytes calldata applicationData 
     )
         external 
+        returns(bytes32 processId)
     {
         ILicense license = getLicenseContract();
         uint256 productId = license.getProductId(msg.sender);
 
         IPolicy policy = getPolicyContract();
-        policy.createPolicyFlow(owner, processId, productId, metaData);
+        processId = policy.createPolicyFlow(owner, productId, metaData);
         policy.createApplication(
             processId, 
             premiumAmount, 

@@ -133,13 +133,11 @@ contract AyiiProduct is
         require(risk.createdAt > 0, "ERROR:AYI-002:RISK_UNDEFINED");
         require(policyHolder != address(0), "ERROR:AYI-003:POLICY_HOLDER_ZERO");
 
-        processId = uniqueId(policyHolder);
         bytes memory metaData = "";
         bytes memory applicationData = abi.encode(riskId);
 
-        _newApplication(
+        processId = _newApplication(
             policyHolder, 
-            processId, 
             premium, 
             sumInsured,
             metaData,
@@ -337,13 +335,6 @@ contract AyiiProduct is
 
     function min(uint256 a, uint256 b) private pure returns (uint256) {
         return a <= b ? a : b;
-    }
-
-    function uniqueId(address _addr) 
-        internal 
-        returns (bytes32 _uniqueId) 
-    {
-        return keccak256(abi.encode(_addr, _applications.length));
     }
 
     function getRisk(bytes32 riskId)

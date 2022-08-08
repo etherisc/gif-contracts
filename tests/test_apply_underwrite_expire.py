@@ -1,6 +1,8 @@
 import brownie
 import pytest
 
+from web3 import Web3
+
 from brownie.network.account import Account
 from brownie import (
     interface,
@@ -36,6 +38,72 @@ from scripts.product import (
 @pytest.fixture(autouse=True)
 def isolation(fn_isolation):
     pass
+
+def test_process_id_creation(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    riskpoolKeeper: Account,
+    owner: Account,
+    customer: Account,
+    capitalOwner: Account
+):
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    initialFunding = 15000
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # record number of policies before policy creation
+    product = gifTestProduct.getContract()
+    
+    # application spec
+    premium = 100
+    sumInsured = 5000
+    metaData = bytes(0)
+    applicationData = bytes(0)
+
+    # transfer funds to customer and create allowance
+    testCoin.transfer(customer, 2 * premium, {'from': owner})
+    testCoin.approve(instance.getTreasury(), 2 * premium, {'from': customer})
+
+    instanceService = instance.getInstanceService()
+    chainId = Web3().eth.chain_id
+    registryAddress = instanceService.getRegistry()
+
+    # compute expected process id values
+    expectedProcessId1 = Web3.solidityKeccak(
+        ['uint256', 'address', 'uint256'], 
+        [chainId, registryAddress, product.policies() + 1]).hex()
+
+    expectedProcessId2 = Web3.solidityKeccak(
+        ['uint256', 'address', 'uint256'], 
+        [chainId, registryAddress, product.policies() + 2]).hex()
+
+    # create policies
+    tx1 = product.applyForPolicy(
+        premium,
+        sumInsured,
+        metaData,
+        applicationData,
+        {'from': customer})
+
+    tx2 = product.applyForPolicy(
+        premium,
+        sumInsured,
+        metaData,
+        applicationData,
+        {'from': customer})
+
+    assert product.policies() == 2
+
+    processId1 = tx1.return_value
+    processId2 = tx2.return_value
+
+    assert processId1 != expectedProcessId2
+    assert processId1 == expectedProcessId1
+    assert processId2 == expectedProcessId2
+
+
 
 def test_create_policy(
     instance: GifInstance, 
