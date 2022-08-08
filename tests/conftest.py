@@ -34,6 +34,7 @@ from brownie import (
     ClOperator,
     AyiiProduct,
     AyiiOracle,
+    AyiiRiskpool,
 )
 
 from brownie.network import accounts
@@ -65,6 +66,7 @@ from scripts.product import (
 from scripts.ayii_product import (
     GifAyiiProduct,
     GifAyiiOracle,
+    GifAyiiRiskpool,
 )
 
 from scripts.util import (
@@ -172,6 +174,12 @@ def gifAyiiOracle(
         testCoin)
 
 @pytest.fixture(scope="module")
+def gifAyiiRiskpool(instance: GifInstance, riskpoolKeeper: Account, capitalOwner: Account, owner: Account) -> GifAyiiRiskpool:
+    investor = riskpoolKeeper
+    capitalization = 10**18
+    return GifAyiiRiskpool(instance, riskpoolKeeper, capitalOwner, investor, capitalization)
+
+@pytest.fixture(scope="module")
 def gifAyiiProduct(
     instance: GifInstance, 
     testCoin,
@@ -180,7 +188,7 @@ def gifAyiiProduct(
     riskpoolKeeper: Account,
     customer: Account,
     gifAyiiOracle: GifAyiiOracle,
-    gifTestRiskpool: GifTestRiskpool,
+    gifAyiiRiskpool: GifAyiiRiskpool,
     owner
 ) -> GifAyiiProduct:
     return GifAyiiProduct(
@@ -191,7 +199,7 @@ def gifAyiiProduct(
         riskpoolKeeper,
         customer,
         gifAyiiOracle,
-        gifTestRiskpool)
+        gifAyiiRiskpool)
 
 @pytest.fixture(scope="module")
 def testProduct(gifTestProduct: GifTestProduct):

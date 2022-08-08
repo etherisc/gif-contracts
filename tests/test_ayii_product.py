@@ -477,7 +477,70 @@ def test_happy_path(
         assert bundleToken.ownerOf(bundleNftId) == investor
     
     assert token.balanceOf(investor) == investorBalanceBeforeTokenBurn + bundleBeforeBurn['balance']
+
+
+def test_create_bundle_investor_restriction(
+    instance: GifInstance, 
+    owner, 
+    gifAyiiProduct: GifAyiiProduct,
+    capitalOwner,
+    productOwner,
+    oracleProvider,
+    riskpoolKeeper,
+    customer,
+):
+    instanceService = instance.getInstanceService()
+
+    product = gifAyiiProduct.getContract()
+    oracle = gifAyiiProduct.getOracle().getContract()
+    riskpool = gifAyiiProduct.getRiskpool().getContract()
+
+    riskpoolWallet = capitalOwner
+    investor = riskpoolKeeper # investor=bundleOwner
+
+    amount = 5000
+    token = gifAyiiProduct.getToken()
+    token.transfer(investor, amount, {'from': owner})
+    token.approve(instance.getTreasury(), amount, {'from': investor})
+
+    # check that investor can create a bundle
+    applicationFilter = bytes(0)
+    tx = riskpool.createBundle(
+            applicationFilter, 
+            amount, 
+            {'from': investor})
     
+    bundleId = tx.return_value
+    assert bundleId > 0
+
+    # check that customer is not allowed to create bundle
+    with brownie.reverts("AccessControl: account 0x0d1d4e623d10f9fba5db95830f7d3839406c6af2 is missing role 0x5614e11ca6d7673c9c8dcec913465d676494aad1151bb2c1cf40b9d99be4d935"):
+        riskpool.createBundle(
+                applicationFilter, 
+                amount, 
+                {'from': customer})
+
+    # check that customer cannot assign investor role to herself
+    with brownie.reverts("Ownable: caller is not the owner"):
+        riskpool.grantInvestorRole(customer, {'from': customer})
+
+    # assign investor role to customer
+    riskpool.grantInvestorRole(customer, {'from': riskpoolKeeper})
+
+    # fund customer
+    customerAmount = 2000
+    token.transfer(customer, customerAmount, {'from': owner})
+    token.approve(instance.getTreasury(), customerAmount, {'from': customer})
+
+    # check that customer now can create a bundle
+    tx = riskpool.createBundle(
+            applicationFilter, 
+            customerAmount, 
+            {'from': customer})
+    
+    bundleIdCustomer = tx.return_value
+    assert bundleIdCustomer == bundleId + 1
+
 
 def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
 

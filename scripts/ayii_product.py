@@ -12,7 +12,7 @@ from brownie import (
     OracleService,
     ComponentOwnerService,
     InstanceOperatorService,
-    TestRiskpool,
+    AyiiRiskpool,
     AyiiProduct,
     AyiiOracle,
     ClOperator,
@@ -40,13 +40,13 @@ from scripts.instance import (
     GifInstance,
 )
 
-
-class GifTestRiskpool(object):
+class GifAyiiRiskpool(object):
 
     def __init__(self, 
         instance: GifInstance, 
         riskpoolKeeper: Account, 
-        capitalOwner: Account, 
+        capitalOwner: Account,
+        investor: Account,
         collateralization:int,
         name=RISKPOOL_NAME, 
         publishSource=False
@@ -64,31 +64,37 @@ class GifTestRiskpool(object):
             {'from': instance.getOwner()})
 
         # 2) keeper deploys riskpool
-        self.riskpool = TestRiskpool.deploy(
+        self.riskpool = AyiiRiskpool.deploy(
             s2b32(name),
             collateralization,
             capitalOwner,
             instance.getRegistry(),
             {'from': riskpoolKeeper},
             publish_source=publishSource)
+        
+        # 3) set up rikspool keeper as investor (createBundle restricted to this role)
+        self.riskpool.grantInvestorRole(
+            riskpoolKeeper,
+            {'from': riskpoolKeeper},
+        )
 
-        # 3) riskpool keeperproposes oracle to instance
+        # 4) riskpool keeperproposes oracle to instance
         componentOwnerService.propose(
             self.riskpool,
             {'from': riskpoolKeeper})
 
-        # 4) instance operator approves riskpool
+        # 5) instance operator approves riskpool
         operatorService.approve(
             self.riskpool.getId(),
             {'from': instance.getOwner()})
 
-        # 5) instance operator assigns riskpool wallet
+        # 6) instance operator assigns riskpool wallet
         operatorService.setRiskpoolWallet(
             self.riskpool.getId(),
             capitalOwner,
             {'from': instance.getOwner()})
 
-        # 6) setup capital fees
+        # 7) setup capital fees
         fixedFee = 42
         fractionalFee = instanceService.getFeeFractionFullUnit() / 20 # corresponds to 5%
         feeSpec = operatorService.createFeeSpecification(
@@ -105,7 +111,7 @@ class GifTestRiskpool(object):
     def getId(self) -> int:
         return self.riskpool.getId()
     
-    def getContract(self) -> TestRiskpool:
+    def getContract(self) -> AyiiRiskpool:
         return self.riskpool
 
 
@@ -192,7 +198,7 @@ class GifAyiiProduct(object):
         riskpoolKeeper: Account,
         customer: Account,
         oracle: GifAyiiOracle, 
-        riskpool: GifTestRiskpool, 
+        riskpool: GifAyiiRiskpool, 
         publishSource=False
     ):
         self.policy = instance.getPolicy()
@@ -265,7 +271,7 @@ class GifAyiiProduct(object):
     def getOracle(self) -> GifAyiiOracle:
         return self.oracle
 
-    def getRiskpool(self) -> GifTestRiskpool:
+    def getRiskpool(self) -> GifAyiiRiskpool:
         return self.riskpool
     
     def getContract(self) -> AyiiProduct:
