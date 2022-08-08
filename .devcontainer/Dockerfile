@@ -37,9 +37,11 @@ RUN su vscode -c "/home/vscode/.local/bin/brownie init dummy \
 # [Optional] Uncomment this line to install global node packages.
 RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g ganache-cli"
 
-# Install starship.rs prompt
-# TODO fix starship for vscode user
+# Install and configure starship.rs prompt
 RUN su vscode -c "curl -fsSL https://starship.rs/install.sh | sh -s -- --yes"
 RUN su vscode -c 'echo "eval \"\$(starship init bash)\"" >> ~/.bashrc && echo "eval \"\$(starship init zsh)\"" >> ~/.zshrc'
+RUN su vscode -c "mkdir -p /home/vscode/.config/"
+COPY .devcontainer/starship.toml /home/vscode/.config/starship.toml
+RUN chown vscode:vscode /home/vscode/.config/starship.toml
 
 WORKDIR /workspace
