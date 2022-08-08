@@ -73,7 +73,9 @@ contract PolicyDefaultFlow is
             applicationData);
     }
 
-    function revoke(bytes32 processId) external {
+    function revoke(bytes32 processId)
+        external 
+    {
         IPolicy policy = getPolicyContract();
         policy.revokeApplication(processId);
     }
@@ -92,8 +94,7 @@ contract PolicyDefaultFlow is
             policyController.underwriteApplication(processId);
             policyController.createPolicy(processId);
 
-            // attempt to transfer premium amount
-
+            // transfer premium amount
             IPolicy.Policy memory policy = policyController.getPolicy(processId);
             collectPremium(processId, policy.premiumExpectedAmount);
         }

@@ -196,6 +196,106 @@ def test_multiple_claim_submission(
     assert instanceService.claims(policy2_id) == 1
     assert instanceService.payouts(policy2_id) == 0
 
+
+def test_payout_creation_for_declined_claim(
+    instance: GifInstance, 
+    gifTestProduct: GifTestProduct, 
+    testCoin,
+    owner: Account,
+    customer: Account, 
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account
+):
+    instanceService = instance.getInstanceService()
+
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    initialFunding = 10000
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # build and use policy application
+    product = gifTestProduct.getContract()
+    premium = 100
+    sumInsured = 5000
+    policyId = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
+    
+    claimAmount = 2*premium
+    tx = product.submitClaimWithDeferredResponse(policyId, claimAmount, {'from': customer})
+    (claimId, requestId) = tx.return_value
+    claim = instanceService.getClaim(policyId, claimId).dict()
+    print(claim)
+
+    assert claim["state"] ==  0 # enum ClaimState {Applied, Confirmed, Declined, Closed}
+
+    # check that it's not possible to create payout for claim in applied state
+    payoutAmount = premium / 2
+    with brownie.reverts("ERROR:POC-042:CLAIM_NOT_CONFIRMED"):
+        product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
+
+    product.declineClaim(policyId, claimId, {'from': productOwner})
+
+    claim = instanceService.getClaim(policyId, claimId).dict()
+    assert claim["state"] ==  2 # enum ClaimState {Applied, Confirmed, Declined, Closed}
+
+    # check that it's not possible to create payout for claim in declined state
+    with brownie.reverts("ERROR:POC-042:CLAIM_NOT_CONFIRMED"):
+        product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
+
+
+def test_payout_creation_for_confirmed_claim(
+    instance: GifInstance, 
+    gifTestProduct: GifTestProduct, 
+    testCoin,
+    owner: Account,
+    customer: Account, 
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account
+):
+    instanceService = instance.getInstanceService()
+
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    initialFunding = 10000
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # build and use policy application
+    product = gifTestProduct.getContract()
+    premium = 100
+    sumInsured = 5000
+    policyId = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
+    
+    claimAmount = 2*premium
+    tx = product.submitClaimWithDeferredResponse(policyId, claimAmount, {'from': customer})
+    (claimId, requestId) = tx.return_value
+    claim = instanceService.getClaim(policyId, claimId).dict()
+    print(claim)
+
+    assert claim["state"] ==  0 # enum ClaimState {Applied, Confirmed, Declined, Closed}
+
+    product.confirmClaim(policyId, claimId, claimAmount, {'from': productOwner})
+
+    claim = instanceService.getClaim(policyId, claimId).dict()
+    assert claim["state"] ==  1 # enum ClaimState {Applied, Confirmed, Declined, Closed}
+
+    # check that it's possible to create payout for claim in confirmed state
+    payoutAmount = claimAmount
+    tx = product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
+
+    payoutId = tx.return_value
+    payout = instanceService.getPayout(policyId, payoutId).dict()
+    assert payout["state"] == 1 # enum PayoutState {Expected, PaidOut}
+    assert payout["amount"] == payoutAmount
+
+    claim = instanceService.getClaim(policyId, claimId).dict()
+    assert claim["state"] ==  3 # enum ClaimState {Applied, Confirmed, Declined, Closed}
+
+    # check that it's not possible to create payout for claim in closed state
+    with brownie.reverts("ERROR:POC-042:CLAIM_NOT_CONFIRMED"):
+        product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
+
+
 def create_policy(
     instance: GifInstance, 
     instanceOperator: Account,

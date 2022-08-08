@@ -152,7 +152,44 @@ contract TestProduct is
         );
     }
 
+    function confirmClaim(
+        bytes32 policyId, 
+        uint256 claimId, 
+        uint256 confirmedAmount
+    ) 
+        external
+        onlyOwner
+    {
+        _confirmClaim(policyId, claimId, confirmedAmount);
+    }
 
+    function declineClaim(
+        bytes32 policyId, 
+        uint256 claimId
+    ) 
+        external
+        onlyOwner
+    {
+        _declineClaim(policyId, claimId);
+    }
+
+    function createPayout(
+        bytes32 policyId, 
+        uint256 claimId, 
+        uint256 payoutAmount
+    ) 
+        external
+        onlyOwner
+        returns(uint256 payoutId)
+    {
+        payoutId = _newPayout(
+            policyId, 
+            claimId, 
+            payoutAmount, 
+            abi.encode(0));
+            
+        _processPayout(policyId, payoutId);
+    }
 
     function oracleCallback(
         uint256 requestId, 
