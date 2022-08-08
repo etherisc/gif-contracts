@@ -175,8 +175,9 @@ def gifAyiiOracle(
 
 @pytest.fixture(scope="module")
 def gifAyiiRiskpool(instance: GifInstance, riskpoolKeeper: Account, capitalOwner: Account, owner: Account) -> GifAyiiRiskpool:
+    investor = riskpoolKeeper
     capitalization = 10**18
-    return GifAyiiRiskpool(instance, riskpoolKeeper, capitalOwner, capitalization)
+    return GifAyiiRiskpool(instance, riskpoolKeeper, capitalOwner, investor, capitalization)
 
 @pytest.fixture(scope="module")
 def gifAyiiProduct(

@@ -40,13 +40,13 @@ from scripts.instance import (
     GifInstance,
 )
 
-
 class GifAyiiRiskpool(object):
 
     def __init__(self, 
         instance: GifInstance, 
         riskpoolKeeper: Account, 
-        capitalOwner: Account, 
+        capitalOwner: Account,
+        investor: Account,
         collateralization:int,
         name=RISKPOOL_NAME, 
         publishSource=False
@@ -71,24 +71,30 @@ class GifAyiiRiskpool(object):
             instance.getRegistry(),
             {'from': riskpoolKeeper},
             publish_source=publishSource)
+        
+        # 3) set up rikspool keeper as investor (createBundle restricted to this role)
+        self.riskpool.grantInvestorRole(
+            riskpoolKeeper,
+            {'from': riskpoolKeeper},
+        )
 
-        # 3) riskpool keeperproposes oracle to instance
+        # 4) riskpool keeperproposes oracle to instance
         componentOwnerService.propose(
             self.riskpool,
             {'from': riskpoolKeeper})
 
-        # 4) instance operator approves riskpool
+        # 5) instance operator approves riskpool
         operatorService.approve(
             self.riskpool.getId(),
             {'from': instance.getOwner()})
 
-        # 5) instance operator assigns riskpool wallet
+        # 6) instance operator assigns riskpool wallet
         operatorService.setRiskpoolWallet(
             self.riskpool.getId(),
             capitalOwner,
             {'from': instance.getOwner()})
 
-        # 6) setup capital fees
+        # 7) setup capital fees
         fixedFee = 42
         fractionalFee = instanceService.getFeeFractionFullUnit() / 20 # corresponds to 5%
         feeSpec = operatorService.createFeeSpecification(
