@@ -103,6 +103,7 @@ contract TestProduct is
     function submitClaim(bytes32 policyId, uint256 claimAmount) 
         external
         onlyPolicyHolder(policyId)
+        returns(uint256 claimId)
     {
 
         // increase claims counter
@@ -111,11 +112,12 @@ contract TestProduct is
         _claims += 1;
         
         // claim application
-        uint256 claimId = _newClaim(policyId, claimAmount, "");
+        claimId = _newClaim(policyId, claimAmount, "");
         _policyIdToClaimId[policyId] = claimId;
 
         // Request response to greeting via oracle call
-        bytes memory queryData = abi.encode(_claims);
+        bool immediateResponse = true;
+        bytes memory queryData = abi.encode(_claims, immediateResponse);
         uint256 requestId = _request(
             policyId,
             queryData,
@@ -123,6 +125,34 @@ contract TestProduct is
             _testOracleId
         );
     }
+
+    function submitClaimWithDeferredResponse(bytes32 policyId, uint256 claimAmount) 
+        external
+        onlyPolicyHolder(policyId)
+        returns(uint256 claimId, uint256 requestId)
+    {
+
+        // increase claims counter
+        // the oracle business logic will use this counter value 
+        // to determine if the claim is linked to a loss event or not
+        _claims += 1;
+        
+        // claim application
+        claimId = _newClaim(policyId, claimAmount, "");
+        _policyIdToClaimId[policyId] = claimId;
+
+        // Request response to greeting via oracle call
+        bool immediateResponse = false;
+        bytes memory queryData = abi.encode(_claims, immediateResponse);
+        requestId = _request(
+            policyId,
+            queryData,
+            ORACLE_CALLBACK_METHOD_NAME,
+            _testOracleId
+        );
+    }
+
+
 
     function oracleCallback(
         uint256 requestId, 
