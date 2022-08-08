@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
+// TODO ComponentOwnerService should not know of the PoolController - if we have a better idea how to build this, it should be changed.  
 import "../modules/PoolController.sol";
 import "../shared/CoreController.sol";
 

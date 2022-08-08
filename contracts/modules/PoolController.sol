@@ -134,11 +134,11 @@ contract PoolController is
         require(
             _component.getComponentState(riskpoolId) == IComponent.ComponentState.Paused
             || _component.getComponentState(riskpoolId) == IComponent.ComponentState.Suspended, 
-            "ERROR:POL-010:ARCHIVED_IS_FINAL_STATE"
+            "ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"
             );
         require(
             _bundle.unburntBundles(riskpoolId) == 0, 
-            "ERROR:POL-011:RISKPOOL_HAS_BUNDLES"
+            "ERROR:POL-011:RISKPOOL_HAS_UNBURNT_BUNDLES"
             );
     }
     
