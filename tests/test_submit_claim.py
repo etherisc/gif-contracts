@@ -279,7 +279,7 @@ def test_payout_creation_for_confirmed_claim(
     claim = instanceService.getClaim(policyId, claimId).dict()
     assert claim["state"] ==  1 # enum ClaimState {Applied, Confirmed, Declined, Closed}
 
-    # check that it's not possible to create payout for claim in applied state
+    # check that it's possible to create payout for claim in confirmed state
     payoutAmount = claimAmount
     tx = product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
 
@@ -291,7 +291,7 @@ def test_payout_creation_for_confirmed_claim(
     claim = instanceService.getClaim(policyId, claimId).dict()
     assert claim["state"] ==  3 # enum ClaimState {Applied, Confirmed, Declined, Closed}
 
-    # check that it's not possible to create payout for claim in declined state
+    # check that it's not possible to create payout for claim in closed state
     with brownie.reverts("ERROR:POC-042:CLAIM_NOT_CONFIRMED"):
         product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
 
