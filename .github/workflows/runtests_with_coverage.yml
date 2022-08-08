@@ -32,3 +32,9 @@ jobs:
       - name: Execute tests
         run: brownie test -C
         
+      - name: Archive test report artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports
+          path: |
+            reports
