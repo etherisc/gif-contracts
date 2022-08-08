@@ -2,6 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "../modules/ComponentController.sol";
+// TODO ComponentOwnerService should not know of the PoolController - if we have a better idea how to build this, it should be changed.  
+import "../modules/PoolController.sol";
 import "../shared/CoreController.sol";
 
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
@@ -12,6 +14,7 @@ contract ComponentOwnerService is
     CoreController
 {
     ComponentController private _component;
+    PoolController private _pool;
 
     modifier onlyOwnerWithRoleFromComponent(IComponent component) {
         address owner = component.getOwner();
@@ -35,6 +38,7 @@ contract ComponentOwnerService is
 
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
+        _pool = PoolController(_getContractAddress("Pool"));
     }
 
     function propose(IComponent component) 
@@ -71,6 +75,18 @@ contract ComponentOwnerService is
         onlyOwnerWithRole(id) 
     {
         _component.unpause(id);
+    }
+
+    function archive(uint256 id) 
+        external override 
+        onlyOwnerWithRole(id) 
+    {
+        IComponent component = _component.getComponent(id);
+        if(component.isRiskpool()) {
+            _pool.isArchivingAllowed(id);
+        }
+
+        _component.archiveFromComponentOwner(id);
     }
 
     function getComponentId(address componentAddress) external returns(uint256 id) {
