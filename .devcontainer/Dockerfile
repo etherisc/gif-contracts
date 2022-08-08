@@ -6,42 +6,41 @@ FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
 ARG NODE_VERSION="16"
 RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
-# USER vscode
+USER vscode
 
 # [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
 # COPY requirements.txt /tmp/pip-tmp/
 RUN wget https://raw.githubusercontent.com/eth-brownie/brownie/master/requirements.txt -O /tmp/pip-requirements.txt 
 
-RUN su vscode -c "pip install -r /tmp/pip-requirements.txt"
-RUN su vscode -c "pip install eth-brownie \
+RUN pip install -r /tmp/pip-requirements.txt
+RUN pip install eth-brownie \
     && pip install fastapi \
-    && pip install uvicorn"
+    && pip install uvicorn
 
-RUN su vscode -c "mkdir -p /tmp/brownie-setup"
+RUN mkdir -p /tmp/brownie-setup
 WORKDIR /tmp/brownie-setup
 COPY brownie-config.yaml .
 COPY .devcontainer/get_solidity.py .
 
 # download required solidity compiler
-RUN su vscode -c "python get_solidity.py"
+RUN python get_solidity.py
 
-RUN su vscode -c "/home/vscode/.local/bin/brownie init dummy \
+RUN /home/vscode/.local/bin/brownie init dummy \
     && cd dummy \
     && cp ../brownie-config.yaml . \
-    && /home/vscode/.local/bin/brownie compile --all"
+    && /home/vscode/.local/bin/brownie compile --all
 
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
 
 # [Optional] Uncomment this line to install global node packages.
-RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g ganache-cli"
+RUN npm install -g ganache-cli
 
 # Install and configure starship.rs prompt
-RUN su vscode -c "curl -fsSL https://starship.rs/install.sh | sh -s -- --yes"
-RUN su vscode -c 'echo "eval \"\$(starship init bash)\"" >> ~/.bashrc && echo "eval \"\$(starship init zsh)\"" >> ~/.zshrc'
-RUN su vscode -c "mkdir -p /home/vscode/.config/"
+RUN curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
+RUN echo "eval \"\$(starship init bash)\"" >> ~/.bashrc && echo "eval \"\$(starship init zsh)\"" >> ~/.zshrc
+RUN mkdir -p /home/vscode/.config/
 COPY .devcontainer/starship.toml /home/vscode/.config/starship.toml
-RUN chown vscode:vscode /home/vscode/.config/starship.toml
 
 WORKDIR /workspace
