@@ -67,7 +67,7 @@ def test_request_for_inactive_oracle(
     testCoin.transfer(customer, premium, {'from': owner})
     testCoin.approve(instance.getTreasury(), premium, {'from': customer})
 
-    # create test policy before riskpool is paused
+    # create test policy before oracle is paused
     sumInsured = 3000
     tx = product.applyForPolicy(
         premium,
@@ -96,15 +96,8 @@ def test_request_for_inactive_oracle(
         claimAmount,
         {'from': customer})
 
+    print(tx.info())
     (claimId, requestId) = tx.return_value
-
-    tx2 = product.submitClaimWithDeferredResponse(
-        policyId,
-        claimAmount,
-        {'from': customer})
-
-    print(tx2.info())
-    (claimId, requestId) = tx2.return_value
 
     # pause oracle (oracle no longer active)
     componentOwnerService.pause(
@@ -131,9 +124,10 @@ def test_request_for_inactive_oracle(
         oracleId, 
         {'from': oracleProvider})
 
-    # assert oracle is paused
+    # assert oracle is active agains
     assert instanceService.getComponentState(oracleId) == 3
 
+    # check oracle accepts response in active state
     tx = oracle.respond(requestId, isLossEvent)
     print(tx.info())
 
