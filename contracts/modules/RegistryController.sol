@@ -187,7 +187,7 @@ contract RegistryController is
 
         if (contracts[_release][_contractName] == address(0)) {
             contractNames[_release].push(_contractName);
-            contractsInRelease[_release] += 1;
+            contractsInRelease[_release]++;
             isNew = true;
         }
 

@@ -68,8 +68,8 @@ contract BundleController is
         bundle.updatedAt = block.timestamp;
 
         // update bundle count
-        _bundleCount += 1;
-        _unburntBundlesForRiskpoolId[riskpoolId_] += 1;
+        _bundleCount++;
+        _unburntBundlesForRiskpoolId[riskpoolId_]++;
 
         emit LogBundleCreated(bundle.id, riskpoolId_, owner_, bundle.state, bundle.capital);
     }
@@ -163,7 +163,7 @@ contract BundleController is
         bundle.lockedCapital += amount;
         bundle.updatedAt = block.timestamp;
 
-        _activePolicies[bundleId] += 1;
+        _activePolicies[bundleId]++;
         _valueLockedPerPolicy[bundleId][processId] += amount;
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
