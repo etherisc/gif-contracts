@@ -14,7 +14,6 @@ contract ComponentController is
     mapping(bytes32 => uint256) private _componentIdByName;
     mapping(address => uint256) private _componentIdByAddress;
 
-    mapping(uint256 => IComponent.ComponentType) private _componentType;
     mapping(uint256 => IComponent.ComponentState) private _componentState;
 
     uint256 [] private _products;
@@ -68,7 +67,6 @@ contract ComponentController is
 
         // update component state
         _changeState(id, IComponent.ComponentState.Proposed);
-        _componentType[id] = component.getType();
         component.setId(id);
 
         // update controller book keeping
@@ -196,11 +194,18 @@ contract ComponentController is
     }
 
     function getComponentType(uint256 id) public view returns (IComponent.ComponentType componentType) {
-        return _componentType[id];
+        IComponent component = _componentById[id];
+        componentType = component.getType();
     }
 
     function getComponentState(uint256 id) public view returns (IComponent.ComponentState componentState) {
         return _componentState[id];
+    }
+
+    function getRequiredRole(IComponent.ComponentType componentType) external returns (bytes32) {
+        if (componentType == IComponent.ComponentType.Product) { return _access.productOwnerRole(); }
+        if (componentType == IComponent.ComponentType.Oracle) { return _access.oracleProviderRole(); }
+        if (componentType == IComponent.ComponentType.Riskpool) { return _access.riskpoolKeeperRole(); }
     }
 
     function components() public view returns (uint256 count) { return _componentCount; }

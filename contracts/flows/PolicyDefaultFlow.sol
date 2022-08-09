@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
+import "../modules/ComponentController.sol";
 import "../modules/PoolController.sol";
 import "../modules/PolicyController.sol";
 import "../modules/TreasuryModule.sol";
 import "../shared/WithRegistry.sol";
-// import "../shared/CoreController.sol";
 
-import "@etherisc/gif-interface/contracts/modules/ILicense.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
 import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
@@ -24,7 +23,6 @@ import "@etherisc/gif-interface/contracts/modules/IPool.sol";
 
 contract PolicyDefaultFlow is 
     WithRegistry 
-    // CoreController
 {
     bytes32 public constant NAME = "PolicyDefaultFlow";
 
@@ -61,8 +59,8 @@ contract PolicyDefaultFlow is
         external 
         returns(bytes32 processId)
     {
-        ILicense license = getLicenseContract();
-        uint256 productId = license.getProductId(msg.sender);
+        ComponentController component = getComponentContract();
+        uint256 productId = component.getComponentId(msg.sender);
 
         IPolicy policy = getPolicyContract();
         processId = policy.createPolicyFlow(owner, productId, metaData);
@@ -265,8 +263,8 @@ contract PolicyDefaultFlow is
         return policy.getPayout(processId, payoutId).data;
     }
 
-    function getLicenseContract() internal view returns (ILicense) {
-        return ILicense(getContractFromRegistry("License"));
+    function getComponentContract() internal view returns (ComponentController) {
+        return ComponentController(getContractFromRegistry("Component"));
     }
 
     function getPoolContract() internal view returns (PoolController) {
