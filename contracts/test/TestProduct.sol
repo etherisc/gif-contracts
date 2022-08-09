@@ -56,12 +56,8 @@ contract TestProduct is
     {
         address payable policyHolder = payable(_msgSender());
 
-        // Create and underwrite new application
-        processId = keccak256(abi.encode(policyHolder, _policies));
-
-        _newApplication(
+        processId = _newApplication(
             policyHolder,
-            processId, 
             premium, 
             sumInsured,
             metaData,

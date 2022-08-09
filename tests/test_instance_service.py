@@ -2,6 +2,8 @@ import binascii
 import brownie
 import pytest
 
+from web3 import Web3
+
 from brownie import (
     InstanceService,
     interface
@@ -21,6 +23,25 @@ from scripts.util import (
     contractFromAddress,
     s2b32,
 )
+
+
+def test_get_chain_id(instance):
+    w3 = Web3()
+    instanceService = instance.getInstanceService()
+    assert instanceService.getChainId() == w3.eth.chain_id
+
+
+def test_get_instance_id(instance):
+    instanceService = instance.getInstanceService()
+    registryAddress = instanceService.getRegistry()
+
+    gifInstanceId = instanceService.getInstanceId()
+    web3keccak = Web3.solidityKeccak(
+        ['uint256', 'address'], 
+        [instanceService.getChainId(), registryAddress]).hex()
+
+    assert gifInstanceId == web3keccak
+
 
 def test_services_against_registry(instance, owner):
     instanceService = instance.getInstanceService()

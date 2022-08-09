@@ -26,9 +26,10 @@ contract InstanceService is
     IInstanceService, 
     CoreController
 {
+    bytes32 public constant BUNDLE_NAME = "Bundle";
     bytes32 public constant COMPONENT_NAME = "Component";
     bytes32 public constant POLICY_NAME = "Policy";
-    bytes32 public constant BUNDLE_NAME = "Bundle";
+    bytes32 public constant TREASURY_NAME = "Treasury";
 
     bytes32 public constant COMPONENT_OWNER_SERVICE_NAME = "ComponentOwnerService";
     bytes32 public constant INSTANCE_OPERATOR_SERVICE_NAME = "InstanceOperatorService";
@@ -42,12 +43,29 @@ contract InstanceService is
     TreasuryModule private _treasury;
 
     function _afterInitialize() internal override onlyInitializing {
-        _bundle = BundleController(_getContractAddress("Bundle"));
-        _component = ComponentController(_getContractAddress("Component"));
-        _policy = PolicyController(_getContractAddress("Policy"));
-        _treasury = TreasuryModule(_getContractAddress("Treasury"));
+        _bundle = BundleController(_getContractAddress(BUNDLE_NAME));
+        _component = ComponentController(_getContractAddress(COMPONENT_NAME));
+        _policy = PolicyController(_getContractAddress(POLICY_NAME));
+        _treasury = TreasuryModule(_getContractAddress(TREASURY_NAME));
     }
 
+    /* instance service */
+    function getChainId() public view returns(uint256 chainId) {
+        chainId = block.chainid;
+    }
+
+    function getInstanceId() public view returns(bytes32 instanceId) {
+        instanceId = keccak256(
+            abi.encodePacked(
+                block.chainid, 
+                address(_registry)));
+    }
+
+    function getInstanceOperator() external override view returns(address) {
+        InstanceOperatorService ios = InstanceOperatorService(_getContractAddress(INSTANCE_OPERATOR_SERVICE_NAME));
+        return ios.owner();
+    }
+    
     /* registry */
     function getComponentOwnerService() external override view returns(IComponentOwnerService service) {
         return IComponentOwnerService(_getContractAddress(COMPONENT_OWNER_SERVICE_NAME));
@@ -67,11 +85,6 @@ contract InstanceService is
 
     function getRiskpoolService() external override view returns(IRiskpoolService service) {
         return IRiskpoolService(_getContractAddress(RISKPOOL_SERVICE_NAME));
-    }
-
-    function getOwner() external override view returns(address) {
-        InstanceOperatorService ios = InstanceOperatorService(_getContractAddress(INSTANCE_OPERATOR_SERVICE_NAME));
-        return ios.owner();
     }
 
     // TODO decide how to protect registry access

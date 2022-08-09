@@ -91,11 +91,8 @@ contract TestCompromisedProduct is
         address payable policyHolder = payable(_msgSender());
 
         // Create and underwrite new application
-        processId = keccak256(abi.encode(policyHolder, _policies));
-
-        _productService.newApplication(
+        processId = _productService.newApplication(
             policyHolder, 
-            processId, 
             premium, 
             sumInsured, 
             metaData, 
