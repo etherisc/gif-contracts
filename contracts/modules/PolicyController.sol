@@ -12,24 +12,24 @@ contract PolicyController is
     // bytes32 public constant NAME = "PolicyController";
 
     // Metadata
-    mapping(bytes32 => Metadata) public metadata;
+    mapping(bytes32 /* processId */ => Metadata) public metadata;
 
     // Applications
-    mapping(bytes32 => Application) public applications;
+    mapping(bytes32 /* processId */ => Application) public applications;
 
     // Policies
-    mapping(bytes32 => Policy) public policies;
+    mapping(bytes32 /* processId */ => Policy) public policies;
 
     // TODO decide for current data structure or alternative
     // alternative mapping(bytes32 => Claim []) 
     // Claims
-    mapping(bytes32 => mapping(uint256 => Claim)) public claims;
+    mapping(bytes32 /* processId */ => mapping(uint256 /* claimId */ => Claim)) public claims;
 
     // TODO decide for current data structure or alternative
     // alternative mapping(bytes32 => Payout []) 
     // Payouts
-    mapping(bytes32 => mapping(uint256 => Payout)) public payouts;
-    mapping(bytes32 => uint256) public payoutCount;
+    mapping(bytes32 /* processId */ => mapping(uint256 /* payoutId */ => Payout)) public payouts;
+    mapping(bytes32 /* processId */ => uint256) public payoutCount;
 
     // counter for assigned processIds, used to ensure unique processIds
     uint256 private _assigendProcessIds;
