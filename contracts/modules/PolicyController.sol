@@ -31,7 +31,8 @@ contract PolicyController is
     mapping(bytes32 => mapping(uint256 => Payout)) public payouts;
     mapping(bytes32 => uint256) public payoutCount;
 
-    uint256 private _processIds;
+    // counter for assigned processIds, used to ensure unique processIds
+    uint256 private _assigendProcessIds;
 
     /* Metadata */
     function createPolicyFlow(
@@ -230,8 +231,8 @@ contract PolicyController is
         claim.createdAt = block.timestamp;
         claim.updatedAt = block.timestamp;
 
-        policy.claimsCount += 1;
-        policy.openClaimsCount += 1;
+        policy.claimsCount++;
+        policy.openClaimsCount++;
         policy.updatedAt = block.timestamp;
 
         emit LogClaimCreated(processId, claimId, claimAmount);
@@ -347,7 +348,7 @@ contract PolicyController is
         claim.payoutsAmount += payoutAmount;
         claim.updatedAt = block.timestamp;
 
-        payoutCount[processId] += 1;
+        payoutCount[processId]++;
         policy.updatedAt = block.timestamp;
 
         emit LogPayoutCreated(processId, claimId, payoutId, payoutAmount);
@@ -442,17 +443,17 @@ contract PolicyController is
     }
 
     function processIds() external view returns (uint256) {
-        return _processIds;
+        return _assigendProcessIds;
     }
 
     function _generateNextProcessId() private returns(bytes32 processId) {
-        _processIds += 1;
+        _assigendProcessIds++;
 
         processId = keccak256(
             abi.encodePacked(
                 block.chainid, 
                 address(_registry),
-                _processIds
+                _assigendProcessIds
             )
         );
     } 

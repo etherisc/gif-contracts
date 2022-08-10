@@ -18,7 +18,6 @@ contract OracleService is
     }
 
     function respond(uint256 _requestId, bytes calldata _data) external override {
-        // TODO: oracle contract should be approved
         _query.respond(_requestId, _msgSender(), _data);
     }
 }

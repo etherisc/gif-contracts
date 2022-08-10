@@ -42,7 +42,7 @@ contract BundleToken is
         onlyBundleModule
         returns(uint256 tokenId)
     {
-        _tokens += 1;
+        _tokens++;
         tokenId = _tokens;
 
         _safeMint(to, tokenId);
