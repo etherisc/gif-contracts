@@ -21,6 +21,9 @@ contract PoolController is
     // value might be larger when overcollateralization
     uint256 public constant FULL_COLLATERALIZATION_LEVEL = 10**18;
 
+    // upper limit for overcollateralization at 200% 
+    uint256 public constant COLLATERALIZATION_LEVEL_CAP = 2 * FULL_COLLATERALIZATION_LEVEL;
+
     mapping(uint256 /* productId */ => uint256 /* riskpoolId */) private _riskpoolIdForProductId;
 
     mapping(uint256 /* riskpoolId */ => IPool.Pool)  private _riskpools;
@@ -49,7 +52,7 @@ contract PoolController is
     modifier onlyTreasury() {
         require(
             _msgSender() == _getContractAddress("Treasury"),
-            "ERROR:POL-002:NOT_TREASURY"
+            "ERROR:POL-003:NOT_TREASURY"
         );
         _;
     }
@@ -61,15 +64,6 @@ contract PoolController is
     }
 
 
-    // // TODO remove with next iteration fo gif-interface
-    // event LogRiskpoolRegistered(
-    //     uint256 riskpoolId, 
-    //     address wallet,
-    //     address erc20Token, 
-    //     uint256 collateralizationLevel, 
-    //     uint256 sumOfSumInsuredCap
-    // );
-    
     function registerRiskpool(
         uint256 riskpoolId, 
         address wallet,
@@ -81,7 +75,12 @@ contract PoolController is
         onlyRiskpoolService
     {
         IPool.Pool storage pool = _riskpools[riskpoolId];
-        require(pool.createdAt == 0, "ERROR:POL-003:RISKPOOL_ALREADY_REGISTERED");
+        require(pool.createdAt == 0, "ERROR:POL-004:RISKPOOL_ALREADY_REGISTERED");
+
+        require(wallet != address(0), "ERROR:POL-005:WALLET_ADDRESS_ZERO");
+        require(erc20Token != address(0), "ERROR:POL-006:ERC20_ADDRESS_ZERO");
+        require(collateralizationLevel <= COLLATERALIZATION_LEVEL_CAP, "ERROR:POL-007:COLLATERALIZATION_lEVEl_TOO_HIGH");
+        require(sumOfSumInsuredCap > 0, "ERROR:POL-008:SUM_OF_SUM_INSURED_CAP_ZERO");
 
         pool.id = riskpoolId; 
         pool.wallet = wallet; 
@@ -96,7 +95,6 @@ contract PoolController is
 
         pool.createdAt = block.timestamp;
         pool.updatedAt = block.timestamp;
-
 
         emit LogRiskpoolRegistered(riskpoolId, wallet, erc20Token, collateralizationLevel, sumOfSumInsuredCap);
     }
@@ -131,20 +129,45 @@ contract PoolController is
         // determine riskpool responsible for application
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         IRiskpool riskpool = _getRiskpool(metadata);
+        uint256 riskpoolId = riskpool.getId();
         require(
-            _component.getComponentState(riskpool.getId()) == IComponent.ComponentState.Active, 
+            _component.getComponentState(riskpoolId) == IComponent.ComponentState.Active, 
             "ERROR:POL-021:RISKPOOL_NOT_ACTIVE"
         );
 
+        // calculate required collateral amount
+        uint256 sumInsuredAmount = application.sumInsuredAmount;
+        uint256 collateralAmount = calculateCollateral(riskpoolId, sumInsuredAmount);
+        emit LogRiskpoolRequiredCollateral(processId, sumInsuredAmount, collateralAmount);
+
         // ask riskpool to secure application
-        success = riskpool.collateralizePolicy(processId);
-        uint256 riskpoolId = riskpool.getId();
-        uint256 sumInsured = application.sumInsuredAmount;
+        success = riskpool.collateralizePolicy(processId, collateralAmount);
 
         if (success) {
-            emit LogRiskpoolCollateralizationSucceeded(riskpoolId, processId, sumInsured);
+            emit LogRiskpoolCollateralizationSucceeded(riskpoolId, processId, sumInsuredAmount);
         } else {
-            emit LogRiskpoolCollateralizationFailed(riskpoolId, processId, sumInsured);
+            emit LogRiskpoolCollateralizationFailed(riskpoolId, processId, sumInsuredAmount);
+        }
+    }
+
+
+    function calculateCollateral(uint256 riskpoolId, uint256 sumInsuredAmount) 
+        public
+        view 
+        returns (uint256 collateralAmount) 
+    {
+        uint256 collateralization = getRiskpool(riskpoolId).collateralizationLevel;
+
+        // fully collateralized case
+        if (collateralization == FULL_COLLATERALIZATION_LEVEL) {
+            collateralAmount = sumInsuredAmount;
+        // over or under collateralized case
+        } else if (collateralization > 0) {
+            collateralAmount = (collateralization * sumInsuredAmount) / FULL_COLLATERALIZATION_LEVEL;
+        }
+        // collateralization == 0, eg complete risk coverd by re insurance outside gif
+        else {
+            collateralAmount = 0;
         }
     }
 
@@ -202,8 +225,9 @@ contract PoolController is
     function riskpools() external view returns(uint256 idx) { return _riskpoolIds.length; }
 
 
-    function getRiskpool(uint256 riskpoolId) external view returns(IPool.Pool memory riskPool) {
-        revert("TO_BE_IMPLEMENTED");
+    function getRiskpool(uint256 riskpoolId) public view returns(IPool.Pool memory riskPool) {
+        riskPool = _riskpools[riskpoolId];
+        require(riskPool.createdAt > 0, "ERROR:POL-020:RISKPOOL_NOT_REGISTERED");
     }
 
 
@@ -211,7 +235,7 @@ contract PoolController is
         external view 
         returns(uint256) 
     { 
-        require(idx < _riskpoolIds.length, "ERROR:POL-020:INDEX_TOO_LARGE");
+        require(idx < _riskpoolIds.length, "ERROR:POL-021:INDEX_TOO_LARGE");
         return _riskpoolIds[idx]; 
     }
 
@@ -225,14 +249,14 @@ contract PoolController is
 
     function _getRiskpool(IPolicy.Metadata memory metadata) internal view returns (IRiskpool riskpool) {
         uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
-        require(riskpoolId > 0, "ERROR:POL-021:RISKPOOL_DOES_NOT_EXIST");
+        require(riskpoolId > 0, "ERROR:POL-022:RISKPOOL_DOES_NOT_EXIST");
 
         riskpool = _getRiskpoolForId(riskpoolId);
     }
 
     function _getRiskpoolForId(uint256 riskpoolId) internal view returns (IRiskpool riskpool) {
         IComponent cmp = _component.getComponent(riskpoolId);
-        require(cmp.isRiskpool(), "ERROR:POL-022:COMPONENT_NOT_RISKPOOL");
+        require(cmp.isRiskpool(), "ERROR:POL-023:COMPONENT_NOT_RISKPOOL");
         
         riskpool = IRiskpool(address(cmp));
     }

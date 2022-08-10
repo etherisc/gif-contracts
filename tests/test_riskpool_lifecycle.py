@@ -620,6 +620,14 @@ def test_propose_decline(
 
     riskpoolId = riskpool.getId()
 
+    pool = instanceService.getRiskpool(riskpoolId).dict();
+    print(pool)
+    assert pool['id'] == riskpoolId
+    assert pool['wallet'] == riskpool.getWallet()
+    assert pool['erc20Token'] == riskpool.getErc20Token()
+    assert pool['collateralizationLevel'] == riskpool.getCollateralizationLevel()
+    assert pool['sumOfSumInsuredCap'] == riskpool.getSumOfSumInsuredCap()
+
     # ensure component is proposed
     assert instanceService.getComponentState(riskpoolId) == 1
 
