@@ -146,12 +146,6 @@ contract TestCompromisedProduct is
     function getState() external override view returns(ComponentState) { return IComponent.ComponentState.Active; }
     function getOwner() external override view returns(address) { return owner(); }
 
-    function getRequiredRole() public override view returns (bytes32) {
-        if (isProduct()) { return _access.productOwnerRole(); }
-        if (isOracle()) { return _access.oracleProviderRole(); }
-        if (isRiskpool()) { return _access.riskpoolKeeperRole(); }
-    }
-
     function isProduct() public override view returns(bool) { return true; }
     function isOracle() public override view returns(bool) { return false; }
     function isRiskpool() public override view returns(bool) { return false; }

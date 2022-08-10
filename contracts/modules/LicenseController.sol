@@ -20,27 +20,19 @@ contract LicenseController is
         _component = ComponentController(_getContractAddress("Component"));
     }
 
+    // ensures that calling component (productAddress) is a product
     function getAuthorizationStatus(address productAddress)
         public override
         view
         returns (uint256 productId, bool isAuthorized, address policyFlow)
     {
-        productId = getProductId(productAddress);
-        isAuthorized = _isValidCall(productAddress);
+        productId = _component.getComponentId(productAddress);
+        isAuthorized = _isValidCall(productId);
         policyFlow = _getProduct(productId).getPolicyFlow();
     }
 
-    function getProductId(address sender) 
-        public override 
-        view 
-        returns(uint256 productId) 
-    {
-        productId = _component.getComponentId(sender);
-    }
-
-    function _isValidCall(address componentAddress) internal view returns (bool) {
-        uint256 componentId = _component.getComponentId(componentAddress);
-        return _component.getComponentState(componentId) == IComponent.ComponentState.Active;
+    function _isValidCall(uint256 productId) internal view returns (bool) {
+        return _component.getComponentState(productId) == IComponent.ComponentState.Active;
     }
 
     function _getProduct(uint256 id) internal view returns (IProduct product) {

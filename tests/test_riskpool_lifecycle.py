@@ -400,7 +400,7 @@ def test_suspend_archive(
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
 
     # ensure that component owner may not resume riskpool
-    with brownie.reverts("ERROR:CMP-018:INITIAL_STATE_NOT_HANDLED"):
+    with brownie.reverts("ERROR:CCR-018:INITIAL_STATE_NOT_HANDLED"):
         instanceOperatorService.resume(riskpoolId, {'from':owner})
 
     # ensure that instance operator may not archive archived riskpool
@@ -504,7 +504,7 @@ def test_pause_archive_as_owner(
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
     # ensure that owner may not unpause archived riskpool
-    with brownie.reverts("ERROR:CMP-018:INITIAL_STATE_NOT_HANDLED"):
+    with brownie.reverts("ERROR:CCR-018:INITIAL_STATE_NOT_HANDLED"):
         componentOwnerService.unpause(riskpoolId, {'from':riskpoolKeeper})
 
     assert instanceService.getComponentState(riskpoolId) == 6
@@ -569,7 +569,7 @@ def test_pause_archive_as_instance_operator(
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
     # ensure that owner may not unpause archived riskpool
-    with brownie.reverts("ERROR:CMP-018:INITIAL_STATE_NOT_HANDLED"):
+    with brownie.reverts("ERROR:CCR-018:INITIAL_STATE_NOT_HANDLED"):
         componentOwnerService.unpause(riskpoolId, {'from':riskpoolKeeper})
 
     assert instanceService.getComponentState(riskpoolId) == 6
@@ -632,19 +632,19 @@ def test_propose_decline(
     assert instanceService.getComponentState(riskpoolId) == 2
 
     # ensure that declined riskpool cannot be approved 
-    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+    with brownie.reverts("ERROR:CCR-014:DECLINED_IS_FINAL_STATE"):
         instanceOperatorService.approve(
             riskpoolId,
             {'from': instance.getOwner()})
     
     # ensure that declined riskpool cannot be suspended
-    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+    with brownie.reverts("ERROR:CCR-014:DECLINED_IS_FINAL_STATE"):
         instanceOperatorService.suspend(
             riskpoolId,
             {'from': instance.getOwner()})
 
     # ensure that declined riskpool cannot be resumed
-    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+    with brownie.reverts("ERROR:CCR-014:DECLINED_IS_FINAL_STATE"):
         instanceOperatorService.resume(
             riskpoolId,
             {'from': instance.getOwner()})
@@ -656,13 +656,13 @@ def test_propose_decline(
             {'from': instance.getOwner()})
         
     # ensure that declined riskpool cannot be paused
-    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+    with brownie.reverts("ERROR:CCR-014:DECLINED_IS_FINAL_STATE"):
         componentOwnerService.pause(
             riskpoolId,
             {'from': riskpoolKeeper})
 
     # ensure that declined riskpool cannot be unpaused
-    with brownie.reverts("ERROR:CMP-014:DECLINED_IS_FINAL_STATE"):
+    with brownie.reverts("ERROR:CCR-014:DECLINED_IS_FINAL_STATE"):
         componentOwnerService.unpause(
             riskpoolId,
             {'from': riskpoolKeeper})

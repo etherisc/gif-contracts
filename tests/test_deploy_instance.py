@@ -90,7 +90,7 @@ def test_License(instance: GifInstance, owner):
     assert license.address != 0x0
 
     with brownie.reverts("ERROR:CCR-007:COMPONENT_UNKNOWN"):
-        license.getProductId(owner)
+        license.getAuthorizationStatus(registry.address)
 
     with pytest.raises(AttributeError):
         assert license.foo({'from': owner})
