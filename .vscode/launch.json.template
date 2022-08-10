@@ -8,7 +8,7 @@
             "name": "Brownie: Compile all",
             "type": "python",
             "request": "launch",
-            "program": "/usr/local/bin/brownie",
+            "program": "/home/vscode/.local/bin/brownie",
             "console": "integratedTerminal",
             "args": ["compile", "--all"]
         },
@@ -16,7 +16,7 @@
             "name": "run all tests",
             "type": "python",
             "request": "launch",
-            "program": "/usr/local/bin/brownie",
+            "program": "/home/vscode/.local/bin/brownie",
             "console": "integratedTerminal",
             "args": ["test"]
         },
