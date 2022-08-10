@@ -208,6 +208,24 @@ contract InstanceService is
         return _pool.getFullCollateralizationLevel();
     }
 
+    function getCapital(uint256 riskpoolId) external view returns(uint256 capitalAmount) {
+        return _pool.getRiskpool(riskpoolId).capital;
+    }
+
+    function getTotalValueLocked(uint256 riskpoolId) external override view returns(uint256 totalValueLockedAmount) {
+        return _pool.getRiskpool(riskpoolId).lockedCapital;
+    }
+
+    function getCapacity(uint256 riskpoolId) external override view returns(uint256 capacityAmount) {
+        IPool.Pool memory pool = _pool.getRiskpool(riskpoolId);
+        return pool.capital - pool.lockedCapital;
+    }
+
+    function getBalance(uint256 riskpoolId) external override view returns(uint256 balanceAmount) {
+        return _pool.getRiskpool(riskpoolId).balance;
+    }
+
+
     /* bundle */
     function getBundleToken() external override view returns(IBundleToken token) {
         BundleToken bundleToken = _bundle.getToken();

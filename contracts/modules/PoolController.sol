@@ -24,6 +24,8 @@ contract PoolController is
     // upper limit for overcollateralization at 200% 
     uint256 public constant COLLATERALIZATION_LEVEL_CAP = 2 * FULL_COLLATERALIZATION_LEVEL;
 
+    mapping(bytes32 /* processId */ => uint256 /* collateralAmount*/ ) private _collateralAmount;
+
     mapping(uint256 /* productId */ => uint256 /* riskpoolId */) private _riskpoolIdForProductId;
 
     mapping(uint256 /* riskpoolId */ => IPool.Pool)  private _riskpools;
@@ -128,8 +130,7 @@ contract PoolController is
 
         // determine riskpool responsible for application
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
-        IRiskpool riskpool = _getRiskpool(metadata);
-        uint256 riskpoolId = riskpool.getId();
+        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
         require(
             _component.getComponentState(riskpoolId) == IComponent.ComponentState.Active, 
             "ERROR:POL-021:RISKPOOL_NOT_ACTIVE"
@@ -138,12 +139,26 @@ contract PoolController is
         // calculate required collateral amount
         uint256 sumInsuredAmount = application.sumInsuredAmount;
         uint256 collateralAmount = calculateCollateral(riskpoolId, sumInsuredAmount);
+        _collateralAmount[processId] = collateralAmount;
+
         emit LogRiskpoolRequiredCollateral(processId, sumInsuredAmount, collateralAmount);
 
+        // check that riskpool stays inside sum insured cap when underwriting this application 
+        IPool.Pool storage pool = _riskpools[riskpoolId];
+        require(
+            pool.sumOfSumInsuredCap >= pool.sumOfSumInsuredAtRisk + sumInsuredAmount,
+            "ERROR:POL-022:RISKPOOL_SUM_INSURED_CAP_EXCEEDED"
+        );
+
         // ask riskpool to secure application
+        IRiskpool riskpool = _getRiskpoolComponent(metadata);
         success = riskpool.collateralizePolicy(processId, collateralAmount);
 
         if (success) {
+            pool.sumOfSumInsuredAtRisk += sumInsuredAmount;
+            pool.lockedCapital += collateralAmount;
+            pool.updatedAt = block.timestamp;
+
             emit LogRiskpoolCollateralizationSucceeded(riskpoolId, processId, sumInsuredAmount);
         } else {
             emit LogRiskpoolCollateralizationFailed(riskpoolId, processId, sumInsuredAmount);
@@ -171,7 +186,6 @@ contract PoolController is
         }
     }
 
-
     function release(bytes32 processId) 
         external override
         onlyPolicyFlow("Pool")
@@ -184,8 +198,21 @@ contract PoolController is
         );
 
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
-        IRiskpool riskpool = _getRiskpool(metadata);
+        IRiskpool riskpool = _getRiskpoolComponent(metadata);
         riskpool.releasePolicy(processId);
+
+        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
+        IPolicy.Application memory application = _policy.getApplication(processId);
+        IPool.Pool storage pool = _riskpools[riskpoolId];
+        uint256 collateralAmount = _collateralAmount[processId];
+
+        pool.sumOfSumInsuredAtRisk -= application.sumInsuredAmount;
+        pool.lockedCapital -= collateralAmount;
+        pool.updatedAt = block.timestamp;
+
+        // free memory
+        delete _collateralAmount[processId];
+        emit LogRiskpoolCollateralReleased(riskpoolId, processId, collateralAmount);
     }
 
 
@@ -194,7 +221,7 @@ contract PoolController is
         onlyPolicyFlow("Pool")
     {
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
-        IRiskpool riskpool = _getRiskpool(metadata);
+        IRiskpool riskpool = _getRiskpoolComponent(metadata);
         riskpool.increaseBalance(processId, amount);
     }
 
@@ -204,13 +231,13 @@ contract PoolController is
         onlyPolicyFlow("Pool")
     {
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
-        IRiskpool riskpool = _getRiskpool(metadata);
+        IRiskpool riskpool = _getRiskpoolComponent(metadata);
         riskpool.decreaseBalance(processId, amount);
     }
 
-    function isArchivingAllowed(uint256 id) external view returns (bool) {
-        IRiskpool riskpool = _getRiskpoolForId(id);
-        uint256 riskpoolId = riskpool.getId();
+    function isArchivingAllowed(uint256 riskpoolId) external view returns (bool) {
+        // IRiskpool riskpool = _getRiskpoolForId(id);
+        // uint256 riskpoolId = riskpool.getId();
         require(
             _component.getComponentState(riskpoolId) == IComponent.ComponentState.Paused
             || _component.getComponentState(riskpoolId) == IComponent.ComponentState.Suspended, 
@@ -247,7 +274,7 @@ contract PoolController is
         return FULL_COLLATERALIZATION_LEVEL;
     }
 
-    function _getRiskpool(IPolicy.Metadata memory metadata) internal view returns (IRiskpool riskpool) {
+    function _getRiskpoolComponent(IPolicy.Metadata memory metadata) internal view returns (IRiskpool riskpool) {
         uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
         require(riskpoolId > 0, "ERROR:POL-022:RISKPOOL_DOES_NOT_EXIST");
 
