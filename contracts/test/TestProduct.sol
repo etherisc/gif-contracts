@@ -102,7 +102,7 @@ contract TestProduct is
         // increase claims counter
         // the oracle business logic will use this counter value 
         // to determine if the claim is linked to a loss event or not
-        _claims += 1;
+        _claims++;
         
         // claim application
         claimId = _newClaim(policyId, claimAmount, "");
@@ -128,7 +128,7 @@ contract TestProduct is
         // increase claims counter
         // the oracle business logic will use this counter value 
         // to determine if the claim is linked to a loss event or not
-        _claims += 1;
+        _claims++;
         
         // claim application
         claimId = _newClaim(policyId, claimAmount, "");

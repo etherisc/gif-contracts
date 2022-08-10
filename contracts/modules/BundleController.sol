@@ -68,8 +68,8 @@ contract BundleController is
         bundle.updatedAt = block.timestamp;
 
         // update bundle count
-        _bundleCount += 1;
-        _unburntBundlesForRiskpoolId[riskpoolId_] += 1;
+        _bundleCount++;
+        _unburntBundlesForRiskpoolId[riskpoolId_]++;
 
         emit LogBundleCreated(bundle.id, riskpoolId_, owner_, bundle.state, bundle.capital);
     }
@@ -160,11 +160,14 @@ contract BundleController is
         require(bundle.state == IBundle.BundleState.Active, "ERROR:BUC-021:BUNDLE_NOT_ACTIVE");        
         require(bundle.capital >= bundle.lockedCapital + amount, "ERROR:BUC-022:CAPACITY_TOO_LOW");
 
+        // might need to be added in a future relase
+        require(_valueLockedPerPolicy[bundleId][processId] == 0, "ERROR:BUC-023:INCREMENTAL_COLLATERALIZATION_NOT_IMPLEMENTED");
+
         bundle.lockedCapital += amount;
         bundle.updatedAt = block.timestamp;
 
         _activePolicies[bundleId] += 1;
-        _valueLockedPerPolicy[bundleId][processId] += amount;
+        _valueLockedPerPolicy[bundleId][processId] = amount;
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
         emit LogBundlePolicyCollateralized(bundleId, processId, amount, capacityAmount);
@@ -178,16 +181,16 @@ contract BundleController is
     {
         // make sure bundle exists and is not yet closed
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-023:BUNDLE_DOES_NOT_EXIST");
-        require(_activePolicies[bundleId] > 0, "ERROR:BUC-024:NO_ACTIVE_POLICIES_FOR_BUNDLE");
+        require(bundle.createdAt > 0, "ERROR:BUC-024:BUNDLE_DOES_NOT_EXIST");
+        require(_activePolicies[bundleId] > 0, "ERROR:BUC-025:NO_ACTIVE_POLICIES_FOR_BUNDLE");
 
         collateralAmount = _valueLockedPerPolicy[bundleId][processId];
-        require(collateralAmount > 0, "ERROR:BUC-025:NOT_COLLATERALIZED_BY_BUNDLE");
+        require(collateralAmount > 0, "ERROR:BUC-026:NOT_COLLATERALIZED_BY_BUNDLE");
 
         // this should never ever fail ...
         require(
             bundle.lockedCapital >= collateralAmount,
-            "PANIC:BUC-026:UNLOCK_CAPITAL_TOO_BIG"
+            "PANIC:BUC-027:UNLOCK_CAPITAL_TOO_BIG"
         );
 
         // policy no longer relevant for bundle
