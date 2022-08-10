@@ -586,6 +586,7 @@ def test_pause_archive_as_instance_operator(
 def test_propose_decline(
     instance: GifInstance, 
     riskpoolKeeper: Account,
+    testCoin: Account,
     capitalOwner: Account
 ):
     instanceService = instance.getInstanceService()
@@ -606,6 +607,7 @@ def test_propose_decline(
     riskpool = TestRiskpool.deploy(
         s2b32(name),
         collateralization,
+        testCoin,
         capitalOwner,
         instance.getRegistry(),
         {'from': riskpoolKeeper},

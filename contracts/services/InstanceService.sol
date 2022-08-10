@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "../modules/ComponentController.sol";
 import "../modules/BundleController.sol";
 import "../modules/PolicyController.sol";
+import "../modules/PoolController.sol";
 import "../modules/TreasuryModule.sol";
 import "../shared/CoreController.sol";
 import "../services/InstanceOperatorService.sol";
@@ -29,6 +30,7 @@ contract InstanceService is
     bytes32 public constant BUNDLE_NAME = "Bundle";
     bytes32 public constant COMPONENT_NAME = "Component";
     bytes32 public constant POLICY_NAME = "Policy";
+    bytes32 public constant POOL_NAME = "Pool";
     bytes32 public constant TREASURY_NAME = "Treasury";
 
     bytes32 public constant COMPONENT_OWNER_SERVICE_NAME = "ComponentOwnerService";
@@ -40,12 +42,14 @@ contract InstanceService is
     BundleController _bundle;
     ComponentController _component;
     PolicyController _policy;
+    PoolController _pool;
     TreasuryModule private _treasury;
 
     function _afterInitialize() internal override onlyInitializing {
         _bundle = BundleController(_getContractAddress(BUNDLE_NAME));
         _component = ComponentController(_getContractAddress(COMPONENT_NAME));
         _policy = PolicyController(_getContractAddress(POLICY_NAME));
+        _pool = PoolController(_getContractAddress(POOL_NAME));
         _treasury = TreasuryModule(_getContractAddress(TREASURY_NAME));
     }
 
@@ -87,7 +91,7 @@ contract InstanceService is
         return IRiskpoolService(_getContractAddress(RISKPOOL_SERVICE_NAME));
     }
 
-    // TODO decide how to protect registry access
+    /* registry */
     function getRegistry() external view returns(IRegistry service) {
         return _registry;
     }
@@ -193,6 +197,15 @@ contract InstanceService is
     
     function getPayout(bytes32 processId, uint256 payoutId) external override view returns (IPolicy.Payout memory payout) {
         payout = _policy.getPayout(processId, payoutId);
+    }
+
+    /* riskpool */
+    function getRiskpool(uint256 riskpoolId) external override view returns(IPool.Pool memory riskPool) {
+        return _pool.getRiskpool(riskpoolId);
+    }
+
+    function getFullCollateralizationLevel() external override view returns (uint256) {
+        return _pool.getFullCollateralizationLevel();
     }
 
     /* bundle */

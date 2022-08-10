@@ -15,8 +15,16 @@ contract PoolController is
     IPool,
     CoreController
 {
-    mapping(uint256 => uint256) private _riskpoolIdForProductId;
-    uint256 [] private _riskpools;
+
+    // used for representation of collateralization
+    // collateralization between 0 and 1 (1=100%) 
+    // value might be larger when overcollateralization
+    uint256 public constant FULL_COLLATERALIZATION_LEVEL = 10**18;
+
+    mapping(uint256 /* productId */ => uint256 /* riskpoolId */) private _riskpoolIdForProductId;
+
+    mapping(uint256 /* riskpoolId */ => IPool.Pool)  private _riskpools;
+    uint256 [] private _riskpoolIds;
 
     ComponentController private _component;
     PolicyController private _policy;
@@ -26,6 +34,14 @@ contract PoolController is
         require(
             _msgSender() == _getContractAddress("InstanceOperatorService"),
             "ERROR:POL-001:NOT_INSTANCE_OPERATOR"
+        );
+        _;
+    }
+
+    modifier onlyRiskpoolService() {
+        require(
+            _msgSender() == _getContractAddress("RiskpoolService"),
+            "ERROR:POL-002:NOT_RISKPOOL_SERVICE"
         );
         _;
     }
@@ -44,6 +60,47 @@ contract PoolController is
         _bundle = BundleController(_getContractAddress("Bundle"));
     }
 
+
+    // // TODO remove with next iteration fo gif-interface
+    // event LogRiskpoolRegistered(
+    //     uint256 riskpoolId, 
+    //     address wallet,
+    //     address erc20Token, 
+    //     uint256 collateralizationLevel, 
+    //     uint256 sumOfSumInsuredCap
+    // );
+    
+    function registerRiskpool(
+        uint256 riskpoolId, 
+        address wallet,
+        address erc20Token,
+        uint256 collateralizationLevel, 
+        uint256 sumOfSumInsuredCap
+    )
+        external override
+        onlyRiskpoolService
+    {
+        IPool.Pool storage pool = _riskpools[riskpoolId];
+        require(pool.createdAt == 0, "ERROR:POL-003:RISKPOOL_ALREADY_REGISTERED");
+
+        pool.id = riskpoolId; 
+        pool.wallet = wallet; 
+        pool.erc20Token = erc20Token; 
+        pool.collateralizationLevel = collateralizationLevel;
+        pool.sumOfSumInsuredCap = sumOfSumInsuredCap;
+
+        pool.sumOfSumInsuredAtRisk = 0;
+        pool.capital = 0;
+        pool.lockedCapital = 0;
+        pool.balance = 0;
+
+        pool.createdAt = block.timestamp;
+        pool.updatedAt = block.timestamp;
+
+
+        emit LogRiskpoolRegistered(riskpoolId, wallet, erc20Token, collateralizationLevel, sumOfSumInsuredCap);
+    }
+
     function setRiskpoolForProduct(uint256 productId, uint256 riskpoolId) 
         external override
         onlyInstanceOperatorService
@@ -55,7 +112,7 @@ contract PoolController is
         require(riskpool.isRiskpool(), "ERROR:POL-011:NOT_RISKPOOL");
         require(_riskpoolIdForProductId[productId] == 0, "ERROR:POL-012:RISKPOOL_ALREADY_SET");
         
-        _riskpools.push(riskpoolId);
+        _riskpoolIds.push(riskpoolId);
         _riskpoolIdForProductId[productId] = riskpoolId;
     }
 
@@ -142,18 +199,28 @@ contract PoolController is
             );
     }
     
-    function riskpools() external view returns(uint256 idx) { return _riskpools.length; }
+    function riskpools() external view returns(uint256 idx) { return _riskpoolIds.length; }
+
+
+    function getRiskpool(uint256 riskpoolId) external view returns(IPool.Pool memory riskPool) {
+        revert("TO_BE_IMPLEMENTED");
+    }
+
 
     function getRiskpoolId(uint256 idx) 
         external view 
         returns(uint256) 
     { 
-        require(idx < _riskpools.length, "ERROR:POL-020:INDEX_TOO_LARGE");
-        return _riskpools[idx]; 
+        require(idx < _riskpoolIds.length, "ERROR:POL-020:INDEX_TOO_LARGE");
+        return _riskpoolIds[idx]; 
     }
 
     function getRiskPoolForProduct(uint256 productId) external view returns (uint256 riskpoolId) {
         return _riskpoolIdForProductId[productId];
+    }
+
+    function getFullCollateralizationLevel() external view returns (uint256) {
+        return FULL_COLLATERALIZATION_LEVEL;
     }
 
     function _getRiskpool(IPolicy.Metadata memory metadata) internal view returns (IRiskpool riskpool) {

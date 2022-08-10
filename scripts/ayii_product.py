@@ -45,6 +45,7 @@ class GifAyiiRiskpool(object):
     def __init__(self, 
         instance: GifInstance, 
         riskpoolKeeper: Account, 
+        erc20Token: Account,
         capitalOwner: Account,
         investor: Account,
         collateralization:int,
@@ -67,6 +68,7 @@ class GifAyiiRiskpool(object):
         self.riskpool = AyiiRiskpool.deploy(
             s2b32(name),
             collateralization,
+            erc20Token,
             capitalOwner,
             instance.getRegistry(),
             {'from': riskpoolKeeper},

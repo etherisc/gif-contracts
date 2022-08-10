@@ -18,9 +18,23 @@ contract RiskpoolService is
 
     ComponentController private _component;
     BundleController private _bundle;
+    PoolController private _pool;
     TreasuryModule private _treasury;
 
-    modifier onlyRiskpool() {
+    modifier onlyProposedRiskpool() {
+        uint256 componentId = _component.getComponentId(_msgSender());
+        require(
+            _component.getComponentType(componentId) == IComponent.ComponentType.Riskpool,
+            "ERROR:RPS-001:SENDER_NOT_RISKPOOL"
+        );
+        require(
+            _component.getComponentState(componentId) == IComponent.ComponentState.Proposed,
+            "ERROR:RPS-002:RISKPOOL_NOT_PROPOSED"
+        );
+        _;
+    }
+
+    modifier onlyActiveRiskpool() {
         uint256 componentId = _component.getComponentId(_msgSender());
         require(
             _component.getComponentType(componentId) == IComponent.ComponentType.Riskpool,
@@ -57,9 +71,29 @@ contract RiskpoolService is
     {
         _bundle = BundleController(_getContractAddress("Bundle"));
         _component = ComponentController(_getContractAddress("Component"));
+        _pool = PoolController(_getContractAddress("Pool"));
         _treasury = TreasuryModule(_getContractAddress("Treasury"));
     }
 
+
+    function registerRiskpool(
+        address wallet,
+        address erc20Token,
+        uint256 collateralizationLevel, 
+        uint256 sumOfSumInsuredCap
+    )
+        external override
+        onlyProposedRiskpool
+    {
+        uint256 riskpoolId = _component.getComponentId(_msgSender());
+        _pool.registerRiskpool(
+            riskpoolId, 
+            wallet,
+            erc20Token,
+            collateralizationLevel, 
+            sumOfSumInsuredCap
+        );
+    }
 
     function createBundle(
         address owner, 
@@ -67,7 +101,7 @@ contract RiskpoolService is
         uint256 initialCapital
     ) 
         external override
-        onlyRiskpool
+        onlyActiveRiskpool
         returns(uint256 bundleId)
     {
         uint256 riskpoolId = _component.getComponentId(_msgSender());
