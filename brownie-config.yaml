@@ -33,8 +33,24 @@ dependencies:
     - smartcontractkit/chainlink@1.6.0
     - etherisc/gif-interface@0f870d9
 
-# exclude Ownable when calculating test coverage
+# exclude open zeppeling contracts  when calculating test coverage
 # https://eth-brownie.readthedocs.io/en/v1.10.3/config.html#exclude_paths
-# reports:
-#   exclude_contracts:
-#     - Ownable
+reports:
+  exclude_contracts:
+    # chainlink
+    - ChainlinkClient
+    - Operator
+    # openzeppelin
+    - AccessControl
+    - AccessControlEnumerable
+    - Context
+    - Ownable
+    - EnumerableMap
+    - ERC1967Proxy
+    - ERC20
+    - ERC721
+    - IERC20
+    - IERC721
+    - Initializable
+    - SafeERC20
+    - Strings
