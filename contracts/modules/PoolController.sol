@@ -116,6 +116,29 @@ contract PoolController is
         _riskpoolIdForProductId[productId] = riskpoolId;
     }
 
+    function fund(uint256 riskpoolId, uint256 amount) 
+        external
+        onlyRiskpoolService
+    {
+        IPool.Pool storage pool = _riskpools[riskpoolId];
+        pool.capital += amount;
+        pool.balance += amount;
+        pool.updatedAt = block.timestamp;
+    }
+
+    function defund(uint256 riskpoolId, uint256 amount) 
+        external
+        onlyRiskpoolService
+    {
+        IPool.Pool storage pool = _riskpools[riskpoolId];
+
+        if (pool.capital >= amount) { pool.capital -= amount; }
+        else                        { pool.capital = 0; }
+
+        pool.balance -= amount;
+        pool.updatedAt = block.timestamp;
+    }
+
     function underwrite(bytes32 processId) 
         external override 
         onlyPolicyFlow("Pool")
@@ -223,6 +246,11 @@ contract PoolController is
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         IRiskpool riskpool = _getRiskpoolComponent(metadata);
         riskpool.increaseBalance(processId, amount);
+
+        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
+        IPool.Pool storage pool = _riskpools[riskpoolId];
+        pool.balance += amount;
+        pool.updatedAt = block.timestamp;
     }
 
 
@@ -233,6 +261,11 @@ contract PoolController is
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         IRiskpool riskpool = _getRiskpoolComponent(metadata);
         riskpool.decreaseBalance(processId, amount);
+
+        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
+        IPool.Pool storage pool = _riskpools[riskpoolId];
+        pool.balance -= amount;
+        pool.updatedAt = block.timestamp;
     }
 
     function isArchivingAllowed(uint256 riskpoolId) external view returns (bool) {

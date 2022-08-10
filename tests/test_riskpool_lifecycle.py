@@ -115,25 +115,25 @@ def test_pause_unpause(
     assert instanceService.getComponentState(riskpoolId) == 4
 
     # ensure that riskpool actions are blocked for paused riskpool
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-004:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.fundBundle(bundleId, 10, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.lockBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.unlockBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.closeBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.burnBundle(bundleId, {'from':bundleOwner})
 
     # ensure underwriting new policies is not possible for paused riskpool
@@ -242,25 +242,25 @@ def test_suspend_resume(
     assert instanceService.getComponentState(riskpoolId) == 5
 
     # ensure that riskpool actions are now blocked
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-004:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.fundBundle(bundleId, 10, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.lockBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.unlockBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.closeBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
         riskpool.burnBundle(bundleId, {'from':bundleOwner})
 
     # ensure that a suspended component cannot be paused
@@ -384,7 +384,7 @@ def test_suspend_archive(
     assert instanceService.getComponentState(riskpoolId) == 6
 
     # ensure that riskpool actions are now blocked
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-004:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
     # ensure that a suspended component cannot be paused
@@ -500,7 +500,7 @@ def test_pause_archive_as_owner(
     assert instanceService.getComponentState(riskpoolId) == 6
 
     # ensure that riskpool actions are blocked for archived riskpool
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-004:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
     # ensure that owner may not unpause archived riskpool
@@ -565,7 +565,7 @@ def test_pause_archive_as_instance_operator(
     assert instanceService.getComponentState(riskpoolId) == 6
 
     # ensure that riskpool actions are blocked for archived riskpool
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-004:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
     # ensure that owner may not unpause archived riskpool
@@ -684,5 +684,5 @@ def test_propose_decline(
             {'from': riskpoolKeeper})
     
     # ensure that no bundles can be created on declined riskpool
-    with brownie.reverts("ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-004:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':riskpoolKeeper})
