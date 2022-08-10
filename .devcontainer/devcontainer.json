@@ -26,6 +26,7 @@
 		"github.vscode-pull-request-github",
 		"github.copilot",
 		"mhutchie.git-graph",
+		"eamodio.gitlens",
 		"gruntfuggly.todo-tree",
 		"oderwat.indent-rainbow",
 		"2gua.rainbow-brackets",
