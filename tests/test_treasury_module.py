@@ -18,7 +18,7 @@ def test_bundle_creation_with_instance_wallet_not_set(
     capitalOwner: Account,
 ):
     withRiskpoolWallet = True
-    (gifProduct, gifRiskpool) = getProductAndRiskpool(
+    (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
         instanceNoInstanceWallet,
         owner,
         testCoin,
@@ -61,7 +61,7 @@ def test_bundle_creation_with_riskpool_wallet_not_set(
     feeOwner: Account,
 ):
     withRiskpoolWallet = False
-    (gifProduct, gifRiskpool) = getProductAndRiskpool(
+    (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
         instance,
         owner,
         testCoin,
@@ -92,6 +92,79 @@ def test_bundle_creation_with_riskpool_wallet_not_set(
             applicationFilter, 
             amount, 
             {'from': bundleOwner})
+
+
+def test_two_products_different_coin_same_riskpool(
+    instance: GifInstance,
+    owner: Account,
+    testCoinX,
+    productOwner: Account,
+    oracleProvider: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account,
+):
+    withRiskpoolWallet = True
+    (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
+        instance,
+        owner,
+        testCoinX,
+        productOwner,
+        oracleProvider,
+        riskpoolKeeper,
+        capitalOwner,
+        withRiskpoolWallet
+    )
+
+    product = gifProduct.getContract()
+    riskpool = gifRiskpool.getContract()
+    riskpoolId = riskpool.getId()
+
+    with brownie.reverts("ERROR:TRS-013:RISKPOOL_TOKEN_ALREADY_SET"):
+        GifTestProduct(
+            instance, 
+            testCoinX,
+            capitalOwner,
+            productOwner,
+            gifOracle,
+            gifRiskpool,
+            'Test.Product2')
+
+
+def test_two_products_same_riskpool(
+    instance: GifInstance,
+    owner: Account,
+    testCoin,
+    productOwner: Account,
+    oracleProvider: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account,
+):
+    withRiskpoolWallet = True
+    (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
+        instance,
+        owner,
+        testCoin,
+        productOwner,
+        oracleProvider,
+        riskpoolKeeper,
+        capitalOwner,
+        withRiskpoolWallet
+    )
+
+    product = gifProduct.getContract()
+    riskpool = gifRiskpool.getContract()
+    riskpoolId = riskpool.getId()
+
+    GifTestProduct(
+        instance, 
+        testCoin,
+        capitalOwner,
+        productOwner,
+        gifOracle,
+        gifRiskpool,
+        'Test.Product2')
+
+    # TODO create two ppolicies and check claims work
 
 
 def getProductAndRiskpool(
@@ -126,5 +199,6 @@ def getProductAndRiskpool(
 
     return (
         gifProduct,
-        gifRiskpool
+        gifRiskpool,
+        gifOracle
     )
