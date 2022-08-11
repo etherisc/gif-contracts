@@ -149,7 +149,7 @@ contract PoolController is
         IPolicy.Application memory application = _policy.getApplication(processId);
         require(
             application.state == IPolicy.ApplicationState.Applied,
-            "ERROR:POL-020:INVALID_APPLICATION_STATE"
+            "ERROR:POL-020:APPLICATION_STATE_INVALID"
         );
 
         // determine riskpool responsible for application
@@ -218,7 +218,7 @@ contract PoolController is
         IPolicy.Policy memory policy = _policy.getPolicy(processId);
         require(
             policy.state == IPolicy.PolicyState.Closed,
-            "ERROR:POL-007:INVALID_POLICY_STATE"
+            "ERROR:POL-007:POLICY_STATE_INVALID"
         );
 
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
