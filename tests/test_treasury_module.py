@@ -1,4 +1,5 @@
 import brownie
+import pytest
 
 from brownie.network.account import Account
 
@@ -7,6 +8,16 @@ from scripts.const import ZERO_ADDRESS
 from scripts.instance import GifInstance
 from scripts.product import GifTestOracle, GifTestProduct, GifTestRiskpool
 from scripts.util import b2s
+
+from scripts.setup import (
+    fund_riskpool,
+    apply_for_policy,
+)
+
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
 
 def test_bundle_creation_with_instance_wallet_not_set(
     instanceNoInstanceWallet: GifInstance,
@@ -139,6 +150,7 @@ def test_two_products_same_riskpool(
     oracleProvider: Account,
     riskpoolKeeper: Account,
     capitalOwner: Account,
+    customer: Account,
 ):
     withRiskpoolWallet = True
     (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
@@ -152,11 +164,7 @@ def test_two_products_same_riskpool(
         withRiskpoolWallet
     )
 
-    product = gifProduct.getContract()
-    riskpool = gifRiskpool.getContract()
-    riskpoolId = riskpool.getId()
-
-    GifTestProduct(
+    gifProduct2 = GifTestProduct(
         instance, 
         testCoin,
         capitalOwner,
@@ -165,7 +173,7 @@ def test_two_products_same_riskpool(
         gifRiskpool,
         'Test.Product2')
 
-    # TODO create two ppolicies and check claims work
+    assert gifProduct2.getContract().getId() != gifProduct.getContract().getId()
 
 
 def getProductAndRiskpool(
