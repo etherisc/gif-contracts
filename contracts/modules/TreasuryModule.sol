@@ -168,6 +168,11 @@ contract TreasuryModule is
     }
     
 
+    /*
+     * Process the remaining premium by calculating the remaining amount, the fees for that amount and 
+     * then transfering the fees to the instance wallet and the net premium remaining to the riskpool. 
+     * This will revert if no fee structure is defined. 
+     */
     function processPremium(bytes32 processId) 
         external override 
         returns(
@@ -184,7 +189,11 @@ contract TreasuryModule is
         }
     }
 
-
+    /*
+     * Process the premium by calculating the fees for the amount and 
+     * then transfering the fees to the instance wallet and the net premium to the riskpool. 
+     * This will revert if no fee structure is defined. 
+     */
     function processPremium(bytes32 processId, uint256 amount) 
         public override 
         instanceWalletDefined
