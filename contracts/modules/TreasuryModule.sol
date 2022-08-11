@@ -280,7 +280,6 @@ contract TreasuryModule is
         instanceWalletDefined
         riskpoolWalletDefinedForBundle(bundleId)
         returns(
-            bool success,
             uint256 feeAmount,
             uint256 netCapitalAmount
         )
@@ -308,22 +307,20 @@ contract TreasuryModule is
 
         // calculate and transfer fees
         feeAmount = _calculateFee(feeSpec, capitalAmount);
-        success = token.transferFrom(bundleOwner, _instanceWalletAddress, feeAmount);
+        bool success = token.transferFrom(bundleOwner, _instanceWalletAddress, feeAmount);
 
         emit LogTreasuryFeesTransferred(bundleOwner, _instanceWalletAddress, feeAmount, success);
         require(success, "ERROR:TRS-053:FEE_TRANSFER_FAILED");
 
-        if (success) {
-            // transfer net capital
-            address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
-            require(riskpoolWallet != address(0), "ERROR:TRS-054:RISKPOOL_WITHOUT_WALLET");
+        // transfer net capital
+        address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
+        require(riskpoolWallet != address(0), "ERROR:TRS-054:RISKPOOL_WITHOUT_WALLET");
 
-            netCapitalAmount = capitalAmount - feeAmount;
-            success = token.transferFrom(bundleOwner, riskpoolWallet, netCapitalAmount);
+        netCapitalAmount = capitalAmount - feeAmount;
+        success = token.transferFrom(bundleOwner, riskpoolWallet, netCapitalAmount);
 
-            emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, netCapitalAmount, success);
-            require(success, "ERROR:TRS-055:CAPITAL_TRANSFER_FAILED");
-        }
+        emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, netCapitalAmount, success);
+        require(success, "ERROR:TRS-055:CAPITAL_TRANSFER_FAILED");
 
         emit LogTreasuryCapitalProcessed(bundle.riskpoolId, bundleId, capitalAmount, success);
     }

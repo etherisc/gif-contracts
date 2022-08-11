@@ -107,12 +107,10 @@ contract RiskpoolService is
         uint256 riskpoolId = _component.getComponentId(_msgSender());
         bundleId = _bundle.create(owner, riskpoolId, filter, 0);
 
-        (bool success, uint256 fee, uint256 netCapital) = _treasury.processCapital(bundleId, initialCapital);
+        (uint256 fee, uint256 netCapital) = _treasury.processCapital(bundleId, initialCapital);
 
-        if (success) {
-            _bundle.fund(bundleId, netCapital);
-            _pool.fund(riskpoolId, netCapital);
-        }
+        _bundle.fund(bundleId, netCapital);
+        _pool.fund(riskpoolId, netCapital);
     }
 
 
@@ -129,12 +127,12 @@ contract RiskpoolService is
         );
 
         uint256 feeAmount;
-        (success, feeAmount, netAmount) = _treasury.processCapital(bundleId, amount);
+        (feeAmount, netAmount) = _treasury.processCapital(bundleId, amount);
 
-        if (success) {
-            _bundle.fund(bundleId, netAmount);
-            _pool.fund(bundle.riskpoolId, netAmount);
-        }
+        _bundle.fund(bundleId, netAmount);
+        _pool.fund(bundle.riskpoolId, netAmount);
+
+        success = true;
     }
 
 
