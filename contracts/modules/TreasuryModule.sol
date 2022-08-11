@@ -217,14 +217,12 @@ contract TreasuryModule is
         require(success, "ERROR:TRS-031:FEE_TRANSFER_FAILED");
 
         // transfer premium net amount to riskpool for product
-        if (success) {
-            // actual transfer of net premium to riskpool
-            (uint256 riskpoolId, address riskpoolWalletAddress) = _getRiskpoolWallet(processId);
-            success = token.transferFrom(metadata.owner, riskpoolWalletAddress, netAmount);
+        // actual transfer of net premium to riskpool
+        (uint256 riskpoolId, address riskpoolWalletAddress) = _getRiskpoolWallet(processId);
+        success = token.transferFrom(metadata.owner, riskpoolWalletAddress, netAmount);
 
-            emit LogTreasuryPremiumTransferred(metadata.owner, riskpoolWalletAddress, netAmount, success);
-            require(success, "ERROR:TRS-032:PREMIUM_TRANSFER_FAILED");
-        }
+        emit LogTreasuryPremiumTransferred(metadata.owner, riskpoolWalletAddress, netAmount, success);
+        require(success, "ERROR:TRS-032:PREMIUM_TRANSFER_FAILED");
 
         emit LogTreasuryPremiumProcessed(processId, amount, success);
     }
