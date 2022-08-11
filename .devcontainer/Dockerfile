@@ -6,22 +6,38 @@ FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
 ARG NODE_VERSION="16"
 RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
+# install mcfly as root
+RUN curl -LSfs https://raw.githubusercontent.com/cantino/mcfly/master/ci/install.sh | sh -s -- --git cantino/mcfly 
+
 USER vscode
 
-# Install and configure starship.rs prompt
+# Shell customizations
+
+# 1) Install and configure starship.rs prompt
 RUN curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
 RUN echo "eval \"\$(starship init bash)\"" >> ~/.bashrc && echo "eval \"\$(starship init zsh)\"" >> ~/.zshrc
 RUN mkdir -p /home/vscode/.config/
 COPY .devcontainer/starship.toml /home/vscode/.config/starship.toml
 
-# [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
+# 2) install thefuck
+RUN pip3 install thefuck --user \
+    && echo 'eval "$(thefuck --alias)"' >> ~/.bashrc \
+    && echo 'eval "$(thefuck --alias)"' >> ~/.zshrc
+
+# 3) install mcfly config
+RUN echo 'eval "$(mcfly init zsh)"' >> ~/.zshrc \
+    && touch ~/.zsh_history
+
+
+# Install brownie & other devtools
+
 # COPY requirements.txt /tmp/pip-tmp/
 RUN wget https://raw.githubusercontent.com/eth-brownie/brownie/master/requirements.txt -O /tmp/pip-requirements.txt 
 
 RUN pip install -r /tmp/pip-requirements.txt
 RUN pip install eth-brownie \
     && pip install fastapi \
-    && pip install uvicorn
+    && pip install uvicorn 
 
 # [Optional] Uncomment this line to install global node packages.
 RUN npm install -g ganache-cli
