@@ -97,6 +97,7 @@ def test_bundle_creation_with_riskpool_wallet_not_set(
 def test_two_products_different_coin_same_riskpool(
     instance: GifInstance,
     owner: Account,
+    testCoin,
     testCoinX,
     productOwner: Account,
     oracleProvider: Account,
@@ -107,7 +108,7 @@ def test_two_products_different_coin_same_riskpool(
     (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
         instance,
         owner,
-        testCoinX,
+        testCoin,
         productOwner,
         oracleProvider,
         riskpoolKeeper,
@@ -119,7 +120,7 @@ def test_two_products_different_coin_same_riskpool(
     riskpool = gifRiskpool.getContract()
     riskpoolId = riskpool.getId()
 
-    with brownie.reverts("ERROR:TRS-013:RISKPOOL_TOKEN_ALREADY_SET"):
+    with brownie.reverts("ERROR:TRS-013:TOKEN_ADDRESS_NOT_MACHING"):
         GifTestProduct(
             instance, 
             testCoinX,

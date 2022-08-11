@@ -8,6 +8,7 @@ import "./PoolController.sol";
 import "../shared/CoreController.sol";
 
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IProduct.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 import "@etherisc/gif-interface/contracts/modules/ITreasury.sol";
 
@@ -72,7 +73,13 @@ contract TreasuryModule is
         require(address(_componentToken[productId]) == address(0), "ERROR:TRS-012:PRODUCT_TOKEN_ALREADY_SET");
     
         uint256 riskpoolId = _pool.getRiskPoolForProduct(productId);
-        require(address(_componentToken[riskpoolId]) == address(0), "ERROR:TRS-013:RISKPOOL_TOKEN_ALREADY_SET");
+
+        // If riskpool token is already set and product token does not match riskpool token,
+        // then revert (only product with same token are allowed in same riskpool)
+        if (address(_componentToken[riskpoolId]) != address(0)
+            && address(_componentToken[riskpoolId]) != address(IProduct(address(component)).getToken())) {
+            revert("ERROR:TRS-013:TOKEN_ADDRESS_NOT_MACHING");
+        }
 
         _componentToken[productId] = IERC20(erc20Address);
         _componentToken[riskpoolId] = IERC20(erc20Address);
