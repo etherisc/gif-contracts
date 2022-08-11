@@ -296,17 +296,6 @@ contract TreasuryModule is
 
         // obtain relevant token for product/riskpool pair
         IERC20 token = _componentToken[bundle.riskpoolId];
-        require(
-            token.allowance(bundleOwner, address(this)) > 0,
-            "ERROR:TRS-051:ALLOWANCE_IS_ZERO"
-        );
-        
-        require(
-            token.allowance(
-                bundleOwner, 
-                address(this)) >= capitalAmount,
-            "ERROR:TRS-052:ALLOWANCE_SMALLER_THAN_CAPITAL"
-        );
 
         // calculate and transfer fees
         feeAmount = _calculateFee(feeSpec, capitalAmount);
