@@ -23,6 +23,7 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "juanblanco.solidity",
+		"tintinweb.solidity-visual-auditor",
 		"github.vscode-pull-request-github",
 		"github.copilot",
 		"mhutchie.git-graph",
@@ -31,6 +32,7 @@
 		"oderwat.indent-rainbow",
 		"2gua.rainbow-brackets",
 		"johnpapa.vscode-peacock",
+		"vikas.code-navigation",
 	],
 	
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
