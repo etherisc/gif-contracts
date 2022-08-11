@@ -8,6 +8,12 @@ RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/
 
 USER vscode
 
+# Install and configure starship.rs prompt
+RUN curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
+RUN echo "eval \"\$(starship init bash)\"" >> ~/.bashrc && echo "eval \"\$(starship init zsh)\"" >> ~/.zshrc
+RUN mkdir -p /home/vscode/.config/
+COPY .devcontainer/starship.toml /home/vscode/.config/starship.toml
+
 # [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
 # COPY requirements.txt /tmp/pip-tmp/
 RUN wget https://raw.githubusercontent.com/eth-brownie/brownie/master/requirements.txt -O /tmp/pip-requirements.txt 
@@ -17,14 +23,18 @@ RUN pip install eth-brownie \
     && pip install fastapi \
     && pip install uvicorn
 
+# [Optional] Uncomment this line to install global node packages.
+RUN npm install -g ganache-cli
+
 RUN mkdir -p /tmp/brownie-setup
 WORKDIR /tmp/brownie-setup
-COPY brownie-config.yaml .
 COPY .devcontainer/get_solidity.py .
 
 # download required solidity compiler
 RUN python get_solidity.py
 
+# Create dummy project and compile it to cache dependencies
+COPY brownie-config.yaml .
 RUN /home/vscode/.local/bin/brownie init dummy \
     && cd dummy \
     && cp ../brownie-config.yaml . \
@@ -33,14 +43,5 @@ RUN /home/vscode/.local/bin/brownie init dummy \
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
-
-# [Optional] Uncomment this line to install global node packages.
-RUN npm install -g ganache-cli
-
-# Install and configure starship.rs prompt
-RUN curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
-RUN echo "eval \"\$(starship init bash)\"" >> ~/.bashrc && echo "eval \"\$(starship init zsh)\"" >> ~/.zshrc
-RUN mkdir -p /home/vscode/.config/
-COPY .devcontainer/starship.toml /home/vscode/.config/starship.toml
 
 WORKDIR /workspace
