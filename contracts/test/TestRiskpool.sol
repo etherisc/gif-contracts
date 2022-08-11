@@ -7,13 +7,16 @@ import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 
 contract TestRiskpool is BasicRiskpool {
 
+    uint256 public constant SUM_OF_SUM_INSURED_CAP = 10**24;
+
     constructor(
         bytes32 name,
         uint256 collateralization,
+        address erc20Token,
         address wallet,
         address registry
     )
-        BasicRiskpool(name, collateralization, wallet, registry)
+        BasicRiskpool(name, collateralization, SUM_OF_SUM_INSURED_CAP, erc20Token, wallet, registry)
     { }
 
     // trivial implementation that matches every application

@@ -81,6 +81,7 @@ def test_deploy_approve_product(
         instance,
         riskpoolKeeper,
         capitalOwner,
+        testCoin,
         collateralization,
         name='TestRiskpool2')
 

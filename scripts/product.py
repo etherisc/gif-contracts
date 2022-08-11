@@ -44,7 +44,8 @@ class GifTestRiskpool(object):
     def __init__(self, 
         instance: GifInstance, 
         riskpoolKeeper: Account, 
-        capitalOwner: Account, 
+        erc20Token: Account,
+        riskpoolWallet: Account, 
         collateralization:int,
         name=RISKPOOL_NAME, 
         publishSource=False,
@@ -69,7 +70,8 @@ class GifTestRiskpool(object):
         self.riskpool = TestRiskpool.deploy(
             s2b32(name),
             collateralization,
-            capitalOwner,
+            erc20Token,
+            riskpoolWallet,
             instance.getRegistry(),
             {'from': riskpoolKeeper},
             publish_source=publishSource)
@@ -88,7 +90,7 @@ class GifTestRiskpool(object):
         if setRiskpoolWallet:
             operatorService.setRiskpoolWallet(
                 self.riskpool.getId(),
-                capitalOwner,
+                riskpoolWallet,
                 {'from': instance.getOwner()})
 
         # 6) setup capital fees

@@ -15,13 +15,17 @@ contract AyiiRiskpool is
     // 0x5614e11ca6d7673c9c8dcec913465d676494aad1151bb2c1cf40b9d99be4d935
     bytes32 public constant INVESTOR_ROLE = keccak256("INVESTOR");
 
+    // restricts the maximal sum of sum insured that are secured by gthe riskpool
+    uint256 public constant SUM_OF_SUM_INSURED_CAP = 10**24;
+
     constructor(
         bytes32 name,
         uint256 collateralization,
+        address erc20Token,
         address wallet,
         address registry
     )
-        BasicRiskpool(name, collateralization, wallet, registry)
+        BasicRiskpool(name, collateralization, SUM_OF_SUM_INSURED_CAP, erc20Token, wallet, registry)
     {
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());

@@ -6,7 +6,9 @@ from scripts.util import s2b32
 
 def test_deploy_simple(
     instance: GifInstance, 
-    gifTestRiskpool: GifTestRiskpool
+    gifTestRiskpool: GifTestRiskpool,
+    capitalOwner,
+    testCoin
 ):
     instanceService = instance.getInstanceService()
 
@@ -14,6 +16,14 @@ def test_deploy_simple(
     assert instanceService.products() == 0
     assert instanceService.riskpools() == 1
 
-    # TODO add asserts for initial state of riskpool
+    riskpool = gifTestRiskpool.getContract()
+    assert riskpool.getCollateralizationLevel() == riskpool.getFullCollateralizationLevel()
 
-# TODO add explicit deployment & approval path as defined in GifTestRiskpool
+    assert riskpool.getWallet() == capitalOwner
+    assert riskpool.getErc20Token() == testCoin
+
+    assert riskpool.bundles() == 0
+    assert riskpool.getCapital() == 0
+    assert riskpool.getTotalValueLocked() == 0
+    assert riskpool.getCapacity() == 0
+    assert riskpool.getBalance() == 0

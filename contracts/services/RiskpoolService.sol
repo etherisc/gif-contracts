@@ -18,17 +18,31 @@ contract RiskpoolService is
 
     ComponentController private _component;
     BundleController private _bundle;
+    PoolController private _pool;
     TreasuryModule private _treasury;
 
-    modifier onlyRiskpool() {
+    modifier onlyProposedRiskpool() {
         uint256 componentId = _component.getComponentId(_msgSender());
         require(
             _component.getComponentType(componentId) == IComponent.ComponentType.Riskpool,
             "ERROR:RPS-001:SENDER_NOT_RISKPOOL"
         );
         require(
+            _component.getComponentState(componentId) == IComponent.ComponentState.Proposed,
+            "ERROR:RPS-002:RISKPOOL_NOT_PROPOSED"
+        );
+        _;
+    }
+
+    modifier onlyActiveRiskpool() {
+        uint256 componentId = _component.getComponentId(_msgSender());
+        require(
+            _component.getComponentType(componentId) == IComponent.ComponentType.Riskpool,
+            "ERROR:RPS-003:SENDER_NOT_RISKPOOL"
+        );
+        require(
             _component.getComponentState(componentId) == IComponent.ComponentState.Active,
-            "ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"
+            "ERROR:RPS-004:RISKPOOL_NOT_ACTIVE"
         );
         _;
     }
@@ -39,12 +53,12 @@ contract RiskpoolService is
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
         require(
             isRiskpool && componentId == bundle.riskpoolId,
-            "ERROR:RPS-002:NOT_OWNING_RISKPOOL"
+            "ERROR:RPS-005:NOT_OWNING_RISKPOOL"
         );
         if (mustBeActive) {
             require(
                 _component.getComponentState(componentId) == IComponent.ComponentState.Active,
-                "ERROR:RPS-002:RISKPOOL_NOT_ACTIVE"
+                "ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"
             );
         }
         _;
@@ -57,9 +71,29 @@ contract RiskpoolService is
     {
         _bundle = BundleController(_getContractAddress("Bundle"));
         _component = ComponentController(_getContractAddress("Component"));
+        _pool = PoolController(_getContractAddress("Pool"));
         _treasury = TreasuryModule(_getContractAddress("Treasury"));
     }
 
+
+    function registerRiskpool(
+        address wallet,
+        address erc20Token,
+        uint256 collateralizationLevel, 
+        uint256 sumOfSumInsuredCap
+    )
+        external override
+        onlyProposedRiskpool
+    {
+        uint256 riskpoolId = _component.getComponentId(_msgSender());
+        _pool.registerRiskpool(
+            riskpoolId, 
+            wallet,
+            erc20Token,
+            collateralizationLevel, 
+            sumOfSumInsuredCap
+        );
+    }
 
     function createBundle(
         address owner, 
@@ -67,7 +101,7 @@ contract RiskpoolService is
         uint256 initialCapital
     ) 
         external override
-        onlyRiskpool
+        onlyActiveRiskpool
         returns(uint256 bundleId)
     {
         uint256 riskpoolId = _component.getComponentId(_msgSender());
@@ -77,6 +111,7 @@ contract RiskpoolService is
 
         if (success) {
             _bundle.fund(bundleId, netCapital);
+            _pool.fund(riskpoolId, netCapital);
         }
     }
 
@@ -87,12 +122,18 @@ contract RiskpoolService is
         returns(bool success, uint256 netAmount)
     {
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
-        require(bundle.state != IBundle.BundleState.Closed, "ERROR:RPS-003:BUNDLE_CLOSED");
+        require(
+            bundle.state != IBundle.BundleState.Closed
+            && bundle.state != IBundle.BundleState.Burned, 
+            "ERROR:RPS-010:BUNDLE_CLOSED_OR_BURNED"
+        );
 
         uint256 feeAmount;
         (success, feeAmount, netAmount) = _treasury.processCapital(bundleId, amount);
+
         if (success) {
             _bundle.fund(bundleId, netAmount);
+            _pool.fund(bundle.riskpoolId, netAmount);
         }
     }
 
@@ -102,13 +143,20 @@ contract RiskpoolService is
         onlyOwningRiskpool(bundleId, true)
         returns(bool success, uint256 netAmount)
     {
+        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
+        require(
+            bundle.state != IBundle.BundleState.Burned, 
+            "ERROR:RPS-011:BUNDLE_BURNED"
+        );
+
         uint256 feeAmount;
         (success, feeAmount, netAmount) = _treasury.processWithdrawal(bundleId, amount);
-        require(success, "ERROR:RPS-004:BUNDLE_DEFUNDING_FAILED");
-        require(netAmount == amount, "UUPS");
+        require(success, "ERROR:RPS-012:BUNDLE_DEFUNDING_FAILED");
+        require(netAmount == amount, "ERROR:RPS-013:UNEXPECTED_FEE_SUBTRACTION");
 
         if (success) {
             _bundle.defund(bundleId, amount);
+            _pool.defund(bundle.riskpoolId, netAmount);
         }
     }
 
@@ -142,14 +190,16 @@ contract RiskpoolService is
     {
         // ensure bundle is closed
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
-        require(bundle.state == IBundle.BundleState.Closed, "ERROR:RPS-004:BUNDLE_NOT_CLOSED");
+        require(bundle.state == IBundle.BundleState.Closed, "ERROR:RPS-020:BUNDLE_NOT_CLOSED");
 
         // withdraw remaining balance
         (bool success, uint256 feeAmount, uint256 netAmount) = _treasury.processWithdrawal(bundleId, bundle.balance);
-        require(success, "ERROR:RPS-005:WITHDRAWAL_FAILED");
+        require(success, "ERROR:RPS-021:WITHDRAWAL_FAILED");
 
         if (success) {
-            _bundle.defund(bundleId, bundle.balance);
+            _bundle.defund(bundleId, netAmount);
+            _pool.defund(bundle.riskpoolId, netAmount);
+
             _bundle.burn(bundleId);
         }
     }
@@ -170,19 +220,33 @@ contract RiskpoolService is
     }
 
 
-    // TODO remove from interface, delete, test, remove
     function increaseBundleBalance(uint256 bundleId, bytes32 processId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)
+        returns(uint256 newBalance)
     {        
+        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
+        require(bundle.state == IBundle.BundleState.Active, "ERROR:RPS-030:BUNDLE_NOT_ACTIVE");
+
         _bundle.increaseBalance(bundleId, processId, amount);
+        newBalance = bundle.balance + amount;
     }
 
-    // TODO remove from interface, delete, test, remove
     function decreaseBundleBalance(uint256 bundleId, bytes32 processId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)
+        returns(uint256 newBalance)
     {
+        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
+        require(
+            bundle.state != IBundle.BundleState.Closed
+            && bundle.state != IBundle.BundleState.Burned, 
+            "ERROR:RPS-031:BUNDLE_CLOSED_OR_BURNED"
+        );
+
+        require(bundle.balance >= amount, "ERROR:RPS-032:BUNDLE_BALANCE_TOO_LOW");
+
         _bundle.decreaseBalance(bundleId, processId, amount);
+        newBalance = bundle.balance - amount;
     }
 }

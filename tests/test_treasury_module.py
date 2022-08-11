@@ -112,6 +112,7 @@ def getProductAndRiskpool(
     gifRiskpool = GifTestRiskpool(
         instance, 
         riskpoolKeeper, 
+        testCoin,
         capitalOwner, 
         capitalization, 
         setRiskpoolWallet = withRiskpoolWallet)
