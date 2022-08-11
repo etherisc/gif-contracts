@@ -116,6 +116,8 @@ def test_two_products_different_coin_same_riskpool(
     capitalOwner: Account,
 ):
     withRiskpoolWallet = True
+
+    # setup riskpool with a product
     (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
         instance,
         owner,
@@ -127,10 +129,7 @@ def test_two_products_different_coin_same_riskpool(
         withRiskpoolWallet
     )
 
-    product = gifProduct.getContract()
-    riskpool = gifRiskpool.getContract()
-    riskpoolId = riskpool.getId()
-
+    # ensure that creating of another product with different token is not allowed
     with brownie.reverts("ERROR:TRS-013:TOKEN_ADDRESS_NOT_MACHING"):
         GifTestProduct(
             instance, 
@@ -153,6 +152,8 @@ def test_two_products_same_riskpool(
     customer: Account,
 ):
     withRiskpoolWallet = True
+
+    # setup riskpool with a product
     (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
         instance,
         owner,
@@ -164,6 +165,7 @@ def test_two_products_same_riskpool(
         withRiskpoolWallet
     )
 
+    # ensure that creating of another product with different token succeeds
     gifProduct2 = GifTestProduct(
         instance, 
         testCoin,
@@ -173,6 +175,7 @@ def test_two_products_same_riskpool(
         gifRiskpool,
         'Test.Product2')
 
+    # ensure the two products are different
     assert gifProduct2.getContract().getId() != gifProduct.getContract().getId()
 
 
