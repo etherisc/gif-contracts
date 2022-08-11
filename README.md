@@ -209,7 +209,13 @@ history[-1].info()
 
 Deployments to live networks can be done with brownie console as well.
 
-Example for the deployment to Polygon test
+Examples below
+
+* Polygon Testnet
+* Celo Testnet
+* Avalanche Testnet
+
+### Polygon Testnet
 
 ```bash
 brownie console --network polygon-test
@@ -239,4 +245,90 @@ To check all contract addresses you may use the instance python script inside th
 ```bash
 # 0x2852593b21796b549555d09873155B25257F6C38 is the registry contract address
 brownie run scripts/instance.py dump_sources 0x2852593b21796b549555d09873155B25257F6C38 --network polygon-test
+```
+
+### Celo Testnet
+
+Some resources regarding Celo
+
+* [Forno Hosted Node Service](https://docs.celo.org/developer-guide/forno)
+* [Choosing a Celo Network](https://docs.celo.org/getting-started/choosing-a-network)
+* [Alfajores Testnet Explorer](https://alfajores-blockscout.celo-testnet.org/)
+* [Testnet Faucet](https://celo.org/developers/faucet)
+
+Brownie add network setup for Celo
+```bash
+brownie networks add Celo celo-test name=Testnet host=https://alfajores-forno.celo-testnet.org chainid=44787
+brownie networks add Celo celo-main name=Mainnet host=https://forno.celo.org chainid=42220
+```
+
+GIF Instance Deploy on Alfajores using Brownie console
+```bash
+brownie console --network=celo-test
+>>>
+```
+
+Console commands
+```bash
+from scripts.instance import GifInstance
+
+instanceOperator = accounts.add()
+wallet = accounts.add()
+
+instance=GifInstance(instanceOperator, instanceWallet=wallet, gasLimit=10000000)
+
+instance.getRegistry()
+```
+
+Creating accounts with `accounts.add()` prints the mnemonic `'<mnemonic words>'` on the console. 
+To recreate the same account use `accounts.from_mnemonic('<mnemonic words>')`.
+
+Using the registry address `'<0xYouraddress>'` printed by `instance.getRegistry()` may be used to recreate the instance using GifInstance.
+
+```bash
+from scripts.instance import GifInstance
+from scripts.util import s2b32
+
+instance = GifInstance(owner, registryAddress='<0xYouraddress>')
+
+instanceService = instance.getInstanceService()
+instanceService.getInstanceId()
+instanceService.getTreasuryAddress()
+instanceService.getInstanceOperator()
+instanceService.getInstanceWallet()
+
+registry = instance.getRegistry()
+registry.getContract(s2b32('Registry'))
+registry.getContract(s2b32('InstanceService'))
+
+>>> registry
+<RegistryController Contract '0x3448A3f8c9541234AaFDf549d95698AF336D861c'>
+```
+
+Deploying the product
+
+```bash
+from scripts.ayii_product import GifAyiiRiskpool, GifAyiiOracle, GifAyiiProduct
+
+erc20Token = TestCoin.deploy({'from': instanceOperator, 'gas_limit':10000000})
+collateralization = instanceService.getFullCollateralizationLevel()
+
+gifAyiiRiskpool = GifAyiiRiskpool(instance,erc20Token,riskpoolWallet,riskpoolKeeper,investor,collateralization,gasLimit=10000000)
+gifAyiiOracle = GifAyiiOracle(instance,oracleProvider,gasLimit=10000000)
+gifAyiiProduct = GifAyiiProduct(instance,erc20Token,productOwner,insurer,gifAyiiOracle,gifAyiiRiskpool,gasLimit=10000000)
+
+product = gifAyiiProduct.getContract()
+oracle = gifAyiiProduct.getOracle().getContract()
+riskpool = gifAyiiProduct.getRiskpool().getContract()
+
+product.getId()
+oracle.getId()
+riskpool.getId()
+
+>>> product
+<AyiiProduct Contract '0x6f9bF8D82A4934C7263909B701678742a136D733'>
+>>> oracle
+<AyiiOracle Contract '0x18021D1f791c018F8906C4FFe2185bAAC8099F34'>
+>>> riskpool
+<AyiiRiskpool Contract '0xf3e35154310CEC78c0AC70Ce5aFf3aa274056ADf'>
 ```
