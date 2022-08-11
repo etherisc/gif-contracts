@@ -42,14 +42,16 @@ RUN pip install eth-brownie \
 # [Optional] Uncomment this line to install global node packages.
 RUN npm install -g ganache-cli
 
-RUN mkdir -p /tmp/brownie-setup
-WORKDIR /tmp/brownie-setup
-COPY .devcontainer/get_solidity.py .
-
 # download required solidity compiler
-RUN python get_solidity.py
+RUN mkdir -p /home/vscode/.solcx/  
+RUN wget -O /home/vscode/.solcx/solc-v0.7.2 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.7.2+commit.51b20bc0
+RUN wget -O /home/vscode/.solcx/solc-v0.8.2 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.2+commit.661d1103 
+RUN wget -O /home/vscode/.solcx/solc-v0.8.15 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.15+commit.e14f2714
+RUN chmod 755 /home/vscode/.solcx/solc*
 
 # Create dummy project and compile it to cache dependencies
+RUN mkdir -p /tmp/brownie-setup
+WORKDIR /tmp/brownie-setup
 COPY brownie-config.yaml .
 RUN /home/vscode/.local/bin/brownie init dummy \
     && cd dummy \
