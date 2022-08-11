@@ -246,7 +246,6 @@ contract TreasuryModule is
             "ERROR:TRS-040:PAYOUT_ALREADY_PROCESSED"
         );
 
-        // check if allowance covers requested amount
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         IERC20 token = getComponentToken(metadata.productId);
         (uint256 riskpoolId, address riskpoolWalletAddress) = _getRiskpoolWallet(processId);
