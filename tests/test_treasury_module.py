@@ -102,7 +102,7 @@ def test_bundle_creation_with_riskpool_wallet_not_set(
 
 
 
-def test_riskpool_capital_approval_too_small(
+def test_bundle_creation_allowance_too_small(
     instance: GifInstance,
     owner: Account,
     testCoin,
@@ -135,6 +135,58 @@ def test_riskpool_capital_approval_too_small(
         gifRiskpool.getContract().createBundle(
                 applicationFilter, 
                 amount, 
+                {'from': capitalOwner})
+
+
+def test_bundle_withdrawal_allowance_too_small(
+    instance: GifInstance,
+    owner: Account,
+    testCoin,
+    productOwner: Account,
+    oracleProvider: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account,
+):  
+    applicationFilter = bytes(0)
+
+    (gifProduct, gifRiskpool) = getProductAndRiskpool(
+        instance,
+        owner,
+        testCoin,
+        productOwner,
+        oracleProvider,
+        riskpoolKeeper,
+        capitalOwner,
+        True
+    )
+
+    # prepare too small approval for riskpool funding 
+    safetyFactor = 2
+    amount = 10000
+    testCoin.transfer(capitalOwner, safetyFactor * amount, {'from': owner})
+    testCoin.approve(instance.getTreasury(), amount, {'from': capitalOwner})
+    riskpool = gifRiskpool.getContract()
+
+    riskpool.createBundle(
+                applicationFilter, 
+                amount, 
+                {'from': capitalOwner})
+
+    bundle = riskpool.getBundle(0)
+    print(bundle)
+
+    (bundleId) = bundle[0]
+
+    # check bundle values with expectation
+    assert bundleId == 1
+    
+    riskpool.closeBundle(bundleId, {'from': capitalOwner})
+    testCoin.approve(instance.getTreasury(), 0.9 * amount, {'from': capitalOwner})
+
+    # ensures that the approval is too small to create bundle
+    with brownie.reverts("ERC20: insufficient allowance"):
+        riskpool.burnBundle(
+                bundleId, 
                 {'from': capitalOwner})
 
 

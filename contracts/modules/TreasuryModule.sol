@@ -341,17 +341,6 @@ contract TreasuryModule is
         address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
         address bundleOwner = _bundle.getOwner(bundleId);
         IERC20 token = _componentToken[bundle.riskpoolId];
-        require(
-            token.allowance(riskpoolWallet, address(this)) > 0,
-            "ERROR:TRS-061:ALLOWANCE_IS_ZERO"
-        );
-        
-        require(
-            token.allowance(
-                riskpoolWallet, 
-                address(this)) >= amount,
-            "ERROR:TRS-062:ALLOWANCE_SMALLER_THAN_WITHDRAWAL"
-        );
 
         // TODO consider to introduce withdrawal fees
         // ideally symmetrical reusing capital fee spec for riskpool
