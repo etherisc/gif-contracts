@@ -77,6 +77,8 @@ contract PoolController is
         onlyRiskpoolService
     {
         IPool.Pool storage pool = _riskpools[riskpoolId];
+        _riskpoolIds.push(riskpoolId);
+        
         require(pool.createdAt == 0, "ERROR:POL-004:RISKPOOL_ALREADY_REGISTERED");
 
         require(wallet != address(0), "ERROR:POL-005:WALLET_ADDRESS_ZERO");
@@ -112,7 +114,6 @@ contract PoolController is
         require(riskpool.isRiskpool(), "ERROR:POL-011:NOT_RISKPOOL");
         require(_riskpoolIdForProductId[productId] == 0, "ERROR:POL-012:RISKPOOL_ALREADY_SET");
         
-        _riskpoolIds.push(riskpoolId);
         _riskpoolIdForProductId[productId] = riskpoolId;
     }
 
@@ -269,8 +270,6 @@ contract PoolController is
     }
 
     function isArchivingAllowed(uint256 riskpoolId) external view returns (bool) {
-        // IRiskpool riskpool = _getRiskpoolForId(id);
-        // uint256 riskpoolId = riskpool.getId();
         require(
             _component.getComponentState(riskpoolId) == IComponent.ComponentState.Paused
             || _component.getComponentState(riskpoolId) == IComponent.ComponentState.Suspended, 
@@ -288,15 +287,6 @@ contract PoolController is
     function getRiskpool(uint256 riskpoolId) public view returns(IPool.Pool memory riskPool) {
         riskPool = _riskpools[riskpoolId];
         require(riskPool.createdAt > 0, "ERROR:POL-020:RISKPOOL_NOT_REGISTERED");
-    }
-
-
-    function getRiskpoolId(uint256 idx) 
-        external view 
-        returns(uint256) 
-    { 
-        require(idx < _riskpoolIds.length, "ERROR:POL-021:INDEX_TOO_LARGE");
-        return _riskpoolIds[idx]; 
     }
 
     function getRiskPoolForProduct(uint256 productId) external view returns (uint256 riskpoolId) {
