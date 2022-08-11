@@ -78,7 +78,7 @@ contract TreasuryModule is
         // then revert (only product with same token are allowed in same riskpool)
         if (address(_componentToken[riskpoolId]) != address(0)
             && address(_componentToken[riskpoolId]) != address(IProduct(address(component)).getToken())) {
-            revert("ERROR:TRS-013:TOKEN_ADDRESS_NOT_MACHING");
+            revert("ERROR:TRS-014:TOKEN_ADDRESS_NOT_MACHING");
         }
 
         _componentToken[productId] = IERC20(erc20Address);
@@ -91,7 +91,7 @@ contract TreasuryModule is
         external override
         onlyInstanceOperator
     {
-        require(instanceWalletAddress != address(0), "ERROR:TRS-014:WALLET_ADDRESS_ZERO");
+        require(instanceWalletAddress != address(0), "ERROR:TRS-015:WALLET_ADDRESS_ZERO");
         _instanceWalletAddress = instanceWalletAddress;
 
         emit LogTreasuryInstanceWalletSet (instanceWalletAddress);
@@ -102,8 +102,8 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(riskpoolId);
-        require(component.isRiskpool(), "ERROR:TRS-015:NOT_RISKPOOL");
-        require(riskpoolWalletAddress != address(0), "ERROR:TRS-016:WALLET_ADDRESS_ZERO");
+        require(component.isRiskpool(), "ERROR:TRS-016:NOT_RISKPOOL");
+        require(riskpoolWalletAddress != address(0), "ERROR:TRS-017:WALLET_ADDRESS_ZERO");
         _riskpoolWallet[riskpoolId] = riskpoolWalletAddress;
 
         emit LogTreasuryRiskpoolWalletSet (riskpoolId, riskpoolWalletAddress);
