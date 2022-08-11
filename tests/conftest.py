@@ -124,6 +124,10 @@ def capitalOwner(accounts) -> Account:
     return get_filled_account(accounts, 6, "1 ether")
 
 @pytest.fixture(scope="module")
+def riskpoolWallet(accounts) -> Account:
+    return get_filled_account(accounts, 6, "1 ether")
+
+@pytest.fixture(scope="module")
 def feeOwner(accounts) -> Account:
     return get_filled_account(accounts, 7, "1 ether")
 
@@ -162,6 +166,26 @@ def gifTestProduct(
         gifTestOracle,
         gifTestRiskpool)
 
+
+@pytest.fixture(scope="module")
+def gifAyiiRiskpool(
+    instance: GifInstance, 
+    testCoin: Account, 
+    riskpoolWallet: Account, 
+    riskpoolKeeper: Account, 
+    owner: Account
+) -> GifAyiiRiskpool:
+    investor = riskpoolKeeper
+    instanceService = instance.getInstanceService()
+    collateralization = instanceService.getFullCollateralizationLevel()
+    return GifAyiiRiskpool(
+        instance, 
+        testCoin,
+        riskpoolWallet,
+        riskpoolKeeper,
+        investor,
+        collateralization)
+
 @pytest.fixture(scope="module")
 def gifAyiiOracle(
     instance: GifInstance, 
@@ -170,34 +194,23 @@ def gifAyiiOracle(
 ) -> GifAyiiOracle:
     return GifAyiiOracle(
         instance, 
-        oracleProvider, 
-        testCoin)
-
-@pytest.fixture(scope="module")
-def gifAyiiRiskpool(instance: GifInstance, riskpoolKeeper: Account, testCoin: Account, capitalOwner: Account, owner: Account) -> GifAyiiRiskpool:
-    investor = riskpoolKeeper
-    capitalization = 10**18
-    return GifAyiiRiskpool(instance, riskpoolKeeper, testCoin, capitalOwner, investor, capitalization)
+        oracleProvider)
 
 @pytest.fixture(scope="module")
 def gifAyiiProduct(
     instance: GifInstance, 
     testCoin,
-    capitalOwner: Account, 
     productOwner: Account,
-    riskpoolKeeper: Account,
-    customer: Account,
     gifAyiiOracle: GifAyiiOracle,
     gifAyiiRiskpool: GifAyiiRiskpool,
     owner
 ) -> GifAyiiProduct:
+    insurer = productOwner
     return GifAyiiProduct(
         instance, 
         testCoin,
-        capitalOwner,
         productOwner,
-        riskpoolKeeper,
-        customer,
+        insurer,
         gifAyiiOracle,
         gifAyiiRiskpool)
 

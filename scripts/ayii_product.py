@@ -44,57 +44,61 @@ class GifAyiiRiskpool(object):
 
     def __init__(self, 
         instance: GifInstance, 
-        riskpoolKeeper: Account, 
         erc20Token: Account,
-        capitalOwner: Account,
+        riskpoolWallet: Account,
+        riskpoolKeeper: Account,
         investor: Account,
         collateralization:int,
         name=RISKPOOL_NAME, 
-        publishSource=False
+        publishSource=False,
+        gasLimit:int=None
     ):
         instanceService = instance.getInstanceService()
         operatorService = instance.getInstanceOperatorService()
         componentOwnerService = instance.getComponentOwnerService()
         riskpoolService = instance.getRiskpoolService()
 
+        deployInstanceOperatorDict = {'from': instance.getOwner(), 'gas_limit': gasLimit} if gasLimit else {'from': instance.getOwner()}
+        deployRiskpoolKeeperDict = {'from': riskpoolKeeper, 'gas_limit': gasLimit} if gasLimit else {'from': riskpoolKeeper}
+
         # 1) add role to keeper
         keeperRole = instanceService.getRiskpoolKeeperRole()
         operatorService.grantRole(
             keeperRole, 
             riskpoolKeeper, 
-            {'from': instance.getOwner()})
+            deployInstanceOperatorDict)
 
         # 2) keeper deploys riskpool
         self.riskpool = AyiiRiskpool.deploy(
             s2b32(name),
             collateralization,
             erc20Token,
-            capitalOwner,
+            riskpoolWallet,
             instance.getRegistry(),
-            {'from': riskpoolKeeper},
+            deployRiskpoolKeeperDict,
             publish_source=publishSource)
         
         # 3) set up rikspool keeper as investor (createBundle restricted to this role)
         self.riskpool.grantInvestorRole(
-            riskpoolKeeper,
-            {'from': riskpoolKeeper},
+            investor,
+            deployRiskpoolKeeperDict,
         )
 
         # 4) riskpool keeperproposes oracle to instance
         componentOwnerService.propose(
             self.riskpool,
-            {'from': riskpoolKeeper})
+            deployRiskpoolKeeperDict)
 
         # 5) instance operator approves riskpool
         operatorService.approve(
             self.riskpool.getId(),
-            {'from': instance.getOwner()})
+            deployInstanceOperatorDict)
 
         # 6) instance operator assigns riskpool wallet
         operatorService.setRiskpoolWallet(
             self.riskpool.getId(),
-            capitalOwner,
-            {'from': instance.getOwner()})
+            riskpoolWallet,
+            deployInstanceOperatorDict)
 
         # 7) setup capital fees
         fixedFee = 42
@@ -104,11 +108,11 @@ class GifAyiiRiskpool(object):
             fixedFee,
             fractionalFee,
             b'',
-            {'from': instance.getOwner()}) 
+            deployInstanceOperatorDict) 
 
         operatorService.setCapitalFees(
             feeSpec,
-            {'from': instance.getOwner()}) 
+            deployInstanceOperatorDict) 
     
     def getId(self) -> int:
         return self.riskpool.getId()
@@ -122,8 +126,13 @@ class GifAyiiOracle(object):
     def __init__(self, 
         instance: GifInstance, 
         oracleProvider: Account, 
-        publishSource=False
+        publishSource=False,
+        gasLimit:int=None
     ):
+
+        deployInstanceOperatorDict = {'from': instance.getOwner(), 'gas_limit': gasLimit} if gasLimit else {'from': instance.getOwner()}
+        deployOracleProviderDict = {'from': oracleProvider, 'gas_limit': gasLimit} if gasLimit else {'from': oracleProvider}
+
         instanceService = instance.getInstanceService()
         operatorService = instance.getInstanceOperatorService()
         componentOwnerService = instance.getComponentOwnerService()
@@ -134,7 +143,7 @@ class GifAyiiOracle(object):
         operatorService.grantRole(
             providerRole, 
             oracleProvider, 
-            {'from': instance.getOwner()})
+            deployInstanceOperatorDict)
 
         # 2a) chainlink dummy token deploy
         clTokenOwner = oracleProvider
@@ -142,16 +151,20 @@ class GifAyiiOracle(object):
         self.clToken = ClToken.deploy(
             clTokenOwner,
             clTokenSupply,
-            {'from': oracleProvider})
+            deployOracleProviderDict,
+            publish_source=publishSource)
 
         # 2b) chainlink operator deploy
         self.chainlinkOperator = ClOperator.deploy(
             self.clToken,
             oracleProvider,
-            {'from': oracleProvider})
+            deployOracleProviderDict,
+            publish_source=publishSource)
 
         # set oracleProvider as authorized to call fullfill on operator
-        self.chainlinkOperator.setAuthorizedSenders([oracleProvider])
+        self.chainlinkOperator.setAuthorizedSenders(
+            [oracleProvider],
+            deployOracleProviderDict)
 
         # 2c) oracle provider creates oracle
         chainLinkTokenAddress = self.clToken.address
@@ -166,19 +179,18 @@ class GifAyiiOracle(object):
             chainLinkOracleAddress,
             chainLinkJobId,
             chainLinkPaymentAmount,
-            {'from': oracleProvider})
-            # {'from': oracleProvider},
-            # publish_source=publishSource)
+            deployOracleProviderDict,
+            publish_source=publishSource)
 
         # 3) oracle owner proposes oracle to instance
         componentOwnerService.propose(
             self.oracle,
-            {'from': oracleProvider})
+            deployOracleProviderDict)
 
         # 4) instance operator approves oracle
         operatorService.approve(
             self.oracle.getId(),
-            {'from': instance.getOwner()})
+            deployInstanceOperatorDict)
     
     def getId(self) -> int:
         return self.oracle.getId()
@@ -195,14 +207,16 @@ class GifAyiiProduct(object):
     def __init__(self, 
         instance: GifInstance, 
         token, 
-        capitalOwner: Account, 
         productOwner: Account, 
-        riskpoolKeeper: Account,
-        customer: Account,
+        insurer: Account,
         oracle: GifAyiiOracle, 
         riskpool: GifAyiiRiskpool, 
-        publishSource=False
+        publishSource=False,
+        gasLimit:int=None
     ):
+        deployInstanceOperatorDict = {'from': instance.getOwner(), 'gas_limit': gasLimit} if gasLimit else {'from': instance.getOwner()}
+        deployProductOwnerDict = {'from': productOwner, 'gas_limit': gasLimit} if gasLimit else {'from': productOwner}
+
         self.policy = instance.getPolicy()
         self.oracle = oracle
         self.riskpool = riskpool
@@ -218,11 +232,9 @@ class GifAyiiProduct(object):
         operatorService.grantRole(
             ownerRole,
             productOwner, 
-            {'from': instance.getOwner()})
+            deployInstanceOperatorDict)
 
         # 2) product owner creates product
-        investor = riskpoolKeeper
-        insurer = productOwner
         self.product = AyiiProduct.deploy(
             s2b32('AyiiProduct'),
             registry,
@@ -230,24 +242,24 @@ class GifAyiiProduct(object):
             oracle.getId(),
             riskpool.getId(),
             insurer,
-            {'from': productOwner},
+            deployProductOwnerDict,
             publish_source=publishSource)
 
         # 3) product owner proposes product to instance
         componentOwnerService.propose(
             self.product,
-            {'from': productOwner})
+            deployProductOwnerDict)
 
         # 4) instance operator approves product
         operatorService.approve(
             self.product.getId(),
-            {'from': instance.getOwner()})
+            deployInstanceOperatorDict)
 
         # 5) instance owner sets token in treasury
         operatorService.setProductToken(
             self.product.getId(), 
             token,
-            {'from': instance.getOwner()}) 
+            deployInstanceOperatorDict) 
 
         # 5) instance owner creates and sets product fee spec
         fixedFee = 3
@@ -257,11 +269,11 @@ class GifAyiiProduct(object):
             fixedFee,
             fractionalFee,
             b'',
-            {'from': instance.getOwner()}) 
+            deployInstanceOperatorDict) 
 
         operatorService.setPremiumFees(
             feeSpec,
-            {'from': instance.getOwner()}) 
+            deployInstanceOperatorDict) 
 
     
     def getId(self) -> int:

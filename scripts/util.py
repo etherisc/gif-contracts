@@ -60,23 +60,26 @@ def deployGifModule(
     storageClass, 
     registry, 
     owner,
-    publishSource
+    publishSource,
+    gasLimit
 ):
+    deployDict = {'from': owner, 'gas_limit': gasLimit} if gasLimit else {'from': owner}
+
     controller = controllerClass.deploy(
         registry.address, 
-        {'from': owner},
+        deployDict,
         publish_source=publishSource)
     
     storage = storageClass.deploy(
         registry.address, 
-        {'from': owner},
+        deployDict,
         publish_source=publishSource)
 
-    controller.assignStorage(storage.address, {'from': owner})
-    storage.assignController(controller.address, {'from': owner})
+    controller.assignStorage(storage.address, deployDict)
+    storage.assignController(controller.address, deployDict)
 
-    registry.register(controller.NAME.call(), controller.address, {'from': owner})
-    registry.register(storage.NAME.call(), storage.address, {'from': owner})
+    registry.register(controller.NAME.call(), controller.address, deployDict)
+    registry.register(storage.NAME.call(), storage.address, deployDict)
 
     return contractFromAddress(controllerClass, storage.address)
 
@@ -88,16 +91,16 @@ def deployGifToken(
     tokenClass,
     registry,
     owner,
-    publishSource
+    publishSource,
+    gasLimit
 ):
-    print('token {} deploy'.format(tokenName))
-    token = tokenClass.deploy(
-        {'from': owner},
-        publish_source=publishSource)
+    deployDict = {'from': owner, 'gas_limit': gasLimit} if gasLimit else {'from': owner}
 
-    tokenNameB32 = s2b32(tokenName)
+    print('token {} deploy'.format(tokenName))
+    token = tokenClass.deploy(deployDict, publish_source=publishSource)
+
     print('token {} register'.format(tokenName))
-    registry.register(tokenNameB32, token.address, {'from': owner})
+    registry.register(s2b32(tokenName), token.address, deployDict)
 
     return token
 
@@ -108,11 +111,14 @@ def deployGifModuleV2(
     controllerClass, 
     registry, 
     owner,
-    publishSource
+    publishSource,
+    gasLimit
 ):
+    deployDict = {'from': owner, 'gas_limit': gasLimit} if gasLimit else {'from': owner}
+
     print('module {} deploy controller'.format(moduleName))
     controller = controllerClass.deploy(
-        {'from': owner},
+        deployDict,
         publish_source=publishSource)
 
     encoded_initializer = encode_function_data(
@@ -123,16 +129,14 @@ def deployGifModuleV2(
     proxy = CoreProxy.deploy(
         controller.address, 
         encoded_initializer, 
-        {'from': owner},
+        deployDict,
         publish_source=publishSource)
 
     moduleNameB32 = s2b32(moduleName)
     controllerNameB32 = s2b32('{}Controller'.format(moduleName))[:32]
 
-    print('module {} register controller'.format(moduleName))
-    registry.register(controllerNameB32, controller.address, {'from': owner})
-    print('module {} register proxy'.format(moduleName))
-    registry.register(moduleNameB32, proxy.address, {'from': owner})
+    registry.register(controllerNameB32, controller.address, deployDict)
+    registry.register(moduleNameB32, proxy.address, deployDict)
 
     return contractFromAddress(controllerClass, proxy.address)
 
@@ -142,14 +146,20 @@ def deployGifService(
     serviceClass, 
     registry, 
     owner,
-    publishSource
+    publishSource,
+    gasLimit
 ):
+    deployDict = {'from': owner, 'gas_limit': gasLimit} if gasLimit else {'from': owner}
+
     service = serviceClass.deploy(
         registry.address, 
-        {'from': owner},
+        deployDict,
         publish_source=publishSource)
 
-    registry.register(service.NAME.call(), service.address, {'from': owner})
+    registry.register(
+        service.NAME.call(), 
+        service.address, 
+        deployDict)
 
     return service
 
@@ -158,16 +168,23 @@ def deployGifServiceV2(
     serviceClass, 
     registry, 
     owner,
-    publishSource
+    publishSource,
+    gasLimit
 ):
+    deployDict = {'from': owner, 'gas_limit': gasLimit} if gasLimit else {'from': owner}
+
     service = serviceClass.deploy(
         registry.address, 
-        {'from': owner},
+        deployDict,
         publish_source=publishSource)
 
-    registry.register(s2b32(serviceName), service.address, {'from': owner})
+    registry.register(
+        s2b32(serviceName), 
+        service.address, 
+        deployDict)
 
     return service
+
 
 def contractFromAddress(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
