@@ -252,11 +252,6 @@ contract TreasuryModule is
         (uint256 riskpoolId, address riskpoolWalletAddress) = _getRiskpoolWallet(processId);
 
         require(
-            token.allowance(riskpoolWalletAddress, address(this)) >= payout.amount, 
-            "ERROR:TRS-041:RISKPOOL_ALLOWANCE_TOO_SMALL"
-        );
-
-        require(
             token.balanceOf(riskpoolWalletAddress) >= payout.amount, 
             string(abi.encodePacked(
                 "ERROR:TRS-042:RISKPOOL_BALANCE_TOO_SMALL:BALANCE=",
