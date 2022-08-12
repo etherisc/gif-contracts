@@ -74,13 +74,11 @@ contract TreasuryModule is
     
         uint256 riskpoolId = _pool.getRiskPoolForProduct(productId);
 
-        // If riskpool token is already set and product token does not match riskpool token,
-        // then revert (only product with same token are allowed in same riskpool)
-        if (address(_componentToken[riskpoolId]) != address(0)
-            && address(_componentToken[riskpoolId]) != address(IProduct(address(component)).getToken())) {
-            revert("ERROR:TRS-014:TOKEN_ADDRESS_NOT_MACHING");
-        }
-
+        // require if riskpool token is already set and product token does match riskpool token
+        require(address(_componentToken[riskpoolId]) == address(0)
+                || address(_componentToken[riskpoolId]) == address(IProduct(address(component)).getToken()), 
+                "ERROR:TRS-014:TOKEN_ADDRESS_NOT_MACHING");
+        
         _componentToken[productId] = IERC20(erc20Address);
         _componentToken[riskpoolId] = IERC20(erc20Address);
 
