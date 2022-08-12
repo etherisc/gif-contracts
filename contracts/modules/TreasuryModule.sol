@@ -257,15 +257,9 @@ contract TreasuryModule is
             "ERROR:TRS-040:PAYOUT_ALREADY_PROCESSED"
         );
 
-        // check if allowance covers requested amount
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         IERC20 token = getComponentToken(metadata.productId);
         (uint256 riskpoolId, address riskpoolWalletAddress) = _getRiskpoolWallet(processId);
-
-        require(
-            token.allowance(riskpoolWalletAddress, address(this)) >= payout.amount, 
-            "ERROR:TRS-041:RISKPOOL_ALLOWANCE_TOO_SMALL"
-        );
 
         require(
             token.balanceOf(riskpoolWalletAddress) >= payout.amount, 
@@ -306,17 +300,6 @@ contract TreasuryModule is
 
         // obtain relevant token for product/riskpool pair
         IERC20 token = _componentToken[bundle.riskpoolId];
-        require(
-            token.allowance(bundleOwner, address(this)) > 0,
-            "ERROR:TRS-051:ALLOWANCE_IS_ZERO"
-        );
-        
-        require(
-            token.allowance(
-                bundleOwner, 
-                address(this)) >= capitalAmount,
-            "ERROR:TRS-052:ALLOWANCE_SMALLER_THAN_CAPITAL"
-        );
 
         // calculate and transfer fees
         feeAmount = _calculateFee(feeSpec, capitalAmount);
@@ -359,17 +342,6 @@ contract TreasuryModule is
         address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
         address bundleOwner = _bundle.getOwner(bundleId);
         IERC20 token = _componentToken[bundle.riskpoolId];
-        require(
-            token.allowance(riskpoolWallet, address(this)) > 0,
-            "ERROR:TRS-061:ALLOWANCE_IS_ZERO"
-        );
-        
-        require(
-            token.allowance(
-                riskpoolWallet, 
-                address(this)) >= amount,
-            "ERROR:TRS-062:ALLOWANCE_SMALLER_THAN_WITHDRAWAL"
-        );
 
         // TODO consider to introduce withdrawal fees
         // ideally symmetrical reusing capital fee spec for riskpool
