@@ -293,9 +293,8 @@ def test_close_and_burn_bundle(
 
     withdrawalAmount = 999
     tx = riskpool.defundBundle(bundleId, withdrawalAmount, {'from': bundleOwner})
-    (success, netWithdrawalAmount) = tx.return_value
+    (netWithdrawalAmount) = tx.return_value
 
-    assert success
     assert netWithdrawalAmount == withdrawalAmount
 
     pool = instanceService.getRiskpool(riskpool.getId()).dict()
@@ -396,9 +395,8 @@ def test_fund_defund_bundle(
     withdrawalAmount = 999
     # (success, netWithdrawlAmount) = riskpool.defundBundle(bundleId, withdrawalAmount, {'from': bundleOwner})
     tx = riskpool.defundBundle(bundleId, withdrawalAmount, {'from': bundleOwner})
-    (success, netWithdrawlAmount) = tx.return_value
+    (netWithdrawlAmount) = tx.return_value
 
-    assert success
     assert netWithdrawlAmount == withdrawalAmount
 
     bundle = _getBundleDict(riskpool, 0)
@@ -412,9 +410,8 @@ def test_fund_defund_bundle(
 
     fundingAmount = 2000
     tx = riskpool.fundBundle(bundleId, fundingAmount, {'from': bundleOwner})
-    (success, netFundingAmount) = tx.return_value
+    netFundingAmount = tx.return_value
 
-    assert success
     assert netFundingAmount == fundingAmount - (fundingAmount / 20 + 42)
 
     bundle = _getBundleDict(riskpool, 0)

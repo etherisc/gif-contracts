@@ -6,34 +6,66 @@ FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
 ARG NODE_VERSION="16"
 RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
+# install mcfly as root
+RUN curl -LSfs https://raw.githubusercontent.com/cantino/mcfly/master/ci/install.sh | sh -s -- --git cantino/mcfly 
+
 USER vscode
 
-# Install and configure starship.rs prompt
+# Shell customizations
+
+# 1) Install and configure starship.rs prompt
 RUN curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
 RUN echo "eval \"\$(starship init bash)\"" >> ~/.bashrc && echo "eval \"\$(starship init zsh)\"" >> ~/.zshrc
 RUN mkdir -p /home/vscode/.config/
 COPY .devcontainer/starship.toml /home/vscode/.config/starship.toml
 
-# [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
+# 2) install thefuck
+RUN pip3 install thefuck --user \
+    && echo 'eval "$(thefuck --alias)"' >> ~/.bashrc \
+    && echo 'eval "$(thefuck --alias)"' >> ~/.zshrc
+
+# 3) install mcfly config
+RUN echo 'eval "$(mcfly init zsh)"' >> ~/.zshrc \
+    && touch ~/.zsh_history
+
+
+# Install brownie & other devtools
+
 # COPY requirements.txt /tmp/pip-tmp/
 RUN wget https://raw.githubusercontent.com/eth-brownie/brownie/master/requirements.txt -O /tmp/pip-requirements.txt 
 
 RUN pip install -r /tmp/pip-requirements.txt
 RUN pip install eth-brownie \
     && pip install fastapi \
-    && pip install uvicorn
+    && pip install uvicorn 
 
 # [Optional] Uncomment this line to install global node packages.
 RUN npm install -g ganache-cli
 
-RUN mkdir -p /tmp/brownie-setup
-WORKDIR /tmp/brownie-setup
-COPY .devcontainer/get_solidity.py .
-
 # download required solidity compiler
-RUN python get_solidity.py
+RUN mkdir -p /home/vscode/.solcx/  
+RUN wget -O /home/vscode/.solcx/solc-v0.7.2 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.7.2+commit.51b20bc0 \
+    && wget -O /home/vscode/.solcx/solc-v0.8.2 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.2+commit.661d1103 \
+    && wget -O /home/vscode/.solcx/solc-v0.8.15 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.15+commit.e14f2714 \
+    && chmod 755 /home/vscode/.solcx/solc*
+
+# Download openzeppelin and chainlink depedencies (large and slow)
+ARG VERSION_OPEN_ZEPPELIN=4.7.0
+ARG VERSION_CHAINLINK=1.6.0
+RUN wget -O /tmp/v${VERSION_OPEN_ZEPPELIN}.tar.gz https://github.com/OpenZeppelin/openzeppelin-contracts/archive/refs/tags/v${VERSION_OPEN_ZEPPELIN}.tar.gz \
+    && wget -O /tmp/v${VERSION_CHAINLINK}.tar.gz https://github.com/smartcontractkit/chainlink/archive/refs/tags/v${VERSION_CHAINLINK}.tar.gz
+RUN mkdir -p /home/vscode/.brownie/packages/OpenZeppelin \
+    && cd /home/vscode/.brownie/packages/OpenZeppelin \
+    && tar xvfz /tmp/v${VERSION_OPEN_ZEPPELIN}.tar.gz \
+    && mv openzeppelin-contracts-${VERSION_OPEN_ZEPPELIN} openzeppelin-contracts@${VERSION_OPEN_ZEPPELIN} \
+    && mkdir -p /home/vscode/.brownie/packages/smartcontractkit \
+    && cd /home/vscode/.brownie/packages/smartcontractkit \
+    && tar xvfz /tmp/v${VERSION_CHAINLINK}.tar.gz \
+    && mv chainlink-${VERSION_CHAINLINK} chainlink@${VERSION_CHAINLINK}
 
 # Create dummy project and compile it to cache dependencies
+RUN mkdir -p /tmp/brownie-setup
+WORKDIR /tmp/brownie-setup
 COPY brownie-config.yaml .
 RUN /home/vscode/.local/bin/brownie init dummy \
     && cd dummy \

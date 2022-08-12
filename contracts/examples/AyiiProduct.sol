@@ -52,7 +52,7 @@ contract AyiiProduct is
     event LogAyiiRiskProcessed(bytes32 riskId, uint256 policies);
     event LogAyiiPolicyProcessed(bytes32 policyId);
     event LogAyiiClaimCreated(bytes32 policyId, uint256 claimId, uint256 payoutAmount);
-    event LogAyiiPayoutCreated(bytes32 policyId, uint256 payoutAmount, bool success);
+    event LogAyiiPayoutCreated(bytes32 policyId, uint256 payoutAmount);
 
     constructor(
         bytes32 productName,
@@ -279,13 +279,11 @@ contract AyiiProduct is
 
             uint256 payoutId = _newPayout(policyId, claimId, payoutAmount, "");
             (
-                bool success,
                 uint256 feeAmount,
                 uint256 netPayoutAmount
             ) = _processPayout(policyId, payoutId);
 
-            emit LogAyiiPayoutCreated(policyId, payoutAmount, success);
-            require(success, "ERROR:AYI-031:PAYOUT_FAILED");
+            emit LogAyiiPayoutCreated(policyId, payoutAmount);
         }
         else {
             _declineClaim(policyId, claimId);

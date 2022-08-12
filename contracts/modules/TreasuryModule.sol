@@ -8,6 +8,7 @@ import "./PoolController.sol";
 import "../shared/CoreController.sol";
 
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IProduct.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 import "@etherisc/gif-interface/contracts/modules/ITreasury.sol";
 
@@ -72,8 +73,12 @@ contract TreasuryModule is
         require(address(_componentToken[productId]) == address(0), "ERROR:TRS-012:PRODUCT_TOKEN_ALREADY_SET");
     
         uint256 riskpoolId = _pool.getRiskPoolForProduct(productId);
-        require(address(_componentToken[riskpoolId]) == address(0), "ERROR:TRS-013:RISKPOOL_TOKEN_ALREADY_SET");
 
+        // require if riskpool token is already set and product token does match riskpool token
+        require(address(_componentToken[riskpoolId]) == address(0)
+                || address(_componentToken[riskpoolId]) == address(IProduct(address(component)).getToken()), 
+                "ERROR:TRS-014:TOKEN_ADDRESS_NOT_MACHING");
+        
         _componentToken[productId] = IERC20(erc20Address);
         _componentToken[riskpoolId] = IERC20(erc20Address);
 
@@ -84,7 +89,7 @@ contract TreasuryModule is
         external override
         onlyInstanceOperator
     {
-        require(instanceWalletAddress != address(0), "ERROR:TRS-014:WALLET_ADDRESS_ZERO");
+        require(instanceWalletAddress != address(0), "ERROR:TRS-015:WALLET_ADDRESS_ZERO");
         _instanceWalletAddress = instanceWalletAddress;
 
         emit LogTreasuryInstanceWalletSet (instanceWalletAddress);
@@ -95,8 +100,8 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(riskpoolId);
-        require(component.isRiskpool(), "ERROR:TRS-015:NOT_RISKPOOL");
-        require(riskpoolWalletAddress != address(0), "ERROR:TRS-016:WALLET_ADDRESS_ZERO");
+        require(component.isRiskpool(), "ERROR:TRS-016:NOT_RISKPOOL");
+        require(riskpoolWalletAddress != address(0), "ERROR:TRS-017:WALLET_ADDRESS_ZERO");
         _riskpoolWallet[riskpoolId] = riskpoolWalletAddress;
 
         emit LogTreasuryRiskpoolWalletSet (riskpoolId, riskpoolWalletAddress);
@@ -168,6 +173,11 @@ contract TreasuryModule is
     }
     
 
+    /*
+     * Process the remaining premium by calculating the remaining amount, the fees for that amount and 
+     * then transfering the fees to the instance wallet and the net premium remaining to the riskpool. 
+     * This will revert if no fee structure is defined. 
+     */
     function processPremium(bytes32 processId) 
         external override 
         returns(
@@ -184,7 +194,11 @@ contract TreasuryModule is
         }
     }
 
-
+    /*
+     * Process the premium by calculating the fees for the amount and 
+     * then transfering the fees to the instance wallet and the net premium to the riskpool. 
+     * This will revert if no fee structure is defined. 
+     */
     function processPremium(bytes32 processId, uint256 amount) 
         public override 
         instanceWalletDefined
@@ -217,16 +231,14 @@ contract TreasuryModule is
         require(success, "ERROR:TRS-031:FEE_TRANSFER_FAILED");
 
         // transfer premium net amount to riskpool for product
-        if (success) {
-            // actual transfer of net premium to riskpool
-            (uint256 riskpoolId, address riskpoolWalletAddress) = _getRiskpoolWallet(processId);
-            success = token.transferFrom(metadata.owner, riskpoolWalletAddress, netAmount);
+        // actual transfer of net premium to riskpool
+        (uint256 riskpoolId, address riskpoolWalletAddress) = _getRiskpoolWallet(processId);
+        success = token.transferFrom(metadata.owner, riskpoolWalletAddress, netAmount);
 
-            emit LogTreasuryPremiumTransferred(metadata.owner, riskpoolWalletAddress, netAmount, success);
-            require(success, "ERROR:TRS-032:PREMIUM_TRANSFER_FAILED");
-        }
+        emit LogTreasuryPremiumTransferred(metadata.owner, riskpoolWalletAddress, netAmount, success);
+        require(success, "ERROR:TRS-032:PREMIUM_TRANSFER_FAILED");
 
-        emit LogTreasuryPremiumProcessed(processId, amount, success);
+        emit LogTreasuryPremiumProcessed(processId, amount);
     }
 
 
@@ -235,7 +247,6 @@ contract TreasuryModule is
         instanceWalletDefined
         riskpoolWalletDefinedForProcess(processId)
         returns(
-            bool success,
             uint256 feeAmount,
             uint256 netPayoutAmount
         )
@@ -261,14 +272,14 @@ contract TreasuryModule is
         );
 
         // actual payout to policy holder
-        success = token.transferFrom(riskpoolWalletAddress, metadata.owner, payout.amount);
+        bool success = token.transferFrom(riskpoolWalletAddress, metadata.owner, payout.amount);
         feeAmount = 0;
         netPayoutAmount = payout.amount;
 
         emit LogTreasuryPayoutTransferred(riskpoolWalletAddress, metadata.owner, payout.amount, success);
         require(success, "ERROR:TRS-043:PAYOUT_TRANSFER_FAILED");
 
-        emit LogTreasuryPayoutProcessed(riskpoolId,  metadata.owner, payout.amount, success);
+        emit LogTreasuryPayoutProcessed(riskpoolId,  metadata.owner, payout.amount);
     }
 
     function processCapital(uint256 bundleId, uint256 capitalAmount) 
@@ -276,7 +287,6 @@ contract TreasuryModule is
         instanceWalletDefined
         riskpoolWalletDefinedForBundle(bundleId)
         returns(
-            bool success,
             uint256 feeAmount,
             uint256 netCapitalAmount
         )
@@ -293,24 +303,22 @@ contract TreasuryModule is
 
         // calculate and transfer fees
         feeAmount = _calculateFee(feeSpec, capitalAmount);
-        success = token.transferFrom(bundleOwner, _instanceWalletAddress, feeAmount);
+        bool success = token.transferFrom(bundleOwner, _instanceWalletAddress, feeAmount);
 
         emit LogTreasuryFeesTransferred(bundleOwner, _instanceWalletAddress, feeAmount, success);
         require(success, "ERROR:TRS-053:FEE_TRANSFER_FAILED");
 
-        if (success) {
-            // transfer net capital
-            address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
-            require(riskpoolWallet != address(0), "ERROR:TRS-054:RISKPOOL_WITHOUT_WALLET");
+        // transfer net capital
+        address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
+        require(riskpoolWallet != address(0), "ERROR:TRS-054:RISKPOOL_WITHOUT_WALLET");
 
-            netCapitalAmount = capitalAmount - feeAmount;
-            success = token.transferFrom(bundleOwner, riskpoolWallet, netCapitalAmount);
+        netCapitalAmount = capitalAmount - feeAmount;
+        success = token.transferFrom(bundleOwner, riskpoolWallet, netCapitalAmount);
 
-            emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, netCapitalAmount, success);
-            require(success, "ERROR:TRS-055:CAPITAL_TRANSFER_FAILED");
-        }
+        emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, netCapitalAmount, success);
+        require(success, "ERROR:TRS-055:CAPITAL_TRANSFER_FAILED");
 
-        emit LogTreasuryCapitalProcessed(bundle.riskpoolId, bundleId, capitalAmount, success);
+        emit LogTreasuryCapitalProcessed(bundle.riskpoolId, bundleId, capitalAmount);
     }
 
     function processWithdrawal(uint256 bundleId, uint256 amount) 
@@ -318,7 +326,6 @@ contract TreasuryModule is
         instanceWalletDefined
         riskpoolWalletDefinedForBundle(bundleId)
         returns(
-            bool success,
             uint256 feeAmount,
             uint256 netAmount
         )
@@ -340,12 +347,12 @@ contract TreasuryModule is
         // ideally symmetrical reusing capital fee spec for riskpool
         feeAmount = 0;
         netAmount = amount;
-        success = token.transferFrom(riskpoolWallet, bundleOwner, netAmount);
+        bool success = token.transferFrom(riskpoolWallet, bundleOwner, netAmount);
 
         emit LogTreasuryWithdrawalTransferred(riskpoolWallet, bundleOwner, netAmount, success);
         require(success, "ERROR:TRS-063:WITHDRAWAL_TRANSFER_FAILED");
 
-        emit LogTreasuryWithdrawalProcessed(bundle.riskpoolId, bundleId, netAmount, success);
+        emit LogTreasuryWithdrawalProcessed(bundle.riskpoolId, bundleId, netAmount);
     }
 
 
