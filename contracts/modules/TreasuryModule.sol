@@ -8,6 +8,7 @@ import "./PoolController.sol";
 import "../shared/CoreController.sol";
 
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IProduct.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 import "@etherisc/gif-interface/contracts/modules/ITreasury.sol";
 
@@ -72,8 +73,12 @@ contract TreasuryModule is
         require(address(_componentToken[productId]) == address(0), "ERROR:TRS-012:PRODUCT_TOKEN_ALREADY_SET");
     
         uint256 riskpoolId = _pool.getRiskPoolForProduct(productId);
-        require(address(_componentToken[riskpoolId]) == address(0), "ERROR:TRS-013:RISKPOOL_TOKEN_ALREADY_SET");
 
+        // require if riskpool token is already set and product token does match riskpool token
+        require(address(_componentToken[riskpoolId]) == address(0)
+                || address(_componentToken[riskpoolId]) == address(IProduct(address(component)).getToken()), 
+                "ERROR:TRS-014:TOKEN_ADDRESS_NOT_MACHING");
+        
         _componentToken[productId] = IERC20(erc20Address);
         _componentToken[riskpoolId] = IERC20(erc20Address);
 
@@ -84,7 +89,7 @@ contract TreasuryModule is
         external override
         onlyInstanceOperator
     {
-        require(instanceWalletAddress != address(0), "ERROR:TRS-014:WALLET_ADDRESS_ZERO");
+        require(instanceWalletAddress != address(0), "ERROR:TRS-015:WALLET_ADDRESS_ZERO");
         _instanceWalletAddress = instanceWalletAddress;
 
         emit LogTreasuryInstanceWalletSet (instanceWalletAddress);
@@ -95,8 +100,8 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(riskpoolId);
-        require(component.isRiskpool(), "ERROR:TRS-015:NOT_RISKPOOL");
-        require(riskpoolWalletAddress != address(0), "ERROR:TRS-016:WALLET_ADDRESS_ZERO");
+        require(component.isRiskpool(), "ERROR:TRS-016:NOT_RISKPOOL");
+        require(riskpoolWalletAddress != address(0), "ERROR:TRS-017:WALLET_ADDRESS_ZERO");
         _riskpoolWallet[riskpoolId] = riskpoolWalletAddress;
 
         emit LogTreasuryRiskpoolWalletSet (riskpoolId, riskpoolWalletAddress);
