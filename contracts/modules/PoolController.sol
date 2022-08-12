@@ -214,7 +214,6 @@ contract PoolController is
         external override
         onlyPolicyFlow("Pool")
     {
-        // check that policy is in aciive state
         IPolicy.Policy memory policy = _policy.getPolicy(processId);
         require(
             policy.state == IPolicy.PolicyState.Closed,
