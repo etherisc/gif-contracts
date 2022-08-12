@@ -48,7 +48,7 @@ contract PolicyDefaultFlow is
         PolicyController policy = getPolicyContract();
         IPolicy.Metadata memory metadata = policy.getMetadata(processId);
         ComponentController component = ComponentController(getContractFromRegistry("Component"));
-        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-003:PRODUCTID_BELONGS_TO_OTHER_PRODUCT");
+        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-003:PROCESSID_PRODUCT_MISMATCH");
         _;
     }
 
@@ -58,7 +58,6 @@ contract PolicyDefaultFlow is
     constructor(address _registry) 
         WithRegistry(_registry) 
     { 
-        // _component = ComponentController(getContractFromRegistry("Component"));
     }
 
     function newApplication(
@@ -270,7 +269,6 @@ contract PolicyDefaultFlow is
     function getApplicationData(bytes32 processId)
         external
         view
-        onlyResponsibleProduct(processId)
         returns (bytes memory)
     {
         PolicyController policy = getPolicyContract();
@@ -280,7 +278,6 @@ contract PolicyDefaultFlow is
     function getClaimData(bytes32 processId, uint256 claimId)
         external
         view
-        onlyResponsibleProduct(processId)
         returns (bytes memory)
     {
         PolicyController policy = getPolicyContract();
@@ -290,7 +287,6 @@ contract PolicyDefaultFlow is
     function getPayoutData(bytes32 processId, uint256 payoutId)
         external
         view
-        onlyResponsibleProduct(processId)
         returns (bytes memory)
     {
         PolicyController policy = getPolicyContract();
