@@ -120,7 +120,7 @@ def test_PolicyDefaultFlow(instance: GifInstance, owner):
     assert policyDefaultFlow.address == policyDefaultFlowAddress
     assert policyDefaultFlow.address != 0x0
 
-    with brownie.reverts('ERROR:POC-050:METADATA_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-051:APPLICATION_DOES_NOT_EXIST'):
         policyDefaultFlow.getApplicationData(s2b32(''))
 
     with pytest.raises(AttributeError):
