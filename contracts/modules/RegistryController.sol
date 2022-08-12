@@ -176,7 +176,6 @@ contract RegistryController is
         address _contractAddress
     ) 
         internal
-        onlyInstanceOperator 
     {
         bool isNew = false;
 
