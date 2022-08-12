@@ -182,7 +182,7 @@ def test_create_policy(
     assert metadata['owner'] == customer
     assert metadata['productId'] == product.getId()
     # IPolicy.PolicyFlowState {Started, Paused, Finished}
-    assert metadata['state'] == 0
+    assert metadata['state'] == 1
     assert metadata['data'] == metaData
     assert metadata['createdAt'] > 0
     assert metadata['updatedAt'] >= metadata['createdAt']

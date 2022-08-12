@@ -190,7 +190,7 @@ def test_happy_path(
     print('policy {}'.format(policy))
  
     # check policy 1
-    assert meta[0]['state'] == 0
+    assert meta[0]['state'] == 1
     assert meta[0]['owner'] == customer
     assert meta[0]['productId'] == product.getId()
     assert application[0]['state'] == 2
@@ -202,7 +202,7 @@ def test_happy_path(
     assert policy[0]['premiumPaidAmount'] == premium[0]
  
     # check policy 2
-    assert meta[1]['state'] == 0
+    assert meta[1]['state'] == 1
     assert meta[1]['owner'] == customer2
     assert meta[1]['productId'] == product.getId()
     assert application[1]['state'] == 2

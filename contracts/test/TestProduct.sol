@@ -71,15 +71,54 @@ contract TestProduct is
         }
     }
 
-    function collectPremium(bytes32 policyId) 
+
+    function newAppliation(
+        uint256 premium, 
+        uint256 sumInsured,
+        bytes calldata metaData,
+        bytes calldata applicationData
+    ) 
         external 
+        payable 
+        returns (bytes32 processId) 
+    {
+        address payable policyHolder = payable(_msgSender());
+
+        processId = _newApplication(
+            policyHolder,
+            premium, 
+            sumInsured,
+            metaData,
+            applicationData);
+
+        _applications.push(processId);
+    }
+
+
+    function revoke(bytes32 processId) external onlyPolicyHolder(processId) { 
+        _revoke(processId);
+    }
+
+    function decline(bytes32 processId) external onlyOwner { 
+        _decline(processId);
+    }
+
+    function underwrite(bytes32 processId) external onlyOwner { 
+        bool success = _underwrite(processId);
+        if (success) {
+            _policies.push(processId);
+        }
+    }
+
+    function collectPremium(bytes32 policyId) 
+        external onlyOwner
         returns(bool success, uint256 fee, uint256 netPremium)
     {
         (success, fee, netPremium) = _collectPremium(policyId);
     }
 
     function collectPremium(bytes32 policyId, uint256 amount) 
-        external 
+        external onlyOwner
         returns(bool success, uint256 fee, uint256 netPremium)
     {
         (success, fee, netPremium) = _collectPremium(policyId, amount);
