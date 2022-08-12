@@ -85,6 +85,13 @@ contract InstanceOperatorService is
         _access.addRole(_role);
     }
 
+    function invalidateRole(bytes32 _role) 
+        external
+        onlyInstanceOperatorAddress 
+    {
+        _access.invalidateRole(_role);
+    }
+
     function grantRole(bytes32 role, address principal)
         external override
         onlyInstanceOperatorAddress

@@ -30,6 +30,9 @@ def s2b(text:str):
 def b2s(b32: bytes):
     return b322s(b32)
 
+def keccak256(text:str):
+    return Web3.solidityKeccak(['string'], [text]).hex()
+
 def get_account(mnemonic: str, account_offset: int) -> Account:
     return accounts.from_mnemonic(
         mnemonic,

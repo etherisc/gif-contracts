@@ -75,7 +75,7 @@ contract AccessController is
         public override
         onlyInstanceOperator 
     {
-        require(validRole[role], "ERROR:ACL-003:ROLE_EXISTING_AND_VALID");
+        require(!validRole[role], "ERROR:ACL-003:ROLE_EXISTING_AND_VALID");
         validRole[role] = true;
     }
 
