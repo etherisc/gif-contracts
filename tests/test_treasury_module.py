@@ -131,15 +131,15 @@ def test_bundle_creation_allowance_too_small(
     # prepare allowance too small for riskpool funding 
     safetyFactor = 2
     amount = 10000
-    testCoin.transfer(capitalOwner, safetyFactor * amount, {'from': owner})
-    testCoin.approve(instance.getTreasury(), 0.9 * amount, {'from': capitalOwner})
+    testCoin.transfer(riskpoolKeeper, safetyFactor * amount, {'from': owner})
+    testCoin.approve(instance.getTreasury(), 0.9 * amount, {'from': riskpoolKeeper})
 
     # ensures bundle creation fails due to insufficient allowance
     with brownie.reverts("ERC20: insufficient allowance"):
         gifRiskpool.getContract().createBundle(
                 applicationFilter, 
                 amount, 
-                {'from': capitalOwner})
+                {'from': riskpoolKeeper})
 
 
 def test_bundle_withdrawal_allowance_too_small(
@@ -168,14 +168,14 @@ def test_bundle_withdrawal_allowance_too_small(
     # fund bundle
     safetyFactor = 2
     amount = 10000
-    testCoin.transfer(capitalOwner, safetyFactor * amount, {'from': owner})
-    testCoin.approve(instance.getTreasury(), amount, {'from': capitalOwner})
+    testCoin.transfer(riskpoolKeeper, safetyFactor * amount, {'from': owner})
+    testCoin.approve(instance.getTreasury(), amount, {'from': riskpoolKeeper})
     riskpool = gifRiskpool.getContract()
 
     riskpool.createBundle(
                 applicationFilter, 
                 amount, 
-                {'from': capitalOwner})
+                {'from': riskpoolKeeper})
 
     bundle = riskpool.getBundle(0)
     print(bundle)
@@ -186,16 +186,16 @@ def test_bundle_withdrawal_allowance_too_small(
     assert bundleId == 1
     
     # close bundle
-    riskpool.closeBundle(bundleId, {'from': capitalOwner})
+    riskpool.closeBundle(bundleId, {'from': riskpoolKeeper})
 
     # prepare allowance that is too small for bundle withdrawal
-    testCoin.approve(instance.getTreasury(), 0.9 * amount, {'from': capitalOwner})
+    testCoin.approve(instance.getTreasury(), 0.9 * amount, {'from': riskpoolKeeper})
 
     # ensures that burning bundle fails during token withdrawal due to insufficient allowance
     with brownie.reverts("ERC20: insufficient allowance"):
         riskpool.burnBundle(
                 bundleId, 
-                {'from': capitalOwner})
+                {'from': riskpoolKeeper})
 
 
 def test_payout_allowance_too_small(
@@ -224,15 +224,15 @@ def test_payout_allowance_too_small(
     # prepare product and riskpool
     safetyFactor = 2
     amount = 10000
-    testCoin.transfer(capitalOwner, safetyFactor * amount, {'from': owner})
-    testCoin.approve(instance.getTreasury(), amount, {'from': capitalOwner})
+    testCoin.transfer(riskpoolKeeper, safetyFactor * amount, {'from': owner})
+    testCoin.approve(instance.getTreasury(), amount, {'from': riskpoolKeeper})
     riskpool = gifRiskpool.getContract()
 
     # fund bundle
     riskpool.createBundle(
                 applicationFilter, 
                 amount, 
-                {'from': capitalOwner})
+                {'from': riskpoolKeeper})
 
     bundle = riskpool.getBundle(0)
     print(bundle)
@@ -271,7 +271,7 @@ def test_payout_allowance_too_small(
     payoutAmount = claimAmount
     
     # prepare allowance for payout that is too small
-    testCoin.approve(instance.getTreasury(), payoutAmount * 0.9, {'from': productOwner})
+    testCoin.approve(instance.getTreasury(), payoutAmount * 0.9, {'from': capitalOwner})
     
     # ensure that the payout fails due to too small allowance
     with brownie.reverts("ERC20: insufficient allowance"):
