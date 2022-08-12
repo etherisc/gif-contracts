@@ -42,7 +42,8 @@ contract AyiiProduct is
     uint256 private _oracleId;
 
     mapping(bytes32 /* riskId */ => Risk) private _risks;
-    mapping(bytes32 /* riskId */ => bytes32 [] /*policyIds*/) private _policies;
+    mapping(bytes32 /* riskId */ => bytes32 [] /* processIds */) private _policies;
+    mapping(bytes32 /* processId */ => bytes32 /* riskId */) private _riskIdByPolicy;
     bytes32 [] private _applications; // useful for debugging, might need to get rid of this
 
     event LogAyiiPolicyCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
@@ -149,6 +150,7 @@ contract AyiiProduct is
 
         if (success) {
             _policies[riskId].push(processId);
+            _riskIdByPolicy[processId] = riskId;
 
             emit LogAyiiPolicyCreated(
                 processId, 
@@ -158,7 +160,7 @@ contract AyiiProduct is
         }
     }
 
-    function triggerOracle(bytes32 riskId) 
+    function triggerOracle(bytes32 riskId, bytes32 processId) 
         external
         onlyRole(INSURER_ROLE)
         returns(uint256 requestId)
@@ -174,7 +176,7 @@ contract AyiiProduct is
         );
 
         requestId = _request(
-                riskId,
+                processId, 
                 queryData,
                 "oracleCallback",
                 _oracleId
@@ -193,7 +195,7 @@ contract AyiiProduct is
 
     function oracleCallback(
         uint256 requestId, 
-        bytes32 riskId, 
+        bytes32 processId, 
         bytes calldata responseData
     ) 
         external 
@@ -206,6 +208,7 @@ contract AyiiProduct is
             uint256 aaay
         ) = abi.decode(responseData, (bytes32, bytes32, bytes32, uint256));
 
+        bytes32 riskId = _riskIdByPolicy[processId];
         require(riskId == getRiskId(projectId, uaiId, cropId), "ERROR:AYI-020:RISK_ID_MISMATCH");
 
         Risk storage risk = _risks[riskId];
