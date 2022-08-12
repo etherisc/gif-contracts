@@ -205,16 +205,14 @@ contract PolicyDefaultFlow is
         )
     {
         TreasuryModule treasury = getTreasuryContract();
-        (success, feeAmount, netPayoutAmount) = treasury.processPayout(processId, payoutId);
+        (feeAmount, netPayoutAmount) = treasury.processPayout(processId, payoutId);
 
         // if payout successful: update book keeping of policy and riskpool
-        if (success) {
-            IPolicy policy = getPolicyContract();
-            policy.processPayout(processId, payoutId);
+        IPolicy policy = getPolicyContract();
+        policy.processPayout(processId, payoutId);
 
-            PoolController pool = getPoolContract();
-            pool.decreaseBalance(processId, netPayoutAmount + feeAmount);
-        }
+        PoolController pool = getPoolContract();
+        pool.decreaseBalance(processId, netPayoutAmount + feeAmount);
     }
 
     function request(

@@ -117,7 +117,7 @@ contract RiskpoolService is
     function fundBundle(uint256 bundleId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)
-        returns(bool success, uint256 netAmount)
+        returns( uint256 netAmount)
     {
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
         require(
@@ -131,15 +131,13 @@ contract RiskpoolService is
 
         _bundle.fund(bundleId, netAmount);
         _pool.fund(bundle.riskpoolId, netAmount);
-
-        success = true;
     }
 
 
     function defundBundle(uint256 bundleId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)
-        returns(bool success, uint256 netAmount)
+        returns(uint256 netAmount)
     {
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
         require(
@@ -148,14 +146,11 @@ contract RiskpoolService is
         );
 
         uint256 feeAmount;
-        (success, feeAmount, netAmount) = _treasury.processWithdrawal(bundleId, amount);
-        require(success, "ERROR:RPS-012:BUNDLE_DEFUNDING_FAILED");
+        (feeAmount, netAmount) = _treasury.processWithdrawal(bundleId, amount);
         require(netAmount == amount, "ERROR:RPS-013:UNEXPECTED_FEE_SUBTRACTION");
 
-        if (success) {
-            _bundle.defund(bundleId, amount);
-            _pool.defund(bundle.riskpoolId, netAmount);
-        }
+        _bundle.defund(bundleId, amount);
+        _pool.defund(bundle.riskpoolId, netAmount);
     }
 
 
@@ -191,15 +186,12 @@ contract RiskpoolService is
         require(bundle.state == IBundle.BundleState.Closed, "ERROR:RPS-020:BUNDLE_NOT_CLOSED");
 
         // withdraw remaining balance
-        (bool success, uint256 feeAmount, uint256 netAmount) = _treasury.processWithdrawal(bundleId, bundle.balance);
-        require(success, "ERROR:RPS-021:WITHDRAWAL_FAILED");
+        (uint256 feeAmount, uint256 netAmount) = _treasury.processWithdrawal(bundleId, bundle.balance);
+    
+        _bundle.defund(bundleId, netAmount);
+        _pool.defund(bundle.riskpoolId, netAmount);
 
-        if (success) {
-            _bundle.defund(bundleId, netAmount);
-            _pool.defund(bundle.riskpoolId, netAmount);
-
-            _bundle.burn(bundleId);
-        }
+        _bundle.burn(bundleId);
     }
     
     function collateralizePolicy(uint256 bundleId, bytes32 processId, uint256 collateralAmount) 
