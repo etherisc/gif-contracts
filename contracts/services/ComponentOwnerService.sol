@@ -88,8 +88,4 @@ contract ComponentOwnerService is
 
         _component.archiveFromComponentOwner(id);
     }
-
-    function getComponentId(address componentAddress) external returns(uint256 id) {
-        _component.getComponentId(componentAddress);
-    }
 }
