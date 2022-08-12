@@ -98,7 +98,9 @@ contract PolicyDefaultFlow is
         }
     }
 
-    /* success implies the successful collection of the premium amof the policy */
+    /* success implies the successful collection of the premium amof the policy.
+     * If no fee structure is defined for the policy, this call will revert. 
+     */
     function collectPremium(bytes32 processId, uint256 amount) 
         public 
         returns(
