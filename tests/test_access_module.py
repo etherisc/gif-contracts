@@ -1,7 +1,13 @@
 import brownie
 import pytest
 
-from scripts.util import keccak256
+from brownie import AccessController
+
+from scripts.util import (
+    keccak256, 
+    s2b32,
+    contractFromAddress
+)
 
 # enforce function isolation for tests below
 @pytest.fixture(autouse=True)
@@ -16,19 +22,55 @@ def test_initial_setup(
     riskpoolKeeper,
 ):
     instanceService = instance.getInstanceService()
-    (poRole, opRole, rkRole) = getRoles(instanceService)
+    instanceOperatorService = instance.getInstanceOperatorService()
+    (poRole, opRole, rkRole, daRole) = getRoles(instanceService)
 
     assert poRole != opRole
     assert poRole != rkRole
+    assert poRole != daRole
     assert opRole != rkRole
+    assert opRole != daRole
+    assert rkRole != daRole
 
     assert poRole == keccak256('PRODUCT_OWNER_ROLE')
     assert opRole == keccak256('ORACLE_PROVIDER_ROLE')
     assert rkRole == keccak256('RISKPOOL_KEEPER_ROLE')
 
+    # check component owners against their roles
     assert not instanceService.hasRole(poRole, productOwner)
     assert not instanceService.hasRole(opRole, oracleProvider)
     assert not instanceService.hasRole(rkRole, riskpoolKeeper)
+
+    # check default role assignemnt
+    assert instanceService.hasRole(daRole, instanceOperatorService.address)
+
+
+def test_default_admin_role(
+    instance,
+    owner,
+    productOwner,
+    oracleProvider,
+    riskpoolKeeper,
+):
+    instanceOperatorService = instance.getInstanceOperatorService()
+    instanceService = instance.getInstanceService()
+    ioDict = {'from': owner}
+    
+    (poRole, opRole, rkRole, daRole) = getRoles(instanceService)
+
+    # check default admin role assignemnt to instance operator service
+    assert instanceService.hasRole(daRole, instanceOperatorService.address)
+
+    registry = instance.getRegistry()
+    access = contractFromAddress(AccessController, registry.getContract(s2b32('Access')))
+
+    # check that 'random' accaounts can't re-assign the admin role
+    with brownie.reverts('ERROR:ACL-001:ADMIN_ROLE_ALREADY_SET'):
+        access.setDefaultAdminRole(productOwner, {'from': productOwner})
+
+    # check that not even the instance operator can change the role assignment
+    with brownie.reverts('ERROR:ACL-001:ADMIN_ROLE_ALREADY_SET'):
+        access.setDefaultAdminRole(productOwner, ioDict)
 
 
 def test_role_assignment(
@@ -42,7 +84,7 @@ def test_role_assignment(
     instanceService = instance.getInstanceService()
     ioDict = {'from': owner}
     
-    (poRole, opRole, rkRole) = getRoles(instanceService)
+    (poRole, opRole, rkRole, daRole) = getRoles(instanceService)
 
     instanceOperatorService.grantRole(poRole, productOwner, ioDict)
     instanceOperatorService.grantRole(opRole, oracleProvider, ioDict)
@@ -105,7 +147,7 @@ def test_role_invalidation(
     instanceService = instance.getInstanceService()
     ioDict = {'from': owner}
     
-    (poRole, opRole, rkRole) = getRoles(instanceService)
+    (poRole, opRole, rkRole, daRole) = getRoles(instanceService)
 
     instanceOperatorService.grantRole(poRole, productOwner, ioDict)
 
@@ -128,5 +170,6 @@ def getRoles(instanceService):
     poRole = instanceService.getProductOwnerRole()
     opRole = instanceService.getOracleProviderRole()
     rkRole = instanceService.getRiskpoolKeeperRole()
+    daRole = instanceService.getDefaultAdminRole()
 
-    return (poRole, opRole, rkRole)
+    return (poRole, opRole, rkRole, daRole)

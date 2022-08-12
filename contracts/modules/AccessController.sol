@@ -26,23 +26,26 @@ contract AccessController is
 
     mapping(bytes32 => bool) public validRole;
 
-    bool defaultAdminSet;
+    bool private _defaultAdminSet;
 
     function _afterInitialize() internal override {
+        // add product owner, oracle provider and riskpool keeper roles
         _populateValidRoles();
     }
 
     function _getName() internal override pure returns(bytes32) { return "Access"; }
 
-    // IMPORTANT this method must be called during initial setup of the GIF instance
-    // otherwise any caller might set the default role admin to any addressS
+    // IMPORTANT check the setting of the default admin role
+    // after the deployment of a GIF instance.
+    // this method is called in the deployment of
+    // the instance operator proxy/controller 
     function setDefaultAdminRole(address defaultAdmin) 
-        public 
+        external 
     {
-        require(!defaultAdminSet, "ERROR:ACL-001:ADMIN_ROLE_ALREADY_SET");
-        defaultAdminSet = true;
+        require(!_defaultAdminSet, "ERROR:ACL-001:ADMIN_ROLE_ALREADY_SET");
+        _defaultAdminSet = true;
 
-        _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
+        _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
     }
 
     //--- manage role ownership ---------------------------------------------//
@@ -95,15 +98,19 @@ contract AccessController is
         return super.hasRole(role, principal);
     }
 
-    function productOwnerRole() public view override returns(bytes32) {
+    function getDefaultAdminRole() public view override returns(bytes32) {
+        return DEFAULT_ADMIN_ROLE;
+    }
+
+    function getProductOwnerRole() public view override returns(bytes32) {
         return PRODUCT_OWNER_ROLE;
     }
 
-    function oracleProviderRole() public view override returns(bytes32) {
+    function getOracleProviderRole() public view override returns(bytes32) {
         return ORACLE_PROVIDER_ROLE;
     }
 
-    function riskpoolKeeperRole() public view override returns(bytes32) {
+    function getRiskpoolKeeperRole() public view override returns(bytes32) {
         return RISKPOOL_KEEPER_ROLE;
     }
 

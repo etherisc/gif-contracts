@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
+import "../modules/AccessController.sol";
+import "../modules/BundleController.sol";
 import "../modules/ComponentController.sol";
 import "../modules/PoolController.sol";
 import "../modules/TreasuryModule.sol";
 import "../shared/CoreController.sol";
 import "../test/TestProduct.sol";
+import "../tokens/BundleToken.sol";
 
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
 import "@etherisc/gif-interface/contracts/components/IProduct.sol";
@@ -35,6 +38,19 @@ contract InstanceOperatorService is
         _treasury = TreasuryModule(_getContractAddress("Treasury"));
 
         _transferOwnership(_msgSender());
+        _linkBundleModuleToBundeToken();
+        _setDefaultAdminRole();
+    }
+
+    function _setDefaultAdminRole() private {
+        AccessController access = AccessController(_getContractAddress("Access"));
+        access.setDefaultAdminRole(address(this));
+    }
+
+    function _linkBundleModuleToBundeToken() private {
+        BundleToken token = BundleToken(_getContractAddress("BundleToken"));
+        address bundleAddress = _getContractAddress("Bundle");
+        token.setBundleModule(bundleAddress);
     }
 
     /* registry */

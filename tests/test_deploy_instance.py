@@ -41,9 +41,9 @@ def test_Access(instance: GifInstance, owner):
     assert access.address == registry.getContract(s2b32(ACCESS_NAME))
     assert access.address != 0x0
 
-    assert access.productOwnerRole() != access.oracleProviderRole()
-    assert access.oracleProviderRole() != access.riskpoolKeeperRole()
-    assert access.riskpoolKeeperRole() != access.productOwnerRole()
+    assert access.getProductOwnerRole() != access.getOracleProviderRole()
+    assert access.getOracleProviderRole() != access.getRiskpoolKeeperRole()
+    assert access.getRiskpoolKeeperRole() != access.getProductOwnerRole()
 
     with pytest.raises(AttributeError):
         assert access.foo({'from': owner})
