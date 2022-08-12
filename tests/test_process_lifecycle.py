@@ -110,7 +110,7 @@ def test_process_apply_revoke(
     sumInsured = 1000
     processId = create_application(customer, premium, sumInsured, instance, owner, product, testCoin)
 
-    with brownie.reverts('ERROR:TI-1:INVALID_POLICY_OR_HOLDER'):
+    with brownie.reverts('ERROR:PRD-001:INVALID_POLICY_OR_HOLDER_INVALID'):
         product.revoke(processId, {'from': riskpoolKeeper})
 
     product.revoke(processId, {'from': customer})
@@ -354,7 +354,7 @@ def test_process_policy_create_claims(
     #--- underwrite + open claim ---------------------------------------------#
     product.underwrite(processId, {'from': productOwner})
 
-    with brownie.reverts('ERROR:TI-1:INVALID_POLICY_OR_HOLDER'):
+    with brownie.reverts('ERROR:PRD-001:INVALID_POLICY_OR_HOLDER_INVALID'):
         product.submitClaimWithDeferredResponse(processId, claimAmount, {'from': productOwner}) 
 
     tx = product.submitClaimWithDeferredResponse(processId, claimAmount, {'from': customer})

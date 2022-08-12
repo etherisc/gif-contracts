@@ -58,24 +58,6 @@ contract PolicyController is
         emit LogMetadataCreated(owner, processId, productId, PolicyFlowState.Started);
     }
 
-    // TODO remove
-    function setPolicyFlowState(
-        bytes32 processId, 
-        PolicyFlowState state
-    )
-        external override
-    //     onlyPolicyFlow("Policy")
-    {
-    //     Metadata storage meta = metadata[processId];
-    //     require(meta.createdAt > 0, "ERROR:POC-002:METADATA_DOES_NOT_EXIST");
-
-    //     meta.state = state;
-    //     meta.updatedAt = block.timestamp;
-
-    //     emit LogMetadataStateChanged(processId, state);
-        revert("REMOVE");
-    }
-
     /* Application */
     function createApplication(
         bytes32 processId, 
