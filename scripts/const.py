@@ -56,7 +56,5 @@ RIKSPOOL_ID = 0
 ORACLE_NAME = 'Test.Oracle'
 ORACLE_INPUT_FORMAT = '(bytes input)'
 ORACLE_OUTPUT_FORMAT = '(bool output)'
-ORACLE_ID = 1
 
 PRODUCT_NAME = 'Test.Product'
-PRODUCT_ID = 2
