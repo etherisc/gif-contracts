@@ -19,7 +19,7 @@ def h2sLeft(hex: str) -> str:
     return Web3.toText(hex).split('\x00')[0]
 
 def s2b32(text: str):
-    return '{:0<66}'.format(Web3.toHex(text.encode('ascii')))
+    return '{:0<66}'.format(Web3.toHex(text.encode('ascii')))[:66]
 
 def b322s(b32: bytes):
     return b32.decode().split('\x00')[0]
@@ -133,7 +133,7 @@ def deployGifModuleV2(
         publish_source=publishSource)
 
     moduleNameB32 = s2b32(moduleName)
-    controllerNameB32 = s2b32('{}Controller'.format(moduleName))[:32]
+    controllerNameB32 = s2b32('{}Controller'.format(moduleName))
 
     registry.register(controllerNameB32, controller.address, deployDict)
     registry.register(moduleNameB32, proxy.address, deployDict)
