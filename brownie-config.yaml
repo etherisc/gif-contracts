@@ -6,6 +6,7 @@ networks:
     development:
         cmd_settings:
             # without this explicit setting chainid==1 is returend by block.chainid
+            accounts: 20
             chain_id: 1337
 
 # brownie default values made explicit
