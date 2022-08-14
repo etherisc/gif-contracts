@@ -5,4 +5,9 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "terminal.integrated.defaultProfile.linux": "zsh",
+    "solidity.remappingsUnix": [
+        "@openzeppelin/=/home/vscode/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.7.0",
+        "@etherisc/gif-interface/=/home/vscode/.brownie/packages/etherisc/gif-interface@310171b",
+        "@chainlink/=/home/vscode/.brownie/packages/smartcontractkit/chainlink@1.6.0",
+    ]
 }
