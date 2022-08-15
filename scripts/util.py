@@ -172,6 +172,9 @@ def deployGifServiceV2(
     return service
 
 def contractFromAddress(contractClass, contractAddress):
+    return contract_from_address(contractClass, contractAddress)
+
+def contract_from_address(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
 
 # this will deploy the TestSimpleIncrementer smart contract, increment it and wait for the trx to finish. 
