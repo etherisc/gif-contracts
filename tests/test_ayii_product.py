@@ -29,10 +29,12 @@ def isolation(fn_isolation):
 
 def test_happy_path(
     instance: GifInstance, 
-    owner, 
+    instanceOperator, 
     gifAyiiProduct: GifAyiiProduct,
-    capitalOwner,
+    riskpoolWallet,
+    investor,
     productOwner,
+    insurer,
     oracleProvider,
     riskpoolKeeper,
     customer,
@@ -44,10 +46,6 @@ def test_happy_path(
     oracle = gifAyiiProduct.getOracle().getContract()
     riskpool = gifAyiiProduct.getRiskpool().getContract()
 
-    riskpoolWallet = capitalOwner
-    investor = riskpoolKeeper # investor=bundleOwner
-    insurer = productOwner # role required by area yield index product
-
     clOperator = gifAyiiProduct.getOracle().getClOperator()
 
     print('--- test setup funding riskpool --------------------------')
@@ -58,7 +56,7 @@ def test_happy_path(
     riskpoolFunding = 200000
     fund_riskpool(
         instance, 
-        owner, 
+        instanceOperator, 
         riskpoolWallet, 
         riskpool, 
         investor, 
@@ -114,8 +112,8 @@ def test_happy_path(
     aph = [multiplier * aphFloat[0], multiplier * aphFloat[1]]
 
     tx = [None, None]
-    tx[0] = product.createRisk(projectId, uaiId[0], cropId, trigger, exit, tsi, aph[0])
-    tx[1] = product.createRisk(projectId, uaiId[1], cropId, trigger, exit, tsi, aph[1])
+    tx[0] = product.createRisk(projectId, uaiId[0], cropId, trigger, exit, tsi, aph[0], {'from': insurer})
+    tx[1] = product.createRisk(projectId, uaiId[1], cropId, trigger, exit, tsi, aph[1], {'from': insurer})
 
     riskId = [None, None]
     riskId = [tx[0].return_value, tx[1].return_value]
@@ -131,8 +129,8 @@ def test_happy_path(
     assert token.balanceOf(customer2) == 0
 
     customerFunding = 500
-    fund_customer(instance, owner, customer, token, customerFunding)
-    fund_customer(instance, owner, customer2, token, customerFunding)
+    fund_customer(instance, instanceOperator, customer, token, customerFunding)
+    fund_customer(instance, instanceOperator, customer2, token, customerFunding)
 
     # check customer funds after funding
     customerBalanceAfterFunding = token.balanceOf(customer)
@@ -146,8 +144,8 @@ def test_happy_path(
     premium = [300, 400]
     sumInsured = [2000, 3000]
 
-    tx[0] = product.applyForPolicy(customer, premium[0], sumInsured[0], riskId[0])
-    tx[1] = product.applyForPolicy(customer2, premium[1], sumInsured[1], riskId[1])
+    tx[0] = product.applyForPolicy(customer, premium[0], sumInsured[0], riskId[0], {'from': insurer})
+    tx[1] = product.applyForPolicy(customer2, premium[1], sumInsured[1], riskId[1], {'from': insurer})
 
     # check customer funds after application/paying premium
     customerBalanceAfterPremium = token.balanceOf(customer)
@@ -223,8 +221,8 @@ def test_happy_path(
 
     print('--- step trigger oracle (call chainlin node) -------------')
 
-    tx[0] = product.triggerOracle(policyId[0])
-    tx[1] = product.triggerOracle(policyId[1])
+    tx[0] = product.triggerOracle(policyId[0], {'from': insurer})
+    tx[1] = product.triggerOracle(policyId[1], {'from': insurer})
     requestId = [tx[0].return_value, tx[1].return_value]
 
     # ensure event emitted as chainlink client
@@ -338,7 +336,7 @@ def test_happy_path(
 
     # claim processing for policies associated with the specified risk
     # batch size=0 triggers processing of all policies for this risk
-    tx = product.processPoliciesForRisk(riskId[0], 0)
+    tx = product.processPoliciesForRisk(riskId[0], 0, {'from': insurer})
     policyIds = tx.return_value
 
     assert len(policyIds) == 1
@@ -416,7 +414,7 @@ def test_happy_path(
     print('--- step test process policies (risk[1]) -----------------')
 
     # process 2nd policy to have all policies closed
-    tx = product.processPoliciesForRisk(riskId[1], 0)
+    tx = product.processPoliciesForRisk(riskId[1], 0, {'from': insurer})
     policyIds = tx.return_value
     assert len(policyIds) == 1
     assert policyIds[0] == policyId[1]
@@ -448,7 +446,7 @@ def test_happy_path(
 
     investorBalanceBeforeBundleClose = token.balanceOf(investor)
 
-    riskpool.closeBundle(bundleId)
+    riskpool.closeBundle(bundleId, {'from': investor})
 
     investorBalanceBeforeTokenBurn = token.balanceOf(investor)    
     assert investorBalanceBeforeBundleClose == investorBalanceBeforeTokenBurn
@@ -462,7 +460,7 @@ def test_happy_path(
     assert bundleToken.burned(bundleNftId) == False
     assert bundleToken.ownerOf(bundleNftId) == investor
 
-    tx = riskpool.burnBundle(bundleId)
+    tx = riskpool.burnBundle(bundleId, {'from': investor})
     print(tx.info())
 
     # verify bundle is burned and has 0 balance
@@ -481,13 +479,14 @@ def test_happy_path(
 
 def test_create_bundle_investor_restriction(
     instance: GifInstance, 
-    owner, 
+    instanceOperator: Account, 
     gifAyiiProduct: GifAyiiProduct,
-    capitalOwner,
-    productOwner,
-    oracleProvider,
-    riskpoolKeeper,
-    customer,
+    riskpoolWallet: Account,
+    productOwner: Account,
+    oracleProvider: Account,
+    riskpoolKeeper: Account,
+    investor: Account,
+    customer: Account,
 ):
     instanceService = instance.getInstanceService()
 
@@ -495,12 +494,9 @@ def test_create_bundle_investor_restriction(
     oracle = gifAyiiProduct.getOracle().getContract()
     riskpool = gifAyiiProduct.getRiskpool().getContract()
 
-    riskpoolWallet = capitalOwner
-    investor = riskpoolKeeper # investor=bundleOwner
-
     amount = 5000
     token = gifAyiiProduct.getToken()
-    token.transfer(investor, amount, {'from': owner})
+    token.transfer(investor, amount, {'from': instanceOperator})
     token.approve(instance.getTreasury(), amount, {'from': investor})
 
     # check that investor can create a bundle
@@ -514,7 +510,7 @@ def test_create_bundle_investor_restriction(
     assert bundleId > 0
 
     # check that customer is not allowed to create bundle
-    with brownie.reverts("AccessControl: account 0x0d1d4e623d10f9fba5db95830f7d3839406c6af2 is missing role 0x5614e11ca6d7673c9c8dcec913465d676494aad1151bb2c1cf40b9d99be4d935"):
+    with brownie.reverts("AccessControl: account 0x5aeda56215b167893e80b4fe645ba6d5bab767de is missing role 0x5614e11ca6d7673c9c8dcec913465d676494aad1151bb2c1cf40b9d99be4d935"):
         riskpool.createBundle(
                 applicationFilter, 
                 amount, 
@@ -529,7 +525,7 @@ def test_create_bundle_investor_restriction(
 
     # fund customer
     customerAmount = 2000
-    token.transfer(customer, customerAmount, {'from': owner})
+    token.transfer(customer, customerAmount, {'from': instanceOperator})
     token.approve(instance.getTreasury(), customerAmount, {'from': customer})
 
     # check that customer now can create a bundle
@@ -625,28 +621,3 @@ def get_payout_delta(
     )
 
     return abs(expectedPayoutPercentage * multiplier - calculatedPayout) / multiplier
-
-def create_risk(
-    product,
-    aph:float,
-    projectId:str='2022.kenya.wfp.ayii',
-    uaiId:str='1234',
-    cropId:str='mixed',
-    trigger:float=0.75,
-    exit:float=0.1,
-    tsi:float=0.9,
-):
-    multiplier = product.getPercentageMultiplier()
-    tx = product.createRisk(
-        s2b32(projectId), 
-        s2b32(uaiId), 
-        s2b32(cropId), 
-        multiplier * trigger, 
-        multiplier * exit, 
-        multiplier * tsi, 
-        multiplier * aph)
-    
-    riskId = tx.return_value
-    risk = product.getRisk(riskId)
-
-    return risk

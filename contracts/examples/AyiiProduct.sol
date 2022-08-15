@@ -167,6 +167,22 @@ contract AyiiProduct is
         }
     }
 
+    function collectPremium(bytes32 policyId) 
+        external
+        onlyRole(INSURER_ROLE)
+        returns(bool success, uint256 fee, uint256 netPremium)
+    {
+        (success, fee, netPremium) = _collectPremium(policyId);
+    }
+
+    function collectPremium(bytes32 policyId, uint256 amount) 
+        external
+        onlyRole(INSURER_ROLE)
+        returns(bool success, uint256 fee, uint256 netPremium)
+    {
+        (success, fee, netPremium) = _collectPremium(policyId, amount);
+    }
+
     function triggerOracle(bytes32 processId) 
         external
         onlyRole(INSURER_ROLE)

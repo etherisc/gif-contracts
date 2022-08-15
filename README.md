@@ -67,19 +67,22 @@ from scripts.product import GifInstance, GifTestOracle, GifTestProduct, GifTestR
 from scripts.util import s2b, b2s
 
 # --- create instance and accounts setup ---
-owner=accounts[0]
-riskpoolKeeper=accounts[1]
+instanceOperator=accounts[0]
+instanceWallet=accounts[1]
 oracleProvider=accounts[2]
-productOwner=accounts[3]
-customer=accounts[4]
-customer2=accounts[5]
-capitalOwner=accounts[6]
-feeOwner=accounts[7]
+chainlinkNodeOperator=accounts[3]
+riskpoolKeeper=accounts[4]
+riskpoolWallet=accounts[5]
+investor=accounts[6]
+productOwner=accounts[7]
+insurer=accounts[8]
+customer=accounts[9]
+customer2=accounts[10]
 
 # --- dummy coin setup ---
-testCoin = TestCoin.deploy({'from': owner})
-testCoin.transfer(riskpoolKeeper, 10**6, {'from': owner})
-testCoin.transfer(customer, 10**6, {'from': owner})
+testCoin = TestCoin.deploy({'from': instanceOperator})
+testCoin.transfer(investor, 10**6, {'from': instanceOperator})
+testCoin.transfer(customer, 10**6, {'from': instanceOperator})
 
 # --- create instance setup ---
 # instance=GifInstance(registryAddress='0xe7D6c54cf8Bd798edA9E9A3Aa094Fb01EF34C251', owner=owner)
@@ -248,4 +251,136 @@ To check all contract addresses you may use the instance python script inside th
 ```bash
 # 0x2852593b21796b549555d09873155B25257F6C38 is the registry contract address
 brownie run scripts/instance.py dump_sources 0x2852593b21796b549555d09873155B25257F6C38 --network polygon-test
+```
+
+## Full Deployment with Example Product
+
+```bash
+# --- ganache accounts setup -------------
+instanceOperator=accounts[0]
+instanceWallet=accounts[1]
+oracleProvider=accounts[2]
+chainlinkNodeOperator=accounts[3]
+riskpoolKeeper=accounts[4]
+riskpoolWallet=accounts[5]
+investor=accounts[6]
+productOwner=accounts[7]
+insurer=accounts[8]
+customer=accounts[9]
+customer2=accounts[10]
+
+# --- test net accounts setup -------------
+instanceOperator=accounts.add()
+instanceWallet=accounts.add()
+oracleProvider=accounts.add()
+chainlinkNodeOperator=accounts.add()
+riskpoolKeeper=accounts.add()
+riskpoolWallet=accounts.add()
+investor=accounts.add()
+productOwner=accounts.add()
+insurer=accounts.add()
+customer=accounts.add()
+customer2=accounts.add()
+
+# --- optional erc20 token deploy  -------------
+# skip this if the value token for the product and
+# riskpool is already deployed
+
+erc20Token = TestCoin.deploy({'from': instanceOperator})
+
+# --- gif instance deploy deploy  -------------
+# if the gif instance is already deployed replace
+# the command below with the following line
+# instance = GifInstance(registryAddress='0x...')
+from scripts.instance import GifInstance
+
+instance = GifInstance(instanceOperator, instanceWallet=instanceWallet)
+instanceService = instance.getInstanceService()
+
+instance.getRegistry()
+
+# --- example product deploy deploy  -------------
+from scripts.ayii_product import GifAyiiProductComplete
+
+ayiiDeploy = GifAyiiProductComplete(instance, productOwner, insurer, oracleProvider, chainlinkNodeOperator, riskpoolKeeper, investor, erc20Token, riskpoolWallet)
+
+ayiiProduct = ayiiDeploy.getProduct()
+ayiiOracle = ayiiProduct.getOracle()
+ayiiRiskpool = ayiiProduct.getRiskpool()
+
+product = ayiiProduct.getContract()
+oracle = ayiiOracle.getContract()
+riskpool = ayiiRiskpool.getContract()
+```
+
+## Interact with Example Product
+
+```bash
+from scripts.util import s2b32
+
+#--- setup risk (group policy) definition -----------------
+projectId = s2b32('test-project')
+uaiId = s2b32('some-region-id')
+cropId = s2b32('maize')
+
+multiplier = product.getPercentageMultiplier()
+trigger = 0.75 * multiplier
+exit_ = 0.1 * multiplier # exit is needed to exit the console
+tsi = 0.9 * multiplier
+aph = 2.0 * multiplier
+
+tx = product.createRisk(projectId, uaiId, cropId, trigger, exit_, tsi, aph,
+  {'from': insurer})
+riskId = tx.return_value
+
+#--- fund investor which in turn creates a risk bundle ---
+bundleInitialFunding=1000000
+erc20Token.transfer(investor, bundleInitialFunding, {'from': instanceOperator})
+erc20Token.approve(instance.getTreasury(), bundleInitialFunding, {'from': investor})
+
+applicationFilter = bytes(0)
+riskpool.createBundle(applicationFilter, bundleInitialFunding, {'from': investor})
+
+instanceService.getBundle(1)
+erc20Token.balanceOf(riskpoolWallet.address)
+erc20Token.balanceOf(instanceWallet.address)
+
+# approvel for payouts/defunding
+maxUint256 = 2**256-1
+erc20Token.approve(instance.getTreasury(), maxUint256, {'from': riskpoolWallet})
+
+#--- fund customer which in turn applies for a policy ---
+customerFunding=1000
+erc20Token.transfer(customer, customerFunding, {'from': instanceOperator})
+
+premium = 100
+sumInsured = 20000
+
+tx = product.applyForPolicy(customer, premium, sumInsured, riskId, 
+  {'from': insurer})
+policyId = tx.return_value
+
+# print data for bundle and newly created policy
+riskpool.getTotalValueLocked() # shows the 20000 of locked capital to cover the sum insurance
+instanceService.getBundle(1) # bundle state, locked capital (20000 to cover sum insured)
+instanceService.getMetadata(policyId) # policy owner and product id
+instanceService.getApplication(policyId) # premium, sum insurec, risk id
+instanceService.getPolicy(policyId) # policy state, premium payed (=0 for now)
+
+# premium payment in bits, allowance set for full premium
+erc20Token.approve(instance.getTreasury(), 100, {'from': customer})
+
+# first installment
+product.collectPremium(policyId, 40, {'from':insurer})
+instanceService.getPolicy(policyId)
+
+# second installment
+product.collectPremium(policyId, 60, {'from':insurer})
+instanceService.getPolicy(policyId)
+
+# TODO add:
+# - oracle call
+# - policy processing
+# - payout to customer
+# - definding back to inverster
 ```
