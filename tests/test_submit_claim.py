@@ -15,6 +15,7 @@ from scripts.const import (
 from scripts.util import (
     s2h,
     s2b32,
+    execute_dummy_trx,
 )
 
 from scripts.setup import (
@@ -82,6 +83,8 @@ def test_claim_submission(
     claim = instanceService.getClaim(policy_id, claim_id)
     print(claim)
 
+    execute_dummy_trx(owner)
+
 
 def test_claim_submission_for_expired_policy(
     instance: GifInstance, 
@@ -113,6 +116,8 @@ def test_claim_submission_for_expired_policy(
     claimAmount = 300
     with brownie.reverts():
         product.submitClaim(policy_id, claimAmount, {'from': customer})
+
+    execute_dummy_trx(owner)
 
 
 def test_multiple_claim_submission(
@@ -196,6 +201,8 @@ def test_multiple_claim_submission(
     assert instanceService.claims(policy2_id) == 1
     assert instanceService.payouts(policy2_id) == 0
 
+    execute_dummy_trx(owner)
+
 
 def test_payout_creation_for_declined_claim(
     instance: GifInstance, 
@@ -241,6 +248,8 @@ def test_payout_creation_for_declined_claim(
     # check that it's not possible to create payout for claim in declined state
     with brownie.reverts("ERROR:POC-042:CLAIM_NOT_CONFIRMED"):
         product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
+
+    execute_dummy_trx(owner)
 
 
 def test_payout_creation_for_confirmed_claim(
@@ -294,6 +303,8 @@ def test_payout_creation_for_confirmed_claim(
     # check that it's not possible to create payout for claim in closed state
     with brownie.reverts("ERROR:POC-042:CLAIM_NOT_CONFIRMED"):
         product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
+
+    execute_dummy_trx(owner)
 
 
 def create_policy(
