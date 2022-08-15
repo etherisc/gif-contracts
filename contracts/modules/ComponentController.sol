@@ -203,9 +203,9 @@ contract ComponentController is
     }
 
     function getRequiredRole(IComponent.ComponentType componentType) external returns (bytes32) {
-        if (componentType == IComponent.ComponentType.Product) { return _access.productOwnerRole(); }
-        else if (componentType == IComponent.ComponentType.Oracle) { return _access.oracleProviderRole(); }
-        else if (componentType == IComponent.ComponentType.Riskpool) { return _access.riskpoolKeeperRole(); }
+        if (componentType == IComponent.ComponentType.Product) { return _access.getProductOwnerRole(); }
+        else if (componentType == IComponent.ComponentType.Oracle) { return _access.getOracleProviderRole(); }
+        else if (componentType == IComponent.ComponentType.Riskpool) { return _access.getRiskpoolKeeperRole(); }
         else { revert("ERROR:CCR-008:COMPONENT_TYPE_UNKNOWN"); }
     }
 

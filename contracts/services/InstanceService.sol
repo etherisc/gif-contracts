@@ -97,16 +97,20 @@ contract InstanceService is
     }
 
     /* access */
+    function getDefaultAdminRole() external view returns(bytes32) {
+        return _access.getDefaultAdminRole();
+    }
+
     function getProductOwnerRole() external override view returns(bytes32) {
-        return _access.productOwnerRole();
+        return _access.getProductOwnerRole();
     }
 
     function getOracleProviderRole() external override view returns(bytes32) {
-        return _access.oracleProviderRole();
+        return _access.getOracleProviderRole();
     }
 
     function getRiskpoolKeeperRole() external override view returns(bytes32) {
-        return _access.riskpoolKeeperRole();
+        return _access.getRiskpoolKeeperRole();
     }
 
     function hasRole(bytes32 role, address principal)

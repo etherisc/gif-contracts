@@ -12,6 +12,18 @@ def test_setup(bundleToken, owner):
 def isolation(fn_isolation):
     pass
 
+def test_setup_with_instance(instance, owner):
+    bundleToken = instance.bundleToken
+    bundleModule = instance.bundle
+
+    # check after intance deployment bundle module is already set
+    with brownie.reverts('ERROR:BTK-003:BUNDLE_MODULE_ALREADY_DEFINED'):
+        bundleToken.setBundleModule(owner)
+
+    # check that initial wiring corresponds to expectation
+    assert bundleToken.getBundleModuleAddress() == bundleModule.address
+
+
 # check initialization process then happy path with mint/burn
 def test_initialize(bundleToken, owner, riskpoolKeeper, customer):
 
@@ -21,11 +33,6 @@ def test_initialize(bundleToken, owner, riskpoolKeeper, customer):
         bundleToken.mint(
             bundleId, 
             customer, 
-            {'from': owner})
-
-    with brownie.reverts('ERROR:BTK-001:NOT_INITIALIZED'):
-        bundleToken.burn(
-            bundleId, 
             {'from': owner})
 
     # check setting of minter

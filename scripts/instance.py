@@ -156,13 +156,13 @@ class GifInstance(GifRegistry):
         # TODO these contracts do not work with proxy pattern
         self.productService = deployGifService(ProductService, registry, owner, publishSource)
 
-        # needs to be the last module to register as it will change
-        # the address of the instance operator service to its true address
+        # needs to be the last module to register as it will 
+        # perform some post deploy wirings and changes the address 
+        # of the instance operator service to its true address
         self.instanceOperatorService = deployGifModuleV2("InstanceOperatorService", InstanceOperatorService, registry, owner, publishSource)
 
         # post deploy wiring steps
-        self.bundleToken.setBundleModule(self.bundle)
-        self.access.setDefaultAdminRole(self.instanceOperatorService.address, {'from': owner})
+        # self.bundleToken.setBundleModule(self.bundle)
 
 
     def fromRegistryAddress(self, registry_address):

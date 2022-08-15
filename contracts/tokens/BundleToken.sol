@@ -29,7 +29,6 @@ contract BundleToken is
 
     function setBundleModule(address bundleModule)
         external
-        onlyOwner
     {
         require(_bundleModule == address(0), "ERROR:BTK-003:BUNDLE_MODULE_ALREADY_DEFINED");
         require(bundleModule != address(0), "ERROR:BTK-004:INVALID_BUNDLE_MODULE_ADDRESS");
@@ -70,7 +69,9 @@ contract BundleToken is
         isBurned = tokenId <= _tokens && !_exists(tokenId);
     }
 
-    function exists(uint256 tokenId) external override view returns(bool) { return tokenId <= _tokens; }
     function getBundleId(uint256 tokenId) external override view returns(uint256) { return _bundleId[tokenId]; }
+    function getBundleModuleAddress() external view returns(address) { return _bundleModule; }
+
+    function exists(uint256 tokenId) external override view returns(bool) { return tokenId <= _tokens; }
     function tokens() external override view returns(uint256 tokenCount) { return _tokens; }
 }
