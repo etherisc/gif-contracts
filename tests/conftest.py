@@ -36,6 +36,7 @@ from brownie import (
     AyiiProduct,
     AyiiOracle,
     AyiiRiskpool,
+    TestHelper,
 )
 
 from brownie.network import accounts
@@ -78,6 +79,7 @@ from scripts.util import (
     deployGifModule,
     deployGifModuleV2,
     deployGifService,
+    wait_for_dummy_trx,
 )
 
 PUBLISH_SOURCE = False
@@ -251,6 +253,10 @@ def bundleToken(owner) -> BundleToken:
 def testCoinSetup(testCoin, owner, customer) -> TestCoin:
     testCoin.transfer(customer, 10**6, {'from': owner})
     return testCoin
+
+@pytest.fixture(scope="module")
+def testHelper(owner) -> TestHelper:
+    return TestHelper.deploy({'from': owner})
 
 def contractFromAddress(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
