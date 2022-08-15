@@ -19,7 +19,7 @@ def h2sLeft(hex: str) -> str:
     return Web3.toText(hex).split('\x00')[0]
 
 def s2b32(text: str):
-    return '{:0<66}'.format(Web3.toHex(text.encode('ascii')))
+    return '{:0<66}'.format(Web3.toHex(text.encode('ascii')))[:66]
 
 def b322s(b32: bytes):
     return b32.decode().split('\x00')[0]
