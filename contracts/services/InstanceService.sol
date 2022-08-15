@@ -248,6 +248,10 @@ contract InstanceService is
         return _pool.getRiskpool(riskpoolId).balance;
     }
 
+    function getMaximumNumberOfActiveBundles(uint256 riskpoolId) external view returns(uint256 maximumNumberOfActiveBundles) {
+        return _pool.getMaximumNumberOfActiveBundles(riskpoolId);
+    }
+
 
     /* bundle */
     function getBundleToken() external override view returns(IBundleToken token) {

@@ -15,18 +15,11 @@ contract BundleController is
     PolicyController private _policy;
     BundleToken private _token; 
 
-    // bundleId => Bundle
-    mapping(uint256 => Bundle) private _bundles;
-
-    // bundleId => activePolicyCount
-    mapping(uint256 => uint256) private _activePolicies;
-
-    // (bundleId => processId => lockedCapitalAmount)
-    mapping(uint256 => mapping(bytes32 => uint256)) private _valueLockedPerPolicy;
-
-    // (riskpoolId => numberOfUnburntBundles)
-    mapping(uint256 => uint256) private _unburntBundlesForRiskpoolId;
-
+    mapping(uint256 /* bundleId */ => Bundle /* Bundle */) private _bundles;
+    mapping(uint256 /* bundleId */ => uint256 /* activePolicyCount */) private _activePolicies;
+    mapping(uint256 /* bundleId */ => mapping(bytes32 /* processId */ => uint256 /* lockedCapitalAmount */)) private _valueLockedPerPolicy;
+    mapping(uint256 /* riskpoolId */ => uint256 /* numberOfUnburntBundles */) private _unburntBundlesForRiskpoolId;
+    
 
     uint256 private _bundleCount;
 
@@ -231,7 +224,6 @@ contract BundleController is
         bundle.balance -= amount;
         bundle.updatedAt = block.timestamp;
     }
-
 
     function getOwner(uint256 bundleId) public view returns(address) { 
         uint256 tokenId = getBundle(bundleId).tokenId;
