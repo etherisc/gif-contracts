@@ -38,7 +38,7 @@ contract InstanceOperatorService is
         _treasury = TreasuryModule(_getContractAddress("Treasury"));
 
         _transferOwnership(_msgSender());
-        _linkBundleModuleToBundeToken();
+        _linkBundleModuleToBundleToken();
         _setDefaultAdminRole();
     }
 
@@ -47,7 +47,7 @@ contract InstanceOperatorService is
         access.setDefaultAdminRole(address(this));
     }
 
-    function _linkBundleModuleToBundeToken() private {
+    function _linkBundleModuleToBundleToken() private {
         BundleToken token = BundleToken(_getContractAddress("BundleToken"));
         address bundleAddress = _getContractAddress("Bundle");
         token.setBundleModule(bundleAddress);
