@@ -97,6 +97,9 @@ def get_filled_account(accounts, account_no, funding) -> Account:
     accounts[account_no].transfer(owner, funding)
     return owner
 
+# fixtures with `yield` execute the code that is placed before the `yield` as setup code
+# and code after `yield` is teardown code. 
+# See https://docs.pytest.org/en/7.1.x/how-to/fixtures.html#yield-fixtures-recommended
 @pytest.fixture(autouse=True)
 def run_around_tests():
     yield
