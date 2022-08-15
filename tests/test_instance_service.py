@@ -72,5 +72,39 @@ def test_services_against_registry(instance, owner):
     assert iosAddress != ZERO_ADDRESS
     assert instanceService.getInstanceOperatorService() == iosAddress
 
+def test_component_access(instance, owner, gifTestProduct):
+    instanceService = instance.getInstanceService()
+    registryAddress = instanceService.getRegistry()
+
+    product = gifTestProduct.getContract()
+    oracle = gifTestProduct.getOracle().getContract()
+    riskpool = gifTestProduct.getRiskpool().getContract()
+
+    assert registryAddress == product.getRegistry()
+    assert registryAddress == oracle.getRegistry()
+    assert registryAddress == riskpool.getRegistry()
+
+    assert instanceService.getComponentId(product.address) == product.getId()
+    assert instanceService.getComponentId(oracle.address) == oracle.getId()
+    assert instanceService.getComponentId(riskpool.address) == riskpool.getId()
+
+    assert instanceService.getComponentType(product.getId()) == product.getType()
+    assert instanceService.getComponentType(oracle.getId()) == oracle.getType()
+    assert instanceService.getComponentType(riskpool.getId()) == riskpool.getType()
+
+    assert instanceService.getComponentState(product.getId()) == product.getState()
+    assert instanceService.getComponentState(oracle.getId()) == oracle.getState()
+    assert instanceService.getComponentState(riskpool.getId()) == riskpool.getState()
+
+    pfis = contractFromAddress(
+        interface.IComponent, 
+        instanceService.getComponent(
+            product.getId()))
+    
+    assert pfis.getId() == product.getId()
+    assert pfis.getName() == product.getName()
+    assert pfis.getType() == product.getType()
+    assert pfis.getState() == product.getState()
+
 def _addressFrom(registry, contractName):
     return registry.getContract(s2b32(contractName))

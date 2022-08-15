@@ -145,6 +145,7 @@ contract TestCompromisedProduct is
     function getType() external override view returns(ComponentType) { return IComponent.ComponentType.Product; }
     function getState() external override view returns(ComponentState) { return IComponent.ComponentState.Active; }
     function getOwner() external override view returns(address) { return owner(); }
+    function getRegistry() external override view returns(IRegistry) { return _registry; }
 
     function isProduct() public override view returns(bool) { return true; }
     function isOracle() public override view returns(bool) { return false; }

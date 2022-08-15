@@ -133,6 +133,10 @@ contract InstanceService is
         return _component.riskpools();
     }
 
+    function getComponentId(address componentAddress) external override view returns(uint256 componentId) {
+        return _component.getComponentId(componentAddress);
+    }
+
     function getComponent(uint256 id) external override view returns(IComponent) {
         return _component.getComponent(id);
     }
