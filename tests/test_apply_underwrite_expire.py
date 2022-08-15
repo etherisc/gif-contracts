@@ -19,7 +19,6 @@ from scripts.const import (
 from scripts.util import (
     s2h,
     s2b32,
-    execute_dummy_trx,
 )
 
 from scripts.setup import (
@@ -105,7 +104,6 @@ def test_process_id_creation(
     assert processId1 == expectedProcessId1
     assert processId2 == expectedProcessId2
 
-    execute_dummy_trx(owner)
 
 def test_create_policy(
     instance: GifInstance, 
@@ -208,8 +206,6 @@ def test_create_policy(
     instanceService = instance.getInstanceService()
     assert instanceService.payouts(policyId) == 0
 
-    execute_dummy_trx(owner)
-
 
 def test_create_expire_and_close_policy(
     instance: GifInstance, 
@@ -276,7 +272,6 @@ def test_create_expire_and_close_policy(
     assert product.policies() == 1
     assert riskpool.getCapacity() == capitalAfterCost
 
-    execute_dummy_trx(owner)
 
 def test_application_with_delayed_premium_payment(
     instance: GifInstance, 
@@ -340,8 +335,6 @@ def test_application_with_delayed_premium_payment(
     policy = policyController.getPolicy(policyId).dict()
     assert policy['premiumExpectedAmount'] == premium
     assert policy['premiumPaidAmount'] == premium
-
-    execute_dummy_trx(owner)
 
 
 def test_application_with_premium_payment_in_bits(
@@ -428,7 +421,6 @@ def test_application_with_premium_payment_in_bits(
     assert policy['premiumPaidAmount'] == premiumPart1 + premiumPart2 + premiumPart3
     assert policy['premiumPaidAmount'] == policy['premiumExpectedAmount']
 
-    execute_dummy_trx(owner)
 
 def test_product_inactive(
     instance: GifInstance, 
@@ -467,7 +459,6 @@ def test_product_inactive(
     assert product.applications() == 0
     assert product.policies() == 0
 
-    execute_dummy_trx(customer)
 
 def test_riskpool_inactive(
     instance: GifInstance, 
@@ -515,8 +506,6 @@ def test_riskpool_inactive(
     assert product.applications() == 0
     assert product.policies() == 0
 
-    execute_dummy_trx(owner)
-
 
 def test_empty_riskpool(
     instance: GifInstance, 
@@ -550,8 +539,6 @@ def test_empty_riskpool(
     assert product.applications() == 0
     assert product.policies() == 0
 
-    execute_dummy_trx(customer)
-
 
 def test_insufficient_capital(
     instance: GifInstance, 
@@ -584,8 +571,6 @@ def test_insufficient_capital(
     assert policyId is not None     
     assert product.applications() == 1
     assert product.policies() == 0
-
-    execute_dummy_trx(owner)
 
 
 def _getPolicyDict(instance, policyId):

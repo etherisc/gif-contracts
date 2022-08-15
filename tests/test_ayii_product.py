@@ -19,7 +19,7 @@ from scripts.setup import (
 )
 
 from scripts.instance import GifInstance
-from scripts.util import s2b32, contractFromAddress, execute_dummy_trx
+from scripts.util import s2b32, contractFromAddress
 
 # enforce function isolation for tests below
 @pytest.fixture(autouse=True)
@@ -478,7 +478,6 @@ def test_happy_path(
     
     assert token.balanceOf(investor) == investorBalanceBeforeTokenBurn + bundleBeforeBurn['balance']
 
-    execute_dummy_trx(owner)
 
 def test_create_bundle_investor_restriction(
     instance: GifInstance, 
@@ -542,8 +541,6 @@ def test_create_bundle_investor_restriction(
     bundleIdCustomer = tx.return_value
     assert bundleIdCustomer == bundleId + 1
 
-    execute_dummy_trx(owner)
-
 
 def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct, owner):
 
@@ -584,8 +581,6 @@ def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct, owner):
     assert get_payout_delta(0.9, 100.0,   5.0, tsi, trigger, exit, product, multiplier) < 0.0000001
     assert get_payout_delta(0.9, 100.0,   0.0, tsi, trigger, exit, product, multiplier) < 0.0000001
 
-    execute_dummy_trx(owner)
-
 
 def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct, owner):
 
@@ -613,8 +608,6 @@ def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct, owner):
     sumInsuredAmount = 2200
     expected_payout = int(expected_payout_percentage * sumInsuredAmount / multiplier)
     assert expected_payout == product.calculatePayout(expected_payout_percentage, sumInsuredAmount)
-
-    execute_dummy_trx(owner)
 
 
 def get_payout_delta(
