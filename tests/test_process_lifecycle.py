@@ -253,7 +253,7 @@ def test_process_apply_underwrite_expire_close(
     with brownie.reverts('ERROR:POC-019:APPLICATION_STATE_INVALID'):
         product.decline(processId, {'from': productOwner})
 
-    with brownie.reverts('ERROR:PFD-001:POLICY_NOT_EXPIRED'):
+    with brownie.reverts('ERROR:PFD-002:POLICY_NOT_EXPIRED'):
         product.close(processId, {'from': productOwner})
 
     product.expire(processId, {'from': productOwner})

@@ -221,8 +221,8 @@ def test_happy_path(
 
     print('--- step trigger oracle (call chainlin node) -------------')
 
-    tx[0] = product.triggerOracle(riskId[0], {'from': insurer})
-    tx[1] = product.triggerOracle(riskId[1], {'from': insurer})
+    tx[0] = product.triggerOracle(policyId[0], {'from': insurer})
+    tx[1] = product.triggerOracle(policyId[1], {'from': insurer})
     requestId = [tx[0].return_value, tx[1].return_value]
 
     # ensure event emitted as chainlink client

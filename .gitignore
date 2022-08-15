@@ -6,6 +6,7 @@ build/
 reports/
 dump_sources/
 node_modules
+tmp/
 
 **.pyc
 

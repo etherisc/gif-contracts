@@ -3,6 +3,7 @@ from web3 import Web3
 from brownie import (
     Contract, 
     CoreProxy,
+    TestSimpleIncrementer,
 )
 
 from brownie.convert import to_bytes
@@ -82,8 +83,6 @@ def deployGifModule(
     registry.register(storage.NAME.call(), storage.address, {'from': owner})
 
     return contractFromAddress(controllerClass, storage.address)
-
-
 
 # gif token deployment
 def deployGifToken(
@@ -174,3 +173,10 @@ def deployGifServiceV2(
 
 def contractFromAddress(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
+
+# this will deploy the TestSimpleIncrementer smart contract, increment it and wait for the trx to finish. 
+# This is required when running  tests in parallel to make sure transactions are finished properly (or tests will fail). 
+def execute_simple_incrementer_trx(sender):
+    simple_incrementer = TestSimpleIncrementer.deploy({'from': sender})
+    tx = simple_incrementer.increment()
+    tx.wait(1)

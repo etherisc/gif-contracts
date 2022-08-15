@@ -71,6 +71,7 @@ from scripts.util import (
     deployGifModule,
     deployGifModuleV2,
     deployGifService,
+    execute_simple_incrementer_trx,
 )
 
 PUBLISH_SOURCE = False
@@ -88,6 +89,17 @@ def get_filled_account(accounts, account_no, funding) -> Account:
     owner = get_account(ACCOUNTS_MNEMONIC, account_no)
     accounts[account_no].transfer(owner, funding)
     return owner
+
+# fixtures with `yield` execute the code that is placed before the `yield` as setup code
+# and code after `yield` is teardown code. 
+# See https://docs.pytest.org/en/7.1.x/how-to/fixtures.html#yield-fixtures-recommended
+@pytest.fixture(autouse=True)
+def run_around_tests():
+    yield
+    # after each test has finished, execute one trx and wait for it to finish. 
+    # this is to ensure that the last transaction of the test is finished correctly. 
+    dummy_account = get_account(ACCOUNTS_MNEMONIC, 999)
+    execute_simple_incrementer_trx(dummy_account)
 
 # DEPRECATED: use instanceOperator instead
 @pytest.fixture(scope="module")
