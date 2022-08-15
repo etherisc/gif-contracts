@@ -44,14 +44,6 @@ from brownie.network.account import Account
 from scripts.const import (
     GIF_RELEASE,
     ACCOUNTS_MNEMONIC, 
-    RISKPOOL_NAME,
-    RIKSPOOL_ID,
-    ORACLE_NAME,
-    ORACLE_INPUT_FORMAT,
-    ORACLE_OUTPUT_FORMAT,
-    ORACLE_ID,
-    PRODUCT_NAME,
-    PRODUCT_ID,
 )
 
 from scripts.instance import (
@@ -68,6 +60,7 @@ from scripts.ayii_product import (
     GifAyiiProduct,
     GifAyiiOracle,
     GifAyiiRiskpool,
+    GifAyiiProductComplete,
 )
 
 from scripts.util import (
@@ -96,12 +89,27 @@ def get_filled_account(accounts, account_no, funding) -> Account:
     accounts[account_no].transfer(owner, funding)
     return owner
 
+# DEPRECATED: use instanceOperator instead
 @pytest.fixture(scope="module")
-def owner(accounts) -> Account:
+def owner(instanceOperator) -> Account:
+    return instanceOperator
+
+# DEPRECATED: use instanceWallet instead
+@pytest.fixture(scope="module")
+def feeOwner(instanceWallet) -> Account:
+    return instanceWallet
+
+# DEPRECATED: use riskpoolWallet instead
+@pytest.fixture(scope="module")
+def capitalOwner(riskpoolWallet) -> Account:
+    return riskpoolWallet
+
+@pytest.fixture(scope="module")
+def instanceOperator(accounts) -> Account:
     return get_filled_account(accounts, 0, "1 ether")
 
 @pytest.fixture(scope="module")
-def riskpoolKeeper(accounts) -> Account:
+def instanceWallet(accounts) -> Account:
     return get_filled_account(accounts, 1, "1 ether")
 
 @pytest.fixture(scope="module")
@@ -109,24 +117,36 @@ def oracleProvider(accounts) -> Account:
     return get_filled_account(accounts, 2, "1 ether")
 
 @pytest.fixture(scope="module")
-def productOwner(accounts) -> Account:
+def chainlinkNodeOperator(accounts) -> Account:
     return get_filled_account(accounts, 3, "1 ether")
 
 @pytest.fixture(scope="module")
-def customer(accounts) -> Account:
+def riskpoolKeeper(accounts) -> Account:
     return get_filled_account(accounts, 4, "1 ether")
 
 @pytest.fixture(scope="module")
-def customer2(accounts) -> Account:
+def riskpoolWallet(accounts) -> Account:
     return get_filled_account(accounts, 5, "1 ether")
 
 @pytest.fixture(scope="module")
-def capitalOwner(accounts) -> Account:
+def investor(accounts) -> Account:
     return get_filled_account(accounts, 6, "1 ether")
 
 @pytest.fixture(scope="module")
-def feeOwner(accounts) -> Account:
+def productOwner(accounts) -> Account:
     return get_filled_account(accounts, 7, "1 ether")
+
+@pytest.fixture(scope="module")
+def insurer(accounts) -> Account:
+    return get_filled_account(accounts, 8, "1 ether")
+
+@pytest.fixture(scope="module")
+def customer(accounts) -> Account:
+    return get_filled_account(accounts, 9, "1 ether")
+
+@pytest.fixture(scope="module")
+def customer2(accounts) -> Account:
+    return get_filled_account(accounts, 10, "1 ether")
 
 @pytest.fixture(scope="module")
 def instance(owner, feeOwner) -> GifInstance:
@@ -164,43 +184,39 @@ def gifTestProduct(
         gifTestRiskpool)
 
 @pytest.fixture(scope="module")
-def gifAyiiOracle(
+def gifAyiiDeploy(
     instance: GifInstance, 
+    productOwner: Account, 
+    insurer: Account, 
     oracleProvider: Account, 
-    testCoin
-) -> GifAyiiOracle:
-    return GifAyiiOracle(
-        instance, 
-        oracleProvider, 
-        testCoin)
-
-@pytest.fixture(scope="module")
-def gifAyiiRiskpool(instance: GifInstance, riskpoolKeeper: Account, testCoin: Account, capitalOwner: Account, owner: Account) -> GifAyiiRiskpool:
-    investor = riskpoolKeeper
-    capitalization = 10**18
-    return GifAyiiRiskpool(instance, riskpoolKeeper, testCoin, capitalOwner, investor, capitalization)
-
-@pytest.fixture(scope="module")
-def gifAyiiProduct(
-    instance: GifInstance, 
+    chainlinkNodeOperator: Account, 
+    riskpoolKeeper: Account, 
+    investor: Account, 
     testCoin,
-    capitalOwner: Account, 
-    productOwner: Account,
-    riskpoolKeeper: Account,
-    customer: Account,
-    gifAyiiOracle: GifAyiiOracle,
-    gifAyiiRiskpool: GifAyiiRiskpool,
-    owner
-) -> GifAyiiProduct:
-    return GifAyiiProduct(
+    riskpoolWallet: Account
+) -> GifAyiiProductComplete:
+    return GifAyiiProductComplete(
         instance, 
-        testCoin,
-        capitalOwner,
-        productOwner,
-        riskpoolKeeper,
-        customer,
-        gifAyiiOracle,
-        gifAyiiRiskpool)
+        productOwner, 
+        insurer, 
+        oracleProvider, 
+        chainlinkNodeOperator, 
+        riskpoolKeeper, 
+        investor, 
+        testCoin, 
+        riskpoolWallet)
+
+@pytest.fixture(scope="module")
+def gifAyiiProduct(gifAyiiDeploy) -> GifAyiiProduct:
+    return gifAyiiDeploy.getProduct()
+
+@pytest.fixture(scope="module")
+def gifAyiiOracle(gifAyiiDeploy) -> GifAyiiOracle:
+    return gifAyiiDeploy.getOracle()
+
+@pytest.fixture(scope="module")
+def gifAyiiRiskpool(gifAyiiDeploy) -> GifAyiiRiskpool:
+    return gifAyiiDeploy.getRiskpool()
 
 @pytest.fixture(scope="module")
 def testProduct(gifTestProduct: GifTestProduct):

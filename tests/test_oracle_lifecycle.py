@@ -9,12 +9,6 @@ from brownie import (
     TestRiskpool,
 )
 
-from scripts.const import (
-    PRODUCT_NAME,
-    PRODUCT_ID,
-    RISKPOOL_NAME,
-)
-
 from scripts.util import (
     s2h,
     s2b32,

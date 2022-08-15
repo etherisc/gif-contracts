@@ -50,11 +50,9 @@ COMPROMISED_ADDRESS = '0x0000000000000000000000000000000000000013'
 ACCOUNTS_MNEMONIC = 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'
 
 # TEST oracle/rikspool/product values
+PRODUCT_NAME = 'Test.Product'
 RISKPOOL_NAME = 'Test.Riskpool'
-RIKSPOOL_ID = 0
-
 ORACLE_NAME = 'Test.Oracle'
 ORACLE_INPUT_FORMAT = '(bytes input)'
 ORACLE_OUTPUT_FORMAT = '(bool output)'
 
-PRODUCT_NAME = 'Test.Product'
