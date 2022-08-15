@@ -419,6 +419,82 @@ def test_fund_defund_bundle(
     assert testCoin.balanceOf(capitalOwner) == expectedBalance
 
 
+def test_create_two_bundles(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    riskpoolKeeper: Account,
+    owner: Account,
+    customer: Account,
+    feeOwner: Account,
+    capitalOwner: Account
+):
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    initialFunding = 10000
+
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    riskpool.bundles() == 1
+    bundle = riskpool.getBundle(0)
+
+    (
+        bundleId,
+        riskpoolId,
+        tokenId,
+        state,
+        filter,
+        capital,
+        lockedCapital,
+        balance,
+        createdAt,
+        updatedAt
+    ) = bundle
+
+    print(bundle)
+    capitalFee = initialFunding / 20 +42
+    bundleExpectedCapital = initialFunding - capitalFee
+
+    # check bundle values with expectation
+    assert bundleId == 1
+    assert riskpoolId == riskpool.getId()
+
+    # ensure that maximum number of active bundles cannot be set to 0
+    with brownie.reverts('ERROR:RPL-004:MAX_NUMBER_OF_ACTIVE_BUNDLES_ZERO'):
+        riskpool.setMaximumNumberOfActiveBundles(0, {'from': riskpoolKeeper})
+
+    riskpool.setMaximumNumberOfActiveBundles(2, {'from': riskpoolKeeper})
+
+    # create another bundle
+    riskpool.createBundle(
+            bytes(0), 
+            initialFunding, 
+            {'from': riskpoolKeeper})
+
+    # assert that second bundle was created correctly
+    assert 2 == riskpool.bundles()
+    bundle2 = riskpool.getBundle(1)
+    
+    (
+        bundleId2,
+        riskpoolId2,
+        tokenId2,
+        state2,
+        filter2,
+        capital2,
+        lockedCapital2,
+        balance2,
+        createdAt2,
+        updatedAt2
+    ) = bundle2
+
+    assert bundleId2 == 2
+    assert riskpoolId2 == riskpool.getId()
+
+    # ensure that number of active bundles cannot be set to a size smaller than the current number of active bundles (2)
+    with brownie.reverts('ERROR:RPL-005:TOO_MANY_ACTIVE_BUNDLES'):
+        riskpool.setMaximumNumberOfActiveBundles(1)
+
+
 def _getApplicationDict(instance, policyId):
     policyController = instance.getPolicy()
     return policyController.getApplication(policyId).dict()

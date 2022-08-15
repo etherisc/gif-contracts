@@ -29,6 +29,9 @@ contract PoolController is
     mapping(uint256 /* productId */ => uint256 /* riskpoolId */) private _riskpoolIdForProductId;
 
     mapping(uint256 /* riskpoolId */ => IPool.Pool)  private _riskpools;
+
+    mapping(uint256 /* riskpoolId */ => uint256 /* maxmimumNumberOfActiveBundles */) private _maxmimumNumberOfActiveBundlesForRiskpoolId;
+    
     uint256 [] private _riskpoolIds;
 
     ComponentController private _component;
@@ -278,6 +281,18 @@ contract PoolController is
             _bundle.unburntBundles(riskpoolId) == 0, 
             "ERROR:POL-011:RISKPOOL_HAS_UNBURNT_BUNDLES"
             );
+    }
+
+    function setMaximumNumberOfActiveBundles(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)
+        external 
+        onlyRiskpoolService
+    {
+        require(maxNumberOfActiveBundles >= _bundle.unburntBundles(riskpoolId), "ERROR:POL-015:TOO_MANY_ACTIVE_BUNDLES");
+        _maxmimumNumberOfActiveBundlesForRiskpoolId[riskpoolId] = maxNumberOfActiveBundles;
+    }
+
+    function getMaximumNumberOfActiveBundles(uint256 riskpoolId) public view returns(uint256 maximumNumberOfActiveBundles) {
+        return _maxmimumNumberOfActiveBundlesForRiskpoolId[riskpoolId];
     }
     
     function riskpools() external view returns(uint256 idx) { return _riskpoolIds.length; }

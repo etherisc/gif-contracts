@@ -239,4 +239,12 @@ contract RiskpoolService is
         _bundle.decreaseBalance(bundleId, processId, amount);
         newBalance = bundle.balance - amount;
     }
+
+    function setMaximumNumberOfActiveBundles(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)
+        external override
+        // TODO as onlyOwningRiskpool but directly based on riskpoolId
+    {
+        _pool.setMaximumNumberOfActiveBundles(riskpoolId, maxNumberOfActiveBundles);
+    }
+    
 }
