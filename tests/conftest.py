@@ -36,7 +36,6 @@ from brownie import (
     AyiiProduct,
     AyiiOracle,
     AyiiRiskpool,
-    TestHelper,
 )
 
 from brownie.network import accounts
@@ -79,8 +78,7 @@ from scripts.util import (
     deployGifModule,
     deployGifModuleV2,
     deployGifService,
-    wait_for_dummy_trx,
-    execute_dummy_trx,
+    execute_simple_incrementer_trx,
 )
 
 PUBLISH_SOURCE = False
@@ -102,8 +100,10 @@ def get_filled_account(accounts, account_no, funding) -> Account:
 @pytest.fixture(autouse=True)
 def run_around_tests():
     yield
+    # after each test has finished, execute one trx and wait for it to finish. 
+    # this is to ensure that the last transaction of the test is finished correctly. 
     dummy_account = get_account(ACCOUNTS_MNEMONIC, 999)
-    execute_dummy_trx(dummy_account)
+    execute_simple_incrementer_trx(dummy_account)
 
 
 @pytest.fixture(scope="module")
@@ -261,10 +261,6 @@ def bundleToken(owner) -> BundleToken:
 def testCoinSetup(testCoin, owner, customer) -> TestCoin:
     testCoin.transfer(customer, 10**6, {'from': owner})
     return testCoin
-
-@pytest.fixture(scope="module")
-def testHelper(owner) -> TestHelper:
-    return TestHelper.deploy({'from': owner})
 
 def contractFromAddress(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
