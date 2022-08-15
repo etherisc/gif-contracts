@@ -39,15 +39,26 @@ contract PolicyDefaultFlow is
         PolicyController policy = getPolicyContract();
         require(
             policy.getPolicy(processId).state == IPolicy.PolicyState.Expired,
-            "ERROR:PFD-001:POLICY_NOT_EXPIRED"
+            "ERROR:PFD-002:POLICY_NOT_EXPIRED"
         );
         _;
     }
 
+    modifier onlyResponsibleProduct(bytes32 processId) {
+        PolicyController policy = getPolicyContract();
+        IPolicy.Metadata memory metadata = policy.getMetadata(processId);
+        ComponentController component = ComponentController(getContractFromRegistry("Component"));
+        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-003:PROCESSID_PRODUCT_MISMATCH");
+        _;
+    }
+
+    // ComponentController private _component;
+
     // solhint-disable-next-line no-empty-blocks
     constructor(address _registry) 
         WithRegistry(_registry) 
-    { }
+    { 
+    }
 
     function newApplication(
         address owner,
@@ -73,6 +84,7 @@ contract PolicyDefaultFlow is
 
     function revoke(bytes32 processId)
         external 
+        onlyResponsibleProduct(processId)
     {
         IPolicy policy = getPolicyContract();
         policy.revokeApplication(processId);
@@ -81,6 +93,7 @@ contract PolicyDefaultFlow is
     /* success implies the successful creation of a policy */
     function underwrite(bytes32 processId) 
         external 
+        onlyResponsibleProduct(processId)
         returns(bool success) 
     {
         // attempt to get the collateral to secure the policy
@@ -103,6 +116,7 @@ contract PolicyDefaultFlow is
      */
     function collectPremium(bytes32 processId, uint256 amount) 
         public 
+        onlyResponsibleProduct(processId)
         returns(
             bool success, 
             uint256 feeAmount, 
@@ -122,7 +136,10 @@ contract PolicyDefaultFlow is
         }
     }
 
-    function decline(bytes32 processId) external {
+    function decline(bytes32 processId) 
+        onlyResponsibleProduct(processId)
+        external 
+    {
         IPolicy policy = getPolicyContract();
         policy.declineApplication(processId);
     }
@@ -130,6 +147,7 @@ contract PolicyDefaultFlow is
     function expire(bytes32 processId) 
         external
         onlyActivePolicy(processId)
+        onlyResponsibleProduct(processId)
     {
         IPolicy policy = getPolicyContract();
         policy.expirePolicy(processId);
@@ -138,6 +156,7 @@ contract PolicyDefaultFlow is
     function close(bytes32 processId) 
         external
         onlyExpiredPolicy(processId)
+        onlyResponsibleProduct(processId)
     {
         IPolicy policy = getPolicyContract();
         policy.closePolicy(processId);
@@ -153,6 +172,7 @@ contract PolicyDefaultFlow is
     )
         external
         onlyActivePolicy(processId)
+        onlyResponsibleProduct(processId)
         returns (uint256 claimId)
     {
         claimId = getPolicyContract().createClaim(
@@ -166,18 +186,25 @@ contract PolicyDefaultFlow is
         uint256 claimId,
         uint256 confirmedAmount
     ) 
-        external 
+        external
+        onlyResponsibleProduct(processId) 
     {
         PolicyController policy = getPolicyContract();
         policy.confirmClaim(processId, claimId, confirmedAmount);
     }
 
-    function declineClaim(bytes32 processId, uint256 claimId) external {
+    function declineClaim(bytes32 processId, uint256 claimId) 
+        external 
+        onlyResponsibleProduct(processId)
+    {
         PolicyController policy = getPolicyContract();
         policy.declineClaim(processId, claimId);
     }
 
-    function closeClaim(bytes32 processId, uint256 claimId) external {
+    function closeClaim(bytes32 processId, uint256 claimId) 
+        external 
+        onlyResponsibleProduct(processId)
+    {
         PolicyController policy = getPolicyContract();
         policy.closeClaim(processId, claimId);
     }
@@ -189,6 +216,7 @@ contract PolicyDefaultFlow is
         bytes calldata data
     ) 
         external 
+        onlyResponsibleProduct(processId)
         returns(uint256 payoutId)
     {
         payoutId = getPolicyContract()
@@ -200,6 +228,7 @@ contract PolicyDefaultFlow is
         uint256 payoutId
     )
         external 
+        onlyResponsibleProduct(processId)
         returns(
             bool success,
             uint256 feeAmount,
@@ -225,6 +254,7 @@ contract PolicyDefaultFlow is
         uint256 _responsibleOracleId
     ) 
         external 
+        onlyResponsibleProduct(processId)
         returns (uint256 _requestId) 
     {
         _requestId = getQueryContract().request(
