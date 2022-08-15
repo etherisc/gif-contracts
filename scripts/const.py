@@ -55,4 +55,3 @@ RISKPOOL_NAME = 'Test.Riskpool'
 ORACLE_NAME = 'Test.Oracle'
 ORACLE_INPUT_FORMAT = '(bytes input)'
 ORACLE_OUTPUT_FORMAT = '(bool output)'
-
