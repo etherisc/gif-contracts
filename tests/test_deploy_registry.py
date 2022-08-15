@@ -1,5 +1,6 @@
 import binascii
 import brownie
+import pytest
 
 from brownie import (
     CoreProxy,
@@ -19,6 +20,11 @@ from scripts.util import (
     encode_function_data,
     contractFromAddress,
 )
+
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
 
 def test_registry_base(owner, customer):
     

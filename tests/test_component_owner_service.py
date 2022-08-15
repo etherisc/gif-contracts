@@ -14,6 +14,11 @@ from scripts.util import (
 
 )
 
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
+
 def test_non_existing_functionality(instance, owner):
     componentOwnerService = instance.getComponentOwnerService()
 

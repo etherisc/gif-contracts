@@ -39,6 +39,15 @@ Run the unit tests
 brownie test
 ```
 
+or to execute the tests in parallel
+
+```
+brownie test -n auto
+```
+
+_Note_: Should the tests fail when running them in parallel, the test execution probably creates too much load on the system. 
+In this case replace the `auto` keyword in the command with the number of executors (use at most the number of CPU cores available on your system). 
+
 ## Deploy and Use GIF Interactively
 
 Start the Brownie console that shows the `>>>` console prompt.

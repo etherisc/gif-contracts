@@ -1,5 +1,6 @@
 import binascii
 import brownie
+import pytest
 
 from scripts.const import (
     GIF_RELEASE,
@@ -11,6 +12,11 @@ from scripts.util import (
     b322s,
     s2b32,
 )
+
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
 
 def test_registry_release(registry, owner):
     assert GIF_RELEASE == b322s(registry.getRelease({'from': owner}))
