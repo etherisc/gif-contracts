@@ -3,6 +3,7 @@ from web3 import Web3
 from brownie import (
     Contract, 
     CoreProxy,
+    TestHelper,
 )
 
 from brownie.convert import to_bytes
@@ -171,3 +172,12 @@ def deployGifServiceV2(
 
 def contractFromAddress(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
+
+def wait_for_dummy_trx(testHelper):
+    tx = testHelper.increment()
+    tx.wait(1)
+
+def execute_dummy_trx(sender):
+    test_helper = TestHelper.deploy({'from': sender})
+    tx = test_helper.increment()
+    tx.wait(1)
