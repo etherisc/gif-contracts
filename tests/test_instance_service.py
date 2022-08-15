@@ -24,6 +24,11 @@ from scripts.util import (
     s2b32,
 )
 
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
+
 
 def test_get_chain_id(instance):
     w3 = Web3()

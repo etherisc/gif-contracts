@@ -20,6 +20,11 @@ from scripts.util import (
     contractFromAddress
 )
 
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
+
 def test_non_existing_functionality(instance, owner):
     instanceOperatorService = instance.getInstanceOperatorService()
     with pytest.raises(AttributeError):

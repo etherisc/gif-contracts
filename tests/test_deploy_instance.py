@@ -23,6 +23,11 @@ from scripts.const import (
 from scripts.instance import GifInstance
 from scripts.util import s2b32
 
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
+
 
 def test_Registry(instance: GifInstance, owner):
     registry = instance.getRegistry()

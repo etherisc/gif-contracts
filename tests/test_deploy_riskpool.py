@@ -1,8 +1,14 @@
 import brownie
+import pytest
 
 from scripts.instance import GifInstance
 from scripts.product import GifTestRiskpool
 from scripts.util import s2b32
+
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
 
 def test_deploy_simple(
     instance: GifInstance, 
