@@ -80,6 +80,7 @@ from scripts.util import (
     deployGifModuleV2,
     deployGifService,
     wait_for_dummy_trx,
+    execute_dummy_trx,
 )
 
 PUBLISH_SOURCE = False
@@ -97,6 +98,13 @@ def get_filled_account(accounts, account_no, funding) -> Account:
     owner = get_account(ACCOUNTS_MNEMONIC, account_no)
     accounts[account_no].transfer(owner, funding)
     return owner
+
+@pytest.fixture(autouse=True)
+def run_around_tests():
+    yield
+    dummy_account = get_account(ACCOUNTS_MNEMONIC, 999)
+    execute_dummy_trx(dummy_account)
+
 
 @pytest.fixture(scope="module")
 def owner(accounts) -> Account:
