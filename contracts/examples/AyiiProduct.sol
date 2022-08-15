@@ -2,16 +2,20 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
 import "@etherisc/gif-interface/contracts/components/Product.sol";
+import "../modules/PolicyController.sol";
+
 import "../modules/AccessController.sol";
 
 contract AyiiProduct is 
     Product, 
-    AccessControl 
+    AccessControl,
+    Initializable
 {
     bytes32 public constant NAME = "AreaYieldIndexProduct";
     bytes32 public constant VERSION = "0.1";
@@ -40,10 +44,10 @@ contract AyiiProduct is
     }
 
     uint256 private _oracleId;
+    PolicyController private _policy;
 
     mapping(bytes32 /* riskId */ => Risk) private _risks;
     mapping(bytes32 /* riskId */ => bytes32 [] /* processIds */) private _policies;
-    mapping(bytes32 /* processId */ => bytes32 /* riskId */) private _riskIdByPolicy;
     bytes32 [] private _applications; // useful for debugging, might need to get rid of this
 
     event LogAyiiPolicyCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
@@ -69,6 +73,10 @@ contract AyiiProduct is
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(INSURER_ROLE, insurer);
+    }
+
+    function initialize(address registry) public initializer {
+        _policy = PolicyController(_getContractAddress("Policy"));
     }
 
     function createRisk(
@@ -150,7 +158,6 @@ contract AyiiProduct is
 
         if (success) {
             _policies[riskId].push(processId);
-            _riskIdByPolicy[processId] = riskId;
 
             emit LogAyiiPolicyCreated(
                 processId, 
@@ -160,12 +167,12 @@ contract AyiiProduct is
         }
     }
 
-    function triggerOracle(bytes32 riskId, bytes32 processId) 
+    function triggerOracle(bytes32 processId) 
         external
         onlyRole(INSURER_ROLE)
         returns(uint256 requestId)
     {
-        Risk storage risk = _risks[riskId];
+        Risk storage risk = _risks[_getRiskId(processId)];
         require(risk.createdAt > 0, "ERROR:AYI-010:RISK_UNDEFINED");
         require(risk.requestId == 0, "ERROR:AYI-011:ORACLE_ALREADY_TRIGGERED");
 
@@ -208,7 +215,7 @@ contract AyiiProduct is
             uint256 aaay
         ) = abi.decode(responseData, (bytes32, bytes32, bytes32, uint256));
 
-        bytes32 riskId = _riskIdByPolicy[processId];
+        bytes32 riskId = _getRiskId(processId);
         require(riskId == getRiskId(projectId, uaiId, cropId), "ERROR:AYI-020:RISK_ID_MISMATCH");
 
         Risk storage risk = _risks[riskId];
@@ -356,5 +363,10 @@ contract AyiiProduct is
 
     function getApplicationDataStructure() external override view returns(string memory dataStructure) {
         return "(bytes32 riskId)";
+    }
+
+    function _getRiskId(bytes32 processId) private view returns(bytes32 riskId) {
+        IPolicy.Application memory application = _getApplication(processId);
+        (riskId) = abi.decode(application.data, (bytes32));
     }
 }
