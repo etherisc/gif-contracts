@@ -271,23 +271,54 @@ def dump_sources(registryAddress=None):
         instance = GifInstance(registryAddress=registryAddress)
         
     contracts = []
-    contracts.append(dump_single(Registry, instance))
-    contracts.append(dump_single(RegistryController, instance))
+    contracts.append(dump_single(CoreProxy, "Registry", instance))
+    contracts.append(dump_single(RegistryController, "RegistryController", instance))
 
-    contracts.append(dump_single(License, instance))
-    contracts.append(dump_single(LicenseController, instance))
-    contracts.append(dump_single(Policy, instance))
-    contracts.append(dump_single(PolicyController, instance))
-    contracts.append(dump_single(Query, instance))
-    contracts.append(dump_single(QueryController, instance))
-    contracts.append(dump_single(Pool, instance))
-    contracts.append(dump_single(PoolController, instance))
+    contracts.append(dump_single(BundleToken, "BundleToken", instance))
+    contracts.append(dump_single(RiskpoolToken, "RiskpoolToken", instance))
 
-    contracts.append(dump_single(PolicyFlowDefault, instance))
-    contracts.append(dump_single(ProductService, instance))
-    contracts.append(dump_single(ComponentOwnerService, instance))
-    contracts.append(dump_single(OracleService, instance))
-    contracts.append(dump_single(InstanceOperatorService, instance))
+    contracts.append(dump_single(CoreProxy, "Access", instance))
+    contracts.append(dump_single(AccessController, "AccessController", instance))
+
+    contracts.append(dump_single(CoreProxy, "Component", instance))
+    contracts.append(dump_single(ComponentController, "ComponentController", instance))
+
+    contracts.append(dump_single(CoreProxy, "Query", instance))
+    contracts.append(dump_single(QueryController, "QueryController", instance))
+
+    contracts.append(dump_single(CoreProxy, "License", instance))
+    contracts.append(dump_single(LicenseController, "LicenseController", instance))
+
+    contracts.append(dump_single(CoreProxy, "Policy", instance))
+    contracts.append(dump_single(PolicyController, "PolicyController", instance))
+
+    contracts.append(dump_single(CoreProxy, "Bundle", instance))
+    contracts.append(dump_single(BundleController, "BundleController", instance))
+
+    contracts.append(dump_single(CoreProxy, "Pool", instance))
+    contracts.append(dump_single(PoolController, "PoolController", instance))
+
+    contracts.append(dump_single(CoreProxy, "Treasury", instance))
+    contracts.append(dump_single(TreasuryModule, "TreasuryController", instance))
+
+    contracts.append(dump_single(PolicyDefaultFlow, "PolicyDefaultFlow", instance))
+
+    contracts.append(dump_single(CoreProxy, "InstanceService", instance))
+    contracts.append(dump_single(InstanceService, "InstanceServiceController", instance))
+
+    contracts.append(dump_single(CoreProxy, "ComponentOwnerService", instance))
+    contracts.append(dump_single(ComponentOwnerService, "ComponentOwnerServiceController", instance))
+
+    contracts.append(dump_single(CoreProxy, "OracleService", instance))
+    contracts.append(dump_single(OracleService, "OracleServiceController", instance))
+
+    contracts.append(dump_single(CoreProxy, "RiskpoolService", instance))
+    contracts.append(dump_single(RiskpoolService, "RiskpoolServiceController", instance))
+
+    contracts.append(dump_single(ProductService, "ProductService", instance))
+
+    contracts.append(dump_single(CoreProxy, "InstanceOperatorService", instance))
+    contracts.append(dump_single(InstanceOperatorService, "InstanceOperatorServiceController", instance))
 
     with open(dump_sources_summary_file,'w') as f: 
         f.write('\n'.join(contracts))
@@ -297,7 +328,7 @@ def dump_sources(registryAddress=None):
     print('\nfor contract json files see directory {}'.format(dump_sources_summary_dir))
 
 
-def dump_single(contract, instance=None) -> str:
+def dump_single(contract, registryName, instance=None) -> str:
 
     info = contract.get_verification_info()
     netw = network.show_active()
@@ -309,7 +340,7 @@ def dump_single(contract, instance=None) -> str:
     name = info['contract_name']
 
     if instance:
-        nameB32 = s2b32(contract._name)
+        nameB32 = s2b32(registryName)
         address = instance.registry.getContract(nameB32)
 
     dump_sources_contract_file = './dump_sources/{}/{}.json'.format(netw, name)

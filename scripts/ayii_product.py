@@ -139,13 +139,15 @@ class GifAyiiOracle(object):
         self.clToken = ClToken.deploy(
             clTokenOwner,
             clTokenSupply,
-            {'from': oracleProvider})
+            {'from': oracleProvider},
+            publish_source=publishSource)
 
         # 2b) chainlink operator deploy
         self.chainlinkOperator = ClOperator.deploy(
             self.clToken,
             chainlinkNodeOperator,
-            {'from': oracleProvider})
+            {'from': oracleProvider},
+            publish_source=publishSource)
 
         # set oracleProvider as authorized to call fullfill on operator
         self.chainlinkOperator.setAuthorizedSenders([chainlinkNodeOperator])
@@ -163,9 +165,8 @@ class GifAyiiOracle(object):
             chainLinkOracleAddress,
             chainLinkJobId,
             chainLinkPaymentAmount,
-            {'from': oracleProvider})
-            # {'from': oracleProvider},
-            # publish_source=publishSource)
+            {'from': oracleProvider},
+            publish_source=publishSource)
 
         # 3) oracle owner proposes oracle to instance
         componentOwnerService.propose(
@@ -275,7 +276,6 @@ class GifAyiiProduct(object):
 
     def getPolicy(self, policyId: str):
         return self.policy.getPolicy(policyId)
-
 
 
 class GifAyiiProductComplete(object):

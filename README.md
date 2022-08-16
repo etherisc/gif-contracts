@@ -255,9 +255,53 @@ brownie run scripts/instance.py dump_sources 0x2852593b21796b549555d09873155B252
 
 ## Full Deployment with Example Product
 
+Before attempting to deploy the setup on a life chain ensure that the
+`instanceOperator` has sufficient funds to cover the setup.
+
+For testnets faucet funds may be used
+
+* [avax-test (Fuji (C-Chain))](https://faucet.avax.network/)
+* [polygon-test](https://faucet.polygon.technology/)
+
+Using the ganache scenario shown below ensures that all addresses used are sufficiently funded.
+
 ```bash
-from scripts.deploy import deploy_ganache
-d = deploy_ganache()
+from scripts.deploy import (
+    stakeholders_accounts_ganache,
+    check_funds,
+    amend_funds,
+    deploy,
+    from_registry,
+    from_component,
+)
+
+from scripts.instance import (
+  GifInstance, 
+  dump_sources
+)
+
+from scripts.util import (
+  s2b, 
+  b2s, 
+  contract_from_address,
+)
+
+# for ganche the command below may be used
+# for other chains, use accounts.add() and record the mnemonics
+a = stakeholders_accounts_ganache()
+
+# check_funds checks which stakeholder accounts need funding for the deploy
+# also, it checks if the instanceOperator has a balance that allows to provided
+# the missing funds for the other accounts
+check_funds(a)
+
+# amend_funds transfers missing funds to stakeholder addresses using the
+# avaulable balance of the instanceOperator
+amend_funds(a)
+
+publishSource=False
+d = deploy(a, publishSource)
+
 (
 componentOwnerService,customer1,customer2,erc20Token,instance,instanceOperator,instanceOperatorService,instanceService,
 instanceWallet,insurer,investor,oracle,oracleProvider,processId1,processId2,product,productOwner,riskId1,riskId2,
@@ -269,22 +313,77 @@ d['riskpool'],d['riskpoolKeeper'],d['riskpoolWallet']
 )
 
 # the deployed setup can now be used
-# example
+# example usage
 instanceOperator
 instance.getRegistry()
 instanceService.getInstanceId()
 
 product.getId()
-b322s(product.getName())
+b2s(product.getName())
 
 customer1
 instanceService.getMetadata(processId1)
 instanceService.getApplication(processId1)
 instanceService.getPolicy(processId1)
+```
 
-# TODO add:
-# - oracle call
-# - policy processing
-# - payout to customer
-# - definding back to inverster
+For a first time setup on a live chain the setup below can be used.
+
+IMPORTANT: Make sure to write down the generated mnemonics for the
+stakeholder accounts. To reuse the same accounts replace `accounts.add` 
+with `accounts.from_mnemonic` using the recorded mnemonics.
+
+```bash
+instanceOperator=accounts.add()
+instanceWallet=accounts.add()
+oracleProvider=accounts.add()
+chainlinkNodeOperator=accounts.add()
+riskpoolKeeper=accounts.add()
+riskpoolWallet=accounts.add()
+investor=accounts.add()
+productOwner=accounts.add()
+insurer=accounts.add()
+customer1=accounts.add()
+customer2=accounts.add()
+
+a = {
+  'instanceOperator': instanceOperator,
+  'instanceWallet': instanceWallet,
+  'oracleProvider': oracleProvider,
+  'chainlinkNodeOperator': chainlinkNodeOperator,
+  'riskpoolKeeper': riskpoolKeeper,
+  'riskpoolWallet': riskpoolWallet,
+  'investor': investor,
+  'productOwner': productOwner,
+  'insurer': insurer,
+  'customer1': customer1,
+  'customer2': customer2,
+}
+```
+
+To interact with an existing setup use the following helper methods as shown below.
+
+```bash
+from scripts.deploy import (
+    from_registry,
+    from_component,
+)
+
+from scripts.instance import (
+  GifInstance, 
+)
+
+from scripts.util import (
+  s2b, 
+  b2s, 
+  contract_from_address,
+)
+
+# for the case of a known registry address, 
+# eg '0xE7eD6747FaC5360f88a2EFC03E00d25789F69291'
+(instance, product, oracle, riskpool) = from_registry('0xE7eD6747FaC5360f88a2EFC03E00d25789F69291')
+
+# or for a known address of a component, eg
+# eg product address '0xF039D8acecbB47763c67937D66A254DB48c87757'
+(instance, product, oracle, riskpool) = from_component('0xF039D8acecbB47763c67937D66A254DB48c87757')
 ```

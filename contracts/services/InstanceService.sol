@@ -10,6 +10,9 @@ import "../shared/CoreController.sol";
 import "../services/InstanceOperatorService.sol";
 
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IOracle.sol";
+import "@etherisc/gif-interface/contracts/components/IProduct.sol";
+import "@etherisc/gif-interface/contracts/components/IRiskpool.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
 import "@etherisc/gif-interface/contracts/services/IComponentOwnerService.sol";
@@ -137,10 +140,6 @@ contract InstanceService is
         return _component.getComponentId(componentAddress);
     }
 
-    function getComponent(uint256 id) external override view returns(IComponent) {
-        return _component.getComponent(id);
-    }
-
     function getComponentType(uint256 componentId)
         external override 
         view 
@@ -155,6 +154,22 @@ contract InstanceService is
         returns(IComponent.ComponentState componentState)
     {
         componentState = _component.getComponentState(componentId);
+    }
+
+    function getComponent(uint256 id) external override view returns(IComponent) {
+        return _component.getComponent(id);
+    }
+
+    function getOracleId(uint256 idx) public view returns (uint256 oracleId) {
+        return _component.getOracleId(idx);
+    }
+
+    function getRiskpoolId(uint256 idx) public view returns (uint256 riskpoolId) {
+        return _component.getRiskpoolId(idx);
+    }
+
+    function getProductId(uint256 idx) public view returns (uint256 productId) {
+        return _component.getProductId(idx);
     }
 
     /* service staking */
