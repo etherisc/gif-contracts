@@ -61,4 +61,5 @@ jobs:
         run: brownie compile --all
       - run: touch .env
       - name: Execute tests
-        run: brownie test
+        run: brownie test -n auto
+        
