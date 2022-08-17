@@ -29,11 +29,16 @@ def fund_riskpool(
 
     applicationFilter = bytes(0)
 
+    bundleId = None
+
     if (createBundle):
-        riskpool.createBundle(
+        tx = riskpool.createBundle(
             applicationFilter, 
             amount, 
             {'from': bundleOwner})
+        bundleId = tx.return_value
+    
+    return bundleId
 
 
 def fund_customer(
