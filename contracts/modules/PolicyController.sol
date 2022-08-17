@@ -106,11 +106,11 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Metadata storage meta = metadata[processId];
-        require(meta.createdAt > 0, "ERROR:POC-010:METADATA_DOES_NOT_EXIST");
+        require(meta.createdAt > 0, "ERROR:POC-014:METADATA_DOES_NOT_EXIST");
 
         Application storage application = applications[processId];
-        require(application.createdAt > 0, "ERROR:POC-014:APPLICATION_DOES_NOT_EXIST");
-        require(application.state == ApplicationState.Applied, "ERROR:POC-015:APPLICATION_STATE_INVALID");
+        require(application.createdAt > 0, "ERROR:POC-015:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Applied, "ERROR:POC-016:APPLICATION_STATE_INVALID");
 
         application.state = ApplicationState.Revoked;
         application.updatedAt = block.timestamp;
@@ -127,8 +127,8 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Application storage application = applications[processId];
-        require(application.createdAt > 0, "ERROR:POC-016:APPLICATION_DOES_NOT_EXIST");
-        require(application.state == ApplicationState.Applied, "ERROR:POC-017:APPLICATION_STATE_INVALID");
+        require(application.createdAt > 0, "ERROR:POC-017:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Applied, "ERROR:POC-018:APPLICATION_STATE_INVALID");
 
         application.state = ApplicationState.Underwritten;
         application.updatedAt = block.timestamp;
@@ -141,11 +141,11 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Metadata storage meta = metadata[processId];
-        require(meta.createdAt > 0, "ERROR:POC-010:METADATA_DOES_NOT_EXIST");
+        require(meta.createdAt > 0, "ERROR:POC-019:METADATA_DOES_NOT_EXIST");
 
         Application storage application = applications[processId];
-        require(application.createdAt > 0, "ERROR:POC-018:APPLICATION_DOES_NOT_EXIST");
-        require(application.state == ApplicationState.Applied, "ERROR:POC-019:APPLICATION_STATE_INVALID");
+        require(application.createdAt > 0, "ERROR:POC-020:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Applied, "ERROR:POC-021:APPLICATION_STATE_INVALID");
 
         application.state = ApplicationState.Declined;
         application.updatedAt = block.timestamp;
@@ -163,11 +163,11 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Application memory application = applications[processId];
-        require(application.createdAt > 0, "ERROR:POC-021:APPLICATION_DOES_NOT_EXIST");
-        require(application.state == ApplicationState.Underwritten, "ERROR:POC-022:APPLICATION_NOT_UNDERWRITTEN");
+        require(application.createdAt > 0, "ERROR:POC-022:APPLICATION_DOES_NOT_EXIST");
+        require(application.state == ApplicationState.Underwritten, "ERROR:POC-023:APPLICATION_NOT_UNDERWRITTEN");
 
         Policy storage policy = policies[processId];
-        require(policy.createdAt == 0, "ERROR:POC-023:POLICY_ALREADY_EXISTS");
+        require(policy.createdAt == 0, "ERROR:POC-024:POLICY_ALREADY_EXISTS");
 
         policy.state = PolicyState.Active;
         policy.premiumExpectedAmount = application.premiumAmount;
@@ -182,8 +182,8 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-024:POLICY_DOES_NOT_EXIST");
-        require(policy.state == PolicyState.Active, "ERROR:POC-025:APPLICATION_STATE_INVALID");
+        require(policy.createdAt > 0, "ERROR:POC-025:POLICY_DOES_NOT_EXIST");
+        require(policy.state == PolicyState.Active, "ERROR:POC-026:APPLICATION_STATE_INVALID");
 
         policy.state = PolicyState.Expired;
         policy.updatedAt = block.timestamp;
@@ -196,12 +196,12 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Metadata storage meta = metadata[processId];
-        require(meta.createdAt > 0, "ERROR:POC-010:METADATA_DOES_NOT_EXIST");
+        require(meta.createdAt > 0, "ERROR:POC-030:METADATA_DOES_NOT_EXIST");
 
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-026:POLICY_DOES_NOT_EXIST");
-        require(policy.state == PolicyState.Expired, "ERROR:POC-027:POLICY_STATE_INVALID");
-        require(policy.openClaimsCount == 0, "ERROR:POC-028:POLICY_HAS_OPEN_CLAIMS");
+        require(policy.createdAt > 0, "ERROR:POC-031:POLICY_DOES_NOT_EXIST");
+        require(policy.state == PolicyState.Expired, "ERROR:POC-032:POLICY_STATE_INVALID");
+        require(policy.openClaimsCount == 0, "ERROR:POC-033:POLICY_HAS_OPEN_CLAIMS");
 
         policy.state = PolicyState.Closed;
         policy.updatedAt = block.timestamp;
@@ -224,12 +224,12 @@ contract PolicyController is
         returns (uint256 claimId)
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-030:POLICY_DOES_NOT_EXIST");
-        require(policy.state == IPolicy.PolicyState.Active, "ERROR:POC-031:POLICY_NOT_ACTIVE");
+        require(policy.createdAt > 0, "ERROR:POC-040:POLICY_DOES_NOT_EXIST");
+        require(policy.state == IPolicy.PolicyState.Active, "ERROR:POC-041:POLICY_NOT_ACTIVE");
 
         claimId = policy.claimsCount;
         Claim storage claim = claims[processId][claimId];
-        require(claim.createdAt == 0, "ERROR:POC-032:CLAIM_ALREADY_EXISTS");
+        require(claim.createdAt == 0, "ERROR:POC-042:CLAIM_ALREADY_EXISTS");
 
         claim.state = ClaimState.Applied;
         claim.claimAmount = claimAmount;
@@ -253,12 +253,12 @@ contract PolicyController is
         onlyPolicyFlow("Policy") 
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-033:POLICY_DOES_NOT_EXIST");
-        require(policy.openClaimsCount > 0, "ERROR:POC-034:POLICY_WITHOUT_OPEN_CLAIMS");
+        require(policy.createdAt > 0, "ERROR:POC-050:POLICY_DOES_NOT_EXIST");
+        require(policy.openClaimsCount > 0, "ERROR:POC-051:POLICY_WITHOUT_OPEN_CLAIMS");
 
         Claim storage claim = claims[processId][claimId];
-        require(claim.createdAt > 0, "ERROR:POC-035:CLAIM_DOES_NOT_EXIST");
-        require(claim.state == ClaimState.Applied, "ERROR:POC-036:CLAIM_STATE_INVALID");
+        require(claim.createdAt > 0, "ERROR:POC-052:CLAIM_DOES_NOT_EXIST");
+        require(claim.state == ClaimState.Applied, "ERROR:POC-053:CLAIM_STATE_INVALID");
 
         claim.state = ClaimState.Confirmed;
         claim.claimAmount = confirmedAmount;
@@ -274,12 +274,12 @@ contract PolicyController is
         onlyPolicyFlow("Policy") 
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-033:POLICY_DOES_NOT_EXIST");
-        require(policy.openClaimsCount > 0, "ERROR:POC-034:POLICY_WITHOUT_OPEN_CLAIMS");
+        require(policy.createdAt > 0, "ERROR:POC-060:POLICY_DOES_NOT_EXIST");
+        require(policy.openClaimsCount > 0, "ERROR:POC-061:POLICY_WITHOUT_OPEN_CLAIMS");
 
         Claim storage claim = claims[processId][claimId];
-        require(claim.createdAt > 0, "ERROR:POC-035:CLAIM_DOES_NOT_EXIST");
-        require(claim.state == ClaimState.Applied, "ERROR:POC-036:CLAIM_STATE_INVALID");
+        require(claim.createdAt > 0, "ERROR:POC-062:CLAIM_DOES_NOT_EXIST");
+        require(claim.state == ClaimState.Applied, "ERROR:POC-063:CLAIM_STATE_INVALID");
 
         claim.state = ClaimState.Declined;
         claim.updatedAt = block.timestamp;
@@ -294,19 +294,19 @@ contract PolicyController is
         onlyPolicyFlow("Policy") 
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-033:POLICY_DOES_NOT_EXIST");
-        require(policy.openClaimsCount > 0, "ERROR:POC-034:POLICY_WITHOUT_OPEN_CLAIMS");
+        require(policy.createdAt > 0, "ERROR:POC-070:POLICY_DOES_NOT_EXIST");
+        require(policy.openClaimsCount > 0, "ERROR:POC-071:POLICY_WITHOUT_OPEN_CLAIMS");
 
         Claim storage claim = claims[processId][claimId];
-        require(claim.createdAt > 0, "ERROR:POC-035:CLAIM_DOES_NOT_EXIST");
+        require(claim.createdAt > 0, "ERROR:POC-072:CLAIM_DOES_NOT_EXIST");
         require(
             claim.state == ClaimState.Confirmed 
             || claim.state == ClaimState.Declined, 
-            "ERROR:POC-036:CLAIM_STATE_INVALID");
+            "ERROR:POC-073:CLAIM_STATE_INVALID");
 
         require(
             claim.claimAmount == claim.paidAmount, 
-            "ERROR:POC-035:CLAIM_WITH_UNPAID_PAYOUTS"
+            "ERROR:POC-074:CLAIM_WITH_UNPAID_PAYOUTS"
         );
 
         claim.state = ClaimState.Closed;
@@ -330,20 +330,20 @@ contract PolicyController is
         returns (uint256 payoutId)
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-040:POLICY_DOES_NOT_EXIST");
+        require(policy.createdAt > 0, "ERROR:POC-080:POLICY_DOES_NOT_EXIST");
 
         Claim storage claim = claims[processId][claimId];
-        require(claim.createdAt > 0, "ERROR:POC-041:CLAIM_DOES_NOT_EXIST");
-        require(claim.state == IPolicy.ClaimState.Confirmed, "ERROR:POC-042:CLAIM_NOT_CONFIRMED");
-        require(payoutAmount > 0, "ERROR:POC-043:PAYOUT_AMOUNT_ZERO_INVALID");
+        require(claim.createdAt > 0, "ERROR:POC-081:CLAIM_DOES_NOT_EXIST");
+        require(claim.state == IPolicy.ClaimState.Confirmed, "ERROR:POC-082:CLAIM_NOT_CONFIRMED");
+        require(payoutAmount > 0, "ERROR:POC-083:PAYOUT_AMOUNT_ZERO_INVALID");
         require(
             claim.payoutsAmount + payoutAmount <= claim.claimAmount,
-            "ERROR:POC-044:PAYOUT_AMOUNT_TOO_BIG"
+            "ERROR:POC-084:PAYOUT_AMOUNT_TOO_BIG"
         );
 
         payoutId = payoutCount[processId];
         Payout storage payout = payouts[processId][payoutId];
-        require(payout.createdAt == 0, "ERROR:POC-045:PAYOUT_ALREADY_EXISTS");
+        require(payout.createdAt == 0, "ERROR:POC-085:PAYOUT_ALREADY_EXISTS");
 
         payout.claimId = claimId;
         payout.amount = payoutAmount;
@@ -369,12 +369,12 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-046:POLICY_DOES_NOT_EXIST");
-        require(policy.openClaimsCount > 0, "ERROR:POC-047:POLICY_WITHOUT_OPEN_CLAIMS");
+        require(policy.createdAt > 0, "ERROR:POC-090:POLICY_DOES_NOT_EXIST");
+        require(policy.openClaimsCount > 0, "ERROR:POC-091:POLICY_WITHOUT_OPEN_CLAIMS");
 
         Payout storage payout = payouts[processId][payoutId];
-        require(payout.createdAt > 0, "ERROR:POC-048:PAYOUT_DOES_NOT_EXIST");
-        require(payout.state == PayoutState.Expected, "ERROR:POC-049:PAYOUT_ALREADY_PAIDOUT");
+        require(payout.createdAt > 0, "ERROR:POC-092:PAYOUT_DOES_NOT_EXIST");
+        require(payout.state == PayoutState.Expected, "ERROR:POC-093:PAYOUT_ALREADY_PAIDOUT");
 
         payout.state = IPolicy.PayoutState.PaidOut;
         payout.updatedAt = block.timestamp;
@@ -402,7 +402,7 @@ contract PolicyController is
         returns (IPolicy.Metadata memory _metadata)
     {
         _metadata = metadata[processId];
-        require(_metadata.createdAt > 0,  "ERROR:POC-050:METADATA_DOES_NOT_EXIST");
+        require(_metadata.createdAt > 0,  "ERROR:POC-100:METADATA_DOES_NOT_EXIST");
     }
 
     function getApplication(bytes32 processId)
@@ -411,7 +411,7 @@ contract PolicyController is
         returns (IPolicy.Application memory application)
     {
         application = applications[processId];
-        require(application.createdAt > 0, "ERROR:POC-051:APPLICATION_DOES_NOT_EXIST");        
+        require(application.createdAt > 0, "ERROR:POC-101:APPLICATION_DOES_NOT_EXIST");        
     }
 
     function getNumberOfClaims(bytes32 processId) external view returns(uint256 numberOfClaims) {
@@ -428,7 +428,7 @@ contract PolicyController is
         returns (IPolicy.Policy memory policy)
     {
         policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-052:POLICY_DOES_NOT_EXIST");        
+        require(policy.createdAt > 0, "ERROR:POC-102:POLICY_DOES_NOT_EXIST");        
     }
 
     function getClaim(bytes32 processId, uint256 claimId)
@@ -437,7 +437,7 @@ contract PolicyController is
         returns (IPolicy.Claim memory claim)
     {
         claim = claims[processId][claimId];
-        require(claim.createdAt > 0, "ERROR:POC-053:CLAIM_DOES_NOT_EXIST");        
+        require(claim.createdAt > 0, "ERROR:POC-103:CLAIM_DOES_NOT_EXIST");        
     }
 
     function getPayout(bytes32 processId, uint256 payoutId)
@@ -446,7 +446,7 @@ contract PolicyController is
         returns (IPolicy.Payout memory payout)
     {
         payout = payouts[processId][payoutId];
-        require(payout.createdAt > 0, "ERROR:POC-054:PAYOUT_DOES_NOT_EXIST");        
+        require(payout.createdAt > 0, "ERROR:POC-104:PAYOUT_DOES_NOT_EXIST");        
     }
 
     function processIds() external view returns (uint256) {

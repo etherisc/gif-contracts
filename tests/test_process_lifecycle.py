@@ -61,7 +61,7 @@ def test_process_apply(
     metadata = policyController.getMetadata(processId).dict()
     application = policyController.getApplication(processId).dict()
 
-    with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-102:POLICY_DOES_NOT_EXIST'):
         policy = policyController.getPolicy(processId).dict()
 
     assert metadata is not None
@@ -77,7 +77,7 @@ def test_process_apply(
     assert application['updatedAt'] >= application['createdAt']
 
     claimAmount = 42
-    with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-102:POLICY_DOES_NOT_EXIST'):
         product.submitClaimWithDeferredResponse(processId, claimAmount, {'from': customer})
 
 
@@ -113,7 +113,7 @@ def test_process_apply_revoke(
     metadata = policyController.getMetadata(processId).dict()
     application = policyController.getApplication(processId).dict()
 
-    with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-102:POLICY_DOES_NOT_EXIST'):
         policy = policyController.getPolicy(processId).dict()
 
     assert metadata is not None
@@ -129,7 +129,7 @@ def test_process_apply_revoke(
     assert application['updatedAt'] >= application['createdAt']
 
     claimAmount = 42
-    with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-102:POLICY_DOES_NOT_EXIST'):
         product.submitClaimWithDeferredResponse(processId, claimAmount, {'from': customer})
 
 
@@ -165,7 +165,7 @@ def test_process_apply_decline(
     metadata = policyController.getMetadata(processId).dict()
     application = policyController.getApplication(processId).dict()
 
-    with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-102:POLICY_DOES_NOT_EXIST'):
         policy = policyController.getPolicy(processId).dict()
 
     assert metadata is not None
@@ -181,7 +181,7 @@ def test_process_apply_decline(
     assert application['updatedAt'] >= application['createdAt']
 
     claimAmount = 42
-    with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-102:POLICY_DOES_NOT_EXIST'):
         product.submitClaimWithDeferredResponse(processId, claimAmount, {'from': customer})
 
 
@@ -213,10 +213,10 @@ def test_process_apply_underwrite_expire_close(
     with brownie.reverts('Ownable: caller is not the owner'):
         product.underwrite(processId, {'from': customer})
 
-    with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-102:POLICY_DOES_NOT_EXIST'):
         product.expire(processId, {'from': productOwner})
 
-    with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-102:POLICY_DOES_NOT_EXIST'):
         product.close(processId, {'from': productOwner})
 
     product.underwrite(processId, {'from': productOwner})
@@ -250,7 +250,7 @@ def test_process_apply_underwrite_expire_close(
     with brownie.reverts('ERROR:POL-020:APPLICATION_STATE_INVALID'):
         product.underwrite(processId, {'from': productOwner})
 
-    with brownie.reverts('ERROR:POC-019:APPLICATION_STATE_INVALID'):
+    with brownie.reverts('ERROR:POC-021:APPLICATION_STATE_INVALID'):
         product.decline(processId, {'from': productOwner})
 
     with brownie.reverts('ERROR:PFD-002:POLICY_NOT_EXPIRED'):
@@ -287,7 +287,7 @@ def test_process_apply_underwrite_expire_close(
     with brownie.reverts('ERROR:POL-020:APPLICATION_STATE_INVALID'):
         product.underwrite(processId, {'from': productOwner})
 
-    with brownie.reverts('ERROR:POC-019:APPLICATION_STATE_INVALID'):
+    with brownie.reverts('ERROR:POC-021:APPLICATION_STATE_INVALID'):
         product.decline(processId, {'from': productOwner})
 
     with brownie.reverts('ERROR:PFD-001:POLICY_NOT_ACTIVE'):
@@ -343,7 +343,7 @@ def test_process_policy_create_claims(
     processId = create_application(customer, premium, sumInsured, instance, owner, product, testCoin)
 
     claimAmount = 20
-    with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-102:POLICY_DOES_NOT_EXIST'):
         product.submitClaimWithDeferredResponse(processId, claimAmount, {'from': customer}) 
 
     #--- underwrite + open claim ---------------------------------------------#
@@ -382,7 +382,7 @@ def test_process_policy_create_claims(
     assert policy['state'] == 1
 
     #--- process claims and close policy --------------------------------------#
-    with brownie.reverts('ERROR:POC-028:POLICY_HAS_OPEN_CLAIMS'):
+    with brownie.reverts('ERROR:POC-033:POLICY_HAS_OPEN_CLAIMS'):
         product.close(processId, {'from': productOwner})
     
     with brownie.reverts('Ownable: caller is not the owner'):
