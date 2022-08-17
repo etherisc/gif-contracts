@@ -196,14 +196,14 @@ contract InstanceOperatorService is
 
     /* treasury */
     function suspendTreasury() 
-        external 
+        external override
         onlyInstanceOperatorAddress
     { 
         _treasury.suspend();
     }
 
     function resumeTreasury() 
-        external 
+        external override
         onlyInstanceOperatorAddress
     { 
         _treasury.resume();

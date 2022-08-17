@@ -70,9 +70,6 @@ contract TreasuryModule is
         _pool = PoolController(_getContractAddress("Pool"));
     }
 
-    event LogTreasurySuspended();
-    event LogTreasuryResumed();
-
     function suspend() 
         external 
         onlyInstanceOperator
