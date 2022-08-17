@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import "../shared/CoreController.sol";
 
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
+import "@etherisc/gif-interface/contracts/components/IOracle.sol";
+import "@etherisc/gif-interface/contracts/components/IProduct.sol";
+import "@etherisc/gif-interface/contracts/components/IRiskpool.sol";
 import "@etherisc/gif-interface/contracts/modules/IComponentEvents.sol";
 
 contract ComponentController is
@@ -200,6 +203,18 @@ contract ComponentController is
 
     function getComponentState(uint256 id) public view returns (IComponent.ComponentState componentState) {
         return _componentState[id];
+    }
+
+    function getOracleId(uint256 idx) public view returns (uint256 oracleId) {
+        return _oracles[idx];
+    }
+
+    function getRiskpoolId(uint256 idx) public view returns (uint256 riskpoolId) {
+        return _riskpools[idx];
+    }
+
+    function getProductId(uint256 idx) public view returns (uint256 productId) {
+        return _products[idx];
     }
 
     function getRequiredRole(IComponent.ComponentType componentType) external returns (bytes32) {
