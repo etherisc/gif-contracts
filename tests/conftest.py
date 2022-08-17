@@ -101,6 +101,11 @@ def run_around_tests():
     dummy_account = get_account(ACCOUNTS_MNEMONIC, 999)
     execute_simple_incrementer_trx(dummy_account)
 
+# DEPRECATED: use erc20Token instead
+@pytest.fixture(scope="module")
+def testCoin(erc20Token) -> TestCoin:
+    return erc20Token
+
 # DEPRECATED: use instanceOperator instead
 @pytest.fixture(scope="module")
 def owner(instanceOperator) -> Account:
@@ -264,8 +269,8 @@ def registry(registryController, owner) -> RegistryController:
     return registry
 
 @pytest.fixture(scope="module")
-def testCoin(owner) -> TestCoin:
-    return TestCoin.deploy({'from': owner})
+def erc20Token(instanceOperator) -> TestCoin:
+    return TestCoin.deploy({'from': instanceOperator})
 
 @pytest.fixture(scope="module")
 def testCoinX(owner) -> TestCoinX:

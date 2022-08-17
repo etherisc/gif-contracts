@@ -195,6 +195,20 @@ contract InstanceOperatorService is
     }
 
     /* treasury */
+    function suspendTreasury() 
+        external 
+        onlyInstanceOperatorAddress
+    { 
+        _treasury.suspend();
+    }
+
+    function resumeTreasury() 
+        external 
+        onlyInstanceOperatorAddress
+    { 
+        _treasury.resume();
+    }
+
     function setInstanceWallet(address walletAddress) 
         external override
         onlyInstanceOperatorAddress

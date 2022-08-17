@@ -12,12 +12,14 @@ import "@etherisc/gif-interface/contracts/components/IProduct.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 import "@etherisc/gif-interface/contracts/modules/ITreasury.sol";
 
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract TreasuryModule is 
     ITreasury,
-    CoreController
+    CoreController,
+    Pausable
 {
     uint256 public constant FRACTION_FULL_UNIT = 10**18;
 
@@ -54,6 +56,12 @@ contract TreasuryModule is
         _;
     }
 
+    // surrogate modifier for whenNotPaused to create treasury specific error message
+    modifier whenNotSuspended() {
+        require(!paused(), "ERROR:TRS-004:TREASURY_SUSPENDED");
+        _;
+    }
+
 
     function _afterInitialize() internal override onlyInitializing {
         _bundle = BundleController(_getContractAddress("Bundle"));
@@ -62,8 +70,28 @@ contract TreasuryModule is
         _pool = PoolController(_getContractAddress("Pool"));
     }
 
+    event LogTreasurySuspended();
+    event LogTreasuryResumed();
+
+    function suspend() 
+        external 
+        onlyInstanceOperator
+    {
+        _pause();
+        emit LogTreasurySuspended();
+    }
+
+    function resume() 
+        external 
+        onlyInstanceOperator
+    {
+        _unpause();
+        emit LogTreasuryResumed();
+    }
+
     function setProductToken(uint256 productId, address erc20Address)
         external override
+        whenNotSuspended
         onlyInstanceOperator
     {
         require(erc20Address != address(0), "ERROR:TRS-010:TOKEN_ADDRESS_ZERO");
@@ -87,6 +115,7 @@ contract TreasuryModule is
 
     function setInstanceWallet(address instanceWalletAddress) 
         external override
+        whenNotSuspended
         onlyInstanceOperator
     {
         require(instanceWalletAddress != address(0), "ERROR:TRS-015:WALLET_ADDRESS_ZERO");
@@ -97,6 +126,7 @@ contract TreasuryModule is
 
     function setRiskpoolWallet(uint256 riskpoolId, address riskpoolWalletAddress) 
         external override
+        whenNotSuspended
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(riskpoolId);
@@ -130,6 +160,7 @@ contract TreasuryModule is
 
     function setPremiumFees(FeeSpecification calldata feeSpec) 
         external override
+        whenNotSuspended
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(feeSpec.componentId);
@@ -145,6 +176,7 @@ contract TreasuryModule is
 
     function setCapitalFees(FeeSpecification calldata feeSpec) 
         external override
+        whenNotSuspended
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(feeSpec.componentId);
@@ -180,6 +212,7 @@ contract TreasuryModule is
      */
     function processPremium(bytes32 processId) 
         external override 
+        whenNotSuspended
         returns(
             bool success, 
             uint256 feeAmount, 
@@ -201,6 +234,7 @@ contract TreasuryModule is
      */
     function processPremium(bytes32 processId, uint256 amount) 
         public override 
+        whenNotSuspended
         instanceWalletDefined
         riskpoolWalletDefinedForProcess(processId)
         returns(
@@ -244,6 +278,7 @@ contract TreasuryModule is
 
     function processPayout(bytes32 processId, uint256 payoutId) 
         external override
+        whenNotSuspended
         instanceWalletDefined
         riskpoolWalletDefinedForProcess(processId)
         returns(
@@ -284,6 +319,7 @@ contract TreasuryModule is
 
     function processCapital(uint256 bundleId, uint256 capitalAmount) 
         external override 
+        whenNotSuspended
         instanceWalletDefined
         riskpoolWalletDefinedForBundle(bundleId)
         returns(
@@ -323,6 +359,7 @@ contract TreasuryModule is
 
     function processWithdrawal(uint256 bundleId, uint256 amount) 
         external override
+        whenNotSuspended
         instanceWalletDefined
         riskpoolWalletDefinedForBundle(bundleId)
         returns(
