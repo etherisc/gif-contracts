@@ -220,7 +220,7 @@ contract PoolController is
         IPolicy.Policy memory policy = _policy.getPolicy(processId);
         require(
             policy.state == IPolicy.PolicyState.Closed,
-            "ERROR:POL-007:POLICY_STATE_INVALID"
+            "ERROR:POL-025:POLICY_STATE_INVALID"
         );
 
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
@@ -275,11 +275,11 @@ contract PoolController is
         require(
             _component.getComponentState(riskpoolId) == IComponent.ComponentState.Paused
             || _component.getComponentState(riskpoolId) == IComponent.ComponentState.Suspended, 
-            "ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"
+            "ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"
             );
         require(
             _bundle.unburntBundles(riskpoolId) == 0, 
-            "ERROR:POL-011:RISKPOOL_HAS_UNBURNT_BUNDLES"
+            "ERROR:POL-031:RISKPOOL_HAS_UNBURNT_BUNDLES"
             );
     }
 
@@ -300,7 +300,7 @@ contract PoolController is
 
     function getRiskpool(uint256 riskpoolId) public view returns(IPool.Pool memory riskPool) {
         riskPool = _riskpools[riskpoolId];
-        require(riskPool.createdAt > 0, "ERROR:POL-020:RISKPOOL_NOT_REGISTERED");
+        require(riskPool.createdAt > 0, "ERROR:POL-040:RISKPOOL_NOT_REGISTERED");
     }
 
     function getRiskPoolForProduct(uint256 productId) external view returns (uint256 riskpoolId) {
@@ -313,14 +313,14 @@ contract PoolController is
 
     function _getRiskpoolComponent(IPolicy.Metadata memory metadata) internal view returns (IRiskpool riskpool) {
         uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
-        require(riskpoolId > 0, "ERROR:POL-022:RISKPOOL_DOES_NOT_EXIST");
+        require(riskpoolId > 0, "ERROR:POL-042:RISKPOOL_DOES_NOT_EXIST");
 
         riskpool = _getRiskpoolForId(riskpoolId);
     }
 
     function _getRiskpoolForId(uint256 riskpoolId) internal view returns (IRiskpool riskpool) {
         IComponent cmp = _component.getComponent(riskpoolId);
-        require(cmp.isRiskpool(), "ERROR:POL-023:COMPONENT_NOT_RISKPOOL");
+        require(cmp.isRiskpool(), "ERROR:POL-043:COMPONENT_NOT_RISKPOOL");
         
         riskpool = IRiskpool(address(cmp));
     }

@@ -225,7 +225,7 @@ def test_payout_creation_for_declined_claim(
 
     # check that it's not possible to create payout for claim in applied state
     payoutAmount = premium / 2
-    with brownie.reverts("ERROR:POC-042:CLAIM_NOT_CONFIRMED"):
+    with brownie.reverts("ERROR:POC-082:CLAIM_NOT_CONFIRMED"):
         product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
 
     product.declineClaim(policyId, claimId, {'from': productOwner})
@@ -234,7 +234,7 @@ def test_payout_creation_for_declined_claim(
     assert claim["state"] ==  2 # enum ClaimState {Applied, Confirmed, Declined, Closed}
 
     # check that it's not possible to create payout for claim in declined state
-    with brownie.reverts("ERROR:POC-042:CLAIM_NOT_CONFIRMED"):
+    with brownie.reverts("ERROR:POC-082:CLAIM_NOT_CONFIRMED"):
         product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
 
 
@@ -287,7 +287,7 @@ def test_payout_creation_for_confirmed_claim(
     assert claim["state"] ==  3 # enum ClaimState {Applied, Confirmed, Declined, Closed}
 
     # check that it's not possible to create payout for claim in closed state
-    with brownie.reverts("ERROR:POC-042:CLAIM_NOT_CONFIRMED"):
+    with brownie.reverts("ERROR:POC-082:CLAIM_NOT_CONFIRMED"):
         product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
 
 

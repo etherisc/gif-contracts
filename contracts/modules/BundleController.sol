@@ -135,7 +135,7 @@ contract BundleController is
     {
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.state == BundleState.Closed, "ERROR:BUC-016:BUNDLE_NOT_CLOSED");
-        require(bundle.balance == 0, "ERROR:BUC-016:BUNDLE_HAS_BALANCE");
+        require(bundle.balance == 0, "ERROR:BUC-017:BUNDLE_HAS_BALANCE");
 
         // burn corresponding nft -> as a result bundle looses its owner
         _token.burn(bundleId);

@@ -7,7 +7,11 @@
     "terminal.integrated.defaultProfile.linux": "zsh",
     "solidity.remappingsUnix": [
         "@openzeppelin/=/home/vscode/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.7.0",
+<<<<<<< HEAD
         "@etherisc/gif-interface/=/home/vscode/.brownie/packages/etherisc/gif-interface@4c5ece3",
+=======
+        "@etherisc/gif-interface/=/home/vscode/.brownie/packages/etherisc/gif-interface@02344c1",
+>>>>>>> 93b4970 (fix duplicate error code)
         "@chainlink/=/home/vscode/.brownie/packages/smartcontractkit/chainlink@1.6.0",
     ],
     "workbench.colorCustomizations": {

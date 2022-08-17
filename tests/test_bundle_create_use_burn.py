@@ -459,7 +459,7 @@ def test_create_two_bundles(
     assert riskpoolId == riskpool.getId()
 
     # ensure that maximum number of active bundles cannot be set to 0
-    with brownie.reverts('ERROR:RPL-004:MAX_NUMBER_OF_ACTIVE_BUNDLES_ZERO'):
+    with brownie.reverts('ERROR:RPL-010:MAX_NUMBER_OF_ACTIVE_BUNDLES_ZERO'):
         riskpool.setMaximumNumberOfActiveBundles(0, {'from': riskpoolKeeper})
 
     riskpool.setMaximumNumberOfActiveBundles(2, {'from': riskpoolKeeper})
@@ -491,7 +491,7 @@ def test_create_two_bundles(
     assert riskpoolId2 == riskpool.getId()
 
     # ensure that number of active bundles cannot be set to a size smaller than the current number of active bundles (2)
-    with brownie.reverts('ERROR:RPL-005:TOO_MANY_ACTIVE_BUNDLES'):
+    with brownie.reverts('ERROR:RPL-011:TOO_MANY_ACTIVE_BUNDLES'):
         riskpool.setMaximumNumberOfActiveBundles(1)
 
 

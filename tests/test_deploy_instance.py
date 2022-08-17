@@ -109,7 +109,7 @@ def test_Policy(instance: GifInstance, owner):
     assert policy.address != 0x0
 
     assert policy.processIds() == 0
-    with brownie.reverts('ERROR:POC-052:POLICY_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-102:POLICY_DOES_NOT_EXIST'):
         policy.getPolicy(s2b32(''))
 
     with pytest.raises(AttributeError):
@@ -125,7 +125,7 @@ def test_PolicyDefaultFlow(instance: GifInstance, owner):
     assert policyDefaultFlow.address == policyDefaultFlowAddress
     assert policyDefaultFlow.address != 0x0
 
-    with brownie.reverts('ERROR:POC-051:APPLICATION_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:POC-101:APPLICATION_DOES_NOT_EXIST'):
         policyDefaultFlow.getApplicationData(s2b32(''))
 
     with pytest.raises(AttributeError):
