@@ -60,7 +60,7 @@ Example session inside the Brownie console
 * Deployment of a GIF instance
 * Deployment and usage of Test oracle and product
 
-```bash
+```python
 # --- imports ---
 import uuid
 from scripts.product import GifInstance, GifTestOracle, GifTestProduct, GifTestRiskpool
@@ -133,7 +133,7 @@ txPolicy2 = product.applyForPolicy(premium, sumInsured, metaData, applicationDat
 
 Brownie console commands to deploy/use the example product
 
-```shell
+```python
 from scripts.area_yield_index import GifAreaYieldIndexOracle, GifAreaYieldIndexProduct
 
 from scripts.setup import fund_riskpool, fund_customer
@@ -235,7 +235,7 @@ owner.address
 ```
 
 Use Polygon test [faucet](https://faucet.polygon.technology/) to fund the owner address
-```bash
+```python
 from scripts.instance import GifInstance
 
 # publishes source code to the network
@@ -265,8 +265,8 @@ For testnets faucet funds may be used
 
 Using the ganache scenario shown below ensures that all addresses used are sufficiently funded.
 
-```bash
-from scripts.deploy import (
+```python
+from scripts.deploy_ayii import (
     stakeholders_accounts_ganache,
     check_funds,
     amend_funds,
@@ -333,7 +333,7 @@ IMPORTANT: Make sure to write down the generated mnemonics for the
 stakeholder accounts. To reuse the same accounts replace `accounts.add` 
 with `accounts.from_mnemonic` using the recorded mnemonics.
 
-```bash
+```python
 instanceOperator=accounts.add()
 instanceWallet=accounts.add()
 oracleProvider=accounts.add()
@@ -363,8 +363,8 @@ a = {
 
 To interact with an existing setup use the following helper methods as shown below.
 
-```bash
-from scripts.deploy import (
+```python
+from scripts.deploy_ayii import (
     from_registry,
     from_component,
 )
