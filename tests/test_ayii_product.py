@@ -539,6 +539,17 @@ def test_create_bundle_investor_restriction(
     assert bundleIdCustomer == bundleId + 1
 
 
+def test_oracle_getters(gifAyiiProduct: GifAyiiProduct):
+
+    ayiiOracle = gifAyiiProduct.getOracle()
+    oracle = ayiiOracle.getContract()
+
+    assert oracle.getChainlinkToken() == ayiiOracle.clToken
+    assert oracle.getChainlinkOperator() == ayiiOracle.chainlinkOperator
+    assert oracle.getChainlinkJobId() == s2b32('1')
+    assert oracle.getChainlinkPayment() == 0
+
+
 def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
 
     product = gifAyiiProduct.getContract()
