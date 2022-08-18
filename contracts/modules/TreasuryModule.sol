@@ -464,7 +464,7 @@ contract TreasuryModule is
     {
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         riskpoolId = _pool.getRiskPoolForProduct(metadata.productId);
-        require(riskpoolId > 0, "ERROR:TRS-091:PRODUCT_WITHOUT_RISKPOOL");
+        require(riskpoolId > 0, "ERROR:TRS-092:PRODUCT_WITHOUT_RISKPOOL");
         riskpoolWalletAddress = _riskpoolWallet[riskpoolId];
     }
 }

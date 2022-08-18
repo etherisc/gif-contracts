@@ -95,11 +95,13 @@ def get_filled_account(accounts, account_no, funding) -> Account:
 # See https://docs.pytest.org/en/7.1.x/how-to/fixtures.html#yield-fixtures-recommended
 @pytest.fixture(autouse=True)
 def run_around_tests():
-    yield
-    # after each test has finished, execute one trx and wait for it to finish. 
-    # this is to ensure that the last transaction of the test is finished correctly. 
-    dummy_account = get_account(ACCOUNTS_MNEMONIC, 999)
-    execute_simple_incrementer_trx(dummy_account)
+    try:
+        yield
+        # after each test has finished, execute one trx and wait for it to finish. 
+        # this is to ensure that the last transaction of the test is finished correctly. 
+    finally:
+        dummy_account = get_account(ACCOUNTS_MNEMONIC, 999)
+        execute_simple_incrementer_trx(dummy_account)
 
 # DEPRECATED: use erc20Token instead
 @pytest.fixture(scope="module")

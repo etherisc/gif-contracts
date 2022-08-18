@@ -1,0 +1,30 @@
+name: Error code analysis
+
+on: 
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+    tags:
+    - '*'
+  pull_request:
+
+jobs:
+  find_duplicates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Find duplicate error codes
+        run: .github/workflows/scripts/find_duplicate_errorcodes.sh
+
+      - run: mkdir tmp
+
+      - name: List all error codes
+        run: .github/workflows/scripts/list_all_errorcodes.sh > tmp/errorcodes.md
+      
+      - name: Archive error codes
+        uses: actions/upload-artifact@v3
+        with:
+          name: error-codes
+          path: tmp/errorcodes.md

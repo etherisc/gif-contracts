@@ -33,3 +33,4 @@ def test_deploy_simple(
     assert riskpool.getTotalValueLocked() == 0
     assert riskpool.getCapacity() == 0
     assert riskpool.getBalance() == 0
+    assert riskpool.getMaximumNumberOfActiveBundles() == 1

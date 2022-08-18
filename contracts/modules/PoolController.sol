@@ -24,11 +24,18 @@ contract PoolController is
     // upper limit for overcollateralization at 200% 
     uint256 public constant COLLATERALIZATION_LEVEL_CAP = 2 * FULL_COLLATERALIZATION_LEVEL;
 
+    uint256 public constant DEFAULT_MAX_NUMBER_OF_ACTIVE_BUNDLES = 1;
+
     mapping(bytes32 /* processId */ => uint256 /* collateralAmount*/ ) private _collateralAmount;
 
     mapping(uint256 /* productId */ => uint256 /* riskpoolId */) private _riskpoolIdForProductId;
 
     mapping(uint256 /* riskpoolId */ => IPool.Pool)  private _riskpools;
+
+    mapping(uint256 /* riskpoolId */ => uint256 /* maxmimumNumberOfActiveBundles */) private _maxmimumNumberOfActiveBundlesForRiskpoolId;
+
+    mapping(uint256 /* riskpoolId */ => uint256 /* numberOfActiveBundles */) private _numberOfActiveBundlesForRiskpoolId;
+    
     uint256 [] private _riskpoolIds;
 
     ComponentController private _component;
@@ -78,6 +85,7 @@ contract PoolController is
     {
         IPool.Pool storage pool = _riskpools[riskpoolId];
         _riskpoolIds.push(riskpoolId);
+        _maxmimumNumberOfActiveBundlesForRiskpoolId[riskpoolId] = DEFAULT_MAX_NUMBER_OF_ACTIVE_BUNDLES;
         
         require(pool.createdAt == 0, "ERROR:POL-004:RISKPOOL_ALREADY_REGISTERED");
 
@@ -217,7 +225,7 @@ contract PoolController is
         IPolicy.Policy memory policy = _policy.getPolicy(processId);
         require(
             policy.state == IPolicy.PolicyState.Closed,
-            "ERROR:POL-007:POLICY_STATE_INVALID"
+            "ERROR:POL-025:POLICY_STATE_INVALID"
         );
 
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
@@ -272,12 +280,24 @@ contract PoolController is
         require(
             _component.getComponentState(riskpoolId) == IComponent.ComponentState.Paused
             || _component.getComponentState(riskpoolId) == IComponent.ComponentState.Suspended, 
-            "ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"
+            "ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"
             );
         require(
             _bundle.unburntBundles(riskpoolId) == 0, 
-            "ERROR:POL-011:RISKPOOL_HAS_UNBURNT_BUNDLES"
+            "ERROR:POL-031:RISKPOOL_HAS_UNBURNT_BUNDLES"
             );
+    }
+
+    function setMaximumNumberOfActiveBundles(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)
+        external 
+        onlyRiskpoolService
+    {
+        require(maxNumberOfActiveBundles > 0, "ERROR:POL-032:MAX_NUMBER_OF_ACTIVE_BUNDLES_INVALID");
+        _maxmimumNumberOfActiveBundlesForRiskpoolId[riskpoolId] = maxNumberOfActiveBundles;
+    }
+
+    function getMaximumNumberOfActiveBundles(uint256 riskpoolId) public view returns(uint256 maximumNumberOfActiveBundles) {
+        return _maxmimumNumberOfActiveBundlesForRiskpoolId[riskpoolId];
     }
     
     function riskpools() external view returns(uint256 idx) { return _riskpoolIds.length; }
@@ -285,27 +305,41 @@ contract PoolController is
 
     function getRiskpool(uint256 riskpoolId) public view returns(IPool.Pool memory riskPool) {
         riskPool = _riskpools[riskpoolId];
-        require(riskPool.createdAt > 0, "ERROR:POL-020:RISKPOOL_NOT_REGISTERED");
+        require(riskPool.createdAt > 0, "ERROR:POL-040:RISKPOOL_NOT_REGISTERED");
     }
 
     function getRiskPoolForProduct(uint256 productId) external view returns (uint256 riskpoolId) {
         return _riskpoolIdForProductId[productId];
     }
 
-    function getFullCollateralizationLevel() external view returns (uint256) {
+    function increaseNumberOfActiveBundles(uint256 riskpoolId) external 
+        onlyRiskpoolService 
+    {
+        require(_numberOfActiveBundlesForRiskpoolId[riskpoolId] < _maxmimumNumberOfActiveBundlesForRiskpoolId[riskpoolId], "ERROR:POL-041:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED");
+        _numberOfActiveBundlesForRiskpoolId[riskpoolId]++;
+    }
+
+    function decreaseNumberOfActiveBundles(uint256 riskpoolId) external 
+        onlyRiskpoolService 
+    {
+        require(_numberOfActiveBundlesForRiskpoolId[riskpoolId] > 0, "ERROR:POL-042:NO_ACTIVE_BUNDLES");
+        _numberOfActiveBundlesForRiskpoolId[riskpoolId]--;
+    }
+
+    function getFullCollateralizationLevel() external pure returns (uint256) {
         return FULL_COLLATERALIZATION_LEVEL;
     }
 
     function _getRiskpoolComponent(IPolicy.Metadata memory metadata) internal view returns (IRiskpool riskpool) {
         uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
-        require(riskpoolId > 0, "ERROR:POL-022:RISKPOOL_DOES_NOT_EXIST");
+        require(riskpoolId > 0, "ERROR:POL-045:RISKPOOL_DOES_NOT_EXIST");
 
         riskpool = _getRiskpoolForId(riskpoolId);
     }
 
     function _getRiskpoolForId(uint256 riskpoolId) internal view returns (IRiskpool riskpool) {
         IComponent cmp = _component.getComponent(riskpoolId);
-        require(cmp.isRiskpool(), "ERROR:POL-023:COMPONENT_NOT_RISKPOOL");
+        require(cmp.isRiskpool(), "ERROR:POL-046:COMPONENT_NOT_RISKPOOL");
         
         riskpool = IRiskpool(address(cmp));
     }

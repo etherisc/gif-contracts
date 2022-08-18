@@ -528,6 +528,7 @@ def test_create_bundle_investor_restriction(
     token.transfer(customer, customerAmount, {'from': instanceOperator})
     token.approve(instance.getTreasury(), customerAmount, {'from': customer})
 
+    riskpool.setMaximumNumberOfActiveBundles(2, {'from': riskpoolKeeper})
     # check that customer now can create a bundle
     tx = riskpool.createBundle(
             applicationFilter, 

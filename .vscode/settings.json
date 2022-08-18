@@ -7,7 +7,27 @@
     "terminal.integrated.defaultProfile.linux": "zsh",
     "solidity.remappingsUnix": [
         "@openzeppelin/=/home/vscode/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.7.0",
-        "@etherisc/gif-interface/=/home/vscode/.brownie/packages/etherisc/gif-interface@89c06d5",
         "@chainlink/=/home/vscode/.brownie/packages/smartcontractkit/chainlink@1.6.0",
-    ]
+        "@etherisc/gif-interface/=/home/vscode/.brownie/packages/etherisc/gif-interface@4c5ece3",
+    ],
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#2c5c67",
+        "activityBar.background": "#2c5c67",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#2d1328",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#2c5c67",
+        "statusBar.background": "#1d3c43",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#2c5c67",
+        "statusBarItem.remoteBackground": "#1d3c43",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#1d3c43",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#1d3c4399",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.remoteColor": "1D3C43"
 }

@@ -7,8 +7,6 @@ on:
     tags:
     - '*'
   pull_request:
-    branches:
-    - master
 
 jobs:
   test:
@@ -61,4 +59,5 @@ jobs:
         run: brownie compile --all
       - run: touch .env
       - name: Execute tests
-        run: brownie test
+        run: brownie test -n auto
+        

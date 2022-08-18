@@ -76,5 +76,7 @@ def apply_for_policy(
         applicationData,
         {'from': customer})
     
+    # print(tx.events)
+
     # returns policy id
     return tx.return_value

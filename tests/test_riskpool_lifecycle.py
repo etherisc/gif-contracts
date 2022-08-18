@@ -157,6 +157,7 @@ def test_pause_unpause(
     bundleDefunded = instanceService.getBundle(bundleId).dict()
     assert bundleDefunded["balance"] == bundleAftePolicy["balance"] - 10
 
+    riskpool.setMaximumNumberOfActiveBundles(2, {'from':bundleOwner})
     tx = riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
     bundle2Id = tx.return_value
     bundle2 = instanceService.getBundle(bundleId).dict()
@@ -280,6 +281,8 @@ def test_suspend_resume(
     bundleDefunded = instanceService.getBundle(bundleId).dict()
     assert bundleDefunded["balance"] == balance - 10
 
+    riskpool.setMaximumNumberOfActiveBundles(2, {'from': riskpoolKeeper})
+
     tx = riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
     bundle2Id = tx.return_value
     bundle2 = instanceService.getBundle(bundleId).dict()
@@ -349,10 +352,10 @@ def test_suspend_archive(
 
     # ensure that component owner and instance operator may not archive riskpool
     assert owner != riskpoolKeeper
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
 
     assert instanceService.getComponentState(riskpoolId) == 3
@@ -362,7 +365,7 @@ def test_suspend_archive(
     assert instanceService.getComponentState(riskpoolId) == 5
 
     # ensure that instance operator may not archive riskpool due to active bundles
-    with brownie.reverts("ERROR:POL-011:RISKPOOL_HAS_UNBURNT_BUNDLES"):
+    with brownie.reverts("ERROR:POL-031:RISKPOOL_HAS_UNBURNT_BUNDLES"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
     # ensure that riskpool can be archived by burning bundle
@@ -390,7 +393,7 @@ def test_suspend_archive(
         componentOwnerService.unpause(riskpoolId, {'from':owner})
 
     # ensure that component owner may not archive archived riskpool
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
 
     # ensure that component owner may not resume riskpool
@@ -398,7 +401,7 @@ def test_suspend_archive(
         instanceOperatorService.resume(riskpoolId, {'from':owner})
 
     # ensure that instance operator may not archive archived riskpool
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
     
 
@@ -465,10 +468,10 @@ def test_pause_archive_as_owner(
 
     # ensure that owner may not archive riskpool
     assert owner != riskpoolKeeper
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
 
     assert instanceService.getComponentState(riskpoolId) == 3
@@ -478,7 +481,7 @@ def test_pause_archive_as_owner(
     assert instanceService.getComponentState(riskpoolId) == 4
 
     # ensure that instance operator may not archive riskpool due to active bundles
-    with brownie.reverts("ERROR:POL-011:RISKPOOL_HAS_UNBURNT_BUNDLES"):
+    with brownie.reverts("ERROR:POL-031:RISKPOOL_HAS_UNBURNT_BUNDLES"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
     # ensure that riskpool can be archived by burning bundle
@@ -504,11 +507,11 @@ def test_pause_archive_as_owner(
     assert instanceService.getComponentState(riskpoolId) == 6
 
     # ensure that component owner may not archive archived riskpool
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
     
     # ensure that instance operator may not archive archived riskpool
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
 
@@ -541,11 +544,11 @@ def test_pause_archive_as_instance_operator(
 
     # ensure that instance operator may not archive active riskpool 
     assert owner != riskpoolKeeper
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
     # ensure that owner may not archive active riskpool 
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
 
     assert instanceService.getComponentState(riskpoolId) == 3
@@ -569,11 +572,11 @@ def test_pause_archive_as_instance_operator(
     assert instanceService.getComponentState(riskpoolId) == 6
 
         # ensure that component owner may not archive archived riskpool
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         componentOwnerService.archive(riskpoolId, {'from':riskpoolKeeper})
     
     # ensure that instance operator may not archive archived riskpool
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         instanceOperatorService.archive(riskpoolId, {'from':owner})
 
 
@@ -654,7 +657,7 @@ def test_propose_decline(
             {'from': instance.getOwner()})
 
     # ensure that declined riskpool cannot be archived by instance operator
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         instanceOperatorService.archive(
             riskpoolId,
             {'from': instance.getOwner()})
@@ -672,7 +675,7 @@ def test_propose_decline(
             {'from': riskpoolKeeper})
 
     # ensure that declined riskpool cannot be archived by owner
-    with brownie.reverts("ERROR:POL-010:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
+    with brownie.reverts("ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"):
         componentOwnerService.archive(
             riskpoolId,
             {'from': riskpoolKeeper})

@@ -308,10 +308,10 @@ def test_close_and_burn_bundle(
     assert testCoin.balanceOf(bundleOwner) == bundleOwnerBefore + netWithdrawalAmount
 
     # check that close results in blocking all other actions on the bundle
-    with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):
+    with brownie.reverts('ERROR:POL-042:NO_ACTIVE_BUNDLES'):
         riskpool.closeBundle(bundleId, {'from': bundleOwner})
 
-    with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):
+    with brownie.reverts('ERROR:POL-042:NO_ACTIVE_BUNDLES'):
         riskpool.lockBundle(bundleId, {'from': bundleOwner})
 
     with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):
@@ -417,6 +417,78 @@ def test_fund_defund_bundle(
     assert riskpool.getCapital() == expectedCapital
     assert riskpool.getBalance() == expectedBalance
     assert testCoin.balanceOf(capitalOwner) == expectedBalance
+
+
+def test_create_two_bundles(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    riskpoolKeeper: Account,
+    owner: Account,
+    customer: Account,
+    feeOwner: Account,
+    capitalOwner: Account
+):
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    initialFunding = 10000
+
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    riskpool.bundles() == 1
+    bundle = riskpool.getBundle(0)
+
+    (
+        bundleId,
+        riskpoolId,
+        tokenId,
+        state,
+        filter,
+        capital,
+        lockedCapital,
+        balance,
+        createdAt,
+        updatedAt
+    ) = bundle
+
+    print(bundle)
+    capitalFee = initialFunding / 20 +42
+    bundleExpectedCapital = initialFunding - capitalFee
+
+    # check bundle values with expectation
+    assert bundleId == 1
+    assert riskpoolId == riskpool.getId()
+
+    # ensure that maximum number of active bundles cannot be set to 0
+    with brownie.reverts('ERROR:POL-032:MAX_NUMBER_OF_ACTIVE_BUNDLES_INVALID'):
+        riskpool.setMaximumNumberOfActiveBundles(0, {'from': riskpoolKeeper})
+
+    riskpool.setMaximumNumberOfActiveBundles(2, {'from': riskpoolKeeper})
+
+    # create another bundle
+    riskpool.createBundle(
+            bytes(0), 
+            initialFunding, 
+            {'from': riskpoolKeeper})
+
+    # assert that second bundle was created correctly
+    assert 2 == riskpool.bundles()
+    bundle2 = riskpool.getBundle(1)
+    
+    (
+        bundleId2,
+        riskpoolId2,
+        tokenId2,
+        state2,
+        filter2,
+        capital2,
+        lockedCapital2,
+        balance2,
+        createdAt2,
+        updatedAt2
+    ) = bundle2
+
+    assert bundleId2 == 2
+    assert riskpoolId2 == riskpool.getId()
 
 
 def _getApplicationDict(instance, policyId):
