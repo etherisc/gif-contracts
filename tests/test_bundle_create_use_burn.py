@@ -308,10 +308,10 @@ def test_close_and_burn_bundle(
     assert testCoin.balanceOf(bundleOwner) == bundleOwnerBefore + netWithdrawalAmount
 
     # check that close results in blocking all other actions on the bundle
-    with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):
+    with brownie.reverts('ERROR:POL-042:NO_ACTIVE_BUNDLES'):
         riskpool.closeBundle(bundleId, {'from': bundleOwner})
 
-    with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):
+    with brownie.reverts('ERROR:POL-042:NO_ACTIVE_BUNDLES'):
         riskpool.lockBundle(bundleId, {'from': bundleOwner})
 
     with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):
@@ -459,7 +459,7 @@ def test_create_two_bundles(
     assert riskpoolId == riskpool.getId()
 
     # ensure that maximum number of active bundles cannot be set to 0
-    with brownie.reverts('ERROR:RPL-010:MAX_NUMBER_OF_ACTIVE_BUNDLES_ZERO'):
+    with brownie.reverts('ERROR:POL-032:MAX_NUMBER_OF_ACTIVE_BUNDLES_INVALID'):
         riskpool.setMaximumNumberOfActiveBundles(0, {'from': riskpoolKeeper})
 
     riskpool.setMaximumNumberOfActiveBundles(2, {'from': riskpoolKeeper})
@@ -489,10 +489,6 @@ def test_create_two_bundles(
 
     assert bundleId2 == 2
     assert riskpoolId2 == riskpool.getId()
-
-    # ensure that number of active bundles cannot be set to a size smaller than the current number of active bundles (2)
-    with brownie.reverts('ERROR:RPL-011:TOO_MANY_ACTIVE_BUNDLES'):
-        riskpool.setMaximumNumberOfActiveBundles(1)
 
 
 def _getApplicationDict(instance, policyId):

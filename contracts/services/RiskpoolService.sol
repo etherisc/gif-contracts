@@ -107,7 +107,7 @@ contract RiskpoolService is
         returns(uint256 bundleId)
     {
         uint256 riskpoolId = _component.getComponentId(_msgSender());
-        // TODO increase active bundles on poolcontroller
+        _pool.increaseNumberOfActiveBundles(riskpoolId);
         bundleId = _bundle.create(owner, riskpoolId, filter, 0);
 
         (uint256 fee, uint256 netCapital) = _treasury.processCapital(bundleId, initialCapital);
@@ -161,7 +161,8 @@ contract RiskpoolService is
         external override
         onlyOwningRiskpool(bundleId, true)
     {
-        // TODO increase active bundles on poolcontroller
+            uint256 riskpoolId = _component.getComponentId(_msgSender());
+        _pool.decreaseNumberOfActiveBundles(riskpoolId);
         _bundle.lock(bundleId);
     }
 
@@ -170,7 +171,8 @@ contract RiskpoolService is
         external override
         onlyOwningRiskpool(bundleId, true)  
     {
-        // TODO increase active bundles on poolcontroller
+        uint256 riskpoolId = _component.getComponentId(_msgSender());
+        _pool.increaseNumberOfActiveBundles(riskpoolId);
         _bundle.unlock(bundleId);
     }
 
@@ -179,6 +181,11 @@ contract RiskpoolService is
         external override
         onlyOwningRiskpool(bundleId, true)  
     {
+        uint256 riskpoolId = _component.getComponentId(_msgSender());
+        // only decrease active bundles when riskpool is active - locked riskpool is not counted towards active bundles
+        if (_component.getComponentState(riskpoolId) == IComponent.ComponentState.Active) {
+            _pool.decreaseNumberOfActiveBundles(riskpoolId);
+        }
         _bundle.close(bundleId);
     }
 

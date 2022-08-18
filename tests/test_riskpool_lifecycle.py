@@ -157,6 +157,7 @@ def test_pause_unpause(
     bundleDefunded = instanceService.getBundle(bundleId).dict()
     assert bundleDefunded["balance"] == bundleAftePolicy["balance"] - 10
 
+    riskpool.setMaximumNumberOfActiveBundles(2, {'from':bundleOwner})
     tx = riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
     bundle2Id = tx.return_value
     bundle2 = instanceService.getBundle(bundleId).dict()
@@ -279,6 +280,8 @@ def test_suspend_resume(
     riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
     bundleDefunded = instanceService.getBundle(bundleId).dict()
     assert bundleDefunded["balance"] == balance - 10
+
+    riskpool.setMaximumNumberOfActiveBundles(2, {'from': riskpoolKeeper})
 
     tx = riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
     bundle2Id = tx.return_value
