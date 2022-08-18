@@ -578,7 +578,7 @@ def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
     assert get_payout_delta(0.9, 100.0,   0.0, tsi, trigger, exit, product, multiplier) < 0.0000001
 
 
-def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
+def test_payout_percentage_calculation_single(gifAyiiProduct: GifAyiiProduct):
 
     product = gifAyiiProduct.getContract()
     multiplier = product.getPercentageMultiplier()

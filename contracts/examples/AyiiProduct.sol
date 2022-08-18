@@ -44,6 +44,7 @@ contract AyiiProduct is
     }
 
     uint256 private _oracleId;
+    IERC20 private _token;
     PolicyController private _policy;
 
     mapping(bytes32 /* riskId */ => Risk) private _risks;
@@ -69,6 +70,7 @@ contract AyiiProduct is
     )
         Product(productName, token, POLICY_FLOW, riskpoolId, registry)
     {
+        _token = IERC20(token);
         _oracleId = oracleId;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -175,11 +177,27 @@ contract AyiiProduct is
         (success, fee, netPremium) = _collectPremium(policyId);
     }
 
-    function collectPremium(bytes32 policyId, uint256 amount) 
+    /* premium collection always moves funds from the customers wallet to the riskpool wallet.
+     * to stick to this principle: this method implements a two part transferFrom. 
+     * the 1st transfer moves the specified amount from the 'from' sender address to the customer
+     * the 2nd transfer transfers the amount from the customer to the riskpool wallet (and some 
+     * fees to the instance wallet)
+     */ 
+    function collectPremium(bytes32 policyId, address from, uint256 amount) 
         external
         onlyRole(INSURER_ROLE)
         returns(bool success, uint256 fee, uint256 netPremium)
     {
+        IPolicy.Metadata memory metadata = _getMetadata(policyId);
+
+        if (from != metadata.owner) {
+            bool transferSuccessful = _token.transferFrom(from, metadata.owner, amount);
+
+            if (!transferSuccessful) {
+                return (transferSuccessful, 0, amount);
+            }
+        }
+
         (success, fee, netPremium) = _collectPremium(policyId, amount);
     }
 

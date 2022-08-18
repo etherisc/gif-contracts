@@ -111,8 +111,9 @@ contract PolicyDefaultFlow is
         }
     }
 
-    /* success implies the successful collection of the premium amof the policy.
-     * If no fee structure is defined for the policy, this call will revert. 
+    /* success implies the successful collection of the amount for the policy.
+     * valid amounts need to be > 0 up to the full premium amount
+     * if no fee structure is defined for the policy, this call will revert. 
      */
     function collectPremium(bytes32 processId, uint256 amount) 
         public 
@@ -124,11 +125,13 @@ contract PolicyDefaultFlow is
         ) 
     {
         TreasuryModule treasury = getTreasuryContract();
+        PolicyController policy = getPolicyContract();
+        address owner = policy.getMetadata(processId).owner;
+
         (success, feeAmount, netPremiumAmount) = treasury.processPremium(processId, amount);
 
         // if premium collected: update book keeping of policy and riskpool
         if (success) {
-            IPolicy policy = getPolicyContract();
             policy.collectPremium(processId, netPremiumAmount + feeAmount);
 
             PoolController pool = getPoolContract();
