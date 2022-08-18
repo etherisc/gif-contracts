@@ -10,6 +10,7 @@
         "@chainlink/=/home/vscode/.brownie/packages/smartcontractkit/chainlink@1.6.0",
         "@etherisc/gif-interface/=/home/vscode/.brownie/packages/etherisc/gif-interface@4c5ece3",
     ],
+    "peacock.remoteColor": "1D3C43",
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#2c5c67",
         "activityBar.background": "#2c5c67",
@@ -28,6 +29,5 @@
         "titleBar.activeForeground": "#e7e7e7",
         "titleBar.inactiveBackground": "#1d3c4399",
         "titleBar.inactiveForeground": "#e7e7e799"
-    },
-    "peacock.remoteColor": "1D3C43"
+    }
 }
