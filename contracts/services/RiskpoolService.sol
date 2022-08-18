@@ -10,6 +10,8 @@ import "@etherisc/gif-interface/contracts/components/IComponent.sol";
 import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
 import "@etherisc/gif-interface/contracts/services/IRiskpoolService.sol";
 
+// TODO create/lock/unlock notify poolcontroller about the action and poolcontoller updates active bundles
+
 contract RiskpoolService is
     IRiskpoolService, 
     CoreController
@@ -105,6 +107,7 @@ contract RiskpoolService is
         returns(uint256 bundleId)
     {
         uint256 riskpoolId = _component.getComponentId(_msgSender());
+        // TODO increase active bundles on poolcontroller
         bundleId = _bundle.create(owner, riskpoolId, filter, 0);
 
         (uint256 fee, uint256 netCapital) = _treasury.processCapital(bundleId, initialCapital);
@@ -158,6 +161,7 @@ contract RiskpoolService is
         external override
         onlyOwningRiskpool(bundleId, true)
     {
+        // TODO increase active bundles on poolcontroller
         _bundle.lock(bundleId);
     }
 
@@ -166,6 +170,7 @@ contract RiskpoolService is
         external override
         onlyOwningRiskpool(bundleId, true)  
     {
+        // TODO increase active bundles on poolcontroller
         _bundle.unlock(bundleId);
     }
 

@@ -31,6 +31,7 @@ contract PoolController is
     mapping(uint256 /* riskpoolId */ => IPool.Pool)  private _riskpools;
 
     mapping(uint256 /* riskpoolId */ => uint256 /* maxmimumNumberOfActiveBundles */) private _maxmimumNumberOfActiveBundlesForRiskpoolId;
+    // TODO track active bundles per riskpool
     
     uint256 [] private _riskpoolIds;
 
