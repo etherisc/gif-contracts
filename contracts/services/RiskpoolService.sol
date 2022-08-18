@@ -66,6 +66,22 @@ contract RiskpoolService is
         _;
     }
 
+    modifier onlyOwningRiskpoolId(uint256 riskpoolId, bool mustBeActive) {
+        uint256 componentId = _component.getComponentId(_msgSender());
+        bool isRiskpool = _component.getComponentType(componentId) == IComponent.ComponentType.Riskpool;
+        require(
+            isRiskpool && componentId == riskpoolId,
+            "ERROR:RPS-007:NOT_OWNING_RISKPOOL"
+        );
+        if (mustBeActive) {
+            require(
+                _component.getComponentState(componentId) == IComponent.ComponentState.Active,
+                "ERROR:RPS-008:RISKPOOL_NOT_ACTIVE"
+            );
+        }
+        _;
+    }
+
 
     function _afterInitialize() 
         internal override 
@@ -254,7 +270,7 @@ contract RiskpoolService is
 
     function setMaximumNumberOfActiveBundles(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)
         external override
-        // TODO as onlyOwningRiskpool but directly based on riskpoolId
+        onlyOwningRiskpoolId(riskpoolId, true)
     {
         _pool.setMaximumNumberOfActiveBundles(riskpoolId, maxNumberOfActiveBundles);
     }
