@@ -26,12 +26,9 @@ contract RegistryController is
     
     uint256 public startBlock;
 
-    // release => contract name => contract address
-    mapping(bytes32 => mapping(bytes32 => address)) public contracts;
-    // release => contract name []
-    mapping(bytes32 => bytes32[]) public contractNames;
-    // number of contracts in release
-    mapping(bytes32 => uint256) public contractsInRelease;
+    mapping(bytes32 /* release */ => mapping(bytes32 /* contract name */ => address /* contract address */)) public _contracts;
+    mapping(bytes32 /* release */ => bytes32[] /* contract names */) public _contractNames;
+    mapping(bytes32 /* release */ => uint256 /* number of contracts in release */) public _contractsInRelease;
 
 
     function initializeRegistry(bytes32 _initialRelease) public initializer {
@@ -43,9 +40,9 @@ contract RegistryController is
         // at execution time _msgSender is the address of the 
         // registry proxy.
         release = _initialRelease;
-        contracts[release]["InstanceOperatorService"] = _msgSender();
-        contractNames[release].push("InstanceOperatorService");
-        contractsInRelease[release] = 1;
+        _contracts[release]["InstanceOperatorService"] = _msgSender();
+        _contractNames[release].push("InstanceOperatorService");
+        _contractsInRelease[release] = 1;
 
 
         // register the deployment block for reading logs
@@ -133,27 +130,35 @@ contract RegistryController is
         external override 
         onlyInstanceOperator 
     {
-        uint256 countContracts = contractsInRelease[release];
+        uint256 countContracts = _contractsInRelease[release];
 
         require(countContracts > 0, "ERROR:REC-001:EMPTY_RELEASE");
         require(
-            contractsInRelease[_newRelease] == 0,
+            _contractsInRelease[_newRelease] == 0,
             "ERROR:REC-002:NEW_RELEASE_NOT_EMPTY"
         );
 
         // TODO think about how to avoid this loop
         for (uint256 i = 0; i < countContracts; i += 1) {
-            bytes32 contractName = contractNames[release][i];
+            bytes32 contractName = _contractNames[release][i];
             _registerInRelease(
                 _newRelease,
                 contractName,
-                contracts[release][contractName]
+                _contracts[release][contractName]
             );
         }
 
         release = _newRelease;
 
         emit LogReleasePrepared(release);
+    }
+
+    function contracts() external view returns (uint256 _numberOfContracts) {
+        _numberOfContracts = _contractNames[release].length;
+    }
+
+    function contractNames() external view returns (bytes32[] memory _contractNamesOut) {
+        _contractNamesOut = _contractNames[release];
     }
 
     /**
@@ -163,9 +168,8 @@ contract RegistryController is
         internal view
         returns (address _addr)
     {
-        _addr = contracts[_release][_contractName];
+        _addr = _contracts[_release][_contractName];
     }
-
 
     /**
      * @dev Register contract in certain release
@@ -180,19 +184,19 @@ contract RegistryController is
         bool isNew = false;
 
         require(
-            contractNames[_release].length < MAX_CONTRACTS,
+            _contractNames[_release].length < MAX_CONTRACTS,
             "ERROR:REC-005:MAX_CONTRACTS_LIMIT"
         );
 
-        if (contracts[_release][_contractName] == address(0)) {
-            contractNames[_release].push(_contractName);
-            contractsInRelease[_release]++;
+        if (_contracts[_release][_contractName] == address(0)) {
+            _contractNames[_release].push(_contractName);
+            _contractsInRelease[_release]++;
             isNew = true;
         }
 
-        contracts[_release][_contractName] = _contractAddress;
+        _contracts[_release][_contractName] = _contractAddress;
         require(
-            contractsInRelease[_release] == contractNames[_release].length,
+            _contractsInRelease[_release] == _contractNames[_release].length,
             "ERROR:REC-006:CONTRACT_NUMBER_MISMATCH"
         );
 
@@ -213,26 +217,26 @@ contract RegistryController is
         onlyInstanceOperator
     {
         uint256 indexToDelete;
-        uint256 countContracts = contractNames[_release].length;
+        uint256 countContracts = _contractNames[_release].length;
 
         // TODO think about how to avoid this loop
         for (uint256 i = 0; i < countContracts; i += 1) {
-            if (contractNames[_release][i] == _contractName) {
+            if (_contractNames[_release][i] == _contractName) {
                 indexToDelete = i;
                 break;
             }
         }
 
         if (indexToDelete < countContracts - 1) {
-            contractNames[_release][indexToDelete] = contractNames[_release][
+            _contractNames[_release][indexToDelete] = _contractNames[_release][
                 countContracts - 1
             ];
         }
 
-        contractNames[_release].pop();
-        contractsInRelease[_release] -= 1;
+        _contractNames[_release].pop();
+        _contractsInRelease[_release] -= 1;
         require(
-            contractsInRelease[_release] == contractNames[_release].length,
+            _contractsInRelease[_release] == _contractNames[_release].length,
             "ERROR:REC-010:CONTRACT_NUMBER_MISMATCH"
         );
 

@@ -93,6 +93,14 @@ contract InstanceOperatorService is
         _registry.deregisterInRelease(_release, _contractName);
     }
 
+    function contracts() external view override returns (uint256 numberOfContracts) {
+        numberOfContracts = _registry.contracts();
+    }
+    
+    function contractNames() external view override returns (bytes32[] memory contractNames) {
+        contractNames = _registry.contractNames();
+    }
+
     /* access */
     function createRole(bytes32 _role) 
         external override
