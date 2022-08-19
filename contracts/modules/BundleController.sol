@@ -199,7 +199,7 @@ contract BundleController is
     }
 
 
-    function increaseBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+    function increaseBalance(uint256 bundleId, uint256 amount)
         external override
         onlyRiskpoolService
     {
@@ -212,7 +212,7 @@ contract BundleController is
     }
 
 
-    function decreaseBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+    function decreaseBalance(uint256 bundleId, uint256 amount)
         external override
         onlyRiskpoolService
     {

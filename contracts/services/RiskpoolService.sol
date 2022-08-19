@@ -242,7 +242,7 @@ contract RiskpoolService is
     }
 
 
-    function increaseBundleBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+    function increaseBundleBalance(uint256 bundleId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)
         returns(uint256 newBalance)
@@ -250,11 +250,11 @@ contract RiskpoolService is
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
         require(bundle.state == IBundle.BundleState.Active, "ERROR:RPS-030:BUNDLE_NOT_ACTIVE");
 
-        _bundle.increaseBalance(bundleId, processId, amount);
+        _bundle.increaseBalance(bundleId, amount);
         newBalance = bundle.balance + amount;
     }
 
-    function decreaseBundleBalance(uint256 bundleId, bytes32 processId, uint256 amount)
+    function decreaseBundleBalance(uint256 bundleId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)
         returns(uint256 newBalance)
@@ -268,7 +268,7 @@ contract RiskpoolService is
 
         require(bundle.balance >= amount, "ERROR:RPS-032:BUNDLE_BALANCE_TOO_LOW");
 
-        _bundle.decreaseBalance(bundleId, processId, amount);
+        _bundle.decreaseBalance(bundleId, amount);
         newBalance = bundle.balance - amount;
     }
 
