@@ -217,7 +217,7 @@ contract ComponentController is
         return _products[idx];
     }
 
-    function getRequiredRole(IComponent.ComponentType componentType) external returns (bytes32) {
+    function getRequiredRole(IComponent.ComponentType componentType) external view returns (bytes32) {
         if (componentType == IComponent.ComponentType.Product) { return _access.getProductOwnerRole(); }
         else if (componentType == IComponent.ComponentType.Oracle) { return _access.getOracleProviderRole(); }
         else if (componentType == IComponent.ComponentType.Riskpool) { return _access.getRiskpoolKeeperRole(); }

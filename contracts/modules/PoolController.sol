@@ -276,7 +276,7 @@ contract PoolController is
         pool.updatedAt = block.timestamp;
     }
 
-    function isArchivingAllowed(uint256 riskpoolId) external view returns (bool) {
+    function isArchivingAllowed(uint256 riskpoolId) external view {
         require(
             _component.getComponentState(riskpoolId) == IComponent.ComponentState.Paused
             || _component.getComponentState(riskpoolId) == IComponent.ComponentState.Suspended, 

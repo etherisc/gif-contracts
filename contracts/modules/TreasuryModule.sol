@@ -404,7 +404,7 @@ contract TreasuryModule is
         return _fees[componentId];
     }
 
-    function getFractionFullUnit() public override view returns(uint256) { 
+    function getFractionFullUnit() public override pure returns(uint256) { 
         return FRACTION_FULL_UNIT; 
     }
 
