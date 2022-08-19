@@ -25,6 +25,7 @@ from brownie import (
     InstanceOperatorService,
     InstanceService,
     TestCoin,
+    TestCoinAlternativeImplementation,
     TestCoinX,
     TestRiskpool,
     TestOracle,
@@ -273,6 +274,10 @@ def registry(registryController, owner) -> RegistryController:
 @pytest.fixture(scope="module")
 def erc20Token(instanceOperator) -> TestCoin:
     return TestCoin.deploy({'from': instanceOperator})
+
+@pytest.fixture(scope="module")
+def erc20TokenAlternative(instanceOperator) -> TestCoin:
+    return TestCoinAlternativeImplementation.deploy({'from': instanceOperator})
 
 @pytest.fixture(scope="module")
 def testCoinX(owner) -> TestCoinX:
