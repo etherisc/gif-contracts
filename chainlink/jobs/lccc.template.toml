@@ -1,0 +1,6 @@
+type                = "directrequest"
+schemaVersion       = 1
+name                = "Get PULA Yield Data"
+contractAddress     = "0x11B6838405f7fd78f4e1501b37D78eCB4e411795"
+observationSource   = """
+"""

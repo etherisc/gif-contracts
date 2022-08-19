@@ -16,6 +16,7 @@
   "license": "Apache-2.0",
   "homepage": "https://github.com/etherisc/gif-contracts#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.7.0"
+    "@openzeppelin/contracts": "^4.7.0",
+    "fs-jetpack": "^4.3.1"
   }
 }

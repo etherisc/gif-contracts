@@ -1,0 +1,73 @@
+type                = "directrequest"
+schemaVersion       = 1
+name                = "Get PULA Yield Data"
+contractAddress     = "0x11B6838405f7fd78f4e1501b37D78eCB4e411795"
+observationSource   = """
+//
+// Chainlink Job definition for the ratings oracle
+//
+// First, we parse the request log and the CBOR payload inside of it
+decode_log [
+    type="ethabidecodelog"
+    abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+    data="$(jobRun.logData)"
+    topics="$(jobRun.logTopics)"
+    ]
+
+// The result of the following element is a map
+decode_cbor [
+    type="cborparse"
+    data="$(decode_log.data)"
+    mode="diet"
+    ]
+
+// Then, we use the decoded request parameters to make an HTTP fetch
+fetch [
+    type="http"
+    method=POST
+    requestData="{\\"projectId\\": $(decode_cbor.projectId), \\"cropId\\": $(decode_cbor.cropId), \\"uaiId\\": $(decode_cbor.uaiId), }"
+    url="https://lccc.etherisc.com/yield"
+    ]
+
+
+// From the fetch result, we parse out the individual elements
+yield [ type="jsonparse" data="$(fetch)" path="yield" ]
+
+
+// Finally, we send a response on-chain.
+// The abi is the abi of the fulfill function in the receiving contract.
+encode_response [
+type="ethabiencode"
+abi="(bytes32 requestId, bool completed, uint256 deductible, uint256 hurdle, uint256 payout)"
+data="{\\"requestId\\": $(decode_log.requestId), \\"yield\\": $(yield)}"
+]
+
+encode_tx [
+type="ethabiencode"
+abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_response)}"
+]
+//function fulfillOracleRequest(
+ //    bytes32 requestId,
+ //    uint256 payment,
+ //    address callbackAddress,
+ //    bytes4 callbackFunctionId,
+ //    uint256 expiration,
+ //    bytes32 data
+ //  )
+submit_tx [
+type="ethtx"
+to="0x11B6838405f7fd78f4e1501b37D78eCB4e411795"
+data="$(encode_tx)"
+]
+
+// Dependency graph
+
+decode_log -> decode_cbor -> fetch
+
+fetch -> yield -> encode_response
+
+encode_response -> encode_tx -> submit_tx
+
+"""
+
