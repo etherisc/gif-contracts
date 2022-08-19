@@ -54,13 +54,17 @@ contract RiskpoolService is
         bool isRiskpool = _component.getComponentType(componentId) == IComponent.ComponentType.Riskpool;
         IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
         require(
-            isRiskpool && componentId == bundle.riskpoolId,
-            "ERROR:RPS-005:NOT_OWNING_RISKPOOL"
+            isRiskpool,
+            "ERROR:RPS-005:SENDER_NOT_RISKPOOL"
+        );
+        require(
+            componentId == bundle.riskpoolId,
+            "ERROR:RPS-006:BUNDLE_RISKPOOL_MISMATCH"
         );
         if (mustBeActive) {
             require(
                 _component.getComponentState(componentId) == IComponent.ComponentState.Active,
-                "ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"
+                "ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"
             );
         }
         _;
@@ -71,12 +75,12 @@ contract RiskpoolService is
         bool isRiskpool = _component.getComponentType(componentId) == IComponent.ComponentType.Riskpool;
         require(
             isRiskpool && componentId == riskpoolId,
-            "ERROR:RPS-007:NOT_OWNING_RISKPOOL"
+            "ERROR:RPS-008:SENDER_NOT_OWNING_RISKPOOL"
         );
         if (mustBeActive) {
             require(
                 _component.getComponentState(componentId) == IComponent.ComponentState.Active,
-                "ERROR:RPS-008:RISKPOOL_NOT_ACTIVE"
+                "ERROR:RPS-009:RISKPOOL_NOT_ACTIVE"
             );
         }
         _;
