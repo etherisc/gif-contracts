@@ -180,7 +180,7 @@ contract RegistryController is
         bool isNew = false;
 
         require(
-            contractNames[_release].length <= MAX_CONTRACTS,
+            contractNames[_release].length < MAX_CONTRACTS,
             "ERROR:REC-005:MAX_CONTRACTS_LIMIT"
         );
 
