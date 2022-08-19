@@ -253,6 +253,7 @@ contract TreasuryModule is
         // check if allowance covers requested amount
         IERC20 token = getComponentToken(metadata.productId);
         if (token.allowance(metadata.owner, address(this)) < amount) {
+            success = false;
             return (success, feeAmount, netAmount);
         }
 
@@ -295,12 +296,7 @@ contract TreasuryModule is
 
         require(
             token.balanceOf(riskpoolWalletAddress) >= payout.amount, 
-            string(abi.encodePacked(
-                "ERROR:TRS-042:RISKPOOL_BALANCE_TOO_SMALL:BALANCE=",
-                Strings.toString(token.balanceOf(riskpoolWalletAddress)),
-                ":PAYOUT=",
-                Strings.toString(payout.amount)
-            ))
+            "ERROR:TRS-042:RISKPOOL_BALANCE_TOO_SMALL"
         );
 
         // actual payout to policy holder
