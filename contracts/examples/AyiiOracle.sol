@@ -30,18 +30,32 @@ contract AyiiOracle is
     constructor(
         bytes32 _name,
         address _registry,
-        address _linkToken,
-        address _chainLinkOracle,
+        address _chainLinkToken,
+        address _chainLinkOperator,
         bytes32 _jobId,
         uint256 _payment
     )
         Oracle(_name, _registry)
     {
-        if (_linkToken == address(0)) { setPublicChainlinkToken(); } 
-        else                          { setChainlinkToken(_linkToken); }
+        updateRequestDetails(
+            _chainLinkToken, 
+            _chainLinkOperator, 
+            _jobId, 
+            _payment);
+    }
 
-        setChainlinkOracle(_chainLinkOracle);
-
+    function updateRequestDetails(
+        address _chainLinkToken,
+        address _chainLinkOperator,
+        bytes32 _jobId,
+        uint256 _payment
+    ) 
+        public 
+        onlyOwner 
+    {
+        if (_chainLinkToken != address(0)) { setChainlinkToken(_chainLinkToken); }
+        if (_chainLinkOperator != address(0)) { setChainlinkOracle(_chainLinkOperator); }
+        
         jobId = _jobId;
         payment = _payment;
     }
@@ -123,8 +137,20 @@ contract AyiiOracle is
         );
     }
 
+    function getChainlinkJobId() external view returns(bytes32 chainlinkJobId) {
+        return jobId;
+    }
+
+    function getChainlinkPayment() external view returns(uint256 paymentAmount) {
+        return payment;
+    }
+
+    function getChainlinkToken() external view returns(address linkTokenAddress) {
+        return chainlinkTokenAddress();
+    }
+
     function getChainlinkOperator() external view returns(address operator) {
-        operator = chainlinkOracleAddress();
+        return chainlinkOracleAddress();
     }
 }
 
