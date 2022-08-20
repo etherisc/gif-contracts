@@ -132,7 +132,7 @@ def test_bundle_creation_allowance_too_small(
     testCoin.approve(instance.getTreasury(), 0.9 * amount, {'from': riskpoolKeeper})
 
     # ensures bundle creation fails due to insufficient allowance
-    with brownie.reverts("ERC20: insufficient allowance"):
+    with brownie.reverts("ERROR:TRS-055:CAPITAL_TRANSFER_FAILED"):
         gifRiskpool.getContract().createBundle(
                 applicationFilter, 
                 amount, 
@@ -189,7 +189,7 @@ def test_bundle_withdrawal_allowance_too_small(
     testCoin.approve(instance.getTreasury(), 0.9 * amount, {'from': riskpoolKeeper})
 
     # ensures that burning bundle fails during token withdrawal due to insufficient allowance
-    with brownie.reverts("ERC20: insufficient allowance"):
+    with brownie.reverts("ERROR:TRS-063:WITHDRAWAL_TRANSFER_FAILED"):
         riskpool.burnBundle(
                 bundleId, 
                 {'from': riskpoolKeeper})
@@ -271,7 +271,7 @@ def test_payout_allowance_too_small(
     testCoin.approve(instance.getTreasury(), payoutAmount * 0.9, {'from': capitalOwner})
 
     # ensure that the payout fails due to too small allowance
-    with brownie.reverts("ERC20: insufficient allowance"):
+    with brownie.reverts("ERROR:TRS-043:PAYOUT_TRANSFER_FAILED"):
         product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
 
 def test_two_products_different_coin_same_riskpool(

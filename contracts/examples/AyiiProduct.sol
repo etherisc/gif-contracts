@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "../shared/TransferHelper.sol";
+
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -191,7 +193,7 @@ contract AyiiProduct is
         IPolicy.Metadata memory metadata = _getMetadata(policyId);
 
         if (from != metadata.owner) {
-            bool transferSuccessful = _token.transferFrom(from, metadata.owner, amount);
+            bool transferSuccessful = TransferHelper.unifiedTransferFrom(_token, from, metadata.owner, amount);
 
             if (!transferSuccessful) {
                 return (transferSuccessful, 0, amount);
