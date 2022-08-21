@@ -164,6 +164,9 @@ class GifInstance(GifRegistry):
         # post deploy wiring steps
         # self.bundleToken.setBundleModule(self.bundle)
 
+        # ensure that the instance has 32 contracts when freshly deployed
+        assert 32 == registry.contracts()
+
 
     def fromRegistryAddress(self, registry_address):
         self.registry = contractFromAddress(RegistryController, registry_address)

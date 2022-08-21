@@ -8,7 +8,7 @@
     "solidity.remappingsUnix": [
         "@openzeppelin/=/home/vscode/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.7.0",
         "@chainlink/=/home/vscode/.brownie/packages/smartcontractkit/chainlink@1.6.0",
-        "@etherisc/gif-interface/=/home/vscode/.brownie/packages/etherisc/gif-interface@11148ec",
+        "@etherisc/gif-interface/=/home/vscode/.brownie/packages/etherisc/gif-interface@b8107d8",
     ],
     "peacock.remoteColor": "1D3C43",
     "workbench.colorCustomizations": {

@@ -99,6 +99,14 @@ contract InstanceService is
         return _registry;
     }
 
+    function contracts() external view override returns (uint256 numberOfContracts) {
+        numberOfContracts = _registry.contracts();
+    }
+        
+    function contractNames() external view override returns (bytes32[] memory contractNames) {
+        contractNames = _registry.contractNames();
+    }
+
     /* access */
     function getDefaultAdminRole() external view returns(bytes32) {
         return _access.getDefaultAdminRole();

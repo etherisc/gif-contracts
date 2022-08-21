@@ -92,7 +92,7 @@ contract InstanceOperatorService is
     {
         _registry.deregisterInRelease(_release, _contractName);
     }
-
+    
     /* access */
     function createRole(bytes32 _role) 
         external override
