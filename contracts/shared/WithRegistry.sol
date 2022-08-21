@@ -21,21 +21,6 @@ contract WithRegistry {
         _;
     }
 
-    modifier onlyPolicyFlow(bytes32 _module) {
-        // Allow only from delegator
-        require(
-            address(this) == getContractFromRegistry(_module),
-            "ERROR:ACM-002:NOT_ON_STORAGE"
-        );
-
-        // Allow only ProductService (it delegates to PolicyFlow)
-        require(
-            msg.sender == getContractFromRegistry("ProductService"),
-            "ERROR:ACM-003:NOT_PRODUCT_SERVICE"
-        );
-        _;
-    }
-
     modifier onlyOracleService() {
         require(
             msg.sender == getContractFromRegistry("OracleService"),

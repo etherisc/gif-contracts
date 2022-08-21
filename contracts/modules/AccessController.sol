@@ -98,19 +98,19 @@ contract AccessController is
         return super.hasRole(role, principal);
     }
 
-    function getDefaultAdminRole() public view override returns(bytes32) {
+    function getDefaultAdminRole() public pure override returns(bytes32) {
         return DEFAULT_ADMIN_ROLE;
     }
 
-    function getProductOwnerRole() public view override returns(bytes32) {
+    function getProductOwnerRole() public pure override returns(bytes32) {
         return PRODUCT_OWNER_ROLE;
     }
 
-    function getOracleProviderRole() public view override returns(bytes32) {
+    function getOracleProviderRole() public pure override returns(bytes32) {
         return ORACLE_PROVIDER_ROLE;
     }
 
-    function getRiskpoolKeeperRole() public view override returns(bytes32) {
+    function getRiskpoolKeeperRole() public pure override returns(bytes32) {
         return RISKPOOL_KEEPER_ROLE;
     }
 

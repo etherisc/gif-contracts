@@ -12,14 +12,6 @@ import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
 import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
 import "@etherisc/gif-interface/contracts/modules/IPool.sol";
 
-/*
- * PolicyFlowDefault is a delegate of ProductService.sol.
- * Access Control is maintained:
- * 1) by checking condition in ProductService.sol
- * 2) by modifiers "onlyPolicyFlow" in StakeController.sol
- * For all functions here, msg.sender is = address of ProductService.sol which is registered in the Registry.
- * (if not, it reverts in StakeController.sol)
- */
 
 contract PolicyDefaultFlow is 
     WithRegistry 

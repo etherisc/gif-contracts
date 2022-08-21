@@ -112,22 +112,22 @@ def test_pause_unpause(
     with brownie.reverts("ERROR:RPS-004:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.fundBundle(bundleId, 10, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.lockBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.unlockBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.closeBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.burnBundle(bundleId, {'from':bundleOwner})
 
     # ensure underwriting new policies is not possible for paused riskpool
@@ -240,22 +240,22 @@ def test_suspend_resume(
     with brownie.reverts("ERROR:RPS-004:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.fundBundle(bundleId, 10, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.defundBundle(bundleId, 10, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.lockBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.unlockBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.closeBundle(bundleId, {'from':bundleOwner})
 
-    with brownie.reverts("ERROR:RPS-006:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:RPS-007:RISKPOOL_NOT_ACTIVE"):
         riskpool.burnBundle(bundleId, {'from':bundleOwner})
 
     # ensure that a suspended component cannot be paused
