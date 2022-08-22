@@ -1,0 +1,14 @@
+name: All tasks in PR checked 
+
+on: 
+  pull_request:
+    types:
+      - opened
+      - edited
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: loxygenK/taskonfirm@v1.0.0
+
