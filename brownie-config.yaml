@@ -4,6 +4,7 @@ dotenv: .env
 networks:
     default: development
     development:
+        gas_price: 20000000000 # 20 (Gwei)
         cmd_settings:
             # without this explicit setting chainid==1 is returend by block.chainid
             accounts: 20

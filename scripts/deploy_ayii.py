@@ -3,6 +3,7 @@ from brownie.network.account import Account
 
 from brownie import (
     interface,
+    network,
     TestCoin,
     InstanceService,
     InstanceOperatorService,
@@ -121,6 +122,41 @@ def amend_funds(stakeholders_accounts):
             a[INSTANCE_OPERATOR].transfer(a[accountName], missingAmount)
 
 
+def _get_balances(stakeholders_accounts):
+    balance = {}
+
+    for accountName, account in stakeholders_accounts.items():
+        balance[accountName] = account.balance()
+
+    return balance
+
+
+def _get_balances_delta(balances_before, balances_after):
+    balance_delta = { 'total': 0 }
+
+    for accountName, account in balances_before.items():
+        balance_delta[accountName] = balances_before[accountName] - balances_after[accountName]
+        balance_delta['total'] += balance_delta[accountName]
+    
+    return balance_delta
+
+
+def _pretty_print_delta(title, balances_delta):
+
+    print('--- {} ---'.format(title))
+    
+    gasPrice = network.gas_price()
+    print('gas price: {}'.format(gasPrice))
+
+    for accountName, amount in balances_delta.items():
+        if accountName != 'total':
+            print('account {}: gas {}'.format(accountName, amount / gasPrice))
+    
+    print('-----------------------------')
+    print('account total: gas {}'.format(balances_delta['total'] / gasPrice))
+    print('=============================')
+
+
 def deploy(
     stakeholders_accounts, 
     publishSource=False
@@ -140,6 +176,9 @@ def deploy(
     customer=a[CUSTOMER1]
     customer2=a[CUSTOMER2]
 
+    # assess balances at beginning of deploy
+    balances_before = _get_balances(stakeholders_accounts)
+
     # token definition, funding of investor and customer
     erc20Token = TestCoin.deploy({'from': instanceOperator})
 
@@ -151,6 +190,9 @@ def deploy(
 
     # ayii deployment
     ayiiDeploy = GifAyiiProductComplete(instance, productOwner, insurer, oracleProvider, chainlinkNodeOperator, riskpoolKeeper, investor, erc20Token, riskpoolWallet)
+
+        # assess balances at beginning of deploy
+    balances_after_deploy = _get_balances(stakeholders_accounts)
 
     ayiiProduct = ayiiDeploy.getProduct()
     ayiiOracle = ayiiProduct.getOracle()
@@ -212,6 +254,35 @@ def deploy(
 
     processId1 = tx[0].events['LogAyiiPolicyCreated']['policyId']
     processId2 = tx[1].events['LogAyiiPolicyCreated']['policyId']
+
+    # check balances at end of setup
+    balances_after_setup = _get_balances(stakeholders_accounts)
+
+    print('--------------------------------------------------------------------')
+    print('inital balances: {}'.format(balances_before))
+    print('after deploy balances: {}'.format(balances_after_deploy))
+    print('end of setup balances: {}'.format(balances_after_setup))
+
+    delta_deploy = _get_balances_delta(balances_before, balances_after_deploy)
+    delta_setup = _get_balances_delta(balances_after_deploy, balances_after_setup)
+    delta_total = _get_balances_delta(balances_before, balances_after_setup)
+
+    print('--------------------------------------------------------------------')
+    print('total deploy {}'.format(delta_deploy['total']))
+    print('deploy {}'.format(delta_deploy))
+
+    print('--------------------------------------------------------------------')
+    print('total setup after deploy {}'.format(delta_setup['total']))
+    print('setup after deploy {}'.format(delta_setup))
+
+    print('--------------------------------------------------------------------')
+    print('total deploy + setup{}'.format(delta_total['total']))
+    print('deploy + setup{}'.format(delta_total))
+
+    print('--------------------------------------------------------------------')
+
+    _pretty_print_delta('gas usage deploy', delta_deploy)
+    _pretty_print_delta('gas usage total', delta_total)
 
     return {
         INSTANCE_OPERATOR: instanceOperator,
