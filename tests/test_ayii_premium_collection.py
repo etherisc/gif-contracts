@@ -209,6 +209,7 @@ def test_premium_payment_by_subsidies(
 
     # 80% premium subidies payment
     donor = accounts.add()
+    accounts[9].transfer(donor, 100000000)
     erc20Token.transfer(donor, premiumSubsidies, {'from': instanceOperator})
     erc20Token.approve(product, premiumSubsidies, {'from': donor})
 

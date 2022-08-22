@@ -71,7 +71,6 @@ from scripts.util import (
     deployGifModule,
     deployGifModuleV2,
     deployGifService,
-    execute_simple_incrementer_trx,
 )
 
 PUBLISH_SOURCE = False
@@ -100,8 +99,9 @@ def run_around_tests():
         # after each test has finished, execute one trx and wait for it to finish. 
         # this is to ensure that the last transaction of the test is finished correctly. 
     finally:
-        dummy_account = get_account(ACCOUNTS_MNEMONIC, 999)
-        execute_simple_incrementer_trx(dummy_account)
+        accounts[8].transfer(accounts[9], 1)
+        # dummy_account = get_account(ACCOUNTS_MNEMONIC, 999)
+        # execute_simple_incrementer_trx(dummy_account)
 
 # DEPRECATED: use erc20Token instead
 @pytest.fixture(scope="module")
