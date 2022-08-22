@@ -51,7 +51,7 @@ contract PolicyDefaultFlow is
         PolicyController policy = getPolicyContract();
         IPolicy.Metadata memory metadata = policy.getMetadata(processId);
         ComponentController component = ComponentController(getContractFromRegistry("Component"));
-        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-003:PROCESSID_PRODUCT_MISMATCH");
+        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-004:REQUESTID_PRODUCT_MISMATCH");
         _;
     }
 
