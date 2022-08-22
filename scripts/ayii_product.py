@@ -15,8 +15,8 @@ from brownie import (
     AyiiRiskpool,
     AyiiProduct,
     AyiiOracle,
-    ClOperator,
-    ClToken,
+    ChainlinkOperator, 
+    ChainlinkToken, 
 )
 
 from scripts.util import (
@@ -136,16 +136,15 @@ class GifAyiiOracle(object):
         # 2a) chainlink dummy token deploy
         clTokenOwner = oracleProvider
         clTokenSupply = 10**20
-        self.clToken = ClToken.deploy(
+        self.chainlinkToken = ChainlinkToken.deploy(
             clTokenOwner,
             clTokenSupply,
             {'from': oracleProvider},
             publish_source=publishSource)
 
         # 2b) chainlink operator deploy
-        self.chainlinkOperator = ClOperator.deploy(
-            self.clToken,
-            chainlinkNodeOperator,
+
+        self.chainlinkOperator = ChainlinkOperator.deploy(
             {'from': oracleProvider},
             publish_source=publishSource)
 
@@ -153,7 +152,7 @@ class GifAyiiOracle(object):
         self.chainlinkOperator.setAuthorizedSenders([chainlinkNodeOperator])
 
         # 2c) oracle provider creates oracle
-        chainLinkTokenAddress = self.clToken.address
+        chainLinkTokenAddress = self.chainlinkToken.address
         chainLinkOracleAddress = self.chainlinkOperator.address
         chainLinkJobId = s2b32('1')
         chainLinkPaymentAmount = 0
@@ -181,7 +180,7 @@ class GifAyiiOracle(object):
     def getId(self) -> int:
         return self.oracle.getId()
     
-    def getClOperator(self) -> ClOperator:
+    def getClOperator(self) -> ChainlinkOperator:
         return self.chainlinkOperator
     
     def getContract(self) -> AyiiOracle:

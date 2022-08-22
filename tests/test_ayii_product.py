@@ -544,7 +544,7 @@ def test_oracle_getters(gifAyiiProduct: GifAyiiProduct):
     ayiiOracle = gifAyiiProduct.getOracle()
     oracle = ayiiOracle.getContract()
 
-    assert oracle.getChainlinkToken() == ayiiOracle.clToken
+    assert oracle.getChainlinkToken() == ayiiOracle.chainlinkToken
     assert oracle.getChainlinkOperator() == ayiiOracle.chainlinkOperator
     assert oracle.getChainlinkJobId() == s2b32('1')
     assert oracle.getChainlinkPayment() == 0

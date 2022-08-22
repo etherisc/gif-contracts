@@ -7,7 +7,7 @@ abstract contract ERC677Receiver {
     function onTokenTransfer (address _sender, uint _value, bytes calldata _data) public virtual;
 }
 
-contract ClToken is ERC20 {
+contract ChainlinkToken is ERC20 {
     constructor(address owner, uint256 supply) ERC20("Chainlink Dummy Token", "CDT"){
         _mint(owner, supply);
     }
@@ -26,7 +26,7 @@ contract ClToken is ERC20 {
         receiver.onTokenTransfer(msg.sender, _value, _data);
     }
 
-    function isContract(address _addr) private returns (bool hasCode) {
+    function isContract(address _addr) private view returns (bool hasCode) {
         uint length;
         assembly { length := extcodesize(_addr) }
         return length > 0;

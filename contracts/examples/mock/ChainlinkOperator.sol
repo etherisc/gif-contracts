@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract ChainlinkOperatorMock {
+import "@openzeppelin/contracts/access/Ownable.sol";
 
+contract ChainlinkOperator is 
+    Ownable
+{
 
     struct Commitment {
         bytes31 paramsHash;
@@ -12,6 +15,8 @@ contract ChainlinkOperatorMock {
     uint256 public constant getExpiryTime = 5 minutes;
     uint256 private constant MAXIMUM_DATA_VERSION = 256;
     uint256 private constant MINIMUM_CONSUMER_GAS_LIMIT = 400000;
+
+    event AuthorizedSendersChanged(address[] senders, address changedBy);
 
     event OracleRequest(
         bytes32 indexed specId,
@@ -29,7 +34,82 @@ contract ChainlinkOperatorMock {
 
     event OracleResponse(bytes32 indexed requestId);
 
+    // contract variables
+    mapping(address => bool) private s_authorizedSenders;
+    address[] private s_authorizedSenderList;
+
     mapping(bytes32 => Commitment) private s_commitments;
+
+    /**
+    * @notice prevents non-authorized addresses from calling this method
+    */
+    modifier validateAuthorizedSenderSetter() {
+        require(_canSetAuthorizedSenders(), "Cannot set authorized senders");
+        _;
+    }
+
+    constructor() Ownable() { }
+
+    /**
+    * @notice Sets the fulfillment permission for a given node. Use `true` to allow, `false` to disallow.
+    * @param senders The addresses of the authorized Chainlink node
+    */
+    function setAuthorizedSenders(address[] calldata senders)
+        external 
+        validateAuthorizedSenderSetter 
+    {
+        require(senders.length > 0, "Must have at least 1 authorized sender");
+        // Set previous authorized senders to false
+        uint256 authorizedSendersLength = s_authorizedSenderList.length;
+        for (uint256 i = 0; i < authorizedSendersLength; i++) {
+            s_authorizedSenders[s_authorizedSenderList[i]] = false;
+        }
+        // Set new to true
+        for (uint256 i = 0; i < senders.length; i++) {
+            s_authorizedSenders[senders[i]] = true;
+        }
+        // Replace list
+        s_authorizedSenderList = senders;
+        emit AuthorizedSendersChanged(senders, msg.sender);
+    }
+
+
+    function getAuthorizedSenders()
+        external 
+        view
+        returns(address [] memory)
+    {
+        return s_authorizedSenderList;
+    }
+
+    /**
+    * @notice Called when LINK is sent to the contract via `transferAndCall`
+    * @dev The data payload's first 2 words will be overwritten by the `sender` and `amount`
+    * values to ensure correctness. Calls oracleRequest.
+    * @param sender Address of the sender
+    * @param amount Amount of LINK sent (specified in wei)
+    * @param data Payload of the transaction
+    */
+    function onTokenTransfer(
+        address sender,
+        uint256 amount,
+        bytes memory data
+    )
+        public 
+        // validateFromLINK 
+        // permittedFunctionsForLINK(data) 
+    {
+        assembly {
+            // solhint-disable-next-line avoid-low-level-calls
+            mstore(add(data, 36), sender) // ensure correct sender is passed
+            // solhint-disable-next-line avoid-low-level-calls
+            mstore(add(data, 68), amount) // ensure correct amount is passed
+        }
+        // solhint-disable-next-line avoid-low-level-calls
+        (bool success, ) = address(this).delegatecall(data); // calls oracleRequest
+        require(success, "Unable to create request");
+    }
+
 
     /**
     * @notice Creates the Chainlink request. This is a backwards compatible API
@@ -68,6 +148,7 @@ contract ChainlinkOperatorMock {
         );
         emit OracleRequest(specId, sender, requestId, payment, sender, callbackFunctionId, expiration, dataVersion, data);
     }
+
 
     /**
     * @notice Called by the Chainlink node to fulfill requests with multi-word support
@@ -195,6 +276,14 @@ contract ChainlinkOperatorMock {
     function _safeCastToUint8(uint256 number) internal pure returns (uint8) {
         require(number < MAXIMUM_DATA_VERSION, "number too big to cast");
         return uint8(number);
+    }
+
+    /**
+    * @notice concrete implementation of AuthorizedReceiver
+    * @return bool of whether sender is authorized
+    */
+    function _canSetAuthorizedSenders() internal view returns (bool) {
+        return owner() == msg.sender;
     }
 
 }

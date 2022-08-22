@@ -153,11 +153,11 @@ contract RegistryController is
         emit LogReleasePrepared(release);
     }
 
-    function contracts() external view returns (uint256 _numberOfContracts) {
+    function contracts() external override view returns (uint256 _numberOfContracts) {
         _numberOfContracts = _contractNames[release].length;
     }
 
-    function contractNames() external view returns (bytes32[] memory _contractNamesOut) {
+    function contractNames() external override view returns (bytes32[] memory _contractNamesOut) {
         _contractNamesOut = _contractNames[release];
     }
 
