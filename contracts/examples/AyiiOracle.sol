@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "./strings.sol";
-// import "./mock/ChainlinkOperator.sol";
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@etherisc/gif-interface/contracts/components/Oracle.sol";
@@ -61,25 +60,16 @@ contract AyiiOracle is
         payment = _payment;
     }
 
-    event LogAyiiOracleDebug1();
-    event LogAyiiOracleDebug2();
-    event LogAyiiOracleDebug3();
-    event LogAyiiOracleDebug4();
-
     function request(uint256 gifRequestId, bytes calldata input)
         external
         override
         onlyQuery
     {
-        emit LogAyiiOracleDebug1();
-
         Chainlink.Request memory request_ = buildChainlinkRequest(
             jobId,
             address(this),
             this.fulfill.selector
         );
-
-        emit LogAyiiOracleDebug2();
 
         (
             bytes32 projectId, 
@@ -89,14 +79,10 @@ contract AyiiOracle is
 
         request_.add("projectId", projectId.toB32String());
 
-        emit LogAyiiOracleDebug3();
-
         request_.add("uaiId", uaiId.toB32String());
         request_.add("cropId", cropId.toB32String());
 
         bytes32 chainlinkRequestId = sendChainlinkRequest(request_, payment);
-
-        emit LogAyiiOracleDebug4();
 
         gifRequests[chainlinkRequestId] = gifRequestId;
         emit LogAyiiRequest(gifRequestId, chainlinkRequestId);
