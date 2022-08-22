@@ -78,7 +78,6 @@ contract AyiiOracle is
         ) = abi.decode(input, (bytes32, bytes32, bytes32));
 
         request_.add("projectId", projectId.toB32String());
-
         request_.add("uaiId", uaiId.toB32String());
         request_.add("cropId", cropId.toB32String());
 
