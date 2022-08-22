@@ -25,7 +25,6 @@ POLICY_NAME = 'Policy'
 POLICY_DEFAULT_FLOW_NAME = 'PolicyDefaultFlow'
 POOL_NAME = 'Pool'
 
-QUERY_CONTROLLER_NAME = 'QueryController'
 QUERY_NAME = 'Query'
 
 RISKPOOL_CONTROLLER_NAME = 'RiskpoolController'

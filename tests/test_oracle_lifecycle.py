@@ -102,14 +102,14 @@ def test_request_for_inactive_oracle(
     assert instanceService.getComponentState(oracleId) == 4
 
     # check creating new claim no longer works
-    with brownie.reverts("ERROR:QUC-006:ORACLE_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:QUC-042:ORACLE_NOT_ACTIVE"):
         product.submitClaim(
             policyId,
             claimAmount,
             {'from': customer})
 
     # check oracle no longer accepts response
-    with brownie.reverts("ERROR:QUC-006:ORACLE_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:QUC-042:ORACLE_NOT_ACTIVE"):
         isLossEvent = True
         oracle.respond(requestId, isLossEvent)
 

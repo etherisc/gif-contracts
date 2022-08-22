@@ -156,6 +156,8 @@ customer1
 instanceService.getMetadata(processId1)
 instanceService.getApplication(processId1)
 instanceService.getPolicy(processId1)
+
+tx = product.triggerOracle(processId1, {'from': insurer})
 ```
 
 For a first time setup on a live chain the setup below can be used.
