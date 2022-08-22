@@ -57,11 +57,10 @@ jobs:
 
       - name: Compile contracts
         run: brownie compile --all
+      
       - uses: crytic/slither-action@v0.1.1
         continue-on-error: true
         id: slither
         ignore-compile: true
-      # - run: touch .env
-      # - name: Execute tests
-      #   run: brownie test -n auto
+
         
