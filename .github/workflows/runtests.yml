@@ -64,7 +64,6 @@ jobs:
         id: slither
         with:
           ignore-compile: true
-          target: build
           solc-version: 0.8.2
 
         
