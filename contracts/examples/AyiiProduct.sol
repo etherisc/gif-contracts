@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "../shared/TransferHelper.sol";
+
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -59,6 +61,10 @@ contract AyiiProduct is
     event LogAyiiPolicyProcessed(bytes32 policyId);
     event LogAyiiClaimCreated(bytes32 policyId, uint256 claimId, uint256 payoutAmount);
     event LogAyiiPayoutCreated(bytes32 policyId, uint256 payoutAmount);
+
+    event LogTransferHelperInputValidation1Failed(bool tokenIsContract, address from, address to);
+    event LogTransferHelperInputValidation2Failed(uint256 balance, uint256 allowance);
+    event LogTransferHelperCallFailed(bool callSuccess, uint256 returnDataLength, bytes returnData);
 
     constructor(
         bytes32 productName,
@@ -191,7 +197,7 @@ contract AyiiProduct is
         IPolicy.Metadata memory metadata = _getMetadata(policyId);
 
         if (from != metadata.owner) {
-            bool transferSuccessful = _token.transferFrom(from, metadata.owner, amount);
+            bool transferSuccessful = TransferHelper.unifiedTransferFrom(_token, from, metadata.owner, amount);
 
             if (!transferSuccessful) {
                 return (transferSuccessful, 0, amount);
