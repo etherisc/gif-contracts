@@ -7,6 +7,7 @@ import "../shared/CoreController.sol";
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
 import "@etherisc/gif-interface/contracts/components/IOracle.sol";
 import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
+import "@etherisc/gif-interface/contracts/services/IInstanceService.sol";
 
 
 contract QueryController is 
@@ -61,8 +62,13 @@ contract QueryController is
         onlyPolicyFlow("Query") 
         returns (uint256 requestId) 
     {
-        // TODO: validate
-
+        IInstanceService instanceService = _getInstanceService();
+        IComponent callbackComponent = instanceService.getComponent(instanceService.getComponentId(callbackContractAddress));
+        require(
+            callbackComponent.isProduct(),
+            "ERROR:QUC-010:CALLBACK_ADDRESS_IS_NOT_PRODUCT"
+        );
+        
         requestId = _oracleRequests.length;
         _oracleRequests.push();
 
@@ -141,5 +147,17 @@ contract QueryController is
             _component.getComponentState(id) == IComponent.ComponentState.Active, 
             "ERROR:QUC-006:ORACLE_NOT_ACTIVE"
         );
+    }
+
+    function _getInstanceService() internal view returns (IInstanceService) {
+        return IInstanceService(_getContractAddress("InstanceService"));        
+    }
+
+    function _getMetadata(bytes32 processId) 
+        internal 
+        view 
+        returns (IPolicy.Metadata memory metadata) 
+    {
+        return _getInstanceService().getMetadata(processId);
     }
 }
