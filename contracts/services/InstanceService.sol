@@ -275,6 +275,10 @@ contract InstanceService is
         return _bundle.bundles();
     }
 
+    function unburntBundles(uint256 riskpoolId) external view returns(uint256 numberOfUnburntBundles) {
+        numberOfUnburntBundles = _bundle.unburntBundles(riskpoolId);
+    }
+
     /* treasury */
     function getTreasuryAddress() external override view returns(address) { 
         return address(_treasury);

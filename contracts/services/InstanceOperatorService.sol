@@ -163,11 +163,6 @@ contract InstanceOperatorService is
         external override 
         onlyInstanceOperatorAddress 
     {
-        IComponent component = _component.getComponent(id);
-        if(component.isRiskpool()) {
-            _pool.isArchivingAllowed(id);
-        }
-
         _component.archiveFromInstanceOperator(id);
     }
 

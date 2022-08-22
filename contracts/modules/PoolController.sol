@@ -276,18 +276,6 @@ contract PoolController is
         pool.updatedAt = block.timestamp;
     }
 
-    function isArchivingAllowed(uint256 riskpoolId) external view {
-        require(
-            _component.getComponentState(riskpoolId) == IComponent.ComponentState.Paused
-            || _component.getComponentState(riskpoolId) == IComponent.ComponentState.Suspended, 
-            "ERROR:POL-030:TRANSITION_TO_ARCHIVED_STATE_INVALID"
-            );
-        require(
-            _bundle.unburntBundles(riskpoolId) == 0, 
-            "ERROR:POL-031:RISKPOOL_HAS_UNBURNT_BUNDLES"
-            );
-    }
-
     function setMaximumNumberOfActiveBundles(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)
         external 
         onlyRiskpoolService

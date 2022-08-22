@@ -81,11 +81,6 @@ contract ComponentOwnerService is
         external override 
         onlyOwnerWithRole(id) 
     {
-        IComponent component = _component.getComponent(id);
-        if(component.isRiskpool()) {
-            _pool.isArchivingAllowed(id);
-        }
-
         _component.archiveFromComponentOwner(id);
     }
 }
