@@ -62,6 +62,10 @@ contract AyiiProduct is
     event LogAyiiClaimCreated(bytes32 policyId, uint256 claimId, uint256 payoutAmount);
     event LogAyiiPayoutCreated(bytes32 policyId, uint256 payoutAmount);
 
+    event LogTransferHelperInputValidation1Failed(bool tokenIsContract, address from, address to);
+    event LogTransferHelperInputValidation2Failed(uint256 balance, uint256 allowance);
+    event LogTransferHelperCallFailed(bool callSuccess, uint256 returnDataLength, bytes returnData);
+
     constructor(
         bytes32 productName,
         address registry,

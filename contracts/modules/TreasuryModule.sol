@@ -24,6 +24,10 @@ contract TreasuryModule is
 {
     uint256 public constant FRACTION_FULL_UNIT = 10**18;
 
+    event LogTransferHelperInputValidation1Failed(bool tokenIsContract, address from, address to);
+    event LogTransferHelperInputValidation2Failed(uint256 balance, uint256 allowance);
+    event LogTransferHelperCallFailed(bool callSuccess, uint256 returnDataLength, bytes returnData);
+
     address private _instanceWalletAddress;
     mapping(uint256 => address) private _riskpoolWallet; // riskpoolId => walletAddress
     mapping(uint256 => FeeSpecification) private _fees; // componentId => fee specification
