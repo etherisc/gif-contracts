@@ -102,7 +102,7 @@ contract InstanceOperatorService is
     }
 
     function invalidateRole(bytes32 _role) 
-        external
+        external override
         onlyInstanceOperatorAddress 
     {
         _access.invalidateRole(_role);

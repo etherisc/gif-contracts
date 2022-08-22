@@ -51,7 +51,7 @@ contract AccessController is
     //--- manage role ownership ---------------------------------------------//
     function grantRole(bytes32 role, address principal) 
         public 
-        override(AccessControl, IAccessControl, IAccess) 
+        override(IAccessControl, IAccess) 
         onlyInstanceOperator 
     {
         require(validRole[role], "ERROR:ACL-002:ROLE_UNKNOWN_OR_INVALID");
@@ -60,7 +60,7 @@ contract AccessController is
 
     function revokeRole(bytes32 role, address principal) 
         public 
-        override(AccessControl, IAccessControl, IAccess) 
+        override(IAccessControl, IAccess) 
         onlyInstanceOperator 
     {
         AccessControl.revokeRole(role, principal);
@@ -68,7 +68,7 @@ contract AccessController is
 
     function renounceRole(bytes32 role, address principal) 
         public 
-        override(AccessControl, IAccessControl, IAccess) 
+        override(IAccessControl, IAccess) 
     {
         AccessControl.renounceRole(role, principal);
     }
@@ -92,7 +92,7 @@ contract AccessController is
 
     function hasRole(bytes32 role, address principal) 
         public view 
-        override(AccessControl, IAccessControl, IAccess)
+        override(IAccessControl, IAccess) 
         returns(bool)
     {
         return super.hasRole(role, principal);

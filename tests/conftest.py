@@ -32,7 +32,6 @@ from brownie import (
     TestRiskpool,
     TestRegistryControllerUpdated,
     TestRegistryCompromisedController,
-    ClOperator,
     AyiiProduct,
     AyiiOracle,
     AyiiRiskpool,

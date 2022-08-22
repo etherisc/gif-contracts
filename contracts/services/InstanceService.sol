@@ -57,11 +57,11 @@ contract InstanceService is
     }
 
     /* instance service */
-    function getChainId() public view returns(uint256 chainId) {
+    function getChainId() public override view returns(uint256 chainId) {
         chainId = block.chainid;
     }
 
-    function getInstanceId() public view returns(bytes32 instanceId) {
+    function getInstanceId() public override view returns(bytes32 instanceId) {
         instanceId = keccak256(
             abi.encodePacked(
                 block.chainid, 
@@ -103,12 +103,12 @@ contract InstanceService is
         numberOfContracts = _registry.contracts();
     }
         
-    function contractNames() external view override returns (bytes32[] memory contractNames) {
-        contractNames = _registry.contractNames();
+    function contractNames() external view override returns (bytes32[] memory names) {
+        names = _registry.contractNames();
     }
 
     /* access */
-    function getDefaultAdminRole() external view returns(bytes32) {
+    function getDefaultAdminRole() external override view returns(bytes32) {
         return _access.getDefaultAdminRole();
     }
 
@@ -239,7 +239,7 @@ contract InstanceService is
         return _pool.getFullCollateralizationLevel();
     }
 
-    function getCapital(uint256 riskpoolId) external view returns(uint256 capitalAmount) {
+    function getCapital(uint256 riskpoolId) external override view returns(uint256 capitalAmount) {
         return _pool.getRiskpool(riskpoolId).capital;
     }
 
@@ -256,7 +256,7 @@ contract InstanceService is
         return _pool.getRiskpool(riskpoolId).balance;
     }
 
-    function getMaximumNumberOfActiveBundles(uint256 riskpoolId) external view returns(uint256 maximumNumberOfActiveBundles) {
+    function getMaximumNumberOfActiveBundles(uint256 riskpoolId) external override view returns(uint256 maximumNumberOfActiveBundles) {
         return _pool.getMaximumNumberOfActiveBundles(riskpoolId);
     }
 
@@ -275,7 +275,7 @@ contract InstanceService is
         return _bundle.bundles();
     }
 
-    function unburntBundles(uint256 riskpoolId) external view returns(uint256 numberOfUnburntBundles) {
+    function unburntBundles(uint256 riskpoolId) external override view returns(uint256 numberOfUnburntBundles) {
         numberOfUnburntBundles = _bundle.unburntBundles(riskpoolId);
     }
 
