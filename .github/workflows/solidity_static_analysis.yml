@@ -19,3 +19,8 @@ jobs:
         with:
           name: metrics.html
           path: ${{ steps.metrics.outputs.report }}
+      - uses: crytic/slither-action@v0.1.1
+        continue-on-error: true
+        id: slither
+        # with:
+        #   sarif: results.sarif
