@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./strings.sol";
+import "./mock/ChainlinkOperatorMock.sol";
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@etherisc/gif-interface/contracts/components/Oracle.sol";
