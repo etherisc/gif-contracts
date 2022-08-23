@@ -14,7 +14,6 @@ contract ComponentOwnerService is
     CoreController
 {
     ComponentController private _component;
-    PoolController private _pool;
 
     modifier onlyOwnerWithRoleFromComponent(IComponent component) {
         address owner = component.getOwner();
@@ -38,7 +37,6 @@ contract ComponentOwnerService is
 
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
-        _pool = PoolController(_getContractAddress("Pool"));
     }
 
     function propose(IComponent component) 
