@@ -50,6 +50,7 @@ contract AyiiProduct is
     IERC20 private _token;
     PolicyController private _policy;
 
+    bytes32 [] private _riskIds;
     mapping(bytes32 /* riskId */ => Risk) private _risks;
     mapping(bytes32 /* riskId */ => bytes32 [] /* processIds */) private _policies;
     bytes32 [] private _applications; // useful for debugging, might need to get rid of this
@@ -105,6 +106,8 @@ contract AyiiProduct is
         // TODO add input parameter validation
 
         riskId = getRiskId(projectId, uaiId, cropId);
+        _riskIds.push(riskId);
+
         Risk storage risk = _risks[riskId];
         require(risk.createdAt == 0, "ERROR:AYI-001:RISK_ALREADY_EXISTS");
 
@@ -137,6 +140,7 @@ contract AyiiProduct is
     {
         riskId = keccak256(abi.encode(projectId, uaiId, cropId));
     }
+
 
     function applyForPolicy(
         address policyHolder, 
@@ -406,13 +410,10 @@ contract AyiiProduct is
         return a <= b ? a : b;
     }
 
-    function getRisk(bytes32 riskId)
-        external
-        view
-        returns(Risk memory risk)
-    {
-        return _risks[riskId];
-    }
+
+    function risks() external view returns(uint256) { return _riskIds.length; }
+    function getRiskId(uint256 idx) external view returns(bytes32 riskId) { return _riskIds[idx]; }
+    function getRisk(bytes32 riskId) external view returns(Risk memory risk) { return _risks[riskId]; }
 
     function policies(bytes32 riskId) external view returns(uint256 policyCount) {
         return _policies[riskId].length;
@@ -422,7 +423,7 @@ contract AyiiProduct is
         return _policies[riskId][policyIdx];
     }
 
-    function getApplicationDataStructure() external override view returns(string memory dataStructure) {
+    function getApplicationDataStructure() external override pure returns(string memory dataStructure) {
         return "(bytes32 riskId)";
     }
 

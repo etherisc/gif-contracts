@@ -150,10 +150,16 @@ def _pretty_print_delta(title, balances_delta):
 
     for accountName, amount in balances_delta.items():
         if accountName != 'total':
-            print('account {}: gas {}'.format(accountName, amount / gasPrice))
+            if gasPrice != 'auto':
+                print('account {}: gas {}'.format(accountName, amount / gasPrice))
+            else:
+                print('account {}: amount {}'.format(accountName, amount))
     
     print('-----------------------------')
-    print('account total: gas {}'.format(balances_delta['total'] / gasPrice))
+    if gasPrice != 'auto':
+        print('account total: gas {}'.format(balances_delta['total'] / gasPrice))
+    else:
+        print('account total: amount {}'.format(balances_delta['total']))
     print('=============================')
 
 
@@ -179,19 +185,19 @@ def deploy(
     # assess balances at beginning of deploy
     balances_before = _get_balances(stakeholders_accounts)
 
-    # token definition, funding of investor and customer
+    print('====== deploy erc20 test token ======')
     erc20Token = TestCoin.deploy({'from': instanceOperator})
 
-    # gif instance deployment
+    print('====== deploy gif instance ======')
     instance = GifInstance(instanceOperator, instanceWallet=instanceWallet)
     instanceService = instance.getInstanceService()
     instanceOperatorService = instance.getInstanceOperatorService()
     componentOwnerService = instance.getComponentOwnerService()
 
-    # ayii deployment
+    print('====== deploy ayii product ======')
     ayiiDeploy = GifAyiiProductComplete(instance, productOwner, insurer, oracleProvider, chainlinkNodeOperator, riskpoolKeeper, investor, erc20Token, riskpoolWallet)
 
-        # assess balances at beginning of deploy
+    # assess balances at beginning of deploy
     balances_after_deploy = _get_balances(stakeholders_accounts)
 
     ayiiProduct = ayiiDeploy.getProduct()
@@ -202,15 +208,24 @@ def deploy(
     oracle = ayiiOracle.getContract()
     riskpool = ayiiRiskpool.getContract()
 
-    # investor funding and bundle creation
+    print('====== create initial setup ======')
+
     bundleInitialFunding=1000000
+    print('1) investor {} funding (transfer/approve) with {} token for erc20 {}'.format(
+        investor, bundleInitialFunding, erc20Token))
+    
     erc20Token.transfer(investor, bundleInitialFunding, {'from': instanceOperator})
     erc20Token.approve(instance.getTreasury(), bundleInitialFunding, {'from': investor})
 
     maxUint256 = 2**256-1
+    print('2) riskpool wallet {} approval for instance treasury {}'.format(
+        riskpoolWallet, instance.getTreasury()))
+    
     erc20Token.approve(instance.getTreasury(), maxUint256, {'from': riskpoolWallet})
 
-    # create bundle for investor
+    print('3) riskpool bundle creation by investor {}'.format(
+        investor))
+
     applicationFilter = bytes(0)
     riskpool.createBundle(
             applicationFilter, 
@@ -233,6 +248,9 @@ def deploy(
     tsi = multiplier * tsiFloat
     aph = [multiplier * aphFloat[0], multiplier * aphFloat[1]]
 
+    print('4) risk creation (2x) by insurer {}'.format(
+        insurer))
+
     tx = [None, None]
     tx[0] = product.createRisk(projectId, uaiId[0], cropId, trigger, exit_, tsi, aph[0], {'from': insurer})
     tx[1] = product.createRisk(projectId, uaiId[1], cropId, trigger, exit_, tsi, aph[1], {'from': insurer})
@@ -240,20 +258,54 @@ def deploy(
     riskId1 = tx[0].events['LogAyiiRiskDataCreated']['riskId']
     riskId2 = tx[1].events['LogAyiiRiskDataCreated']['riskId']
 
-    # customer funding
     customerFunding=1000
+    print('5) customer {} funding (transfer/approve) with {} token for erc20 {}'.format(
+        investor, customerFunding, erc20Token))
+
     erc20Token.transfer(customer, customerFunding, {'from': instanceOperator})
     erc20Token.approve(instance.getTreasury(), customerFunding, {'from': customer})
 
     # policy creation
     premium = [300, 400]
     sumInsured = [2000, 3000]
+    print('6) policy creation (2x) for customers {}, {} by insurer {}'.format(
+        customer, customer2, insurer))
 
     tx[0] = product.applyForPolicy(customer, premium[0], sumInsured[0], riskId1, {'from': insurer})
     tx[1] = product.applyForPolicy(customer2, premium[1], sumInsured[1], riskId2, {'from': insurer})
 
     processId1 = tx[0].events['LogAyiiPolicyCreated']['policyId']
     processId2 = tx[1].events['LogAyiiPolicyCreated']['policyId']
+
+    deploy_result = {
+        INSTANCE_OPERATOR: instanceOperator,
+        INSTANCE_WALLET: instanceWallet,
+        ORACLE_PROVIDER: oracleProvider,
+        NODE_OPERATOR: chainlinkNodeOperator,
+        RISKPOOL_KEEPER: riskpoolKeeper,
+        RISKPOOL_WALLET: riskpoolWallet,
+        INVESTOR: investor,
+        PRODUCT_OWNER: productOwner,
+        INSURER: insurer,
+        CUSTOMER1: customer,
+        CUSTOMER2: customer2,
+        ERC20_TOKEM: contract_from_address(TestCoin, erc20Token),
+        INSTANCE: instance,
+        INSTANCE_SERVICE: contract_from_address(InstanceService, instanceService),
+        INSTANCE_OPERATOR_SERVICE: contract_from_address(InstanceOperatorService, instanceOperatorService),
+        COMPONENT_OWNER_SERVICE: contract_from_address(ComponentOwnerService, componentOwnerService),
+        PRODUCT: contract_from_address(AyiiProduct, product),
+        ORACLE: contract_from_address(AyiiOracle, oracle),
+        RISKPOOL: contract_from_address(AyiiRiskpool, riskpool),
+        RISK_ID1: riskId1,
+        RISK_ID2: riskId2,
+        PROCESS_ID1: processId1,
+        PROCESS_ID2: processId2,
+    }
+
+    print('deploy_result: {}'.format(deploy_result))
+
+    print('====== deploy and setup creation complete ======')
 
     # check balances at end of setup
     balances_after_setup = _get_balances(stakeholders_accounts)
@@ -284,31 +336,7 @@ def deploy(
     _pretty_print_delta('gas usage deploy', delta_deploy)
     _pretty_print_delta('gas usage total', delta_total)
 
-    return {
-        INSTANCE_OPERATOR: instanceOperator,
-        INSTANCE_WALLET: instanceWallet,
-        ORACLE_PROVIDER: oracleProvider,
-        NODE_OPERATOR: chainlinkNodeOperator,
-        RISKPOOL_KEEPER: riskpoolKeeper,
-        RISKPOOL_WALLET: riskpoolWallet,
-        INVESTOR: investor,
-        PRODUCT_OWNER: productOwner,
-        INSURER: insurer,
-        CUSTOMER1: customer,
-        CUSTOMER2: customer2,
-        ERC20_TOKEM: contract_from_address(TestCoin, erc20Token),
-        INSTANCE: instance,
-        INSTANCE_SERVICE: contract_from_address(InstanceService, instanceService),
-        INSTANCE_OPERATOR_SERVICE: contract_from_address(InstanceOperatorService, instanceOperatorService),
-        COMPONENT_OWNER_SERVICE: contract_from_address(ComponentOwnerService, componentOwnerService),
-        PRODUCT: contract_from_address(AyiiProduct, product),
-        ORACLE: contract_from_address(AyiiOracle, oracle),
-        RISKPOOL: contract_from_address(AyiiRiskpool, riskpool),
-        RISK_ID1: riskId1,
-        RISK_ID2: riskId2,
-        PROCESS_ID1: processId1,
-        PROCESS_ID2: processId2,
-    }
+    return deploy_result
 
 
 def from_component(componentAddress):
