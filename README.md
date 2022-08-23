@@ -223,3 +223,16 @@ from scripts.util import (
 # eg product address '0xF039D8acecbB47763c67937D66A254DB48c87757'
 (instance, product, oracle, riskpool) = from_component('0xF039D8acecbB47763c67937D66A254DB48c87757')
 ```
+
+## Run linter
+
+Linter findings are shown automatically in vscode. To execute it manually, run the following command:
+
+```bash
+solhint contracts/**/*.sol
+```
+and including _prettier_ formatting 
+
+```bash
+solhint --config .solhint.prettier.json contracts/**/*.sol
+```
