@@ -163,8 +163,16 @@ def _pretty_print_delta(title, balances_delta):
     print('=============================')
 
 
+def deploy_setup_including_token(
+    stakeholders_accounts, 
+    publishSource=False
+):
+    return deploy(stakeholders_accounts, None)
+
+
 def deploy(
     stakeholders_accounts, 
+    erc20_token,
     publishSource=False
 ):
 
@@ -185,8 +193,13 @@ def deploy(
     # assess balances at beginning of deploy
     balances_before = _get_balances(stakeholders_accounts)
 
-    print('====== deploy erc20 test token ======')
-    erc20Token = TestCoin.deploy({'from': instanceOperator})
+    if not erc20_token:
+        print('====== deploy erc20 test token ======')
+        erc20Token = TestCoin.deploy({'from': instanceOperator})
+    else:
+        print('====== setting erc20 token to {} ======'.format(erc20_token))
+        erc20Token = erc20_token
+
 
     print('====== deploy gif instance ======')
     instance = GifInstance(instanceOperator, instanceWallet=instanceWallet)
@@ -306,6 +319,7 @@ def deploy(
     print('deploy_result: {}'.format(deploy_result))
 
     print('====== deploy and setup creation complete ======')
+    print('')
 
     # check balances at end of setup
     balances_after_setup = _get_balances(stakeholders_accounts)

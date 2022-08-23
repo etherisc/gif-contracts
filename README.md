@@ -107,6 +107,7 @@ from scripts.deploy_ayii import (
     check_funds,
     amend_funds,
     deploy,
+    deploy_setup_including_token,
     from_registry,
     from_component,
 )
@@ -135,8 +136,7 @@ check_funds(a)
 # avaulable balance of the instanceOperator
 amend_funds(a)
 
-publishSource=False
-d = deploy(a, publishSource)
+d = deploy_setup_including_token(a)
 
 (
 componentOwnerService,customer1,customer2,erc20Token,instance,instanceOperator,instanceOperatorService,instanceService,
