@@ -17,7 +17,7 @@ from brownie import (
     RegistryController,
     LicenseController,
     PolicyController,
-    QueryController,
+    QueryModule,
     PoolController,
     BundleController,
     PoolController,
@@ -137,7 +137,7 @@ class GifInstance(GifRegistry):
         # deploy order needs to respect module dependencies
         self.access = deployGifModuleV2("Access", AccessController, registry, owner, publishSource)
         self.component = deployGifModuleV2("Component", ComponentController, registry, owner, publishSource)
-        self.query = deployGifModuleV2("Query", QueryController, registry, owner, publishSource)
+        self.query = deployGifModuleV2("Query", QueryModule, registry, owner, publishSource)
         self.license = deployGifModuleV2("License", LicenseController, registry, owner, publishSource)
         self.policy = deployGifModuleV2("Policy", PolicyController, registry, owner, publishSource)
         self.bundle = deployGifModuleV2("Bundle", BundleController, registry, owner, publishSource)
@@ -173,7 +173,7 @@ class GifInstance(GifRegistry):
         self.access = self.contractFromGifRegistry(AccessController, "Access")
         self.component = self.contractFromGifRegistry(AccessController, "Component")
 
-        self.query = self.contractFromGifRegistry(QueryController, "Query")
+        self.query = self.contractFromGifRegistry(QueryModule, "Query")
         self.license = self.contractFromGifRegistry(LicenseController, "License")
         self.policy = self.contractFromGifRegistry(PolicyController, "Policy")
         self.bundle = self.contractFromGifRegistry(BundleController, "Bundle")
@@ -229,7 +229,7 @@ class GifInstance(GifRegistry):
     def getTreasury(self) -> TreasuryModule:
         return self.treasury
 
-    def getQuery(self) -> QueryController:
+    def getQuery(self) -> QueryModule:
         return self.query
 
     def getInstanceOperatorService(self) -> InstanceOperatorService:
@@ -287,7 +287,7 @@ def dump_sources(registryAddress=None):
     contracts.append(dump_single(ComponentController, "ComponentController", instance))
 
     contracts.append(dump_single(CoreProxy, "Query", instance))
-    contracts.append(dump_single(QueryController, "QueryController", instance))
+    contracts.append(dump_single(QueryModule, "QueryModule", instance))
 
     contracts.append(dump_single(CoreProxy, "License", instance))
     contracts.append(dump_single(LicenseController, "LicenseController", instance))
@@ -302,7 +302,7 @@ def dump_sources(registryAddress=None):
     contracts.append(dump_single(PoolController, "PoolController", instance))
 
     contracts.append(dump_single(CoreProxy, "Treasury", instance))
-    contracts.append(dump_single(TreasuryModule, "TreasuryController", instance))
+    contracts.append(dump_single(TreasuryModule, "TreasuryModule", instance))
 
     contracts.append(dump_single(PolicyDefaultFlow, "PolicyDefaultFlow", instance))
 

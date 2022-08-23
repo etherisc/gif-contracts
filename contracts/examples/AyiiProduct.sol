@@ -38,6 +38,7 @@ contract AyiiProduct is
         uint256 tsi;
         uint256 aph;
         uint256 requestId;
+        bool requestTriggered;
         uint256 responseAt;
         uint256 aaay;
         uint256 payoutPercentage;
@@ -57,6 +58,7 @@ contract AyiiProduct is
     event LogAyiiRiskDataCreated(bytes32 riskId, bytes32 productId, bytes32 uaiId, bytes32 cropId);
     event LogAyiiRiskDataRequested(uint256 requestId, bytes32 riskId, bytes32 projectId, bytes32 uaiId, bytes32 cropId);
     event LogAyiiRiskDataReceived(uint256 requestId, bytes32 riskId, uint256 aaay);
+    event LogAyiiRiskDataRequestCancelled(bytes32 processId, uint256 requestId);
     event LogAyiiRiskProcessed(bytes32 riskId, uint256 policies);
     event LogAyiiPolicyProcessed(bytes32 policyId);
     event LogAyiiClaimCreated(bytes32 policyId, uint256 claimId, uint256 payoutAmount);
@@ -214,7 +216,7 @@ contract AyiiProduct is
     {
         Risk storage risk = _risks[_getRiskId(processId)];
         require(risk.createdAt > 0, "ERROR:AYI-010:RISK_UNDEFINED");
-        require(risk.requestId == 0, "ERROR:AYI-011:ORACLE_ALREADY_TRIGGERED");
+        require(!risk.requestTriggered, "ERROR:AYI-011:ORACLE_ALREADY_TRIGGERED");
 
         bytes memory queryData = abi.encode(
             risk.projectId,
@@ -230,6 +232,7 @@ contract AyiiProduct is
             );
 
         risk.requestId = requestId;
+        risk.requestTriggered = true;
         risk.updatedAt = block.timestamp;
 
         emit LogAyiiRiskDataRequested(
@@ -238,6 +241,24 @@ contract AyiiProduct is
             risk.projectId, 
             risk.uaiId, 
             risk.cropId);
+    }    
+
+    function cancelOracleRequest(bytes32 processId) 
+        external
+        onlyRole(INSURER_ROLE)
+    {
+        Risk storage risk = _risks[_getRiskId(processId)];
+        require(risk.createdAt > 0, "ERROR:AYI-012:RISK_UNDEFINED");
+        require(risk.requestTriggered, "ERROR:AYI-013:ORACLE_REQUEST_NOT_FOUND");
+        require(risk.responseAt == 0, "ERROR:AYI-014:EXISTING_CALLBACK");
+
+        _cancelRequest(risk.requestId);
+
+        // reset request id to allow to trigger again
+        risk.requestTriggered = false;
+        risk.updatedAt = block.timestamp;
+
+        emit LogAyiiRiskDataRequestCancelled(processId, risk.requestId);
     }    
 
     function oracleCallback(

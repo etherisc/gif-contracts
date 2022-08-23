@@ -4,11 +4,12 @@ pragma solidity ^0.8.0;
 import "../modules/ComponentController.sol";
 import "../modules/PoolController.sol";
 import "../modules/PolicyController.sol";
+import "../modules/QueryModule.sol";
 import "../modules/TreasuryModule.sol";
 import "../shared/WithRegistry.sol";
 
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
-import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
+// import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
 import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
 import "@etherisc/gif-interface/contracts/modules/IPool.sol";
 
@@ -41,6 +42,16 @@ contract PolicyDefaultFlow is
         IPolicy.Metadata memory metadata = policy.getMetadata(processId);
         ComponentController component = ComponentController(getContractFromRegistry("Component"));
         require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-003:PROCESSID_PRODUCT_MISMATCH");
+        _;
+    }
+
+    modifier onlyMatchingProduct(uint256 requestId) {
+        QueryModule query = getQueryContract();
+        bytes32 processId = getQueryContract().getProcessId(requestId);
+        PolicyController policy = getPolicyContract();
+        IPolicy.Metadata memory metadata = policy.getMetadata(processId);
+        ComponentController component = ComponentController(getContractFromRegistry("Component"));
+        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-004:REQUESTID_PRODUCT_MISMATCH");
         _;
     }
 
@@ -261,6 +272,15 @@ contract PolicyDefaultFlow is
         );
     }
 
+    function cancelRequest(
+        uint256 requestId
+    ) 
+        external 
+        onlyMatchingProduct(requestId)
+    {
+        getQueryContract().cancel(requestId);
+    }
+
     function getApplicationData(bytes32 processId)
         external
         view
@@ -300,15 +320,11 @@ contract PolicyDefaultFlow is
         return PolicyController(getContractFromRegistry("Policy"));
     }
 
-    function getQueryContract() internal view returns (IQuery) {
-        return IQuery(getContractFromRegistry("Query"));
+    function getQueryContract() internal view returns (QueryModule) {
+        return QueryModule(getContractFromRegistry("Query"));
     }
 
     function getTreasuryContract() internal view returns (TreasuryModule) {
         return TreasuryModule(getContractFromRegistry("Treasury"));
     }
-
-    // function getContractFromRegistry(bytes32 moduleName) internal view returns(address) {
-    //     return _getContractAddress(moduleName);
-    // }
 }

@@ -10,7 +10,7 @@ import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
 import "@etherisc/gif-interface/contracts/services/IInstanceService.sol";
 
 
-contract QueryController is 
+contract QueryModule is 
     IQuery, 
     CoreController
 {
@@ -122,13 +122,35 @@ contract QueryController is
                 )
             );
 
-        require(success, "ERROR:QUC-004:PRODUCT_CALLBACK_UNSUCCESSFUL");
+        require(success, "ERROR:QUC-020:PRODUCT_CALLBACK_UNSUCCESSFUL");
         delete _oracleRequests[requestId];
 
         // TODO implement reward payment
 
         emit LogOracleResponded(processId, requestId, responder, success);
     }
+
+    function cancel(uint256 requestId) 
+        external override 
+        onlyPolicyFlow("Query") 
+    {
+        OracleRequest storage oracleRequest = _oracleRequests[requestId];
+        require(oracleRequest.createdAt > 0, "ERROR:QUC-030:REQUEST_ID_INVALID");
+        delete _oracleRequests[requestId];
+        emit LogOracleCanceled(requestId);
+    }
+
+
+    function getProcessId(uint256 requestId)
+        external
+        view
+        returns(bytes32 processId)
+    {
+        OracleRequest memory oracleRequest = _oracleRequests[requestId];
+        require(oracleRequest.createdAt > 0, "ERROR:QUC-040:REQUEST_ID_INVALID");
+        return oracleRequest.processId;
+    }
+
 
     function getOracleRequestCount() public view returns (uint256 _count) {
         return _oracleRequests.length;
@@ -140,12 +162,12 @@ contract QueryController is
 
         require(
             _component.getComponentType(id) == IComponent.ComponentType.Oracle, 
-            "ERROR:QUC-005:COMPONENT_NOT_ORACLE"
+            "ERROR:QUC-041:COMPONENT_NOT_ORACLE"
         );
 
         require(
             _component.getComponentState(id) == IComponent.ComponentState.Active, 
-            "ERROR:QUC-006:ORACLE_NOT_ACTIVE"
+            "ERROR:QUC-042:ORACLE_NOT_ACTIVE"
         );
     }
 

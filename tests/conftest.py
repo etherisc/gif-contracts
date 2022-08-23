@@ -15,7 +15,6 @@ from brownie import (
     RegistryController,
     LicenseController,
     PolicyController,
-    QueryController,
     PoolController,
     ProductService,
     OracleService,
