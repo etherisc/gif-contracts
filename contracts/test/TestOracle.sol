@@ -25,6 +25,14 @@ contract TestOracle is Oracle {
         }
     }
 
+    function cancel(uint256 requestId)
+        external override
+        onlyOwner
+    {
+        // TODO mid/low priority
+        // cancelChainlinkRequest(_requestId, _payment, _callbackFunctionId, _expiration);
+    }
+
     // usually called by off-chain oracle (and not internally) 
     // in which case the function modifier should be changed 
     // to external

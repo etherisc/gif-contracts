@@ -141,6 +141,19 @@ contract PolicyDefaultFlow is
             pool.increaseBalance(processId, netPremiumAmount);
         }
     }
+    
+    function adjustPremiumSumInsured(
+        bytes32 processId, 
+        uint256 expectedPremiumAmount,
+        uint256 sumInsuredAmount
+    )
+        external
+        onlyResponsibleProduct(processId)
+    {
+        PolicyController policy = getPolicyContract();
+        policy.adjustPremiumSumInsured(processId, expectedPremiumAmount, sumInsuredAmount);
+    }
+
 
     function decline(bytes32 processId) 
         onlyResponsibleProduct(processId)

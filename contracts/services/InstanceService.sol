@@ -48,17 +48,37 @@ contract InstanceService is
     PoolController _pool;
     TreasuryModule private _treasury;
 
+    mapping(uint256 /* chain id */ => string /* chain name */) private _chainName;
+
     function _afterInitialize() internal override onlyInitializing {
         _bundle = BundleController(_getContractAddress(BUNDLE_NAME));
         _component = ComponentController(_getContractAddress(COMPONENT_NAME));
         _policy = PolicyController(_getContractAddress(POLICY_NAME));
         _pool = PoolController(_getContractAddress(POOL_NAME));
         _treasury = TreasuryModule(_getContractAddress(TREASURY_NAME));
+
+        _setChainNames();
+    }
+
+    function _setChainNames() internal {
+        _chainName[1] = "Ethereum Mainnet/ETH"; 
+        _chainName[5] = "Goerli/ETH"; 
+        _chainName[1337] = "Ganache"; 
+        _chainName[100] = "Gnosis/xDai"; 
+        _chainName[77] = "Sokol/SPOA"; 
+        _chainName[137] = "Polygon Mainnet/MATIC"; 
+        _chainName[8001] = "Mumbai/MATIC"; 
+        _chainName[43114] = "Avalanche C-Chain/AVAX"; 
+        _chainName[43113] = "Avalanche Fuji Testnet/AVAX"; 
     }
 
     /* instance service */
     function getChainId() public override view returns(uint256 chainId) {
         chainId = block.chainid;
+    }
+
+    function getChainName() public override view returns(string memory chainName) {
+        chainName = _chainName[block.chainid];
     }
 
     function getInstanceId() public override view returns(bytes32 instanceId) {

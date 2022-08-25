@@ -213,6 +213,17 @@ contract AyiiProduct is
         (success, fee, netPremium) = _collectPremium(policyId, amount);
     }
 
+    function adjustPremiumSumInsured(
+        bytes32 processId,
+        uint256 expectedPremiumAmount,
+        uint256 sumInsuredAmount
+    )
+        external
+        onlyRole(INSURER_ROLE)
+    {
+        _adjustPremiumSumInsured(processId, expectedPremiumAmount, sumInsuredAmount);
+    }
+
     function triggerOracle(bytes32 processId) 
         external
         onlyRole(INSURER_ROLE)

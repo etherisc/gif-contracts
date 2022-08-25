@@ -152,6 +152,8 @@ d['riskpool'],d['riskpoolKeeper'],d['riskpoolWallet']
 # example usage
 instanceOperator
 instance.getRegistry()
+
+instanceService.getChainName()
 instanceService.getInstanceId()
 
 product.getId()

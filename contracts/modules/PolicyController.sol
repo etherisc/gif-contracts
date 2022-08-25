@@ -100,7 +100,7 @@ contract PolicyController is
     
         emit LogPremiumCollected(processId, amount);
     }
-
+    
     function revokeApplication(bytes32 processId)
         external override
         onlyPolicyFlow("Policy")
@@ -163,11 +163,10 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
     {
         Application memory application = applications[processId];
-        require(application.createdAt > 0, "ERROR:POC-022:APPLICATION_DOES_NOT_EXIST");
-        require(application.state == ApplicationState.Underwritten, "ERROR:POC-023:APPLICATION_NOT_UNDERWRITTEN");
+        require(application.createdAt > 0 && application.state == ApplicationState.Underwritten, "ERROR:POC-022:APPLICATION_ACCESS_INVALID");
 
         Policy storage policy = policies[processId];
-        require(policy.createdAt == 0, "ERROR:POC-024:POLICY_ALREADY_EXISTS");
+        require(policy.createdAt == 0, "ERROR:POC-023:POLICY_ALREADY_EXISTS");
 
         policy.state = PolicyState.Active;
         policy.premiumExpectedAmount = application.premiumAmount;
@@ -177,13 +176,60 @@ contract PolicyController is
         emit LogPolicyCreated(processId);
     }
 
+    function adjustPremiumSumInsured(
+        bytes32 processId, 
+        uint256 expectedPremiumAmount,
+        uint256 sumInsuredAmount
+    )
+        external override
+        onlyPolicyFlow("Policy")
+    {
+        Application storage application = applications[processId];
+        require(
+            application.createdAt > 0 
+            && application.state == ApplicationState.Underwritten, 
+            "ERROR:POC-024:APPLICATION_ACCESS_INVALID");
+
+        require(
+            sumInsuredAmount <= application.sumInsuredAmount, 
+            "ERROR:POC-026:APPLICATION_SUM_INSURED_INCREASE_INVALID");
+
+        Policy storage policy = policies[processId];
+        require(
+            policy.createdAt > 0 
+            && policy.state == IPolicy.PolicyState.Active, 
+            "ERROR:POC-027:POLICY_ACCESS_INVALID");
+        
+        require(
+            expectedPremiumAmount > 0 
+            && expectedPremiumAmount >= policy.premiumPaidAmount
+            && expectedPremiumAmount < sumInsuredAmount, 
+            "ERROR:POC-025:APPLICATION_PREMIUM_INVALID");
+
+        if (sumInsuredAmount != application.sumInsuredAmount) {
+            emit LogApplicationSumInsuredAdjusted(processId, application.sumInsuredAmount, sumInsuredAmount);
+            application.sumInsuredAmount = sumInsuredAmount;
+            application.updatedAt = block.timestamp;
+        }
+
+        if (expectedPremiumAmount != application.premiumAmount) {
+            emit LogApplicationPremiumAdjusted(processId, application.premiumAmount, expectedPremiumAmount);
+            application.premiumAmount = expectedPremiumAmount;
+            application.updatedAt = block.timestamp;
+
+            emit LogPolicyPremiumAdjusted(processId, policy.premiumExpectedAmount, expectedPremiumAmount);
+            policy.premiumExpectedAmount = expectedPremiumAmount;
+            policy.updatedAt = block.timestamp;
+        }
+    }
+
     function expirePolicy(bytes32 processId)
         external override
         onlyPolicyFlow("Policy")
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-025:POLICY_DOES_NOT_EXIST");
-        require(policy.state == PolicyState.Active, "ERROR:POC-026:APPLICATION_STATE_INVALID");
+        require(policy.createdAt > 0, "ERROR:POC-028:POLICY_DOES_NOT_EXIST");
+        require(policy.state == PolicyState.Active, "ERROR:POC-029:APPLICATION_STATE_INVALID");
 
         policy.state = PolicyState.Expired;
         policy.updatedAt = block.timestamp;

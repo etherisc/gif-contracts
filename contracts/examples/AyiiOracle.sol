@@ -61,8 +61,7 @@ contract AyiiOracle is
     }
 
     function request(uint256 gifRequestId, bytes calldata input)
-        external
-        override
+        external override
         onlyQuery
     {
         Chainlink.Request memory request_ = buildChainlinkRequest(
@@ -104,16 +103,12 @@ contract AyiiOracle is
         emit LogAyiiFulfill(gifRequest, chainlinkRequestId, projectId, uaiId, cropId, aaay);
     }
 
-    function cancelRequest(
-        bytes32 _requestId,
-        uint256 _payment,
-        bytes4 _callbackFunctionId,
-        uint256 _expiration
-    )
-        public
-        onlyOwner()
+    function cancel(uint256 requestId)
+        external override
+        onlyOwner
     {
-        cancelChainlinkRequest(_requestId, _payment, _callbackFunctionId, _expiration);
+        // TODO mid/low priority
+        // cancelChainlinkRequest(_requestId, _payment, _callbackFunctionId, _expiration);
     }
 
     // only used for testing of chainlink operator

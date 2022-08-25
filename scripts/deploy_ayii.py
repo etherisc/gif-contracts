@@ -51,7 +51,7 @@ REQUIRED_FUNDS = {
     INSTANCE_OPERATOR: REQUIRED_FUNDS_L,
     INSTANCE_WALLET:   REQUIRED_FUNDS_S,
     PRODUCT_OWNER:     REQUIRED_FUNDS_M,
-    INSURER:           REQUIRED_FUNDS_S,
+    INSURER:           REQUIRED_FUNDS_M,
     ORACLE_PROVIDER:   REQUIRED_FUNDS_M,
     RISKPOOL_KEEPER:   REQUIRED_FUNDS_M,
     RISKPOOL_WALLET:   REQUIRED_FUNDS_S,
@@ -407,3 +407,63 @@ def from_registry(registryAddress):
         print('no riskpool returned (None)')
 
     return (instance, product, oracle, riskpool)
+
+
+def dry_run_create_risks(product, insurer):
+    project = '2022.kenya.wfp.ayii'
+    crop = 'maize'
+
+    trigger = 0.75
+    tsi = 0.9
+    exit_ = 0.1 
+
+    aez = [
+        22,
+        23,
+        26,
+        29,
+        30,
+        32,
+        34,
+        38,
+        39,
+        40]
+
+    aph = [
+        2.28,
+        2.42,
+        2.14,
+        2.01,
+        3.03,
+        3.05,
+        2.38,
+        1.84,
+        2.60,
+        2.30]
+    
+    print("project, aez, crop, trigger, exit, tsi, aph, riskId")
+    for i in range(len(aez)):
+        riskId = create_risk(product, insurer, project, aez[i], crop, trigger, exit_, tsi, aph[i])
+        print(project, aez[i], crop, trigger, exit_, tsi, aph[i], riskId)
+
+
+def create_risk(product, insurer, project, uai, crop, trigger, exit_, tsi, aph):
+    
+    multiplier = product.getPercentageMultiplier()
+    triggerInt = multiplier * trigger
+    exitInt = multiplier * exit_
+    tsiInt = multiplier * tsi
+    aphInt = multiplier * aph
+
+    tx = product.createRisk(
+        s2b32(project),
+        s2b32(str(uai)),
+        s2b32(crop),
+        triggerInt, 
+        exitInt, 
+        tsiInt, 
+        aphInt,
+        {'from': insurer}
+    )
+
+    return tx.events['LogAyiiRiskDataCreated']['riskId']
