@@ -240,3 +240,4 @@ and including _prettier_ formatting
 ```bash
 solhint --config .solhint.prettier.json contracts/**/*.sol
 ```
+
