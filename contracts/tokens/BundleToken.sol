@@ -14,8 +14,7 @@ contract BundleToken is
     string public constant NAME = "GIF Bundle Token";
     string public constant SYMBOL = "BTK";
 
-    // tokenId => bundleId
-    mapping(uint256 => uint256) private _bundleId;
+    mapping(uint256 /** tokenId */ => uint256 /** bundleId */) public bundleIdForTokenId;
     address private _bundleModule;
     uint256 private _tokens;
 
@@ -45,7 +44,7 @@ contract BundleToken is
         tokenId = _tokens;
 
         _safeMint(to, tokenId);
-        _bundleId[tokenId] = bundleId;
+        bundleIdForTokenId[tokenId] = bundleId;
         
         emit LogBundleTokenMinted(bundleId, tokenId, to);   
     }
@@ -58,7 +57,7 @@ contract BundleToken is
         require(_exists(tokenId), "ERROR:BTK-005:TOKEN_ID_INVALID");        
         _burn(tokenId);
         
-        emit LogBundleTokenBurned(_bundleId[tokenId], tokenId);   
+        emit LogBundleTokenBurned(bundleIdForTokenId[tokenId], tokenId);   
     }
 
     function burned(uint tokenId) 
@@ -69,7 +68,7 @@ contract BundleToken is
         isBurned = tokenId <= _tokens && !_exists(tokenId);
     }
 
-    function getBundleId(uint256 tokenId) external override view returns(uint256) { return _bundleId[tokenId]; }
+    function getBundleId(uint256 tokenId) external override view returns(uint256) { return bundleIdForTokenId[tokenId]; }
     function getBundleModuleAddress() external view returns(address) { return _bundleModule; }
 
     function exists(uint256 tokenId) external override view returns(bool) { return tokenId <= _tokens; }
