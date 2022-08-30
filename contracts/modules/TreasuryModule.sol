@@ -200,9 +200,6 @@ contract TreasuryModule is
         FeeSpecification memory feeSpec = getFeeSpecification(componentId);
         require(feeSpec.createdAt > 0, "ERROR:TRS-022:FEE_SPEC_UNDEFINED");
         feeAmount = _calculateFee(feeSpec, amount);
-
-        // no underflow risk without this require. just simple revert without any plain text information
-        require(feeAmount <= amount, "ERROR:TRS-023:FEE_LARGER_THAN_PREMIUM");
         netAmount = amount - feeAmount;
     }
     
