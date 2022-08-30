@@ -264,7 +264,7 @@ contract TreasuryModule is
 
         // collect premium fees
         success = TransferHelper.unifiedTransferFrom(token, metadata.owner, _instanceWalletAddress, feeAmount);
-        emit LogTreasuryFeesTransferred(metadata.owner, _instanceWalletAddress, feeAmount, success);
+        emit LogTreasuryFeesTransferred(metadata.owner, _instanceWalletAddress, feeAmount);
         require(success, "ERROR:TRS-031:FEE_TRANSFER_FAILED");
 
         // transfer premium net amount to riskpool for product
@@ -272,7 +272,7 @@ contract TreasuryModule is
         (uint256 riskpoolId, address riskpoolWalletAddress) = _getRiskpoolWallet(processId);
         success = TransferHelper.unifiedTransferFrom(token, metadata.owner, riskpoolWalletAddress, netAmount);
 
-        emit LogTreasuryPremiumTransferred(metadata.owner, riskpoolWalletAddress, netAmount, success);
+        emit LogTreasuryPremiumTransferred(metadata.owner, riskpoolWalletAddress, netAmount);
         require(success, "ERROR:TRS-032:PREMIUM_TRANSFER_FAILED");
 
         emit LogTreasuryPremiumProcessed(processId, amount);
@@ -309,7 +309,7 @@ contract TreasuryModule is
         feeAmount = 0;
         netPayoutAmount = payout.amount;
 
-        emit LogTreasuryPayoutTransferred(riskpoolWalletAddress, metadata.owner, payout.amount, success);
+        emit LogTreasuryPayoutTransferred(riskpoolWalletAddress, metadata.owner, payout.amount);
         require(success, "ERROR:TRS-043:PAYOUT_TRANSFER_FAILED");
 
         emit LogTreasuryPayoutProcessed(riskpoolId,  metadata.owner, payout.amount);
@@ -339,7 +339,7 @@ contract TreasuryModule is
         feeAmount = _calculateFee(feeSpec, capitalAmount);
         bool success = TransferHelper.unifiedTransferFrom(token, bundleOwner, _instanceWalletAddress, feeAmount);
 
-        emit LogTreasuryFeesTransferred(bundleOwner, _instanceWalletAddress, feeAmount, success);
+        emit LogTreasuryFeesTransferred(bundleOwner, _instanceWalletAddress, feeAmount);
         require(success, "ERROR:TRS-053:FEE_TRANSFER_FAILED");
 
         // transfer net capital
@@ -349,7 +349,7 @@ contract TreasuryModule is
         netCapitalAmount = capitalAmount - feeAmount;
         success = TransferHelper.unifiedTransferFrom(token, bundleOwner, riskpoolWallet, netCapitalAmount);
 
-        emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, netCapitalAmount, success);
+        emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, netCapitalAmount);
         require(success, "ERROR:TRS-055:CAPITAL_TRANSFER_FAILED");
 
         emit LogTreasuryCapitalProcessed(bundle.riskpoolId, bundleId, capitalAmount);
@@ -384,7 +384,7 @@ contract TreasuryModule is
         netAmount = amount;
         bool success = TransferHelper.unifiedTransferFrom(token, riskpoolWallet, bundleOwner, netAmount);
 
-        emit LogTreasuryWithdrawalTransferred(riskpoolWallet, bundleOwner, netAmount, success);
+        emit LogTreasuryWithdrawalTransferred(riskpoolWallet, bundleOwner, netAmount);
         require(success, "ERROR:TRS-063:WITHDRAWAL_TRANSFER_FAILED");
 
         emit LogTreasuryWithdrawalProcessed(bundle.riskpoolId, bundleId, netAmount);

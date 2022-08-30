@@ -24,7 +24,7 @@ compiler:
         remappings:
             - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.7.0"
             - "@chainlink=smartcontractkit/chainlink@1.6.0"
-            - "@etherisc/gif-interface=etherisc/gif-interface@e251adb"
+            - "@etherisc/gif-interface=etherisc/gif-interface@b4d3228"
 
 # packages below will be added to brownie
 # you may use 'brownie pm list' after 'brownie compile' 
@@ -34,7 +34,7 @@ dependencies:
     # github dependency format: <owner>/<repository>@<release>
     - OpenZeppelin/openzeppelin-contracts@4.7.0
     - smartcontractkit/chainlink@1.6.0
-    - etherisc/gif-interface@e251adb
+    - etherisc/gif-interface@b4d3228
 
 # exclude open zeppeling contracts  when calculating test coverage
 # https://eth-brownie.readthedocs.io/en/v1.10.3/config.html#exclude_paths
