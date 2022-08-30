@@ -19,7 +19,7 @@ contract ProductService is
 
     fallback() external {
         // getAuthorizationStatus enforces msg.sender to be a registered product
-        (uint256 id, bool isAuthorized, address policyFlow) = _license().getAuthorizationStatus(_msgSender());
+        (,bool isAuthorized, address policyFlow) = _license().getAuthorizationStatus(_msgSender());
 
         require(isAuthorized, "ERROR:PRS-001:NOT_AUTHORIZED");
         require(policyFlow != address(0),"ERROR:PRS-002:POLICY_FLOW_NOT_RESOLVED");
