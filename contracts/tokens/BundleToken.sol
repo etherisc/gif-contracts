@@ -42,11 +42,11 @@ contract BundleToken is
     {
         _totalSupply++;
         tokenId = _totalSupply;
-
-        _safeMint(to, tokenId);
-        bundleIdForTokenId[tokenId] = bundleId;
+        bundleIdForTokenId[tokenId] = bundleId;        
         
-        emit LogBundleTokenMinted(bundleId, tokenId, to);   
+        _safeMint(to, tokenId);
+        
+        emit LogBundleTokenMinted(bundleId, tokenId, to);           
     }
 
 
