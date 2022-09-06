@@ -308,10 +308,10 @@ def test_close_and_burn_bundle(
     assert testCoin.balanceOf(bundleOwner) == bundleOwnerBefore + netWithdrawalAmount
 
     # check that close results in blocking all other actions on the bundle
-    with brownie.reverts('ERROR:POL-042:NO_ACTIVE_BUNDLES'):
+    with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):
         riskpool.closeBundle(bundleId, {'from': bundleOwner})
 
-    with brownie.reverts('ERROR:POL-042:NO_ACTIVE_BUNDLES'):
+    with brownie.reverts('ERROR:POL-044:BUNDLE_ID_NOT_IN_SET'):
         riskpool.lockBundle(bundleId, {'from': bundleOwner})
 
     with brownie.reverts('ERROR:BUC-052:CLOSED_INVALID_TRANSITION'):

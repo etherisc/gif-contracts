@@ -11,10 +11,14 @@ import "@etherisc/gif-interface/contracts/components/IComponent.sol";
 import "@etherisc/gif-interface/contracts/components/IRiskpool.sol";
 
 
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 contract PoolController is
     IPool,
     CoreController
 {
+
+    using EnumerableSet for EnumerableSet.UintSet;
 
     // used for representation of collateralization
     // collateralization between 0 and 1 (1=100%) 
@@ -34,7 +38,7 @@ contract PoolController is
 
     mapping(uint256 /* riskpoolId */ => uint256 /* maxmimumNumberOfActiveBundles */) private _maxmimumNumberOfActiveBundlesForRiskpoolId;
 
-    mapping(uint256 /* riskpoolId */ => uint256 /* numberOfActiveBundles */) private _numberOfActiveBundlesForRiskpoolId;
+    mapping(uint256 /* riskpoolId */ => EnumerableSet.UintSet /* active bundle id set */) private _activeBundleIdsForRiskpoolId;
     
     uint256 [] private _riskpoolIds;
 
@@ -300,18 +304,45 @@ contract PoolController is
         return _riskpoolIdForProductId[productId];
     }
 
-    function increaseNumberOfActiveBundles(uint256 riskpoolId) external 
-        onlyRiskpoolService 
-    {
-        require(_numberOfActiveBundlesForRiskpoolId[riskpoolId] < _maxmimumNumberOfActiveBundlesForRiskpoolId[riskpoolId], "ERROR:POL-041:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED");
-        _numberOfActiveBundlesForRiskpoolId[riskpoolId]++;
+    function activeBundles(uint256 riskpoolId) external view returns(uint256 numberOfActiveBundles) {
+        return EnumerableSet.length(_activeBundleIdsForRiskpoolId[riskpoolId]);
     }
 
-    function decreaseNumberOfActiveBundles(uint256 riskpoolId) external 
-        onlyRiskpoolService 
+    function getActiveBundleId(uint256 riskpoolId, uint256 bundleIdx) external view returns(uint256 bundleId) {
+        require(
+            bundleIdx < EnumerableSet.length(_activeBundleIdsForRiskpoolId[riskpoolId]),
+            "ERROR:POL-041:BUNDLE_IDX_TOO_LARGE"
+        );
+
+        return EnumerableSet.at(_activeBundleIdsForRiskpoolId[riskpoolId], bundleIdx);
+    }
+
+    function addBundleIdToActiveSet(uint256 riskpoolId, uint256 bundleId) 
+        external
+        onlyRiskpoolService
     {
-        require(_numberOfActiveBundlesForRiskpoolId[riskpoolId] > 0, "ERROR:POL-042:NO_ACTIVE_BUNDLES");
-        _numberOfActiveBundlesForRiskpoolId[riskpoolId]--;
+        require(
+            !EnumerableSet.contains(_activeBundleIdsForRiskpoolId[riskpoolId], bundleId), 
+            "ERROR:POL-042:BUNDLE_ID_ALREADY_IN_SET"
+        );
+        require(
+            EnumerableSet.length(_activeBundleIdsForRiskpoolId[riskpoolId]) < _maxmimumNumberOfActiveBundlesForRiskpoolId[riskpoolId], 
+            "ERROR:POL-043:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED"
+        );
+
+        EnumerableSet.add(_activeBundleIdsForRiskpoolId[riskpoolId], bundleId);
+    }
+
+    function removeBundleIdFromActiveSet(uint256 riskpoolId, uint256 bundleId) 
+        external
+        onlyRiskpoolService
+    {
+        require(
+            EnumerableSet.contains(_activeBundleIdsForRiskpoolId[riskpoolId], bundleId), 
+            "ERROR:POL-044:BUNDLE_ID_NOT_IN_SET"
+        );
+
+        EnumerableSet.remove(_activeBundleIdsForRiskpoolId[riskpoolId], bundleId);
     }
 
     function getFullCollateralizationLevel() external pure returns (uint256) {

@@ -10,8 +10,6 @@ import "@etherisc/gif-interface/contracts/components/IComponent.sol";
 import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
 import "@etherisc/gif-interface/contracts/services/IRiskpoolService.sol";
 
-// TODO create/lock/unlock notify poolcontroller about the action and poolcontoller updates active bundles
-
 contract RiskpoolService is
     IRiskpoolService, 
     CoreController
@@ -127,8 +125,9 @@ contract RiskpoolService is
         returns(uint256 bundleId)
     {
         uint256 riskpoolId = _component.getComponentId(_msgSender());
-        _pool.increaseNumberOfActiveBundles(riskpoolId);
         bundleId = _bundle.create(owner, riskpoolId, filter, 0);
+        
+        _pool.addBundleIdToActiveSet(riskpoolId, bundleId);
 
         (uint256 fee, uint256 netCapital) = _treasury.processCapital(bundleId, initialCapital);
 
@@ -182,7 +181,7 @@ contract RiskpoolService is
         onlyOwningRiskpool(bundleId, true)
     {
             uint256 riskpoolId = _component.getComponentId(_msgSender());
-        _pool.decreaseNumberOfActiveBundles(riskpoolId);
+        _pool.removeBundleIdFromActiveSet(riskpoolId, bundleId);
         _bundle.lock(bundleId);
     }
 
@@ -192,7 +191,7 @@ contract RiskpoolService is
         onlyOwningRiskpool(bundleId, true)  
     {
         uint256 riskpoolId = _component.getComponentId(_msgSender());
-        _pool.increaseNumberOfActiveBundles(riskpoolId);
+        _pool.addBundleIdToActiveSet(riskpoolId, bundleId);
         _bundle.unlock(bundleId);
     }
 
@@ -202,10 +201,11 @@ contract RiskpoolService is
         onlyOwningRiskpool(bundleId, true)  
     {
         uint256 riskpoolId = _component.getComponentId(_msgSender());
-        // only decrease active bundles when riskpool is active - locked riskpool is not counted towards active bundles
-        if (_component.getComponentState(riskpoolId) == IComponent.ComponentState.Active) {
-            _pool.decreaseNumberOfActiveBundles(riskpoolId);
+
+        if (_bundle.getState(bundleId) == IBundle.BundleState.Active) {
+            _pool.removeBundleIdFromActiveSet(riskpoolId, bundleId);
         }
+
         _bundle.close(bundleId);
     }
 
