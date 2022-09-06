@@ -5,7 +5,7 @@ from scripts.const import ZERO_ADDRESS
 
 def test_setup(bundleToken, owner):
     assert bundleToken.symbol() == "BTK"
-    assert bundleToken.tokens() == 0
+    assert bundleToken.totalSupply() == 0
 
 # enforce function isolation for tests below
 @pytest.fixture(autouse=True)
@@ -49,7 +49,7 @@ def test_initialize(bundleToken, owner, riskpoolKeeper, customer):
     # check that minting/burning now works
     bundleId = 3
     tokenId = 1
-    assert bundleToken.tokens() == 0
+    assert bundleToken.totalSupply() == 0
     assert bundleToken.exists(tokenId) == False
     assert bundleToken.burned(tokenId) == False
     
@@ -61,7 +61,7 @@ def test_initialize(bundleToken, owner, riskpoolKeeper, customer):
 
     tokenId = tx.return_value
 
-    assert bundleToken.tokens() == 1
+    assert bundleToken.totalSupply() == 1
     assert tokenId == 1
     assert bundleToken.exists(tokenId) == True
     assert bundleToken.burned(tokenId) == False
@@ -71,7 +71,7 @@ def test_initialize(bundleToken, owner, riskpoolKeeper, customer):
         tokenId, 
         {'from': riskpoolKeeper})
 
-    assert bundleToken.tokens() == 1
+    assert bundleToken.totalSupply() == 1
     assert bundleToken.exists(tokenId) == True
     assert bundleToken.burned(tokenId) == True
 
@@ -81,7 +81,7 @@ def test_mint(bundleToken, owner, riskpoolKeeper, customer):
     # use riskpool keeper as surrogate bundle module
     bundleToken.setBundleModule(riskpoolKeeper)
 
-    assert bundleToken.tokens() == 0
+    assert bundleToken.totalSupply() == 0
     assert bundleToken.balanceOf(customer) == 0
 
     bundleId = 3
@@ -90,7 +90,7 @@ def test_mint(bundleToken, owner, riskpoolKeeper, customer):
         customer, 
         {'from': riskpoolKeeper})
 
-    assert bundleToken.tokens() == 1
+    assert bundleToken.totalSupply() == 1
     assert bundleToken.balanceOf(customer) == 1
 
     tokenId = tx.return_value
@@ -127,7 +127,7 @@ def test_burn(bundleToken, owner, riskpoolKeeper, customer):
         tokenId,
         {'from': riskpoolKeeper})
 
-    assert bundleToken.tokens() == 1
+    assert bundleToken.totalSupply() == 1
     assert bundleToken.exists(tokenId) == True
     assert bundleToken.burned(tokenId) == True
 
@@ -145,7 +145,7 @@ def test_mint_only_bundle_module(bundleToken, owner, riskpoolKeeper, customer):
             customer, 
             {'from': customer})
 
-    assert bundleToken.tokens() == 0
+    assert bundleToken.totalSupply() == 0
 
     # owner must be able to mint customer a nft
     tx = bundleToken.mint(
@@ -153,7 +153,7 @@ def test_mint_only_bundle_module(bundleToken, owner, riskpoolKeeper, customer):
         customer, 
         {'from': riskpoolKeeper})
 
-    assert bundleToken.tokens() == 1
+    assert bundleToken.totalSupply() == 1
 
 
 def test_burn_only_bundle_module(bundleToken, owner, riskpoolKeeper, customer):
@@ -177,7 +177,7 @@ def test_burn_only_bundle_module(bundleToken, owner, riskpoolKeeper, customer):
             tokenId, 
             {'from': customer})
 
-    assert bundleToken.tokens() == 1
+    assert bundleToken.totalSupply() == 1
     assert bundleToken.exists(tokenId) == True
     assert bundleToken.burned(tokenId) == False
 
@@ -186,6 +186,6 @@ def test_burn_only_bundle_module(bundleToken, owner, riskpoolKeeper, customer):
         tokenId, 
         {'from': riskpoolKeeper})
 
-    assert bundleToken.tokens() == 1
+    assert bundleToken.totalSupply() == 1
     assert bundleToken.exists(tokenId) == True
     assert bundleToken.burned(tokenId) == True
