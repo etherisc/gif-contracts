@@ -16,7 +16,7 @@ contract BundleToken is
 
     mapping(uint256 /** tokenId */ => uint256 /** bundleId */) public bundleIdForTokenId;
     address private _bundleModule;
-    uint256 private _tokens;
+    uint256 private _totalSupply;
 
     modifier onlyBundleModule() {
         require(_bundleModule != address(0), "ERROR:BTK-001:NOT_INITIALIZED");
@@ -40,13 +40,13 @@ contract BundleToken is
         onlyBundleModule
         returns(uint256 tokenId)
     {
-        _tokens++;
-        tokenId = _tokens;
+        _totalSupply++;
+        tokenId = _totalSupply;
         bundleIdForTokenId[tokenId] = bundleId;        
-
-        emit LogBundleTokenMinted(bundleId, tokenId, to);   
         
         _safeMint(to, tokenId);
+        
+        emit LogBundleTokenMinted(bundleId, tokenId, to);           
     }
 
 
@@ -65,12 +65,12 @@ contract BundleToken is
         view 
         returns(bool isBurned)
     {
-        isBurned = tokenId <= _tokens && !_exists(tokenId);
+        isBurned = tokenId <= _totalSupply && !_exists(tokenId);
     }
 
     function getBundleId(uint256 tokenId) external override view returns(uint256) { return bundleIdForTokenId[tokenId]; }
     function getBundleModuleAddress() external view returns(address) { return _bundleModule; }
 
-    function exists(uint256 tokenId) external override view returns(bool) { return tokenId <= _tokens; }
-    function tokens() external override view returns(uint256 tokenCount) { return _tokens; }
+    function exists(uint256 tokenId) external override view returns(bool) { return tokenId <= _totalSupply; }
+    function totalSupply() external override view returns(uint256 tokenCount) { return _totalSupply; }
 }
