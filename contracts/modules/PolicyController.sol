@@ -358,7 +358,7 @@ contract PolicyController is
         claim.state = ClaimState.Closed;
         claim.updatedAt = block.timestamp;
 
-        policy.openClaimsCount -= 1;
+        policy.openClaimsCount--;
         policy.updatedAt = block.timestamp;
 
         emit LogClaimClosed(processId, claimId);

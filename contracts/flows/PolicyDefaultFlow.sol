@@ -37,11 +37,20 @@ contract PolicyDefaultFlow is
         _;
     }
 
+    modifier notClosedPolicy(bytes32 processId) {
+        PolicyController policy = getPolicyContract();
+        require(
+            policy.getPolicy(processId).state != IPolicy.PolicyState.Closed,
+            "ERROR:PFD-003:POLICY_CLOSED"
+        );
+        _;
+    }
+
     modifier onlyResponsibleProduct(bytes32 processId) {
         PolicyController policy = getPolicyContract();
         IPolicy.Metadata memory metadata = policy.getMetadata(processId);
         ComponentController component = ComponentController(getContractFromRegistry("Component"));
-        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-003:PROCESSID_PRODUCT_MISMATCH");
+        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-004:PROCESSID_PRODUCT_MISMATCH");
         _;
     }
 
@@ -51,7 +60,7 @@ contract PolicyDefaultFlow is
         PolicyController policy = getPolicyContract();
         IPolicy.Metadata memory metadata = policy.getMetadata(processId);
         ComponentController component = ComponentController(getContractFromRegistry("Component"));
-        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-004:REQUESTID_PRODUCT_MISMATCH");
+        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-005:REQUESTID_PRODUCT_MISMATCH");
         _;
     }
 
@@ -120,6 +129,7 @@ contract PolicyDefaultFlow is
      */
     function collectPremium(bytes32 processId, uint256 amount) 
         public 
+        notClosedPolicy(processId)
         onlyResponsibleProduct(processId)
         returns(
             bool success, 
@@ -129,7 +139,6 @@ contract PolicyDefaultFlow is
     {
         TreasuryModule treasury = getTreasuryContract();
         PolicyController policy = getPolicyContract();
-        address owner = policy.getMetadata(processId).owner;
 
         (success, feeAmount, netPremiumAmount) = treasury.processPremium(processId, amount);
 
@@ -148,6 +157,7 @@ contract PolicyDefaultFlow is
         uint256 sumInsuredAmount
     )
         external
+        notClosedPolicy(processId)
         onlyResponsibleProduct(processId)
     {
         PolicyController policy = getPolicyContract();

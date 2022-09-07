@@ -410,6 +410,68 @@ def test_process_policy_create_claims(
     assert policy['state'] == 2
 
 
+def test_process_collect_premium_for_closed_policy(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account,
+    owner: Account,
+    customer: Account,
+):
+    policyController = instance.getPolicy()
+    instanceService = instance.getInstanceService()
+
+    product = gifTestProduct.getContract()
+    riskpool = gifTestProduct.getRiskpool().getContract()
+
+    # prepare funded riskpool
+    initialFunding = 10000
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # create application
+    premium = 100
+    sumInsured = 1000
+    policy_tx = product.newAppliation(
+        premium,
+        sumInsured,
+        bytes(0),
+        bytes(0),
+        {'from': customer})
+
+    processId = policy_tx.return_value
+
+    product.underwrite(processId, {'from': productOwner})
+    application = instanceService.getApplication(processId)
+    print('application after underwriting{}'.format(application))
+
+    policy = instanceService.getPolicy(processId)
+    print('policy after underwriting{}'.format(policy))
+
+    testCoin.transfer(customer, 500, {'from': owner})
+    testCoin.approve(instance.getTreasury(), 500, {'from': customer})
+
+    product.collectPremium(processId, 10, {'from': productOwner})
+    policy = instanceService.getPolicy(processId)
+    print('policy after premium collection{}'.format(policy))
+
+    product.expire(processId, {'from': productOwner})
+    policy = instanceService.getPolicy(processId)
+    print('policy after expire{}'.format(policy))
+
+    product.collectPremium(processId, 10, {'from': productOwner})
+    policy = instanceService.getPolicy(processId)
+    print('policy after premium collection{}'.format(policy))
+
+    product.close(processId, {'from': productOwner})
+    policy = instanceService.getPolicy(processId)
+    print('policy after close {}'.format(policy))
+
+    with brownie.reverts('ERROR:PFD-003:POLICY_CLOSED'):
+        product.collectPremium(processId, 10, {'from': productOwner})
+
+
 def create_application(customer, premium, sumInsured, instance, owner, product, erc20token):
     erc20token.transfer(customer, premium, {'from': owner})
     erc20token.approve(instance.getTreasury(), premium, {'from': customer})
