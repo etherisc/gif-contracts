@@ -86,7 +86,7 @@ contract AyiiProduct is
         _setupRole(INSURER_ROLE, insurer);
     }
 
-    function initialize(address registry) public initializer {
+    function initialize() public initializer {
         _policy = PolicyController(_getContractAddress("Policy"));
     }
 
@@ -119,8 +119,8 @@ contract AyiiProduct is
         risk.exit = exit;
         risk.tsi = tsi;
         risk.aph = aph;
-        risk.createdAt = block.timestamp;
-        risk.updatedAt = block.timestamp;
+        risk.createdAt = block.timestamp; // solhint-disable-line
+        risk.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogAyiiRiskDataCreated(
             risk.id, 
@@ -248,7 +248,7 @@ contract AyiiProduct is
 
         risk.requestId = requestId;
         risk.requestTriggered = true;
-        risk.updatedAt = block.timestamp;
+        risk.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogAyiiRiskDataRequested(
             risk.requestId, 
@@ -271,7 +271,7 @@ contract AyiiProduct is
 
         // reset request id to allow to trigger again
         risk.requestTriggered = false;
-        risk.updatedAt = block.timestamp;
+        risk.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogAyiiRiskDataRequestCancelled(processId, risk.requestId);
     }    
@@ -309,8 +309,8 @@ contract AyiiProduct is
             risk.aaay
         );
 
-        risk.responseAt = block.timestamp;
-        risk.updatedAt = block.timestamp;
+        risk.responseAt = block.timestamp; // solhint-disable-line
+        risk.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogAyiiRiskDataReceived(
             requestId, 
@@ -367,10 +367,7 @@ contract AyiiProduct is
             _confirmClaim(policyId, claimId, payoutAmount);
 
             uint256 payoutId = _newPayout(policyId, claimId, payoutAmount, "");
-            (
-                uint256 feeAmount,
-                uint256 netPayoutAmount
-            ) = _processPayout(policyId, payoutId);
+            _processPayout(policyId, payoutId);
 
             emit LogAyiiPayoutCreated(policyId, payoutAmount);
         }
