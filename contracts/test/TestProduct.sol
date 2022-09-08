@@ -205,6 +205,16 @@ contract TestProduct is
         _declineClaim(policyId, claimId);
     }
 
+    function closeClaim(
+        bytes32 policyId, 
+        uint256 claimId
+    ) 
+        external
+        onlyOwner
+    {
+        _closeClaim(policyId, claimId);
+    }
+
     function createPayout(
         bytes32 policyId, 
         uint256 claimId, 

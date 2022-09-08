@@ -351,7 +351,8 @@ contract PolicyController is
             "ERROR:POC-073:CLAIM_STATE_INVALID");
 
         require(
-            claim.claimAmount == claim.paidAmount, 
+            (claim.state == ClaimState.Confirmed && claim.claimAmount == claim.paidAmount) 
+            || (claim.state == ClaimState.Declined && claim.paidAmount == 0), 
             "ERROR:POC-074:CLAIM_WITH_UNPAID_PAYOUTS"
         );
 
