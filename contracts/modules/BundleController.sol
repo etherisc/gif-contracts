@@ -5,7 +5,10 @@ import "./PolicyController.sol";
 import "../shared/CoreController.sol";
 import "../tokens/BundleToken.sol";
 
+import "@etherisc/gif-interface/contracts/components/IProduct.sol";
 import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
+import "./PoolController.sol";
+
 
 contract BundleController is 
     IBundle,
@@ -148,7 +151,9 @@ contract BundleController is
         external override 
         onlyRiskpoolService
     {
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         Bundle storage bundle = _bundles[bundleId];
+        require(bundle.riskpoolId == _getPoolController().getRiskPoolForProduct(metadata.productId), "ERROR:BUC-019:BUNDLE_NOT_IN_RISKPOOL");
         require(bundle.createdAt > 0, "ERROR:BUC-020:BUNDLE_DOES_NOT_EXIST");
         require(bundle.state == IBundle.BundleState.Active, "ERROR:BUC-021:BUNDLE_NOT_ACTIVE");        
         require(bundle.capital >= bundle.lockedCapital + amount, "ERROR:BUC-022:CAPACITY_TOO_LOW");
@@ -267,6 +272,10 @@ contract BundleController is
 
     function unburntBundles(uint256 riskpoolId) external view returns(uint256) {
         return _unburntBundlesForRiskpoolId[riskpoolId];
+    }
+
+    function _getPoolController() internal view returns (PoolController _poolController) {
+        _poolController = PoolController(_getContractAddress("Pool"));
     }
 
     function _changeState(uint256 bundleId, BundleState newState) internal {
