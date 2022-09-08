@@ -237,6 +237,48 @@ def test_payout_creation_for_declined_claim(
     with brownie.reverts("ERROR:POC-082:CLAIM_NOT_CONFIRMED"):
         product.createPayout(policyId, claimId, payoutAmount, {'from': productOwner})
 
+def test_close_policy_with_declined_claim(
+    instance: GifInstance, 
+    gifTestProduct: GifTestProduct, 
+    testCoin,
+    owner: Account,
+    customer: Account, 
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account
+):
+    instanceService = instance.getInstanceService()
+
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    initialFunding = 10000
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # build and use policy application
+    product = gifTestProduct.getContract()
+    premium = 100
+    sumInsured = 5000
+    policyId = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
+    
+    claimAmount = 2*premium
+    tx = product.submitClaimWithDeferredResponse(policyId, claimAmount, {'from': customer})
+    (claimId, requestId) = tx.return_value
+    claim = instanceService.getClaim(policyId, claimId).dict()
+    print(claim)
+
+    assert claim["state"] ==  0 # enum ClaimState {Applied, Confirmed, Declined, Closed}
+
+    product.declineClaim(policyId, claimId, {'from': productOwner})
+
+    claim = instanceService.getClaim(policyId, claimId).dict()
+    assert claim["state"] ==  2 # enum ClaimState {Applied, Confirmed, Declined, Closed}
+
+    product.closeClaim(policyId, claimId, {'from': productOwner})
+
+    product.expire(policyId, {'from': productOwner})
+
+    product.close(policyId, {'from': productOwner})
+
 
 def test_payout_creation_for_confirmed_claim(
     instance: GifInstance, 
