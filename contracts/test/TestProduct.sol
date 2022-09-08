@@ -150,7 +150,7 @@ contract TestProduct is
         // Request response to greeting via oracle call
         bool immediateResponse = true;
         bytes memory queryData = abi.encode(_claims, immediateResponse);
-        uint256 requestId = _request(
+        _request(
             policyId,
             queryData,
             ORACLE_CALLBACK_METHOD_NAME,
@@ -240,8 +240,7 @@ contract TestProduct is
         // claim handling if there is a loss
         if (isLossEvent) {
             // get policy and claims info for oracle response
-            IPolicy.Application memory application 
-                = _getApplication(policyId);
+            _getApplication(policyId);
 
             IPolicy.Claim memory claim 
                 = _getClaim(policyId, claimId);
