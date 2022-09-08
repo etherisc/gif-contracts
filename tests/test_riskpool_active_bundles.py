@@ -41,11 +41,14 @@ def test_create_bundle_max_active(
     testCoin.transfer(riskpoolKeeper, 10 * initialFunding, {'from': owner})
     testCoin.approve(instance.getTreasury(), 10 * initialFunding, {'from': riskpoolKeeper})
     
-    riskpool.bundles() == 1
+    assert riskpool.bundles() == 1
+    assert riskpool.activeBundles() == 1
+    assert instanceService.activeBundles(riskpoolId) == 1
+
     bundle1 = riskpool.getBundle(0)
 
     # ensure creation of another bundle is not allowed (max active bundles is 1 by default)
-    with brownie.reverts("ERROR:POL-041:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED"):
+    with brownie.reverts("ERROR:POL-043:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED"):
         riskpool.createBundle(
                 bytes(0), 
                 initialFunding, 
@@ -53,10 +56,18 @@ def test_create_bundle_max_active(
 
     riskpool.closeBundle(bundle1[0], {'from': riskpoolKeeper})
 
+    assert riskpool.bundles() == 1
+    assert riskpool.activeBundles() == 0
+    assert instanceService.activeBundles(riskpoolId) == 0
+
     riskpool.createBundle(
         bytes(0), 
         initialFunding, 
         {'from': riskpoolKeeper})
+
+    assert riskpool.bundles() == 2
+    assert riskpool.activeBundles() == 1
+    assert instanceService.activeBundles(riskpoolId) == 1
 
     # ensure a seconds bundle can be added when setting max active bundles to 2
     riskpool.setMaximumNumberOfActiveBundles(2, {'from': riskpoolKeeper})
@@ -65,11 +76,14 @@ def test_create_bundle_max_active(
         initialFunding, 
         {'from': riskpoolKeeper})
 
-    riskpool.bundles() == 2
+    assert riskpool.bundles() == 3
+    assert riskpool.activeBundles() == 2
+    assert instanceService.activeBundles(riskpoolId) == 2
+
     bundle2 = riskpool.getBundle(1)
-    bundle3 = riskpool.getBundle(1)
+    bundle3 = riskpool.getBundle(2)
     
-    with brownie.reverts("ERROR:POL-041:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED"):
+    with brownie.reverts("ERROR:POL-043:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED"):
         riskpool.createBundle(
             bytes(0), 
             initialFunding, 
@@ -78,20 +92,36 @@ def test_create_bundle_max_active(
     # ensure another bundle can be created only after locking one bundle
     riskpool.lockBundle(bundle2[0], {'from': riskpoolKeeper})
 
+    assert riskpool.bundles() == 3
+    assert riskpool.activeBundles() == 1
+    assert instanceService.activeBundles(riskpoolId) == 1
+
     riskpool.createBundle(
         bytes(0), 
         initialFunding, 
         {'from': riskpoolKeeper})
 
+    assert riskpool.bundles() == 4
+    assert riskpool.activeBundles() == 2
+    assert instanceService.activeBundles(riskpoolId) == 2
+
     # ensure locked bundle cannot be unlocked while max active bundles are in use
-    with brownie.reverts("ERROR:POL-041:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED"):
+    with brownie.reverts("ERROR:POL-043:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED"):
         riskpool.unlockBundle(bundle2[0], {'from': riskpoolKeeper})
     
-    riskpool.closeBundle(bundle2[0], {'from': riskpoolKeeper})
+    riskpool.closeBundle(bundle3[0], {'from': riskpoolKeeper})
+
+    assert riskpool.bundles() == 4
+    assert riskpool.activeBundles() == 1
+    assert instanceService.activeBundles(riskpoolId) == 1
 
     # ensure bundles can be created after closing one more bundle
     riskpool.createBundle(
         bytes(0), 
         initialFunding, 
         {'from': riskpoolKeeper})
+
+    assert riskpool.bundles() == 5
+    assert riskpool.activeBundles() == 2
+    assert instanceService.activeBundles(riskpoolId) == 2
 

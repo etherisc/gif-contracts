@@ -157,3 +157,58 @@ def test_bundle_allocation_with_three_equal_bundles(
         ) = bundle
 
         assert 3000 == lockedCapital
+
+
+def test_failing_bundle_allocation(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    riskpoolKeeper: Account,
+    owner: Account,
+    customer: Account,
+    feeOwner: Account,
+    capitalOwner: Account
+):    
+    num_bundles = 2
+    product = gifTestProduct.getContract()
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    riskpool.setMaximumNumberOfActiveBundles(num_bundles, {'from': riskpoolKeeper})
+    instanceService = instance.getInstanceService()
+
+    initialFunding = 1000
+
+    # fund the riskpools
+    for _ in range(num_bundles):
+        fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # create minimal policy application
+    premium = 100
+    sumInsured = 1200
+    metaData = bytes(0)
+    applicationData = bytes(0)
+
+    testCoin.transfer(customer, premium, {'from': owner})
+    testCoin.approve(instance.getTreasury(), premium, {'from': customer})
+
+    tx = product.applyForPolicy(
+        premium,
+        sumInsured,
+        metaData,
+        applicationData,
+        {'from': customer})
+    
+    processId = tx.return_value
+
+    print('processId {}'.format(processId))
+    print(tx.info())
+
+    assert 'LogRiskpoolCollateralizationFailed' in tx.events
+    assert len(tx.events['LogRiskpoolCollateralizationFailed']) == 1
+
+    failedEvent = tx.events['LogRiskpoolCollateralizationFailed'][0]
+    assert failedEvent['processId'] == processId
+    assert failedEvent['amount'] == sumInsured
+
+    application = instanceService.getApplication(processId)
+    applicationState = application[0]
+    assert applicationState == 0 # enum ApplicationState {Applied, Revoked, Underwritten, Declined}
