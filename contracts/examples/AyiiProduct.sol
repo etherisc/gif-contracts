@@ -333,13 +333,16 @@ contract AyiiProduct is
 
         processedPolicies = new bytes32[](batchSize);
         for (uint256 i = 0; i < batchSize; i++) {
-            bytes32 policyId = policyIds[batchSize - i - 1];
+            // grab and process the last policy
+            bytes32 policyId = policyIds[policyIds.length - 1];
             _processPolicy(policyId, risk);
 
             _expire(policyId);
             _close(policyId);
 
             processedPolicies[i] = policyId;
+            
+            // remove the last (processed) policy from the list
             policyIds.pop();
         }
 
