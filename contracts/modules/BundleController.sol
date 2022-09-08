@@ -34,6 +34,16 @@ contract BundleController is
         _;
     }
 
+    modifier onlyFundableBundle(uint256 bundleId) {
+        Bundle storage bundle = _bundles[bundleId];
+        require(bundle.createdAt > 0, "ERROR:BUC-031:BUNDLE_DOES_NOT_EXIST");
+        require(
+            bundle.state != IBundle.BundleState.Burned 
+            && bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-032:BUNDLE_BURNED_OR_CLOSED"
+        );
+        _;
+    }
+
     function _afterInitialize() internal override onlyInitializing {
         _policy = PolicyController(_getContractAddress("Policy"));
         _token = BundleToken(_getContractAddress("BundleToken"));
@@ -207,11 +217,9 @@ contract BundleController is
     function increaseBalance(uint256 bundleId, uint256 amount)
         external override
         onlyRiskpoolService
+        onlyFundableBundle(bundleId)
     {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-031:BUNDLE_DOES_NOT_EXIST");
-        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-032:BUNDLE_CLOSED");
-
         bundle.balance += amount;
         bundle.updatedAt = block.timestamp;
     }
@@ -220,10 +228,10 @@ contract BundleController is
     function decreaseBalance(uint256 bundleId, uint256 amount)
         external override
         onlyRiskpoolService
+        onlyFundableBundle(bundleId)
     {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-033:BUNDLE_DOES_NOT_EXIST");
-        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-034:BUNDLE_CLOSED");
+
         require(bundle.balance >= amount, "ERROR:BUC-035:BUNDLE_BALANCE_TOO_SMALL");
 
         bundle.balance -= amount;
