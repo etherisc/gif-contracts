@@ -52,8 +52,8 @@ contract PolicyController is
         meta.productId = productId;
         meta.state = PolicyFlowState.Started;
         meta.data = data;
-        meta.createdAt = block.timestamp;
-        meta.updatedAt = block.timestamp;
+        meta.createdAt = block.timestamp; // solhint-disable-line
+        meta.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogMetadataCreated(owner, processId, productId, PolicyFlowState.Started);
     }
@@ -78,11 +78,11 @@ contract PolicyController is
         application.premiumAmount = premiumAmount;
         application.sumInsuredAmount = sumInsuredAmount;
         application.data = data;
-        application.createdAt = block.timestamp;
-        application.updatedAt = block.timestamp;
+        application.createdAt = block.timestamp; // solhint-disable-line
+        application.updatedAt = block.timestamp; // solhint-disable-line
 
         meta.state = PolicyFlowState.Active;
-        meta.updatedAt = block.timestamp;
+        meta.updatedAt = block.timestamp; // solhint-disable-line
         emit LogMetadataStateChanged(processId, meta.state);
 
         emit LogApplicationCreated(processId, premiumAmount, sumInsuredAmount);
@@ -96,7 +96,7 @@ contract PolicyController is
         require(policy.premiumPaidAmount + amount <= policy.premiumExpectedAmount, "ERROR:POC-013:AMOUNT_TOO_BIG");
 
         policy.premiumPaidAmount += amount;
-        policy.updatedAt = block.timestamp;
+        policy.updatedAt = block.timestamp; // solhint-disable-line
     
         emit LogPremiumCollected(processId, amount);
     }
@@ -113,10 +113,10 @@ contract PolicyController is
         require(application.state == ApplicationState.Applied, "ERROR:POC-016:APPLICATION_STATE_INVALID");
 
         application.state = ApplicationState.Revoked;
-        application.updatedAt = block.timestamp;
+        application.updatedAt = block.timestamp; // solhint-disable-line
 
         meta.state = PolicyFlowState.Finished;
-        meta.updatedAt = block.timestamp;
+        meta.updatedAt = block.timestamp; // solhint-disable-line
         emit LogMetadataStateChanged(processId, meta.state);
 
         emit LogApplicationRevoked(processId);
@@ -131,7 +131,7 @@ contract PolicyController is
         require(application.state == ApplicationState.Applied, "ERROR:POC-018:APPLICATION_STATE_INVALID");
 
         application.state = ApplicationState.Underwritten;
-        application.updatedAt = block.timestamp;
+        application.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogApplicationUnderwritten(processId);
     }
@@ -148,10 +148,10 @@ contract PolicyController is
         require(application.state == ApplicationState.Applied, "ERROR:POC-021:APPLICATION_STATE_INVALID");
 
         application.state = ApplicationState.Declined;
-        application.updatedAt = block.timestamp;
+        application.updatedAt = block.timestamp; // solhint-disable-line
 
         meta.state = PolicyFlowState.Finished;
-        meta.updatedAt = block.timestamp;
+        meta.updatedAt = block.timestamp; // solhint-disable-line
         emit LogMetadataStateChanged(processId, meta.state);
 
         emit LogApplicationDeclined(processId);
@@ -170,8 +170,8 @@ contract PolicyController is
 
         policy.state = PolicyState.Active;
         policy.premiumExpectedAmount = application.premiumAmount;
-        policy.createdAt = block.timestamp;
-        policy.updatedAt = block.timestamp;
+        policy.createdAt = block.timestamp; // solhint-disable-line
+        policy.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogPolicyCreated(processId);
     }
@@ -209,17 +209,17 @@ contract PolicyController is
         if (sumInsuredAmount != application.sumInsuredAmount) {
             emit LogApplicationSumInsuredAdjusted(processId, application.sumInsuredAmount, sumInsuredAmount);
             application.sumInsuredAmount = sumInsuredAmount;
-            application.updatedAt = block.timestamp;
+            application.updatedAt = block.timestamp; // solhint-disable-line
         }
 
         if (expectedPremiumAmount != application.premiumAmount) {
             emit LogApplicationPremiumAdjusted(processId, application.premiumAmount, expectedPremiumAmount);
             application.premiumAmount = expectedPremiumAmount;
-            application.updatedAt = block.timestamp;
+            application.updatedAt = block.timestamp; // solhint-disable-line
 
             emit LogPolicyPremiumAdjusted(processId, policy.premiumExpectedAmount, expectedPremiumAmount);
             policy.premiumExpectedAmount = expectedPremiumAmount;
-            policy.updatedAt = block.timestamp;
+            policy.updatedAt = block.timestamp; // solhint-disable-line
         }
     }
 
@@ -232,7 +232,7 @@ contract PolicyController is
         require(policy.state == PolicyState.Active, "ERROR:POC-029:APPLICATION_STATE_INVALID");
 
         policy.state = PolicyState.Expired;
-        policy.updatedAt = block.timestamp;
+        policy.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogPolicyExpired(processId);
     }
@@ -250,10 +250,10 @@ contract PolicyController is
         require(policy.openClaimsCount == 0, "ERROR:POC-033:POLICY_HAS_OPEN_CLAIMS");
 
         policy.state = PolicyState.Closed;
-        policy.updatedAt = block.timestamp;
+        policy.updatedAt = block.timestamp; // solhint-disable-line
 
         meta.state = PolicyFlowState.Finished;
-        meta.updatedAt = block.timestamp;
+        meta.updatedAt = block.timestamp; // solhint-disable-line
         emit LogMetadataStateChanged(processId, meta.state);
 
         emit LogPolicyClosed(processId);
@@ -280,12 +280,12 @@ contract PolicyController is
         claim.state = ClaimState.Applied;
         claim.claimAmount = claimAmount;
         claim.data = data;
-        claim.createdAt = block.timestamp;
-        claim.updatedAt = block.timestamp;
+        claim.createdAt = block.timestamp; // solhint-disable-line
+        claim.updatedAt = block.timestamp; // solhint-disable-line
 
         policy.claimsCount++;
         policy.openClaimsCount++;
-        policy.updatedAt = block.timestamp;
+        policy.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogClaimCreated(processId, claimId, claimAmount);
     }
@@ -308,9 +308,9 @@ contract PolicyController is
 
         claim.state = ClaimState.Confirmed;
         claim.claimAmount = confirmedAmount;
-        claim.updatedAt = block.timestamp;
+        claim.updatedAt = block.timestamp; // solhint-disable-line
 
-        policy.updatedAt = block.timestamp;
+        policy.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogClaimConfirmed(processId, claimId, confirmedAmount);
     }
@@ -328,9 +328,9 @@ contract PolicyController is
         require(claim.state == ClaimState.Applied, "ERROR:POC-063:CLAIM_STATE_INVALID");
 
         claim.state = ClaimState.Declined;
-        claim.updatedAt = block.timestamp;
+        claim.updatedAt = block.timestamp; // solhint-disable-line
 
-        policy.updatedAt = block.timestamp;
+        policy.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogClaimDeclined(processId, claimId);
     }
@@ -357,10 +357,10 @@ contract PolicyController is
         );
 
         claim.state = ClaimState.Closed;
-        claim.updatedAt = block.timestamp;
+        claim.updatedAt = block.timestamp; // solhint-disable-line
 
         policy.openClaimsCount -= 1;
-        policy.updatedAt = block.timestamp;
+        policy.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogClaimClosed(processId, claimId);
     }
@@ -396,14 +396,14 @@ contract PolicyController is
         payout.amount = payoutAmount;
         payout.data = data;
         payout.state = PayoutState.Expected;
-        payout.createdAt = block.timestamp;
-        payout.updatedAt = block.timestamp;
+        payout.createdAt = block.timestamp; // solhint-disable-line
+        payout.updatedAt = block.timestamp; // solhint-disable-line
 
         claim.payoutsAmount += payoutAmount;
-        claim.updatedAt = block.timestamp;
+        claim.updatedAt = block.timestamp; // solhint-disable-line
 
         payoutCount[processId]++;
-        policy.updatedAt = block.timestamp;
+        policy.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogPayoutCreated(processId, claimId, payoutId, payoutAmount);
     }
@@ -424,20 +424,20 @@ contract PolicyController is
         require(payout.state == PayoutState.Expected, "ERROR:POC-093:PAYOUT_ALREADY_PAIDOUT");
 
         payout.state = IPolicy.PayoutState.PaidOut;
-        payout.updatedAt = block.timestamp;
+        payout.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogPayoutProcessed(processId, payoutId);
 
         Claim storage claim = claims[processId][payout.claimId];
         claim.paidAmount += payout.amount;
-        claim.updatedAt = block.timestamp;
+        claim.updatedAt = block.timestamp; // solhint-disable-line
 
         // check if claim can be closed
         if (claim.claimAmount == claim.paidAmount) {
             claim.state = IPolicy.ClaimState.Closed;
 
             policy.openClaimsCount -= 1;
-            policy.updatedAt = block.timestamp;
+            policy.updatedAt = block.timestamp; // solhint-disable-line
 
             emit LogClaimClosed(processId, payout.claimId);
         }
