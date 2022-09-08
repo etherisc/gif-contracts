@@ -352,7 +352,7 @@ contract PolicyController is
 
         require(
             (claim.state == ClaimState.Confirmed && claim.claimAmount == claim.paidAmount) 
-            || (claim.state == ClaimState.Declined && claim.paidAmount == 0), 
+            || (claim.state == ClaimState.Declined), 
             "ERROR:POC-074:CLAIM_WITH_UNPAID_PAYOUTS"
         );
 
