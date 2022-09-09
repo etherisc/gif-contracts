@@ -5,7 +5,10 @@ import "./PolicyController.sol";
 import "../shared/CoreController.sol";
 import "../tokens/BundleToken.sol";
 
+import "@etherisc/gif-interface/contracts/components/IProduct.sol";
 import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
+import "./PoolController.sol";
+
 
 contract BundleController is 
     IBundle,
@@ -27,6 +30,16 @@ contract BundleController is
         require(
             _msgSender() == _getContractAddress("RiskpoolService"),
             "ERROR:BUC-001:NOT_RISKPOOL_SERVICE"
+        );
+        _;
+    }
+
+    modifier onlyFundableBundle(uint256 bundleId) {
+        Bundle storage bundle = _bundles[bundleId];
+        require(bundle.createdAt > 0, "ERROR:BUC-031:BUNDLE_DOES_NOT_EXIST");
+        require(
+            bundle.state != IBundle.BundleState.Burned 
+            && bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-032:BUNDLE_BURNED_OR_CLOSED"
         );
         _;
     }
@@ -148,7 +161,9 @@ contract BundleController is
         external override 
         onlyRiskpoolService
     {
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         Bundle storage bundle = _bundles[bundleId];
+        require(bundle.riskpoolId == _getPoolController().getRiskPoolForProduct(metadata.productId), "ERROR:BUC-019:BUNDLE_NOT_IN_RISKPOOL");
         require(bundle.createdAt > 0, "ERROR:BUC-020:BUNDLE_DOES_NOT_EXIST");
         require(bundle.state == IBundle.BundleState.Active, "ERROR:BUC-021:BUNDLE_NOT_ACTIVE");        
         require(bundle.capital >= bundle.lockedCapital + amount, "ERROR:BUC-022:CAPACITY_TOO_LOW");
@@ -202,11 +217,9 @@ contract BundleController is
     function increaseBalance(uint256 bundleId, uint256 amount)
         external override
         onlyRiskpoolService
+        onlyFundableBundle(bundleId)
     {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-031:BUNDLE_DOES_NOT_EXIST");
-        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-032:BUNDLE_CLOSED");
-
         bundle.balance += amount;
         bundle.updatedAt = block.timestamp;
     }
@@ -215,10 +228,10 @@ contract BundleController is
     function decreaseBalance(uint256 bundleId, uint256 amount)
         external override
         onlyRiskpoolService
+        onlyFundableBundle(bundleId)
     {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-033:BUNDLE_DOES_NOT_EXIST");
-        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-034:BUNDLE_CLOSED");
+
         require(bundle.balance >= amount, "ERROR:BUC-035:BUNDLE_BALANCE_TOO_SMALL");
 
         bundle.balance -= amount;
@@ -267,6 +280,10 @@ contract BundleController is
 
     function unburntBundles(uint256 riskpoolId) external view returns(uint256) {
         return _unburntBundlesForRiskpoolId[riskpoolId];
+    }
+
+    function _getPoolController() internal view returns (PoolController _poolController) {
+        _poolController = PoolController(_getContractAddress("Pool"));
     }
 
     function _changeState(uint256 bundleId, BundleState newState) internal {
