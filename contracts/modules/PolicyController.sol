@@ -20,13 +20,9 @@ contract PolicyController is
     // Policies
     mapping(bytes32 /* processId */ => Policy) public policies;
 
-    // TODO decide for current data structure or alternative
-    // alternative mapping(bytes32 => Claim []) 
     // Claims
     mapping(bytes32 /* processId */ => mapping(uint256 /* claimId */ => Claim)) public claims;
 
-    // TODO decide for current data structure or alternative
-    // alternative mapping(bytes32 => Payout []) 
     // Payouts
     mapping(bytes32 /* processId */ => mapping(uint256 /* payoutId */ => Payout)) public payouts;
     mapping(bytes32 /* processId */ => uint256) public payoutCount;
@@ -170,6 +166,7 @@ contract PolicyController is
 
         policy.state = PolicyState.Active;
         policy.premiumExpectedAmount = application.premiumAmount;
+        policy.payoutMaxAmount = application.sumInsuredAmount;
         policy.createdAt = block.timestamp; // solhint-disable-line
         policy.updatedAt = block.timestamp; // solhint-disable-line
 
@@ -210,6 +207,9 @@ contract PolicyController is
             emit LogApplicationSumInsuredAdjusted(processId, application.sumInsuredAmount, sumInsuredAmount);
             application.sumInsuredAmount = sumInsuredAmount;
             application.updatedAt = block.timestamp; // solhint-disable-line
+
+            policy.payoutMaxAmount = sumInsuredAmount;
+            policy.updatedAt = block.timestamp; // solhint-disable-line
         }
 
         if (expectedPremiumAmount != application.premiumAmount) {
@@ -272,10 +272,11 @@ contract PolicyController is
         Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-040:POLICY_DOES_NOT_EXIST");
         require(policy.state == IPolicy.PolicyState.Active, "ERROR:POC-041:POLICY_NOT_ACTIVE");
+        require(policy.payoutAmount + claimAmount <= policy.payoutMaxAmount, "ERROR:POC-042:CLAIM_AMOUNT_EXCEEDS_MAX_PAYOUT");
 
         claimId = policy.claimsCount;
         Claim storage claim = claims[processId][claimId];
-        require(claim.createdAt == 0, "ERROR:POC-042:CLAIM_ALREADY_EXISTS");
+        require(claim.createdAt == 0, "ERROR:POC-043:CLAIM_ALREADY_EXISTS");
 
         claim.state = ClaimState.Applied;
         claim.claimAmount = claimAmount;
@@ -301,15 +302,17 @@ contract PolicyController is
         Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-050:POLICY_DOES_NOT_EXIST");
         require(policy.openClaimsCount > 0, "ERROR:POC-051:POLICY_WITHOUT_OPEN_CLAIMS");
+        require(policy.payoutAmount + confirmedAmount <= policy.payoutMaxAmount, "ERROR:POC-052:PAYOUT_MAX_AMOUNT_EXCEEDED");
 
         Claim storage claim = claims[processId][claimId];
-        require(claim.createdAt > 0, "ERROR:POC-052:CLAIM_DOES_NOT_EXIST");
-        require(claim.state == ClaimState.Applied, "ERROR:POC-053:CLAIM_STATE_INVALID");
+        require(claim.createdAt > 0, "ERROR:POC-053:CLAIM_DOES_NOT_EXIST");
+        require(claim.state == ClaimState.Applied, "ERROR:POC-054:CLAIM_STATE_INVALID");
 
         claim.state = ClaimState.Confirmed;
         claim.claimAmount = confirmedAmount;
         claim.updatedAt = block.timestamp; // solhint-disable-line
 
+        policy.payoutAmount += confirmedAmount;
         policy.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogClaimConfirmed(processId, claimId, confirmedAmount);
@@ -384,7 +387,7 @@ contract PolicyController is
         require(claim.state == IPolicy.ClaimState.Confirmed, "ERROR:POC-082:CLAIM_NOT_CONFIRMED");
         require(payoutAmount > 0, "ERROR:POC-083:PAYOUT_AMOUNT_ZERO_INVALID");
         require(
-            claim.payoutsAmount + payoutAmount <= claim.claimAmount,
+            claim.paidAmount + payoutAmount <= claim.claimAmount,
             "ERROR:POC-084:PAYOUT_AMOUNT_TOO_BIG"
         );
 
@@ -398,9 +401,6 @@ contract PolicyController is
         payout.state = PayoutState.Expected;
         payout.createdAt = block.timestamp; // solhint-disable-line
         payout.updatedAt = block.timestamp; // solhint-disable-line
-
-        claim.payoutsAmount += payoutAmount;
-        claim.updatedAt = block.timestamp; // solhint-disable-line
 
         payoutCount[processId]++;
         policy.updatedAt = block.timestamp; // solhint-disable-line

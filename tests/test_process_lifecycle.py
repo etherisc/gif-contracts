@@ -472,6 +472,94 @@ def test_process_collect_premium_for_closed_policy(
         product.collectPremium(processId, 10, {'from': productOwner})
 
 
+def test_create_single_claim_exceeding_sum_insured(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account,
+    owner: Account,
+    customer: Account,
+):
+    instanceService = instance.getInstanceService()
+
+    product = gifTestProduct.getContract()
+    riskpool = gifTestProduct.getRiskpool().getContract()
+
+    # prepare funded riskpool
+    initialFunding = 10000
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # create application
+    premium = 50
+    sumInsured = 1000
+    processId = create_application(customer, premium, sumInsured, instance, owner, product, testCoin)
+    print('application {}'.format(instanceService.getApplication(processId)))
+
+    product.underwrite(processId)
+    print('policy {}'.format(instanceService.getPolicy(processId)))
+
+    # attempt to create single claim exceeding sum insured
+    exceedingClaimAmount = sumInsured + 1
+    with brownie.reverts('ERROR:POC-042:CLAIM_AMOUNT_EXCEEDS_MAX_PAYOUT'):
+        product.submitClaimNoOracle(processId, exceedingClaimAmount, {'from':customer})
+    
+    # attempt to confirm a claim amount that exceeds sum insured
+    tx = product.submitClaimNoOracle(processId, sumInsured, {'from':customer})
+    claimId = tx.return_value
+
+    with brownie.reverts('ERROR:POC-052:PAYOUT_MAX_AMOUNT_EXCEEDED'):
+        product.confirmClaim(processId, claimId, exceedingClaimAmount, {'from':productOwner})
+
+
+def test_create_multiple_claims_exceeding_sum_insured(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account,
+    owner: Account,
+    customer: Account,
+):
+    instanceService = instance.getInstanceService()
+
+    product = gifTestProduct.getContract()
+    riskpool = gifTestProduct.getRiskpool().getContract()
+
+    # prepare funded riskpool
+    initialFunding = 10000
+    fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # create application
+    premium = 50
+    sumInsured = 1000
+    processId = create_application(customer, premium, sumInsured, instance, owner, product, testCoin)
+    print('application {}'.format(instanceService.getApplication(processId)))
+
+    product.underwrite(processId)
+    print('policy {}'.format(instanceService.getPolicy(processId)))
+    
+    # attempt to create 3 claims with individual payouts < sum insured but payout sum > sum insured
+    claimAmount = 400
+    claimId1 = create_claim_no_oracle(product, customer, productOwner, processId, claimAmount)
+    print('policy after claim {}: {}'.format(claimId1, instanceService.getPolicy(processId)))
+
+    claimId2 = create_claim_no_oracle(product, customer, productOwner, processId, claimAmount)
+    print('policy after claim {}: {}'.format(claimId2, instanceService.getPolicy(processId)))
+
+    with brownie.reverts('ERROR:POC-042:CLAIM_AMOUNT_EXCEEDS_MAX_PAYOUT'):
+        claimId3 = create_claim_no_oracle(product, customer, productOwner, processId, claimAmount)
+
+
+def create_claim_no_oracle(product, customer, productOwner, processId, claimAmount):
+    tx = product.submitClaimNoOracle(processId, claimAmount, {'from':customer})
+    claimId = tx.return_value
+    product.confirmClaim(processId, claimId, claimAmount, {'from':productOwner})
+    return claimId
+
+
 def create_application(customer, premium, sumInsured, instance, owner, product, erc20token):
     erc20token.transfer(customer, premium, {'from': owner})
     erc20token.approve(instance.getTreasury(), premium, {'from': customer})

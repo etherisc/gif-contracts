@@ -158,6 +158,22 @@ contract TestProduct is
         );
     }
 
+    function submitClaimNoOracle(bytes32 policyId, uint256 claimAmount) 
+        external
+        onlyPolicyHolder(policyId)
+        returns(uint256 claimId)
+    {
+
+        // increase claims counter
+        // the oracle business logic will use this counter value 
+        // to determine if the claim is linked to a loss event or not
+        _claims++;
+        
+        // claim application
+        claimId = _newClaim(policyId, claimAmount, "");
+        _policyIdToClaimId[policyId] = claimId;
+    }
+    
     function submitClaimWithDeferredResponse(bytes32 policyId, uint256 claimAmount) 
         external
         onlyPolicyHolder(policyId)
