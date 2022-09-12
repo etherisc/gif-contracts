@@ -67,7 +67,6 @@ contract TreasuryModule is
         _;
     }
 
-
     function _afterInitialize() internal override onlyInitializing {
         _bundle = BundleController(_getContractAddress("Bundle"));
         _component = ComponentController(_getContractAddress("Component"));
@@ -212,6 +211,7 @@ contract TreasuryModule is
     function processPremium(bytes32 processId) 
         external override 
         whenNotSuspended
+        onlyPolicyFlow("Treasury")
         returns(
             bool success, 
             uint256 feeAmount, 
@@ -236,6 +236,7 @@ contract TreasuryModule is
         whenNotSuspended
         instanceWalletDefined
         riskpoolWalletDefinedForProcess(processId)
+        onlyPolicyFlow("Treasury")
         returns(
             bool success, 
             uint256 feeAmount, 
