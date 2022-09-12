@@ -282,6 +282,7 @@ contract TreasuryModule is
         whenNotSuspended
         instanceWalletDefined
         riskpoolWalletDefinedForProcess(processId)
+        onlyPolicyFlow("Treasury")
         returns(
             uint256 feeAmount,
             uint256 netPayoutAmount
