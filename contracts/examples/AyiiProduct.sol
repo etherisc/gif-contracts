@@ -55,6 +55,8 @@ contract AyiiProduct is
     mapping(bytes32 /* riskId */ => bytes32 [] /* processIds */) private _policies;
     bytes32 [] private _applications; // useful for debugging, might need to get rid of this
 
+    event LogAyiiPolicyApplicationCompleted(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
+    event LogAyiiPolicyUnderwritten(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiPolicyCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiRiskDataCreated(bytes32 riskId, bytes32 productId, bytes32 uaiId, bytes32 cropId);
     event LogAyiiRiskDataRequested(uint256 requestId, bytes32 riskId, bytes32 projectId, bytes32 uaiId, bytes32 cropId);
@@ -167,17 +169,48 @@ contract AyiiProduct is
             applicationData);
 
         _applications.push(processId);
+        _policies[riskId].push(processId);
+
+        emit LogAyiiPolicyApplicationCompleted(
+            processId, 
+            policyHolder, 
+            premium, 
+            sumInsured);
 
         bool success = _underwrite(processId);
 
         if (success) {
-            _policies[riskId].push(processId);
-
-            emit LogAyiiPolicyCreated(
+            emit LogAyiiPolicyUnderwritten(
                 processId, 
                 policyHolder, 
                 premium, 
                 sumInsured);
+        }
+
+        emit LogAyiiPolicyCreated(
+            processId, 
+            policyHolder, 
+            premium, 
+            sumInsured);
+    }
+
+    function underwrite(
+        bytes32 processId
+    ) 
+        external 
+        onlyRole(INSURER_ROLE)
+        returns(bool success)
+    {
+        success = _underwrite(processId);
+
+        if (success) {
+            IPolicy.Application memory application = _getApplication(processId);
+            IPolicy.Metadata memory metadata = _getMetadata(processId);
+            emit LogAyiiPolicyUnderwritten(
+                processId, 
+                metadata.owner, 
+                application.premiumAmount, 
+                application.sumInsuredAmount);
         }
     }
 
