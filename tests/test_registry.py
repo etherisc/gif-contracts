@@ -14,6 +14,7 @@ from scripts.const import (
     INSTANCE_OPERATOR_SERVICE_NAME,
     REGISTRY_CONTROLLER_NAME,
     REGISTRY_NAME,
+    ZERO_ADDRESS,
 )
 
 from scripts.util import (
@@ -59,7 +60,7 @@ def test_registry_max_coponents(registry, owner):
 
     assert 100 == registry.contracts()
 
-    namesFromRegistry = registry.contractNames()
+    namesFromRegistry = get_contract_names(registry)
     
     # ignore first three elements 
     for i in range(len(namesFromRegistry[3:])):
@@ -70,3 +71,37 @@ def test_registry_max_coponents(registry, owner):
         tx = TestCoin.deploy({'from': owner})
         registry.register(s2b32("OneTooMany"), tx, {'from': owner})
 
+
+def test_registry_deregister(registry, owner):
+    assert GIF_RELEASE == b322s(registry.getRelease({'from': owner}))
+
+    name1 = s2b32("TestCoin1")
+    name2 = s2b32("TestCoin2")
+    name3 = s2b32("TestCoin3")
+    
+    tx1 = TestCoin.deploy({'from': owner})
+    tx = registry.register(name1, tx1, {'from': owner})
+    
+    tx2 = TestCoin.deploy({'from': owner})
+    tx = registry.register(name2, tx2, {'from': owner})
+    
+    assert tx1 == registry.getContract(name1)
+    assert tx2 == registry.getContract(name2)
+
+    tx = registry.deregister(name3, {'from': owner})
+
+    assert tx1 == registry.getContract(name1)
+    assert tx2 == registry.getContract(name2)
+
+    tx = registry.deregister(name1, {'from': owner})
+    print(tx.info())
+
+    assert ZERO_ADDRESS == registry.getContract(name1)
+    assert tx2 == registry.getContract(name2)
+    
+
+def get_contract_names(registry):
+    contract_names = []
+    for i in range(registry.contracts()):
+        contract_names.append(registry.contractName(i))
+    return contract_names

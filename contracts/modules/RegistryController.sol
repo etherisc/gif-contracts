@@ -7,11 +7,15 @@ import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 
 contract RegistryController is
     IRegistry,
     CoreController
 {
+    using EnumerableSet for EnumerableSet.Bytes32Set;
+
     /**
      * @dev  Save number of items to iterate through
      * Currently we have < 20 contracts.
@@ -27,9 +31,8 @@ contract RegistryController is
     uint256 public startBlock;
 
     mapping(bytes32 /* release */ => mapping(bytes32 /* contract name */ => address /* contract address */)) public _contracts;
-    mapping(bytes32 /* release */ => bytes32[] /* contract names */) public _contractNames;
     mapping(bytes32 /* release */ => uint256 /* number of contracts in release */) public _contractsInRelease;
-
+    mapping(bytes32 /* release */ => EnumerableSet.Bytes32Set /* contract names */) private _contractNames;
 
     function initializeRegistry(bytes32 _initialRelease) public initializer {
         // _setupRegistry(address(this));
@@ -41,7 +44,7 @@ contract RegistryController is
         // registry proxy.
         release = _initialRelease;
         _contracts[release]["InstanceOperatorService"] = _msgSender();
-        _contractNames[release].push("InstanceOperatorService");
+        EnumerableSet.add(_contractNames[release], "InstanceOperatorService");
         _contractsInRelease[release] = 1;
 
 
@@ -140,11 +143,11 @@ contract RegistryController is
 
         // TODO think about how to avoid this loop
         for (uint256 i = 0; i < countContracts; i += 1) {
-            bytes32 contractName = _contractNames[release][i];
+            bytes32 name = EnumerableSet.at(_contractNames[release], i);
             _registerInRelease(
                 _newRelease,
-                contractName,
-                _contracts[release][contractName]
+                name,
+                _contracts[release][name]
             );
         }
 
@@ -154,11 +157,11 @@ contract RegistryController is
     }
 
     function contracts() external override view returns (uint256 _numberOfContracts) {
-        _numberOfContracts = _contractNames[release].length;
+        _numberOfContracts = EnumerableSet.length(_contractNames[release]);
     }
 
-    function contractNames() external override view returns (bytes32[] memory _contractNamesOut) {
-        _contractNamesOut = _contractNames[release];
+    function contractName(uint256 idx) external override view returns (bytes32 _contractName) {
+        _contractName = EnumerableSet.at(_contractNames[release], idx);
     }
 
     /**
@@ -184,19 +187,19 @@ contract RegistryController is
         bool isNew = false;
 
         require(
-            _contractNames[_release].length < MAX_CONTRACTS,
+            EnumerableSet.length(_contractNames[_release]) < MAX_CONTRACTS,
             "ERROR:REC-005:MAX_CONTRACTS_LIMIT"
         );
 
         if (_contracts[_release][_contractName] == address(0)) {
-            _contractNames[_release].push(_contractName);
+            EnumerableSet.add(_contractNames[_release], _contractName);
             _contractsInRelease[_release]++;
             isNew = true;
         }
 
         _contracts[_release][_contractName] = _contractAddress;
         require(
-            _contractsInRelease[_release] == _contractNames[_release].length,
+            _contractsInRelease[_release] == EnumerableSet.length(_contractNames[_release]),
             "ERROR:REC-006:CONTRACT_NUMBER_MISMATCH"
         );
 
@@ -216,30 +219,15 @@ contract RegistryController is
         internal
         onlyInstanceOperator
     {
-        uint256 indexToDelete;
-        uint256 countContracts = _contractNames[_release].length;
+        bool removed = EnumerableSet.remove(_contractNames[_release], _contractName);
 
-        // TODO think about how to avoid this loop
-        for (uint256 i = 0; i < countContracts; i += 1) {
-            if (_contractNames[_release][i] == _contractName) {
-                indexToDelete = i;
-                break;
-            }
+        if (removed) {
+            _contractsInRelease[_release] -= 1;
+            delete _contracts[_release][_contractName];
+            require(
+                _contractsInRelease[_release] == EnumerableSet.length(_contractNames[_release]),
+                "ERROR:REC-010:CONTRACT_NUMBER_MISMATCH");
+            emit LogContractDeregistered(_release, _contractName);            
         }
-
-        if (indexToDelete < countContracts - 1) {
-            _contractNames[_release][indexToDelete] = _contractNames[_release][
-                countContracts - 1
-            ];
-        }
-
-        _contractNames[_release].pop();
-        _contractsInRelease[_release] -= 1;
-        require(
-            _contractsInRelease[_release] == _contractNames[_release].length,
-            "ERROR:REC-010:CONTRACT_NUMBER_MISMATCH"
-        );
-
-        emit LogContractDeregistered(_release, _contractName);
     }
 }
