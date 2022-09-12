@@ -359,7 +359,7 @@ contract PolicyController is
         claim.state = ClaimState.Closed;
         claim.updatedAt = block.timestamp; // solhint-disable-line
 
-        policy.openClaimsCount -= 1;
+        policy.openClaimsCount--;
         policy.updatedAt = block.timestamp; // solhint-disable-line
 
         emit LogClaimClosed(processId, claimId);
