@@ -67,6 +67,14 @@ contract TreasuryModule is
         _;
     }
 
+    modifier onlyRiskpoolService() {
+        require(
+            _msgSender() == _getContractAddress("RiskpoolService"),
+            "ERROR:TRS-005:NOT_RISKPOOL_SERVICE"
+        );
+        _;
+    }
+
     function _afterInitialize() internal override onlyInitializing {
         _bundle = BundleController(_getContractAddress("Bundle"));
         _component = ComponentController(_getContractAddress("Component"));
@@ -319,6 +327,7 @@ contract TreasuryModule is
         whenNotSuspended
         instanceWalletDefined
         riskpoolWalletDefinedForBundle(bundleId)
+        onlyRiskpoolService
         returns(
             uint256 feeAmount,
             uint256 netCapitalAmount
@@ -359,6 +368,7 @@ contract TreasuryModule is
         whenNotSuspended
         instanceWalletDefined
         riskpoolWalletDefinedForBundle(bundleId)
+        onlyRiskpoolService
         returns(
             uint256 feeAmount,
             uint256 netAmount
