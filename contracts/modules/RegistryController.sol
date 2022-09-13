@@ -193,7 +193,12 @@ contract RegistryController is
 
         require(_contractsInRelease[_release] > 0, "ERROR:REC-011:RELEASE_UNKNOWN");
         require(_contractName != 0x00, "ERROR:REC-012:CONTRACT_NAME_EMPTY");
-        require(! EnumerableSet.contains(_contractNames[_release], _contractName), "ERROR:REC-013:CONTRACT_NAME_EXISTS");
+        require(
+            (! EnumerableSet.contains(_contractNames[_release], _contractName) )
+            // the contract 'InstanceOperatorService' is initially registered with the owner address (see method initializeRegistry()); 
+            // due to this this special check is required
+            || (_contractName == "InstanceOperatorService" && _contracts[_release][_contractName] == _msgSender()), 
+            "ERROR:REC-013:CONTRACT_NAME_EXISTS");
         require(_contractAddress != address(0), "ERROR:REC-014:CONTRACT_ADDRESS_ZERO");
 
         if (_contracts[_release][_contractName] == address(0)) {

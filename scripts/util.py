@@ -130,9 +130,9 @@ def deployGifModuleV2(
     moduleNameB32 = s2b32(moduleName)
     controllerNameB32 = s2b32('{}Controller'.format(moduleName))[:32]
 
-    print('module {} register controller'.format(moduleName))
+    print('module {} ({}) register controller'.format(moduleName, controllerNameB32))
     registry.register(controllerNameB32, controller.address, {'from': owner})
-    print('module {} register proxy'.format(moduleName))
+    print('module {} ({}) register proxy'.format(moduleName, moduleNameB32))
     registry.register(moduleNameB32, proxy.address, {'from': owner})
 
     return contractFromAddress(controllerClass, proxy.address)
