@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.0;
+pragma solidity 0.8.2;
 
 import "../modules/ComponentController.sol";
 // TODO ComponentOwnerService should not know of the PoolController - if we have a better idea how to build this, it should be changed.  
