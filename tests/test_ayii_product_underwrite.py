@@ -137,6 +137,16 @@ def test_underwrite_after_apply_with_riskpool_empty(
     application = instanceService.getApplication(process_id)
     assert 2 == application[0] # ApplicationState.Underwritten
 
+def test_underwrite_invalid_policy_id(
+    gifAyiiProduct: GifAyiiProduct,
+    insurer,
+):
+    product = gifAyiiProduct.getContract()
+
+    with brownie.reverts("ERROR:POC-101:APPLICATION_DOES_NOT_EXIST"):
+        tx = product.underwrite(s2b32('does_not_exist'), {'from': insurer})
+
+
 
 def prepare_risk(product, insurer):
     print('--- test setup risks -------------------------------------')
