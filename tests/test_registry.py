@@ -67,7 +67,7 @@ def test_registry_max_coponents(registry, owner):
         assert b322s(namesFromRegistry[i + 3]) == expectedNames[i]
 
     # ensure that contract #101 cannot be registered
-    with brownie.reverts("ERROR:REC-005:MAX_CONTRACTS_LIMIT"):
+    with brownie.reverts("ERROR:REC-010:MAX_CONTRACTS_LIMIT"):
         tx = TestCoin.deploy({'from': owner})
         registry.register(s2b32("OneTooMany"), tx, {'from': owner})
 
@@ -88,7 +88,7 @@ def test_registry_deregister(registry, owner):
     assert tx1 == registry.getContract(name1)
     assert tx2 == registry.getContract(name2)
 
-    with brownie.reverts("ERROR:REC-009:CONTRACT_UNKNOWN"):
+    with brownie.reverts("ERROR:REC-020:CONTRACT_UNKNOWN"):
         tx = registry.deregister(name3, {'from': owner})
 
     assert tx1 == registry.getContract(name1)
@@ -100,6 +100,28 @@ def test_registry_deregister(registry, owner):
     assert ZERO_ADDRESS == registry.getContract(name1)
     assert tx2 == registry.getContract(name2)
     
+
+def test_register_edgecases(registry, owner):
+    name1 = s2b32("TestCoin1")
+    name2 = s2b32("TestCoin2")
+    
+    tx1 = TestCoin.deploy({'from': owner})
+    tx2 = TestCoin.deploy({'from': owner})
+
+    with brownie.reverts("ERROR:REC-011:RELEASE_UNKNOWN"):
+        registry.registerInRelease(s2b32("unknown release"), name1, tx1, {'from': owner})
+
+    with brownie.reverts("ERROR:REC-012:CONTRACT_NAME_EMPTY"):
+        registry.register("", tx1, {'from': owner})
+
+    registry.register(name1, tx1, {'from': owner})
+    with brownie.reverts("ERROR:REC-013:CONTRACT_NAME_EXISTS"):
+        registry.register(name1, tx2, {'from': owner})
+    
+    with brownie.reverts("ERROR:REC-014:CONTRACT_ADDRESS_ZERO"):
+        registry.register(name2, ZERO_ADDRESS, {'from': owner})
+
+
 
 def get_contract_names(registry):
     contract_names = []

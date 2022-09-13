@@ -188,8 +188,13 @@ contract RegistryController is
 
         require(
             EnumerableSet.length(_contractNames[_release]) < MAX_CONTRACTS,
-            "ERROR:REC-005:MAX_CONTRACTS_LIMIT"
+            "ERROR:REC-010:MAX_CONTRACTS_LIMIT"
         );
+
+        require(_contractsInRelease[_release] > 0, "ERROR:REC-011:RELEASE_UNKNOWN");
+        require(_contractName != 0x00, "ERROR:REC-012:CONTRACT_NAME_EMPTY");
+        require(! EnumerableSet.contains(_contractNames[_release], _contractName), "ERROR:REC-013:CONTRACT_NAME_EXISTS");
+        require(_contractAddress != address(0), "ERROR:REC-014:CONTRACT_ADDRESS_ZERO");
 
         if (_contracts[_release][_contractName] == address(0)) {
             EnumerableSet.add(_contractNames[_release], _contractName);
@@ -200,7 +205,7 @@ contract RegistryController is
         _contracts[_release][_contractName] = _contractAddress;
         require(
             _contractsInRelease[_release] == EnumerableSet.length(_contractNames[_release]),
-            "ERROR:REC-006:CONTRACT_NUMBER_MISMATCH"
+            "ERROR:REC-015:CONTRACT_NUMBER_MISMATCH"
         );
 
         emit LogContractRegistered(
@@ -219,7 +224,7 @@ contract RegistryController is
         internal
         onlyInstanceOperator
     {
-        require(EnumerableSet.contains(_contractNames[_release], _contractName), "ERROR:REC-009:CONTRACT_UNKNOWN");
+        require(EnumerableSet.contains(_contractNames[_release], _contractName), "ERROR:REC-020:CONTRACT_UNKNOWN");
 
         EnumerableSet.remove(_contractNames[_release], _contractName);
 
@@ -228,7 +233,7 @@ contract RegistryController is
         
         require(
             _contractsInRelease[_release] == EnumerableSet.length(_contractNames[_release]),
-            "ERROR:REC-010:CONTRACT_NUMBER_MISMATCH");
+            "ERROR:REC-021:CONTRACT_NUMBER_MISMATCH");
         emit LogContractDeregistered(_release, _contractName);            
     }
 }
