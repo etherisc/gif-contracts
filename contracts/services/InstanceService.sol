@@ -123,8 +123,8 @@ contract InstanceService is
         numberOfContracts = _registry.contracts();
     }
         
-    function contractNames() external view override returns (bytes32[] memory names) {
-        names = _registry.contractNames();
+    function contractName(uint256 idx) external view override returns (bytes32 name) {
+        name = _registry.contractName(idx);
     }
 
     /* access */
