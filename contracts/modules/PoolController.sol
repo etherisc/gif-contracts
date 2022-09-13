@@ -122,8 +122,8 @@ contract PoolController is
         IComponent product = _component.getComponent(productId);
         IComponent riskpool = _component.getComponent(riskpoolId);
 
-        require(product.isProduct(), "ERROR:POL-010:NOT_PRODUCT");
-        require(riskpool.isRiskpool(), "ERROR:POL-011:NOT_RISKPOOL");
+        require(_component.isProduct(product.getId()), "ERROR:POL-010:NOT_PRODUCT");
+        require(_component.isRiskpool(riskpool.getId()), "ERROR:POL-011:NOT_RISKPOOL");
         require(_riskpoolIdForProductId[productId] == 0, "ERROR:POL-012:RISKPOOL_ALREADY_SET");
         
         _riskpoolIdForProductId[productId] = riskpoolId;
@@ -358,7 +358,7 @@ contract PoolController is
 
     function _getRiskpoolForId(uint256 riskpoolId) internal view returns (IRiskpool riskpool) {
         IComponent cmp = _component.getComponent(riskpoolId);
-        require(cmp.isRiskpool(), "ERROR:POL-046:COMPONENT_NOT_RISKPOOL");
+        require(_component.isRiskpool(cmp.getId()), "ERROR:POL-046:COMPONENT_NOT_RISKPOOL");
         
         riskpool = IRiskpool(address(cmp));
     }

@@ -130,7 +130,7 @@ contract InstanceOperatorService is
         _component.approve(id);
 
         IComponent component = _component.getComponent(id);
-        if (component.isProduct()) {
+        if (_component.isProduct(component.getId())) {
             IProduct product = IProduct(address(component));
             _pool.setRiskpoolForProduct(
                 component.getId(),

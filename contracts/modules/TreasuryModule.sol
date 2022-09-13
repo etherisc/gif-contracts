@@ -106,7 +106,7 @@ contract TreasuryModule is
         require(erc20Address != address(0), "ERROR:TRS-010:TOKEN_ADDRESS_ZERO");
 
         IComponent component = _component.getComponent(productId);
-        require(component.isProduct(), "ERROR:TRS-011:NOT_PRODUCT");
+        require(_component.isProduct(component.getId()), "ERROR:TRS-011:NOT_PRODUCT");
         require(address(_componentToken[productId]) == address(0), "ERROR:TRS-012:PRODUCT_TOKEN_ALREADY_SET");
     
         uint256 riskpoolId = _pool.getRiskPoolForProduct(productId);
@@ -139,7 +139,7 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(riskpoolId);
-        require(component.isRiskpool(), "ERROR:TRS-016:NOT_RISKPOOL");
+        require(_component.isRiskpool(component.getId()), "ERROR:TRS-016:NOT_RISKPOOL");
         require(riskpoolWalletAddress != address(0), "ERROR:TRS-017:WALLET_ADDRESS_ZERO");
         _riskpoolWallet[riskpoolId] = riskpoolWalletAddress;
 
@@ -173,7 +173,7 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(feeSpec.componentId);
-        require(component.isProduct(), "ERROR:TRS-020:NOT_PRODUCT");
+        require(_component.isProduct(component.getId()), "ERROR:TRS-020:NOT_PRODUCT");
 
         _fees[feeSpec.componentId] = feeSpec;
         emit LogTreasuryPremiumFeesSet (
@@ -189,7 +189,7 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         IComponent component = _component.getComponent(feeSpec.componentId);
-        require(component.isRiskpool(), "ERROR:TRS-021:NOT_RISKPOOL");
+        require(_component.isRiskpool(component.getId()), "ERROR:TRS-021:NOT_RISKPOOL");
 
         _fees[feeSpec.componentId] = feeSpec;
         emit LogTreasuryCapitalFeesSet (
@@ -406,7 +406,7 @@ contract TreasuryModule is
         returns(IERC20 token) 
     {
         IComponent component = _component.getComponent(componentId);
-        require(component.isProduct() || component.isRiskpool(), "ERROR:TRS-070:NOT_PRODUCT_OR_RISKPOOL");
+        require(_component.isProduct(component.getId()) || _component.isRiskpool(component.getId()), "ERROR:TRS-070:NOT_PRODUCT_OR_RISKPOOL");
         return _componentToken[componentId];
     }
 

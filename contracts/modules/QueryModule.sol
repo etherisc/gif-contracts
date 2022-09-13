@@ -65,7 +65,7 @@ contract QueryModule is
         IInstanceService instanceService = _getInstanceService();
         IComponent callbackComponent = instanceService.getComponent(instanceService.getComponentId(callbackContractAddress));
         require(
-            callbackComponent.isProduct(),
+            _component.isProduct(callbackComponent.getId()),
             "ERROR:QUC-010:CALLBACK_ADDRESS_IS_NOT_PRODUCT"
         );
         
