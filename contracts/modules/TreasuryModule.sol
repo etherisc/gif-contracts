@@ -23,6 +23,7 @@ contract TreasuryModule is
     Pausable
 {
     uint256 public constant FRACTION_FULL_UNIT = 10**18;
+    uint256 public constant FRACTIONAL_FEE_MAX = FRACTION_FULL_UNIT / 4; // max frctional fee is 25%
 
     event LogTransferHelperInputValidation1Failed(bool tokenIsContract, address from, address to);
     event LogTransferHelperInputValidation2Failed(uint256 balance, uint256 allowance);
@@ -156,14 +157,16 @@ contract TreasuryModule is
         view 
         returns(FeeSpecification memory)
     {
-        // TODO add requires TRS-01x
+        require(_component.isProduct(componentId) || _component.isRiskpool(componentId), "ERROR:TRS-020:ID_NOT_PRODUCT_OR_RISKPOOL");
+        require(fractionalFee <= FRACTIONAL_FEE_MAX, "ERROR:TRS-021:FRACIONAL_FEE_TOO_BIG");
+
         return FeeSpecification(
             componentId,
             fixedFee,
             fractionalFee,
             feeCalculationData,
-            block.timestamp,
-            block.timestamp
+            block.timestamp,  // solhint-disable-line
+            block.timestamp   // solhint-disable-line
         ); 
     }
 
@@ -172,7 +175,7 @@ contract TreasuryModule is
         whenNotSuspended
         onlyInstanceOperator
     {
-        require(_component.isProduct(feeSpec.componentId), "ERROR:TRS-020:NOT_PRODUCT");
+        require(_component.isProduct(feeSpec.componentId), "ERROR:TRS-022:NOT_PRODUCT");
 
         _fees[feeSpec.componentId] = feeSpec;
         emit LogTreasuryPremiumFeesSet (
@@ -187,7 +190,7 @@ contract TreasuryModule is
         whenNotSuspended
         onlyInstanceOperator
     {
-        require(_component.isRiskpool(feeSpec.componentId), "ERROR:TRS-021:NOT_RISKPOOL");
+        require(_component.isRiskpool(feeSpec.componentId), "ERROR:TRS-023:NOT_RISKPOOL");
 
         _fees[feeSpec.componentId] = feeSpec;
         emit LogTreasuryCapitalFeesSet (
@@ -203,7 +206,7 @@ contract TreasuryModule is
         returns(uint256 feeAmount, uint256 netAmount)
     {
         FeeSpecification memory feeSpec = getFeeSpecification(componentId);
-        require(feeSpec.createdAt > 0, "ERROR:TRS-022:FEE_SPEC_UNDEFINED");
+        require(feeSpec.createdAt > 0, "ERROR:TRS-024:FEE_SPEC_UNDEFINED");
         feeAmount = _calculateFee(feeSpec, amount);
         netAmount = amount - feeAmount;
     }
