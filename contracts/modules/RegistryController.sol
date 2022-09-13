@@ -219,15 +219,16 @@ contract RegistryController is
         internal
         onlyInstanceOperator
     {
-        bool removed = EnumerableSet.remove(_contractNames[_release], _contractName);
+        require(EnumerableSet.contains(_contractNames[_release], _contractName), "ERROR:REC-009:CONTRACT_UNKNOWN");
 
-        if (removed) {
-            _contractsInRelease[_release] -= 1;
-            delete _contracts[_release][_contractName];
-            require(
-                _contractsInRelease[_release] == EnumerableSet.length(_contractNames[_release]),
-                "ERROR:REC-010:CONTRACT_NUMBER_MISMATCH");
-            emit LogContractDeregistered(_release, _contractName);            
-        }
+        EnumerableSet.remove(_contractNames[_release], _contractName);
+
+        _contractsInRelease[_release] -= 1;
+        delete _contracts[_release][_contractName];
+        
+        require(
+            _contractsInRelease[_release] == EnumerableSet.length(_contractNames[_release]),
+            "ERROR:REC-010:CONTRACT_NUMBER_MISMATCH");
+        emit LogContractDeregistered(_release, _contractName);            
     }
 }

@@ -88,7 +88,8 @@ def test_registry_deregister(registry, owner):
     assert tx1 == registry.getContract(name1)
     assert tx2 == registry.getContract(name2)
 
-    tx = registry.deregister(name3, {'from': owner})
+    with brownie.reverts("ERROR:REC-009:CONTRACT_UNKNOWN"):
+        tx = registry.deregister(name3, {'from': owner})
 
     assert tx1 == registry.getContract(name1)
     assert tx2 == registry.getContract(name2)
