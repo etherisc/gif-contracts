@@ -167,6 +167,10 @@ def customer2(accounts) -> Account:
     return get_filled_account(accounts, 10, "1 ether")
 
 @pytest.fixture(scope="module")
+def theOutsider(accounts) -> Account:
+    return get_filled_account(accounts, 19, "1 ether")
+
+@pytest.fixture(scope="module")
 def instance(owner, feeOwner) -> GifInstance:
     return GifInstance(owner, feeOwner)
 
