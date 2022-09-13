@@ -199,8 +199,15 @@ contract ComponentController is
     }
 
     function getComponentType(uint256 id) public view returns (IComponent.ComponentType componentType) {
-        IComponent component = _componentById[id];
-        componentType = component.getType();
+        if (EnumerableSet.contains(_products, id)) {
+            return IComponent.ComponentType.Product;
+        } else if (EnumerableSet.contains(_oracles, id)) {
+            return IComponent.ComponentType.Oracle;
+        } else if (EnumerableSet.contains(_riskpools, id)) {
+            return IComponent.ComponentType.Riskpool;
+        } else {
+            revert("ERROR:CCR-008:INVALID_COMPONENT_ID");
+        }
     }
 
     function getComponentState(uint256 id) public view returns (IComponent.ComponentState componentState) {
@@ -223,7 +230,7 @@ contract ComponentController is
         if (componentType == IComponent.ComponentType.Product) { return _access.getProductOwnerRole(); }
         else if (componentType == IComponent.ComponentType.Oracle) { return _access.getOracleProviderRole(); }
         else if (componentType == IComponent.ComponentType.Riskpool) { return _access.getRiskpoolKeeperRole(); }
-        else { revert("ERROR:CCR-008:COMPONENT_TYPE_UNKNOWN"); }
+        else { revert("ERROR:CCR-010:COMPONENT_TYPE_UNKNOWN"); }
     }
 
     function components() public view returns (uint256 count) { return _componentCount; }
@@ -255,31 +262,31 @@ contract ComponentController is
         pure 
     {
         require(newState != oldState, 
-            "ERROR:CCR-011:SOURCE_AND_TARGET_STATE_IDENTICAL");
+            "ERROR:CCR-020:SOURCE_AND_TARGET_STATE_IDENTICAL");
         
         if (oldState == IComponent.ComponentState.Created) {
             require(newState == IComponent.ComponentState.Proposed, 
-                "ERROR:CCR-012:CREATED_INVALID_TRANSITION");
+                "ERROR:CCR-021:CREATED_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Proposed) {
             require(newState == IComponent.ComponentState.Active 
                 || newState == IComponent.ComponentState.Declined, 
-                "ERROR:CCR-013:PROPOSED_INVALID_TRANSITION");
+                "ERROR:CCR-22:PROPOSED_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Declined) {
-            revert("ERROR:CCR-014:DECLINED_IS_FINAL_STATE");
+            revert("ERROR:CCR-023:DECLINED_IS_FINAL_STATE");
         } else if (oldState == IComponent.ComponentState.Active) {
             require(newState == IComponent.ComponentState.Paused 
                 || newState == IComponent.ComponentState.Suspended, 
-                "ERROR:CCR-015:ACTIVE_INVALID_TRANSITION");
+                "ERROR:CCR-024:ACTIVE_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Paused) {
             require(newState == IComponent.ComponentState.Active
                 || newState == IComponent.ComponentState.Archived, 
-                "ERROR:CCR-016:PAUSED_INVALID_TRANSITION");
+                "ERROR:CCR-025:PAUSED_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Suspended) {
             require(newState == IComponent.ComponentState.Active
                 || newState == IComponent.ComponentState.Archived, 
-                "ERROR:CCR-017:SUSPENDED_INVALID_TRANSITION");
+                "ERROR:CCR-026:SUSPENDED_INVALID_TRANSITION");
         } else {
-            revert("ERROR:CCR-018:INITIAL_STATE_NOT_HANDLED");
+            revert("ERROR:CCR-027:INITIAL_STATE_NOT_HANDLED");
         }
     }
 }
