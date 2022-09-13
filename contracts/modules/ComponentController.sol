@@ -2,38 +2,40 @@
 pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
-
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
 import "@etherisc/gif-interface/contracts/components/IOracle.sol";
 import "@etherisc/gif-interface/contracts/components/IProduct.sol";
 import "@etherisc/gif-interface/contracts/components/IRiskpool.sol";
 import "@etherisc/gif-interface/contracts/modules/IComponentEvents.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract ComponentController is
     IComponentEvents,
     CoreController 
  {
+    using EnumerableSet for EnumerableSet.UintSet;
+
     mapping(uint256 => IComponent) private _componentById;
     mapping(bytes32 => uint256) private _componentIdByName;
     mapping(address => uint256) private _componentIdByAddress;
 
     mapping(uint256 => IComponent.ComponentState) private _componentState;
 
-    uint256 [] private _products;
-    uint256 [] private _oracles;
-    uint256 [] private _riskpools;
+    EnumerableSet.UintSet private _products;
+    EnumerableSet.UintSet private _oracles;
+    EnumerableSet.UintSet private _riskpools;
     uint256 private _componentCount;
 
     modifier onlyComponentOwnerService() {
         require(
-             _msgSender() == _getContractAddress("ComponentOwnerService"),
+            _msgSender() == _getContractAddress("ComponentOwnerService"),
             "ERROR:CCR-001:NOT_COMPONENT_OWNER_SERVICE");
         _;
     }
 
     modifier onlyInstanceOperatorService() {
         require(
-             _msgSender() == _getContractAddress("InstanceOperatorService"),
+            _msgSender() == _getContractAddress("InstanceOperatorService"),
             "ERROR:CCR-002:NOT_INSTANCE_OPERATOR_SERVICE");
         _;
     }
@@ -78,9 +80,9 @@ contract ComponentController is
         _componentIdByAddress[address(component)] = id;
 
         // type specific book keeping
-        if (component.isProduct()) { _products.push(id); }
-        else if (component.isOracle()) { _oracles.push(id); }
-        else if (component.isRiskpool()) { _riskpools.push(id); }
+        if (component.isProduct()) { EnumerableSet.add(_products, id); }
+        else if (component.isOracle()) { EnumerableSet.add(_oracles, id); }
+        else if (component.isRiskpool()) { EnumerableSet.add(_riskpools, id); }
     }
 
     function exists(uint256 id) public view returns(bool) {
@@ -206,15 +208,15 @@ contract ComponentController is
     }
 
     function getOracleId(uint256 idx) public view returns (uint256 oracleId) {
-        return _oracles[idx];
+        return EnumerableSet.at(_oracles, idx);
     }
 
     function getRiskpoolId(uint256 idx) public view returns (uint256 riskpoolId) {
-        return _riskpools[idx];
+        return EnumerableSet.at(_riskpools, idx);
     }
 
     function getProductId(uint256 idx) public view returns (uint256 productId) {
-        return _products[idx];
+        return EnumerableSet.at(_products, idx);
     }
 
     function getRequiredRole(IComponent.ComponentType componentType) external view returns (bytes32) {
@@ -225,9 +227,15 @@ contract ComponentController is
     }
 
     function components() public view returns (uint256 count) { return _componentCount; }
-    function products() public view returns (uint256 count) { return _products.length; }
-    function oracles() public view returns (uint256 count) { return _oracles.length; }
-    function riskpools() public view returns (uint256 count) { return _riskpools.length; }
+    function products() public view returns (uint256 count) { return EnumerableSet.length(_products); }
+    function oracles() public view returns (uint256 count) { return EnumerableSet.length(_oracles); }
+    function riskpools() public view returns (uint256 count) { return EnumerableSet.length(_riskpools); }
+
+    function isProduct(uint256 id) public view returns (bool) { return EnumerableSet.contains(_products, id); }
+
+    function isOracle(uint256 id) public view returns (bool) { return EnumerableSet.contains(_oracles, id); }
+
+    function isRiskpool(uint256 id) public view returns (bool) { return EnumerableSet.contains(_riskpools, id); }
 
     function _changeState(uint256 componentId, IComponent.ComponentState newState) internal {
         IComponent.ComponentState oldState = _componentState[componentId];

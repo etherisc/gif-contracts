@@ -37,7 +37,7 @@ contract LicenseController is
 
     function _getProduct(uint256 id) internal view returns (IProduct product) {
         IComponent cmp = _component.getComponent(id);
-        require(cmp.isProduct(), "ERROR:LIC-001:COMPONENT_NOT_PRODUCT");
+        require(_component.isProduct(cmp.getId()), "ERROR:LIC-001:COMPONENT_NOT_PRODUCT");
         product = IProduct(address(cmp));
     }
 }
