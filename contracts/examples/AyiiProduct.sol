@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import "@etherisc/gif-interface/contracts/components/Product.sol";
 import "../modules/PolicyController.sol";
@@ -19,6 +19,8 @@ contract AyiiProduct is
     AccessControl,
     Initializable
 {
+    using EnumerableSet for EnumerableSet.Bytes32Set;
+
     bytes32 public constant NAME = "AreaYieldIndexProduct";
     bytes32 public constant VERSION = "0.1";
     bytes32 public constant POLICY_FLOW = "PolicyDefaultFlow";
@@ -52,9 +54,10 @@ contract AyiiProduct is
 
     bytes32 [] private _riskIds;
     mapping(bytes32 /* riskId */ => Risk) private _risks;
-    mapping(bytes32 /* riskId */ => bytes32 [] /* processIds */) private _policies;
+    mapping(bytes32 /* riskId */ => EnumerableSet.Bytes32Set /* processIds */) private _policies;
     bytes32 [] private _applications; // useful for debugging, might need to get rid of this
 
+    event LogAyiiPolicyApplicationCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiPolicyCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiRiskDataCreated(bytes32 riskId, bytes32 productId, bytes32 uaiId, bytes32 cropId);
     event LogAyiiRiskDataRequested(uint256 requestId, bytes32 riskId, bytes32 projectId, bytes32 uaiId, bytes32 cropId);
@@ -167,17 +170,44 @@ contract AyiiProduct is
             applicationData);
 
         _applications.push(processId);
+        EnumerableSet.add(_policies[riskId], processId);
+
+        emit LogAyiiPolicyApplicationCreated(
+            processId, 
+            policyHolder, 
+            premium, 
+            sumInsured);
 
         bool success = _underwrite(processId);
 
         if (success) {
-            _policies[riskId].push(processId);
-
             emit LogAyiiPolicyCreated(
                 processId, 
                 policyHolder, 
                 premium, 
                 sumInsured);
+        }
+    }
+
+    function underwrite(
+        bytes32 processId
+    ) 
+        external 
+        onlyRole(INSURER_ROLE)
+        returns(bool success)
+    {
+        // ensure the application for processId exists
+        _getApplication(processId);
+        success = _underwrite(processId);
+
+        if (success) {
+            IPolicy.Application memory application = _getApplication(processId);
+            IPolicy.Metadata memory metadata = _getMetadata(processId);
+            emit LogAyiiPolicyCreated(
+                processId, 
+                metadata.owner, 
+                application.premiumAmount, 
+                application.sumInsuredAmount);
         }
     }
 
@@ -325,8 +355,8 @@ contract AyiiProduct is
         Risk memory risk = _risks[riskId];
         require(risk.responseAt > 0, "ERROR:AYI-030:ORACLE_RESPONSE_MISSING");
 
-        bytes32 [] storage policyIds = _policies[riskId];
-        uint256 elements = policyIds.length;
+        EnumerableSet.Bytes32Set storage policyIds = _policies[riskId];
+        uint256 elements = EnumerableSet.length(policyIds);
 
         if (batchSize == 0) { batchSize = elements; } 
         else                { batchSize = min(batchSize, elements); }
@@ -334,7 +364,7 @@ contract AyiiProduct is
         processedPolicies = new bytes32[](batchSize);
         for (uint256 i = 0; i < batchSize; i++) {
             // grab and process the last policy
-            bytes32 policyId = policyIds[policyIds.length - 1];
+            bytes32 policyId = EnumerableSet.at(policyIds, EnumerableSet.length(policyIds) - 1);
             _processPolicy(policyId, risk);
 
             _expire(policyId);
@@ -343,7 +373,7 @@ contract AyiiProduct is
             processedPolicies[i] = policyId;
             
             // remove the last (processed) policy from the list
-            policyIds.pop();
+            EnumerableSet.remove(policyIds, policyId);
         }
 
         emit LogAyiiRiskProcessed(riskId, batchSize);
@@ -427,11 +457,11 @@ contract AyiiProduct is
     function getRisk(bytes32 riskId) external view returns(Risk memory risk) { return _risks[riskId]; }
 
     function policies(bytes32 riskId) external view returns(uint256 policyCount) {
-        return _policies[riskId].length;
+        return EnumerableSet.length(_policies[riskId]);
     }
 
     function getPolicyId(bytes32 riskId, uint256 policyIdx) external view returns(bytes32 policyId) {
-        return _policies[riskId][policyIdx];
+        return EnumerableSet.at(_policies[riskId], policyIdx);
     }
 
     function getApplicationDataStructure() external override pure returns(string memory dataStructure) {
