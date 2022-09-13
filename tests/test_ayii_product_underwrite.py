@@ -86,11 +86,10 @@ def test_underwrite_after_apply_with_riskpool_empty(
     events = tx.events
     print(events)
 
-    assert 'LogAyiiPolicyApplicationCompleted' in events
+    assert 'LogAyiiPolicyApplicationCreated' in events
     assert 'LogRiskpoolCollateralizationFailed' in events
-    assert 'LogAyiiPolicyCreated' in events
 
-    assert 'LogAyiiPolicyUnderwritten' not in events
+    assert 'LogAyiiPolicyCreated' not in events
     
     # ensure application exists and has state Applied
     application = instanceService.getApplication(process_id)
@@ -131,7 +130,7 @@ def test_underwrite_after_apply_with_riskpool_empty(
 
     events = tx.events
     print(events)
-    assert 'LogAyiiPolicyUnderwritten' in events
+    assert 'LogAyiiPolicyCreated' in events
 
     # ensure application exists and has state Applied
     application = instanceService.getApplication(process_id)

@@ -57,8 +57,7 @@ contract AyiiProduct is
     mapping(bytes32 /* riskId */ => EnumerableSet.Bytes32Set /* processIds */) private _policies;
     bytes32 [] private _applications; // useful for debugging, might need to get rid of this
 
-    event LogAyiiPolicyApplicationCompleted(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
-    event LogAyiiPolicyUnderwritten(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
+    event LogAyiiPolicyApplicationCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiPolicyCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiRiskDataCreated(bytes32 riskId, bytes32 productId, bytes32 uaiId, bytes32 cropId);
     event LogAyiiRiskDataRequested(uint256 requestId, bytes32 riskId, bytes32 projectId, bytes32 uaiId, bytes32 cropId);
@@ -173,7 +172,7 @@ contract AyiiProduct is
         _applications.push(processId);
         EnumerableSet.add(_policies[riskId], processId);
 
-        emit LogAyiiPolicyApplicationCompleted(
+        emit LogAyiiPolicyApplicationCreated(
             processId, 
             policyHolder, 
             premium, 
@@ -182,18 +181,12 @@ contract AyiiProduct is
         bool success = _underwrite(processId);
 
         if (success) {
-            emit LogAyiiPolicyUnderwritten(
+            emit LogAyiiPolicyCreated(
                 processId, 
                 policyHolder, 
                 premium, 
                 sumInsured);
         }
-
-        emit LogAyiiPolicyCreated(
-            processId, 
-            policyHolder, 
-            premium, 
-            sumInsured);
     }
 
     function underwrite(
@@ -210,7 +203,7 @@ contract AyiiProduct is
         if (success) {
             IPolicy.Application memory application = _getApplication(processId);
             IPolicy.Metadata memory metadata = _getMetadata(processId);
-            emit LogAyiiPolicyUnderwritten(
+            emit LogAyiiPolicyCreated(
                 processId, 
                 metadata.owner, 
                 application.premiumAmount, 
