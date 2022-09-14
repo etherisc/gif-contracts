@@ -62,10 +62,9 @@ contract QueryModule is
         onlyPolicyFlow("Query") 
         returns (uint256 requestId) 
     {
-        IInstanceService instanceService = _getInstanceService();
-        IComponent callbackComponent = instanceService.getComponent(instanceService.getComponentId(callbackContractAddress));
+        uint256 componentId = _component.getComponentId(callbackContractAddress);
         require(
-            callbackComponent.isProduct(),
+            _component.isProduct(componentId),
             "ERROR:QUC-010:CALLBACK_ADDRESS_IS_NOT_PRODUCT"
         );
         
@@ -80,7 +79,7 @@ contract QueryModule is
         req.callbackMethodName = callbackMethodName;
         req.callbackContractAddress = callbackContractAddress;
         req.responsibleOracleId = responsibleOracleId;
-        req.createdAt = block.timestamp;
+        req.createdAt = block.timestamp; // solhint-disable-line
 
         _getOracle(responsibleOracleId).request(
             requestId,
@@ -169,17 +168,5 @@ contract QueryModule is
             _component.getComponentState(id) == IComponent.ComponentState.Active, 
             "ERROR:QUC-042:ORACLE_NOT_ACTIVE"
         );
-    }
-
-    function _getInstanceService() internal view returns (IInstanceService) {
-        return IInstanceService(_getContractAddress("InstanceService"));        
-    }
-
-    function _getMetadata(bytes32 processId) 
-        internal 
-        view 
-        returns (IPolicy.Metadata memory metadata) 
-    {
-        return _getInstanceService().getMetadata(processId);
     }
 }

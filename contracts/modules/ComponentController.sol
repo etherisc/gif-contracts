@@ -2,38 +2,40 @@
 pragma solidity ^0.8.0;
 
 import "../shared/CoreController.sol";
-
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
 import "@etherisc/gif-interface/contracts/components/IOracle.sol";
 import "@etherisc/gif-interface/contracts/components/IProduct.sol";
 import "@etherisc/gif-interface/contracts/components/IRiskpool.sol";
 import "@etherisc/gif-interface/contracts/modules/IComponentEvents.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract ComponentController is
     IComponentEvents,
     CoreController 
  {
+    using EnumerableSet for EnumerableSet.UintSet;
+
     mapping(uint256 => IComponent) private _componentById;
     mapping(bytes32 => uint256) private _componentIdByName;
     mapping(address => uint256) private _componentIdByAddress;
 
     mapping(uint256 => IComponent.ComponentState) private _componentState;
 
-    uint256 [] private _products;
-    uint256 [] private _oracles;
-    uint256 [] private _riskpools;
+    EnumerableSet.UintSet private _products;
+    EnumerableSet.UintSet private _oracles;
+    EnumerableSet.UintSet private _riskpools;
     uint256 private _componentCount;
 
     modifier onlyComponentOwnerService() {
         require(
-             _msgSender() == _getContractAddress("ComponentOwnerService"),
+            _msgSender() == _getContractAddress("ComponentOwnerService"),
             "ERROR:CCR-001:NOT_COMPONENT_OWNER_SERVICE");
         _;
     }
 
     modifier onlyInstanceOperatorService() {
         require(
-             _msgSender() == _getContractAddress("InstanceOperatorService"),
+            _msgSender() == _getContractAddress("InstanceOperatorService"),
             "ERROR:CCR-002:NOT_INSTANCE_OPERATOR_SERVICE");
         _;
     }
@@ -78,9 +80,9 @@ contract ComponentController is
         _componentIdByAddress[address(component)] = id;
 
         // type specific book keeping
-        if (component.isProduct()) { _products.push(id); }
-        else if (component.isOracle()) { _oracles.push(id); }
-        else if (component.isRiskpool()) { _riskpools.push(id); }
+        if (component.isProduct()) { EnumerableSet.add(_products, id); }
+        else if (component.isOracle()) { EnumerableSet.add(_oracles, id); }
+        else if (component.isRiskpool()) { EnumerableSet.add(_riskpools, id); }
     }
 
     function exists(uint256 id) public view returns(bool) {
@@ -197,8 +199,15 @@ contract ComponentController is
     }
 
     function getComponentType(uint256 id) public view returns (IComponent.ComponentType componentType) {
-        IComponent component = _componentById[id];
-        componentType = component.getType();
+        if (EnumerableSet.contains(_products, id)) {
+            return IComponent.ComponentType.Product;
+        } else if (EnumerableSet.contains(_oracles, id)) {
+            return IComponent.ComponentType.Oracle;
+        } else if (EnumerableSet.contains(_riskpools, id)) {
+            return IComponent.ComponentType.Riskpool;
+        } else {
+            revert("ERROR:CCR-008:INVALID_COMPONENT_ID");
+        }
     }
 
     function getComponentState(uint256 id) public view returns (IComponent.ComponentState componentState) {
@@ -206,28 +215,34 @@ contract ComponentController is
     }
 
     function getOracleId(uint256 idx) public view returns (uint256 oracleId) {
-        return _oracles[idx];
+        return EnumerableSet.at(_oracles, idx);
     }
 
     function getRiskpoolId(uint256 idx) public view returns (uint256 riskpoolId) {
-        return _riskpools[idx];
+        return EnumerableSet.at(_riskpools, idx);
     }
 
     function getProductId(uint256 idx) public view returns (uint256 productId) {
-        return _products[idx];
+        return EnumerableSet.at(_products, idx);
     }
 
     function getRequiredRole(IComponent.ComponentType componentType) external view returns (bytes32) {
         if (componentType == IComponent.ComponentType.Product) { return _access.getProductOwnerRole(); }
         else if (componentType == IComponent.ComponentType.Oracle) { return _access.getOracleProviderRole(); }
         else if (componentType == IComponent.ComponentType.Riskpool) { return _access.getRiskpoolKeeperRole(); }
-        else { revert("ERROR:CCR-008:COMPONENT_TYPE_UNKNOWN"); }
+        else { revert("ERROR:CCR-010:COMPONENT_TYPE_UNKNOWN"); }
     }
 
     function components() public view returns (uint256 count) { return _componentCount; }
-    function products() public view returns (uint256 count) { return _products.length; }
-    function oracles() public view returns (uint256 count) { return _oracles.length; }
-    function riskpools() public view returns (uint256 count) { return _riskpools.length; }
+    function products() public view returns (uint256 count) { return EnumerableSet.length(_products); }
+    function oracles() public view returns (uint256 count) { return EnumerableSet.length(_oracles); }
+    function riskpools() public view returns (uint256 count) { return EnumerableSet.length(_riskpools); }
+
+    function isProduct(uint256 id) public view returns (bool) { return EnumerableSet.contains(_products, id); }
+
+    function isOracle(uint256 id) public view returns (bool) { return EnumerableSet.contains(_oracles, id); }
+
+    function isRiskpool(uint256 id) public view returns (bool) { return EnumerableSet.contains(_riskpools, id); }
 
     function _changeState(uint256 componentId, IComponent.ComponentState newState) internal {
         IComponent.ComponentState oldState = _componentState[componentId];
@@ -247,31 +262,31 @@ contract ComponentController is
         pure 
     {
         require(newState != oldState, 
-            "ERROR:CCR-011:SOURCE_AND_TARGET_STATE_IDENTICAL");
+            "ERROR:CCR-020:SOURCE_AND_TARGET_STATE_IDENTICAL");
         
         if (oldState == IComponent.ComponentState.Created) {
             require(newState == IComponent.ComponentState.Proposed, 
-                "ERROR:CCR-012:CREATED_INVALID_TRANSITION");
+                "ERROR:CCR-021:CREATED_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Proposed) {
             require(newState == IComponent.ComponentState.Active 
                 || newState == IComponent.ComponentState.Declined, 
-                "ERROR:CCR-013:PROPOSED_INVALID_TRANSITION");
+                "ERROR:CCR-22:PROPOSED_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Declined) {
-            revert("ERROR:CCR-014:DECLINED_IS_FINAL_STATE");
+            revert("ERROR:CCR-023:DECLINED_IS_FINAL_STATE");
         } else if (oldState == IComponent.ComponentState.Active) {
             require(newState == IComponent.ComponentState.Paused 
                 || newState == IComponent.ComponentState.Suspended, 
-                "ERROR:CCR-015:ACTIVE_INVALID_TRANSITION");
+                "ERROR:CCR-024:ACTIVE_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Paused) {
             require(newState == IComponent.ComponentState.Active
                 || newState == IComponent.ComponentState.Archived, 
-                "ERROR:CCR-016:PAUSED_INVALID_TRANSITION");
+                "ERROR:CCR-025:PAUSED_INVALID_TRANSITION");
         } else if (oldState == IComponent.ComponentState.Suspended) {
             require(newState == IComponent.ComponentState.Active
                 || newState == IComponent.ComponentState.Archived, 
-                "ERROR:CCR-017:SUSPENDED_INVALID_TRANSITION");
+                "ERROR:CCR-026:SUSPENDED_INVALID_TRANSITION");
         } else {
-            revert("ERROR:CCR-018:INITIAL_STATE_NOT_HANDLED");
+            revert("ERROR:CCR-027:INITIAL_STATE_NOT_HANDLED");
         }
     }
 }
