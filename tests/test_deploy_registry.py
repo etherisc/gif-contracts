@@ -65,9 +65,9 @@ def doAssertions(registry, proxy, controller, owner, customer):
         registry.register(s2b32("Registry"), proxy.address, {'from': customer})
 
     # ensure owner is allowed to register contracts
-    registry.register(s2b32("Registry"), proxy.address, {'from': owner})
-    registry.register(s2b32("RegistryController"), controller.address, {'from': owner})
+    registry.register(s2b32("Registry2"), proxy.address, {'from': owner})
+    registry.register(s2b32("Registry2Controller"), controller.address, {'from': owner})
 
     # ensure getting contract info can be accessed by any account
-    assert proxy.address == registry.getContract(s2b32("Registry"), {'from': customer})
-    assert controller.address == registry.getContract(s2b32("RegistryController"), {'from': customer})
+    assert proxy.address == registry.getContract(s2b32("Registry2"), {'from': customer})
+    assert controller.address == registry.getContract(s2b32("Registry2Controller"), {'from': customer})
