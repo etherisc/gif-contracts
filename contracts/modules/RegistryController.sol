@@ -86,7 +86,7 @@ contract RegistryController is
         external override
         onlyInstanceOperator
     {
-        _registerInRelease(release, _contractName, _contractAddress);
+        _registerInRelease(release, false, _contractName, _contractAddress);
     }
 
     /**
@@ -116,7 +116,7 @@ contract RegistryController is
         external override 
         onlyInstanceOperator
     {
-        _registerInRelease(_release, _contractName, _contractAddress);
+        _registerInRelease(_release, false, _contractName, _contractAddress);
     }
 
     function deregisterInRelease(bytes32 _release, bytes32 _contractName)
@@ -146,6 +146,7 @@ contract RegistryController is
             bytes32 name = EnumerableSet.at(_contractNames[release], i);
             _registerInRelease(
                 _newRelease,
+                true,
                 name,
                 _contracts[release][name]
             );
@@ -179,6 +180,7 @@ contract RegistryController is
      */
     function _registerInRelease(
         bytes32 _release,
+        bool isNewRelease,
         bytes32 _contractName,
         address _contractAddress
     ) 
@@ -191,7 +193,8 @@ contract RegistryController is
             "ERROR:REC-010:MAX_CONTRACTS_LIMIT"
         );
 
-        require(_contractsInRelease[_release] > 0, "ERROR:REC-011:RELEASE_UNKNOWN");
+        // during `prepareRelease` the _release is not yet known, so check should not fail in this case 
+        require(_contractsInRelease[_release] > 0 || isNewRelease, "ERROR:REC-011:RELEASE_UNKNOWN");
         require(_contractName != 0x00, "ERROR:REC-012:CONTRACT_NAME_EMPTY");
         require(
             (! EnumerableSet.contains(_contractNames[_release], _contractName) )
