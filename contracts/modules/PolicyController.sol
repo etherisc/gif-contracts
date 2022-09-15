@@ -81,6 +81,9 @@ contract PolicyController is
         Application storage application = applications[processId];
         require(application.createdAt == 0, "ERROR:POC-011:APPLICATION_ALREADY_EXISTS");
 
+        require(premiumAmount > 0, "ERROR:POC-012:PREMIUM_AMOUNT_ZERO");
+        require(sumInsuredAmount > premiumAmount, "ERROR:POC-013:SUM_INSURED_AMOUNT_TOO_SMALL");
+
         application.state = ApplicationState.Applied;
         application.premiumAmount = premiumAmount;
         application.sumInsuredAmount = sumInsuredAmount;

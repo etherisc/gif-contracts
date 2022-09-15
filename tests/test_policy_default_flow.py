@@ -36,7 +36,7 @@ def isolation(fn_isolation):
     pass
 
 
-def test_apppy_with_zero_address(
+def test_apply_with_zero_address(
     instance: GifInstance, 
     gifTestProduct: GifTestProduct, 
     testCoin,
@@ -66,3 +66,43 @@ def test_apppy_with_zero_address(
             {'from': customer}
         )
     
+
+def test_apply_with_invalid_amounts(
+    instance: GifInstance, 
+    gifTestProduct: GifTestProduct, 
+    testCoin,
+    owner: Account,
+    customer: Account, 
+    riskpoolKeeper: Account,
+    capitalOwner: Account
+):
+    instanceService = instance.getInstanceService()
+    product = gifTestProduct.getContract()
+    riskpoolWallet = capitalOwner
+    investor = riskpoolKeeper
+
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    fund_riskpool(instance, owner, riskpoolWallet, riskpool, investor, testCoin, 1000)
+
+    metaData = bytes(0)
+    applicationData = bytes(0)
+
+    with brownie.reverts("ERROR:POC-012:PREMIUM_AMOUNT_ZERO"):
+        product.applyForPolicy(
+            customer,
+            0,
+            10,
+            metaData,
+            applicationData,
+            {'from': customer}
+        )
+    
+    with brownie.reverts("ERROR:POC-013:SUM_INSURED_AMOUNT_TOO_SMALL"):
+        product.applyForPolicy(
+            customer,
+            10,
+            9,
+            metaData,
+            applicationData,
+            {'from': customer}
+        )
