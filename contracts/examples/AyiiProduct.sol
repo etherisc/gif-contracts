@@ -29,6 +29,9 @@ contract AyiiProduct is
 
     uint256 public constant PERCENTAGE_MULTIPLIER = 2**24;
 
+    uint256 public constant AAAY_MIN = 0;
+    uint256 public constant AAAY_MAX = 15;
+
     // group policy data structure
     struct Risk {
         bytes32 id; // hash over projectId, uaiId, cropId
@@ -328,6 +331,8 @@ contract AyiiProduct is
         require(risk.createdAt > 0, "ERROR:AYI-021:RISK_UNDEFINED");
         require(risk.requestId == requestId, "ERROR:AYI-022:REQUEST_ID_MISMATCH");
         require(risk.responseAt == 0, "ERROR:AYI-023:EXISTING_CALLBACK");
+
+        require(aaay >= AAAY_MIN && aaay < AAAY_MAX, "ERROR:AYI-024:AAAY_INVALID");
 
         // update risk using aaay info
         risk.aaay = aaay;
