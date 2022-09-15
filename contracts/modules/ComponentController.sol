@@ -26,6 +26,8 @@ contract ComponentController is
     EnumerableSet.UintSet private _riskpools;
     uint256 private _componentCount;
 
+    mapping(uint256 /* product id */ => address /* policy flow address */) private _policyFlowByProductId;
+
     modifier onlyComponentOwnerService() {
         require(
             _msgSender() == _getContractAddress("ComponentOwnerService"),
@@ -95,10 +97,15 @@ contract ComponentController is
         onlyInstanceOperatorService 
     {
         _changeState(id, IComponent.ComponentState.Active);
+        IComponent component = getComponent(id);
+
+        if (isProduct(id)) {
+            _policyFlowByProductId[id] = IProduct(address(component)).getPolicyFlow();
+        }
+
         emit LogComponentApproved(id);
         
         // inform component about successful approval
-        IComponent component = getComponent(id);
         component.approvalCallback();
     }
 
@@ -243,6 +250,11 @@ contract ComponentController is
     function isOracle(uint256 id) public view returns (bool) { return EnumerableSet.contains(_oracles, id); }
 
     function isRiskpool(uint256 id) public view returns (bool) { return EnumerableSet.contains(_riskpools, id); }
+
+    function getPolicyFlow(uint256 productId) public view returns (address _policyFlow) {
+        require(isProduct(productId), "ERROR:CCR-011:UNKNOWN_PRODUCT_ID");
+        _policyFlow = _policyFlowByProductId[productId];
+    }
 
     function _changeState(uint256 componentId, IComponent.ComponentState newState) internal {
         IComponent.ComponentState oldState = _componentState[componentId];
