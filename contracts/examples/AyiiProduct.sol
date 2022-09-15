@@ -29,15 +29,12 @@ contract AyiiProduct is
 
     uint256 public constant PERCENTAGE_MULTIPLIER = 2**24;
 
-<<<<<<< HEAD
     uint256 public constant AAAY_MIN = 0;
     uint256 public constant AAAY_MAX = 15;
-=======
+
     uint256 public constant RISK_APH_MAX = 15 * PERCENTAGE_MULTIPLIER;
     uint256 public constant RISK_EXIT_MAX = PERCENTAGE_MULTIPLIER / 5;
     uint256 public constant RISK_TSI_AT_EXIT_MIN = PERCENTAGE_MULTIPLIER / 2;
-
->>>>>>> a50ad65 (add adjustRisk to AyiiProduct, add risk parameter validation)
 
     // group policy data structure
     struct Risk {
