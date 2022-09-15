@@ -332,7 +332,9 @@ contract AyiiProduct is
         require(risk.requestId == requestId, "ERROR:AYI-022:REQUEST_ID_MISMATCH");
         require(risk.responseAt == 0, "ERROR:AYI-023:EXISTING_CALLBACK");
 
-        require(aaay >= AAAY_MIN && aaay < AAAY_MAX, "ERROR:AYI-024:AAAY_INVALID");
+        require(aaay >= (AAAY_MIN * PERCENTAGE_MULTIPLIER) 
+                && aaay < (AAAY_MAX * PERCENTAGE_MULTIPLIER), 
+                "ERROR:AYI-024:AAAY_INVALID");
 
         // update risk using aaay info
         risk.aaay = aaay;
