@@ -55,7 +55,7 @@ contract AyiiProduct is
 
     uint256 private _oracleId;
     IERC20 private _token;
-    PolicyController private _policy;
+    // PolicyController private _policy;
 
     bytes32 [] private _riskIds;
     mapping(bytes32 /* riskId */ => Risk) private _risks;
@@ -96,9 +96,9 @@ contract AyiiProduct is
         _setupRole(INSURER_ROLE, insurer);
     }
 
-    function initialize() public initializer {
-        _policy = PolicyController(_getContractAddress("Policy"));
-    }
+    // function initialize() public initializer {
+    //     _policy = PolicyController(_getContractAddress("Policy"));
+    // }
 
     function createRisk(
         bytes32 projectId,
@@ -213,7 +213,6 @@ contract AyiiProduct is
             applicationData);
 
         _applications.push(processId);
-        EnumerableSet.add(_policies[riskId], processId);
 
         emit LogAyiiPolicyApplicationCreated(
             processId, 
@@ -224,6 +223,8 @@ contract AyiiProduct is
         bool success = _underwrite(processId);
 
         if (success) {
+            EnumerableSet.add(_policies[riskId], processId);
+   
             emit LogAyiiPolicyCreated(
                 processId, 
                 policyHolder, 
