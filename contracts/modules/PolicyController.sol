@@ -102,8 +102,8 @@ contract PolicyController is
         external override
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-012:POLICY_DOES_NOT_EXIST");
-        require(policy.premiumPaidAmount + amount <= policy.premiumExpectedAmount, "ERROR:POC-013:AMOUNT_TOO_BIG");
+        require(policy.createdAt > 0, "ERROR:POC-110:POLICY_DOES_NOT_EXIST");
+        require(policy.premiumPaidAmount + amount <= policy.premiumExpectedAmount, "ERROR:POC-111:AMOUNT_TOO_BIG");
 
         policy.premiumPaidAmount += amount;
         policy.updatedAt = block.timestamp; // solhint-disable-line
