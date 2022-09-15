@@ -286,6 +286,8 @@ contract PolicyController is
         Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-040:POLICY_DOES_NOT_EXIST");
         require(policy.state == IPolicy.PolicyState.Active, "ERROR:POC-041:POLICY_NOT_ACTIVE");
+        // no validation of claimAmount > 0 here to explicitly allow claims with amount 0. This can be useful for parametric insurance 
+        // to have proof that the claim calculation was executed without entitlement to payment.
         require(policy.payoutAmount + claimAmount <= policy.payoutMaxAmount, "ERROR:POC-042:CLAIM_AMOUNT_EXCEEDS_MAX_PAYOUT");
 
         claimId = policy.claimsCount;
@@ -316,6 +318,7 @@ contract PolicyController is
         Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-050:POLICY_DOES_NOT_EXIST");
         require(policy.openClaimsCount > 0, "ERROR:POC-051:POLICY_WITHOUT_OPEN_CLAIMS");
+        // no validation of claimAmount > 0 here as is it possible to have claims with amount 0 (see createClaim()). 
         require(policy.payoutAmount + confirmedAmount <= policy.payoutMaxAmount, "ERROR:POC-052:PAYOUT_MAX_AMOUNT_EXCEEDED");
 
         Claim storage claim = claims[processId][claimId];
