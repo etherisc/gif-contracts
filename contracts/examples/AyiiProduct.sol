@@ -264,7 +264,7 @@ contract AyiiProduct is
     {
         Risk storage risk = _risks[_getRiskId(processId)];
         require(risk.createdAt > 0, "ERROR:AYI-010:RISK_UNDEFINED");
-        require(!risk.requestTriggered, "ERROR:AYI-011:ORACLE_ALREADY_TRIGGERED");
+        require(risk.responseAt == 0, "ERROR:AYI-011:ORACLE_ALREADY_RESPONDED");
 
         bytes memory queryData = abi.encode(
             risk.projectId,
