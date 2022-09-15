@@ -29,8 +29,15 @@ contract AyiiProduct is
 
     uint256 public constant PERCENTAGE_MULTIPLIER = 2**24;
 
+<<<<<<< HEAD
     uint256 public constant AAAY_MIN = 0;
     uint256 public constant AAAY_MAX = 15;
+=======
+    uint256 public constant RISK_APH_MAX = 15 * PERCENTAGE_MULTIPLIER;
+    uint256 public constant RISK_EXIT_MAX = PERCENTAGE_MULTIPLIER / 5;
+    uint256 public constant RISK_TSI_AT_EXIT_MIN = PERCENTAGE_MULTIPLIER / 2;
+
+>>>>>>> a50ad65 (add adjustRisk to AyiiProduct, add risk parameter validation)
 
     // group policy data structure
     struct Risk {
@@ -63,6 +70,8 @@ contract AyiiProduct is
     event LogAyiiPolicyApplicationCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiPolicyCreated(bytes32 policyId, address policyHolder, uint256 premiumAmount, uint256 sumInsuredAmount);
     event LogAyiiRiskDataCreated(bytes32 riskId, bytes32 productId, bytes32 uaiId, bytes32 cropId);
+    event LogAyiiRiskDataBeforeAdjustment(bytes32 riskId, uint256 trigger, uint256 exit, uint256 tsi, uint aph);
+    event LogAyiiRiskDataAfterAdjustment(bytes32 riskId, uint256 trigger, uint256 exit, uint256 tsi, uint aph);
     event LogAyiiRiskDataRequested(uint256 requestId, bytes32 riskId, bytes32 projectId, bytes32 uaiId, bytes32 cropId);
     event LogAyiiRiskDataReceived(uint256 requestId, bytes32 riskId, uint256 aaay);
     event LogAyiiRiskDataRequestCancelled(bytes32 processId, uint256 requestId);
@@ -109,7 +118,7 @@ contract AyiiProduct is
         onlyRole(INSURER_ROLE)
         returns(bytes32 riskId)
     {
-        // TODO add input parameter validation
+        _validateRiskParameters(trigger, exit, tsi, aph);
 
         riskId = getRiskId(projectId, uaiId, cropId);
         _riskIds.push(riskId);
@@ -133,6 +142,42 @@ contract AyiiProduct is
             risk.projectId,
             risk.uaiId, 
             risk.cropId);
+    }
+
+    function adjustRisk(
+        bytes32 riskId,
+        uint256 trigger,
+        uint256 exit,
+        uint256 tsi,
+        uint256 aph
+    )
+        external
+        onlyRole(INSURER_ROLE)
+    {
+        _validateRiskParameters(trigger, exit, tsi, aph);
+
+        Risk storage risk = _risks[riskId];
+        require(risk.createdAt > 0, "ERROR:AYI-002:RISK_UNKNOWN");
+        require(EnumerableSet.length(_policies[riskId]) == 0, "ERROR:AYI-003:RISK_WITH_POLICIES_NOT_ADJUSTABLE");
+
+        emit LogAyiiRiskDataBeforeAdjustment(
+            risk.id, 
+            risk.trigger,
+            risk.exit, 
+            risk.tsi,
+            risk.aph);
+        
+        risk.trigger = trigger;
+        risk.exit = exit;
+        risk.tsi = tsi;
+        risk.aph = aph;
+
+        emit LogAyiiRiskDataAfterAdjustment(
+            risk.id, 
+            risk.trigger,
+            risk.exit, 
+            risk.tsi,
+            risk.aph);
     }
 
     function getRiskId(
@@ -159,8 +204,8 @@ contract AyiiProduct is
         returns(bytes32 processId)
     {
         Risk storage risk = _risks[riskId];
-        require(risk.createdAt > 0, "ERROR:AYI-002:RISK_UNDEFINED");
-        require(policyHolder != address(0), "ERROR:AYI-003:POLICY_HOLDER_ZERO");
+        require(risk.createdAt > 0, "ERROR:AYI-004:RISK_UNDEFINED");
+        require(policyHolder != address(0), "ERROR:AYI-005:POLICY_HOLDER_ZERO");
 
         bytes memory metaData = "";
         bytes memory applicationData = abi.encode(riskId);
@@ -386,36 +431,6 @@ contract AyiiProduct is
         emit LogAyiiRiskProcessed(riskId, batchSize);
     }
 
-    function _processPolicy(bytes32 policyId, Risk memory risk)
-        internal
-    {
-        IPolicy.Application memory application 
-            = _getApplication(policyId);
-
-        uint256 claimAmount = calculatePayout(
-            risk.payoutPercentage, 
-            application.sumInsuredAmount);
-        
-        uint256 claimId = _newClaim(policyId, claimAmount, "");
-        emit LogAyiiClaimCreated(policyId, claimId, claimAmount);
-
-        if (claimAmount > 0) {
-            uint256 payoutAmount = claimAmount;
-            _confirmClaim(policyId, claimId, payoutAmount);
-
-            uint256 payoutId = _newPayout(policyId, claimId, payoutAmount, "");
-            _processPayout(policyId, payoutId);
-
-            emit LogAyiiPayoutCreated(policyId, payoutAmount);
-        }
-        else {
-            _declineClaim(policyId, claimId);
-            _closeClaim(policyId, claimId);
-        }
-
-        emit LogAyiiPolicyProcessed(policyId);
-    }
-
     function calculatePayout(uint256 payoutPercentage, uint256 sumInsuredAmount)
         public
         pure
@@ -473,6 +488,55 @@ contract AyiiProduct is
 
     function getApplicationDataStructure() external override pure returns(string memory dataStructure) {
         return "(bytes32 riskId)";
+    }
+
+
+    function _validateRiskParameters(
+        uint256 trigger,
+        uint256 exit,
+        uint256 tsi,
+        uint256 aph
+    )
+        internal
+    {
+        require(trigger <= PERCENTAGE_MULTIPLIER, "ERROR:AYI-040:RISK_TRIGGER_TOO_LARGE");
+        require(trigger > exit, "ERROR:AYI-041:RISK_TRIGGER_NOT_LARGER_THAN_EXIT");
+        require(exit <= RISK_EXIT_MAX, "ERROR:AYI-042:RISK_EXIT_TOO_LARGE");
+        require(tsi >= RISK_TSI_AT_EXIT_MIN , "ERROR:AYI-043:RISK_TSI_TOO_SMALL");
+        require(tsi <= PERCENTAGE_MULTIPLIER , "ERROR:AYI-044:RISK_TSI_TOO_LARGE");
+        require(tsi + exit <= PERCENTAGE_MULTIPLIER, "ERROR:AYI-045:RISK_TSI_EXIT_SUM_TOO_LARGE");
+        require(aph > 0, "ERROR:AYI-046:RISK_APH_ZERO_INVALID");
+        require(aph <= RISK_APH_MAX, "ERROR:AYI-047:RISK_APH_TOO_LARGE");
+    }
+
+    function _processPolicy(bytes32 policyId, Risk memory risk)
+        internal
+    {
+        IPolicy.Application memory application 
+            = _getApplication(policyId);
+
+        uint256 claimAmount = calculatePayout(
+            risk.payoutPercentage, 
+            application.sumInsuredAmount);
+        
+        uint256 claimId = _newClaim(policyId, claimAmount, "");
+        emit LogAyiiClaimCreated(policyId, claimId, claimAmount);
+
+        if (claimAmount > 0) {
+            uint256 payoutAmount = claimAmount;
+            _confirmClaim(policyId, claimId, payoutAmount);
+
+            uint256 payoutId = _newPayout(policyId, claimId, payoutAmount, "");
+            _processPayout(policyId, payoutId);
+
+            emit LogAyiiPayoutCreated(policyId, payoutAmount);
+        }
+        else {
+            _declineClaim(policyId, claimId);
+            _closeClaim(policyId, claimId);
+        }
+
+        emit LogAyiiPolicyProcessed(policyId);
     }
 
     function _getRiskId(bytes32 processId) private view returns(bytes32 riskId) {
