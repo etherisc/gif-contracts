@@ -2,7 +2,7 @@
 pragma solidity 0.8.2;
 
 import "../shared/CoreController.sol";
-
+import "./ComponentController.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 
 contract PolicyController is 
@@ -30,6 +30,12 @@ contract PolicyController is
     // counter for assigned processIds, used to ensure unique processIds
     uint256 private _assigendProcessIds;
 
+    ComponentController private _component;
+
+    function _afterInitialize() internal override onlyInitializing {
+        _component = ComponentController(_getContractAddress("Component"));
+    }
+
     /* Metadata */
     function createPolicyFlow(
         address owner,
@@ -40,9 +46,14 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
         returns(bytes32 processId)
     {
+        require(owner != address(0), "ERROR:POL-001:INVALID_OWNER");
+
+        require(_component.isProduct(productId), "ERROR:POL-002:INVALID_PRODUCT");
+        require(_component.getComponentState(productId) == IComponent.ComponentState.Active, "ERROR:POL-003:PRODUCT_NOT_ACTIVE");
+        
         processId = _generateNextProcessId();
         Metadata storage meta = metadata[processId];
-        require(meta.createdAt == 0, "ERROR:POC-001:METADATA_ALREADY_EXISTS");
+        require(meta.createdAt == 0, "ERROR:POC-004:METADATA_ALREADY_EXISTS");
 
         meta.owner = owner;
         meta.productId = productId;
@@ -70,6 +81,9 @@ contract PolicyController is
         Application storage application = applications[processId];
         require(application.createdAt == 0, "ERROR:POC-011:APPLICATION_ALREADY_EXISTS");
 
+        require(premiumAmount > 0, "ERROR:POC-012:PREMIUM_AMOUNT_ZERO");
+        require(sumInsuredAmount > premiumAmount, "ERROR:POC-013:SUM_INSURED_AMOUNT_TOO_SMALL");
+
         application.state = ApplicationState.Applied;
         application.premiumAmount = premiumAmount;
         application.sumInsuredAmount = sumInsuredAmount;
@@ -88,8 +102,8 @@ contract PolicyController is
         external override
     {
         Policy storage policy = policies[processId];
-        require(policy.createdAt > 0, "ERROR:POC-012:POLICY_DOES_NOT_EXIST");
-        require(policy.premiumPaidAmount + amount <= policy.premiumExpectedAmount, "ERROR:POC-013:AMOUNT_TOO_BIG");
+        require(policy.createdAt > 0, "ERROR:POC-110:POLICY_DOES_NOT_EXIST");
+        require(policy.premiumPaidAmount + amount <= policy.premiumExpectedAmount, "ERROR:POC-111:AMOUNT_TOO_BIG");
 
         policy.premiumPaidAmount += amount;
         policy.updatedAt = block.timestamp; // solhint-disable-line
@@ -272,6 +286,8 @@ contract PolicyController is
         Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-040:POLICY_DOES_NOT_EXIST");
         require(policy.state == IPolicy.PolicyState.Active, "ERROR:POC-041:POLICY_NOT_ACTIVE");
+        // no validation of claimAmount > 0 here to explicitly allow claims with amount 0. This can be useful for parametric insurance 
+        // to have proof that the claim calculation was executed without entitlement to payment.
         require(policy.payoutAmount + claimAmount <= policy.payoutMaxAmount, "ERROR:POC-042:CLAIM_AMOUNT_EXCEEDS_MAX_PAYOUT");
 
         claimId = policy.claimsCount;
@@ -302,6 +318,7 @@ contract PolicyController is
         Policy storage policy = policies[processId];
         require(policy.createdAt > 0, "ERROR:POC-050:POLICY_DOES_NOT_EXIST");
         require(policy.openClaimsCount > 0, "ERROR:POC-051:POLICY_WITHOUT_OPEN_CLAIMS");
+        // no validation of claimAmount > 0 here as is it possible to have claims with amount 0 (see createClaim()). 
         require(policy.payoutAmount + confirmedAmount <= policy.payoutMaxAmount, "ERROR:POC-052:PAYOUT_MAX_AMOUNT_EXCEEDED");
 
         Claim storage claim = claims[processId][claimId];

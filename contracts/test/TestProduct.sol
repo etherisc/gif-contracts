@@ -71,6 +71,32 @@ contract TestProduct is
         }
     }
 
+    function applyForPolicy(
+        address payable policyHolder,
+        uint256 premium, 
+        uint256 sumInsured,
+        bytes calldata metaData,
+        bytes calldata applicationData
+    ) 
+        external 
+        payable 
+        returns (bytes32 processId) 
+    {
+        processId = _newApplication(
+            policyHolder,
+            premium, 
+            sumInsured,
+            metaData,
+            applicationData);
+
+        _applications.push(processId);
+
+        bool success = _underwrite(processId);
+        if (success) {
+            _policies.push(processId);
+        }
+    }
+
 
     function newAppliation(
         uint256 premium, 
