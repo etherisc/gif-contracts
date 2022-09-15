@@ -40,9 +40,11 @@ contract PolicyController is
         onlyPolicyFlow("Policy")
         returns(bytes32 processId)
     {
+        require(owner != address(0), "ERROR:POL-001:INVALID_OWNER");
+        
         processId = _generateNextProcessId();
         Metadata storage meta = metadata[processId];
-        require(meta.createdAt == 0, "ERROR:POC-001:METADATA_ALREADY_EXISTS");
+        require(meta.createdAt == 0, "ERROR:POC-002:METADATA_ALREADY_EXISTS");
 
         meta.owner = owner;
         meta.productId = productId;
