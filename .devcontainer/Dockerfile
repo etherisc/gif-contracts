@@ -44,13 +44,12 @@ RUN npm install -g ganache-cli solhint prettier prettier-plugin-solidity solhint
 
 # download required solidity compiler
 RUN mkdir -p /home/vscode/.solcx/  
-RUN wget -O /home/vscode/.solcx/solc-v0.7.2 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.7.2+commit.51b20bc0 \
-    && wget -O /home/vscode/.solcx/solc-v0.8.2 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.2+commit.661d1103 \
+RUN wget -O /home/vscode/.solcx/solc-v0.8.2 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.2+commit.661d1103 \
     && wget -O /home/vscode/.solcx/solc-v0.8.15 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.15+commit.e14f2714 \
     && chmod 755 /home/vscode/.solcx/solc*
 
 # Download openzeppelin and chainlink depedencies (large and slow)
-ARG VERSION_OPEN_ZEPPELIN=4.7.0
+ARG VERSION_OPEN_ZEPPELIN=4.7.3
 ARG VERSION_CHAINLINK=1.6.0
 RUN wget -O /tmp/v${VERSION_OPEN_ZEPPELIN}.tar.gz https://github.com/OpenZeppelin/openzeppelin-contracts/archive/refs/tags/v${VERSION_OPEN_ZEPPELIN}.tar.gz \
     && wget -O /tmp/v${VERSION_CHAINLINK}.tar.gz https://github.com/smartcontractkit/chainlink/archive/refs/tags/v${VERSION_CHAINLINK}.tar.gz
