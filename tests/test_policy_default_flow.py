@@ -30,13 +30,18 @@ from scripts.product import (
     GifTestRiskpool,
 )
 
+# enforce function isolation for tests below
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
+
+
 def test_apppy_with_zero_address(
     instance: GifInstance, 
     gifTestProduct: GifTestProduct, 
     testCoin,
     owner: Account,
     customer: Account, 
-    productOwner: Account,
     riskpoolKeeper: Account,
     capitalOwner: Account
 ):

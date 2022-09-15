@@ -2,7 +2,7 @@
 pragma solidity 0.8.2;
 
 import "../shared/CoreController.sol";
-
+import "./ComponentController.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 
 contract PolicyController is 
@@ -30,6 +30,12 @@ contract PolicyController is
     // counter for assigned processIds, used to ensure unique processIds
     uint256 private _assigendProcessIds;
 
+    ComponentController private _component;
+
+    function _afterInitialize() internal override onlyInitializing {
+        _component = ComponentController(_getContractAddress("Component"));
+    }
+
     /* Metadata */
     function createPolicyFlow(
         address owner,
@@ -41,10 +47,13 @@ contract PolicyController is
         returns(bytes32 processId)
     {
         require(owner != address(0), "ERROR:POL-001:INVALID_OWNER");
+
+        require(_component.isProduct(productId), "ERROR:POL-002:INVALID_PRODUCT");
+        require(_component.getComponentState(productId) == IComponent.ComponentState.Active, "ERROR:POL-003:PRODUCT_NOT_ACTIVE");
         
         processId = _generateNextProcessId();
         Metadata storage meta = metadata[processId];
-        require(meta.createdAt == 0, "ERROR:POC-002:METADATA_ALREADY_EXISTS");
+        require(meta.createdAt == 0, "ERROR:POC-004:METADATA_ALREADY_EXISTS");
 
         meta.owner = owner;
         meta.productId = productId;
