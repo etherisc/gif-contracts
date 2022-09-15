@@ -476,11 +476,19 @@ contract AyiiProduct is
     function getRiskId(uint256 idx) external view returns(bytes32 riskId) { return _riskIds[idx]; }
     function getRisk(bytes32 riskId) external view returns(Risk memory risk) { return _risks[riskId]; }
 
+    function applications() external view returns(uint256 applicationCount) {
+        return _applications.length;
+    }
+
+    function getApplicationId(uint256 applicationIdx) external view returns(bytes32 processId) {
+        return _applications[applicationIdx];
+    }
+
     function policies(bytes32 riskId) external view returns(uint256 policyCount) {
         return EnumerableSet.length(_policies[riskId]);
     }
 
-    function getPolicyId(bytes32 riskId, uint256 policyIdx) external view returns(bytes32 policyId) {
+    function getPolicyId(bytes32 riskId, uint256 policyIdx) external view returns(bytes32 processId) {
         return EnumerableSet.at(_policies[riskId], policyIdx);
     }
 
