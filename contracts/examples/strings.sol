@@ -36,8 +36,7 @@
  *      `s.splitNew('.')` leaves s unmodified, and returns two values
  *      corresponding to the left and right parts of the string.
  */
-
-pragma solidity ^0.8.0;
+pragma solidity 0.8.2;
 
 library strings {
 

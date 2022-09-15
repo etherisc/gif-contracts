@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.0;
+pragma solidity 0.8.2;
 
 import "../shared/CoreController.sol";
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";

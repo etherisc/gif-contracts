@@ -6,9 +6,9 @@
     "python.testing.pytestEnabled": true,
     "terminal.integrated.defaultProfile.linux": "zsh",
     "solidity.remappingsUnix": [
-        "@openzeppelin/=/home/vscode/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.7.0",
+        "@openzeppelin/=/home/vscode/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.7.3",
         "@chainlink/=/home/vscode/.brownie/packages/smartcontractkit/chainlink@1.6.0",
-        "@etherisc/gif-interface/=/home/vscode/.brownie/packages/etherisc/gif-interface@2d633da",
+        "@etherisc/gif-interface/=/home/vscode/.brownie/packages/etherisc/gif-interface@3f16cfe",
     ],
     "peacock.remoteColor": "1D3C43",
     "workbench.colorCustomizations": {

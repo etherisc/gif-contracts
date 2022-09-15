@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.0;
+pragma solidity 0.8.2;
 
 import "../modules/AccessController.sol";
 import "../modules/BundleController.sol";
@@ -132,7 +132,7 @@ contract InstanceOperatorService is
         if (_component.isProduct(id)) {
             IComponent component = _component.getComponent(id);
             IProduct product = IProduct(address(component));
-            
+
             _pool.setRiskpoolForProduct(
                 id,
                 product.getRiskpoolId());
