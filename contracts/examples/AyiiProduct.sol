@@ -40,24 +40,23 @@ contract AyiiProduct is
     struct Risk {
         bytes32 id; // hash over projectId, uaiId, cropId
         bytes32 projectId; // assumption: this makes risk unique over aggregarors/customers/seasons
-        bytes32 uaiId;
-        bytes32 cropId;
-        uint256 trigger;
-        uint256 exit;
-        uint256 tsi;
-        uint256 aph;
-        uint256 requestId;
+        bytes32 uaiId; // region id
+        bytes32 cropId; // crop id
+        uint256 trigger; // at and above this harvest ratio no payout is made 
+        uint256 exit; // at and below this harvest ration the max payout is made
+        uint256 tsi; // total sum insured at exit: max . payout percentage at exit
+        uint256 aph; // average historical area yield for this crop and region
+        uint256 requestId; 
         bool requestTriggered;
         uint256 responseAt;
-        uint256 aaay;
-        uint256 payoutPercentage;
+        uint256 aaay; // average area yield for current season for this crop and region
+        uint256 payoutPercentage; // payout percentage for this year for this crop and region
         uint256 createdAt;
         uint256 updatedAt;
     }
 
     uint256 private _oracleId;
     IERC20 private _token;
-    // PolicyController private _policy;
 
     bytes32 [] private _riskIds;
     mapping(bytes32 /* riskId */ => Risk) private _risks;
@@ -97,10 +96,6 @@ contract AyiiProduct is
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(INSURER_ROLE, insurer);
     }
-
-    // function initialize() public initializer {
-    //     _policy = PolicyController(_getContractAddress("Policy"));
-    // }
 
     function createRisk(
         bytes32 projectId,
@@ -439,7 +434,7 @@ contract AyiiProduct is
 
     function calculatePayoutPercentage(
         uint256 tsi, // max payout percentage
-        uint256 trigger, // at and above this haverst ratio no payout is made
+        uint256 trigger,// at and above this harvest ratio no payout is made 
         uint256 exit, // at and below this harvest ration the max payout is made
         uint256 aph, // average historical yield
         uint256 aaay // this season's yield
@@ -498,7 +493,7 @@ contract AyiiProduct is
 
 
     function _validateRiskParameters(
-        uint256 trigger,
+        uint256 trigger, 
         uint256 exit,
         uint256 tsi,
         uint256 aph
