@@ -377,7 +377,6 @@ contract TreasuryModule is
 
         // transfer net capital
         address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
-        require(riskpoolWallet != address(0), "ERROR:TRS-054:RISKPOOL_WITHOUT_WALLET");
 
         netCapitalAmount = capitalAmount - feeAmount;
         success = TransferHelper.unifiedTransferFrom(token, bundleOwner, riskpoolWallet, netCapitalAmount);
