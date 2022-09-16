@@ -233,18 +233,19 @@ contract PoolController is
         IRiskpool riskpool = _getRiskpoolComponent(metadata);
         riskpool.releasePolicy(processId);
 
-        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
         IPolicy.Application memory application = _policy.getApplication(processId);
+
+        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
         IPool.Pool storage pool = _riskpools[riskpoolId];
-        uint256 collateralAmount = _collateralAmount[processId];
+        uint256 remainingCollateralAmount = _collateralAmount[processId] - policy.payoutAmount;
 
         pool.sumOfSumInsuredAtRisk -= application.sumInsuredAmount;
-        pool.lockedCapital -= collateralAmount;
-        pool.updatedAt = block.timestamp;
+        pool.lockedCapital -= remainingCollateralAmount;
+        pool.updatedAt = block.timestamp; // solhint-disable-line
 
         // free memory
         delete _collateralAmount[processId];
-        emit LogRiskpoolCollateralReleased(riskpoolId, processId, collateralAmount);
+        emit LogRiskpoolCollateralReleased(riskpoolId, processId, remainingCollateralAmount);
     }
 
 

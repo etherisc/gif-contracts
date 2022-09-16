@@ -185,19 +185,27 @@ contract BundleController is
     function releasePolicy(uint256 bundleId, bytes32 processId) 
         external override 
         onlyRiskpoolService
-        returns(uint256 collateralAmount)
+        returns(uint256 remainingCollateralAmount)
     {
+        IPolicy.Policy memory policy = _policy.getPolicy(processId);
+        require(
+            policy.state == IPolicy.PolicyState.Closed,
+            "ERROR:POL-025:POLICY_STATE_INVALID"
+        );
+
         // make sure bundle exists and is not yet closed
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-024:BUNDLE_DOES_NOT_EXIST");
         require(_activePolicies[bundleId] > 0, "ERROR:BUC-025:NO_ACTIVE_POLICIES_FOR_BUNDLE");
 
-        collateralAmount = _valueLockedPerPolicy[bundleId][processId];
-        require(collateralAmount > 0, "ERROR:BUC-026:NOT_COLLATERALIZED_BY_BUNDLE");
+        uint256 lockedByBundleAmount = _valueLockedPerPolicy[bundleId][processId];
+        require(lockedByBundleAmount > 0, "ERROR:BUC-026:NOT_COLLATERALIZED_BY_BUNDLE");
+
+        remainingCollateralAmount = lockedByBundleAmount - policy.payoutAmount;
 
         // this should never ever fail ...
         require(
-            bundle.lockedCapital >= collateralAmount,
+            bundle.lockedCapital >= remainingCollateralAmount,
             "PANIC:BUC-027:UNLOCK_CAPITAL_TOO_BIG"
         );
 
@@ -206,11 +214,11 @@ contract BundleController is
         delete _valueLockedPerPolicy[bundleId][processId];
 
         // update bundle capital
-        bundle.lockedCapital -= collateralAmount;
-        bundle.updatedAt = block.timestamp;
+        bundle.lockedCapital -= remainingCollateralAmount;
+        bundle.updatedAt = block.timestamp; // solhint-disable-line
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
-        emit LogBundlePolicyExpired(bundleId, processId, collateralAmount, capacityAmount);
+        emit LogBundlePolicyExpired(bundleId, processId, remainingCollateralAmount, capacityAmount);
     }
 
 
