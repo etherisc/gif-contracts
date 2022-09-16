@@ -373,7 +373,7 @@ contract TreasuryModule is
         bool success = TransferHelper.unifiedTransferFrom(token, bundleOwner, _instanceWalletAddress, feeAmount);
 
         emit LogTreasuryFeesTransferred(bundleOwner, _instanceWalletAddress, feeAmount);
-        require(success, Strings.toString(feeAmount));
+        require(success, "ERROR:TRS-053:FEE_TRANSFER_FAILED");
 
         // transfer net capital
         address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
