@@ -95,7 +95,10 @@ def test_underwrite_after_apply_with_riskpool_empty(
     application = instanceService.getApplication(process_id)
     assert 0 == application[0] # ApplicationState.Applied
 
-    assert 1 == product.policies(riskId)
+    assert 1 == product.applications()
+    assert 0 == product.policies(riskId)
+
+    assert process_id == product.getApplicationId(0)
 
     # ensure that explicity underwriting still fails
     tx = product.underwrite(process_id, {'from': insurer})
