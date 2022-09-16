@@ -1,3 +1,4 @@
+from time import process_time
 import brownie
 import pytest
 
@@ -160,7 +161,77 @@ def test_guard_processPayout(
 
     with brownie.reverts("ERROR:CRC-003:NOT_PRODUCT_SERVICE"):
         instance.getTreasury().processPayout(processId, "123", {'from': theOutsider})
-    
+
+
+def test_processPayout_balance_allowance_checks(
+    instance: GifInstance,
+    owner: Account,
+    testCoin,
+    productOwner: Account,
+    oracleProvider: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account,
+    customer: Account,
+    riskpoolWallet: Account,
+):  
+    applicationFilter = bytes(0)
+
+    # prepare product and riskpool
+    (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
+        instance,
+        owner,
+        testCoin,
+        productOwner,
+        oracleProvider,
+        riskpoolKeeper,
+        capitalOwner,
+        True
+    )
+    instanceService = instance.getInstanceService()
+
+    # fund bundle
+    safetyFactor = 2
+    amount = 10000
+    testCoin.transfer(riskpoolKeeper, safetyFactor * amount, {'from': owner})
+    testCoin.approve(instance.getTreasury(), amount, {'from': riskpoolKeeper})
+    riskpool = gifRiskpool.getContract()
+
+    riskpool.createBundle(
+                applicationFilter, 
+                amount, 
+                {'from': riskpoolKeeper})
+
+    bundle = riskpool.getBundle(0)
+    print(bundle)
+
+        # prepare prolicy application
+    premium = 100
+    sumInsured = 1000
+    product = gifProduct.getContract()
+    policyController = instance.getPolicy()
+
+    # apply for policy, then submit and confirm claim
+    processId = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
+    tx = product.submitClaimNoOracle(processId, sumInsured, {'from': customer})
+    claimId = tx.return_value
+    product.confirmClaim(processId, claimId, sumInsured, {'from': productOwner})
+
+    # empty riskpool to test balance checks
+    riskpoolWalletBalance = testCoin.balanceOf(riskpoolWallet)
+    testCoin.transfer(productOwner, riskpoolWalletBalance, {'from': riskpoolWallet})
+
+    with brownie.reverts("ERROR:TRS-042:RISKPOOL_BALANCE_TOO_SMALL"):
+        product.createPayout(processId, claimId, sumInsured, {'from': productOwner})
+
+    # refill riskpool
+    testCoin.transfer(riskpoolWallet, riskpoolWalletBalance, {'from': productOwner})
+
+    with brownie.reverts("ERROR:TRS-043:PAYOUT_ALLOWANCE_TOO_SMALL"):
+        product.createPayout(processId, claimId, sumInsured, {'from': productOwner})
+
+    testCoin.approve(instance.getTreasury(), sumInsured, {'from': riskpoolWallet})
+    product.createPayout(processId, claimId, sumInsured, {'from': productOwner})
+
 
 def test_guard_processCapital(
     instance: GifInstance,
@@ -315,7 +386,7 @@ def test_processCapital_balance_allowance_checks(
 
     # ensure bundle cannot be created without allowance
     testCoin.transfer(riskpoolKeeper, 0.5 * amount, {'from': owner})
-    with brownie.reverts("ERROR:TRS-053:ALLOWANCE_TOO_SMALL"):
+    with brownie.reverts("ERROR:TRS-053:CAPITAL_TRANSFER_ALLOWANCE_TOO_SMALL"):
         riskpool.createBundle(
                     applicationFilter, 
                     amount, 
@@ -323,7 +394,7 @@ def test_processCapital_balance_allowance_checks(
 
     # ensure bundle cannot be created with too small allowance
     testCoin.approve(instance.getTreasury(), 0.5 * amount, {'from': riskpoolKeeper})
-    with brownie.reverts("ERROR:TRS-053:ALLOWANCE_TOO_SMALL"):
+    with brownie.reverts("ERROR:TRS-053:CAPITAL_TRANSFER_ALLOWANCE_TOO_SMALL"):
         riskpool.createBundle(
                     applicationFilter, 
                     amount, 

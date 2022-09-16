@@ -335,6 +335,11 @@ contract TreasuryModule is
             token.balanceOf(riskpoolWalletAddress) >= payout.amount, 
             "ERROR:TRS-042:RISKPOOL_BALANCE_TOO_SMALL"
         );
+        require(
+            token.allowance(riskpoolWalletAddress, address(this)) >= payout.amount, 
+            "ERROR:TRS-043:PAYOUT_ALLOWANCE_TOO_SMALL"
+        );
+
 
         // actual payout to policy holder
         bool success = TransferHelper.unifiedTransferFrom(token, riskpoolWalletAddress, metadata.owner, payout.amount);
@@ -342,7 +347,7 @@ contract TreasuryModule is
         netPayoutAmount = payout.amount;
 
         emit LogTreasuryPayoutTransferred(riskpoolWalletAddress, metadata.owner, payout.amount);
-        require(success, "ERROR:TRS-043:PAYOUT_TRANSFER_FAILED");
+        require(success, "ERROR:TRS-044:PAYOUT_TRANSFER_FAILED");
 
         emit LogTreasuryPayoutProcessed(riskpoolId,  metadata.owner, payout.amount);
     }
@@ -374,7 +379,7 @@ contract TreasuryModule is
 
         // check balance and allowance before starting any transfers
         require(token.balanceOf(bundleOwner) >= capitalAmount, "ERROR:TRS-052:BALANCE_TOO_SMALL");
-        require(token.allowance(bundleOwner, address(this)) >= capitalAmount, "ERROR:TRS-053:ALLOWANCE_TOO_SMALL");
+        require(token.allowance(bundleOwner, address(this)) >= capitalAmount, "ERROR:TRS-053:CAPITAL_TRANSFER_ALLOWANCE_TOO_SMALL");
 
         bool success = TransferHelper.unifiedTransferFrom(token, bundleOwner, _instanceWalletAddress, feeAmount);
 
