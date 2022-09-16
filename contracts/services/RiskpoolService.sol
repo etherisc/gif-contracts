@@ -233,6 +233,13 @@ contract RiskpoolService is
         _bundle.collateralizePolicy(bundleId, processId, collateralAmount);
     }
 
+    function processPayout(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyOwningRiskpool(bundleId, true)  
+    {
+        _bundle.processPayout(bundleId, processId, amount);
+    }
+
     function releasePolicy(uint256 bundleId, bytes32 processId)
         external override
         onlyOwningRiskpool(bundleId, false)  

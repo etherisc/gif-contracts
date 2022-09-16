@@ -249,6 +249,28 @@ contract PoolController is
     }
 
 
+    function processPayout(bytes32 processId, uint256 amount) 
+        external override
+        onlyPolicyFlow("Pool")
+    {
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
+        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
+        IPool.Pool storage pool = _riskpools[riskpoolId];
+        require(pool.createdAt > 0, "ERROR:POL-026:RISKPOOL_ID_INVALID");
+        require(pool.capital >= amount, "ERROR:POL-027:CAPITAL_TOO_LOW");
+        require(pool.lockedCapital >= amount, "ERROR:POL-028:LOCKED_CAPITAL_TOO_LOW");
+        require(pool.balance >= amount, "ERROR:POL-029:BALANCE_TOO_LOW");
+
+        pool.capital -= amount;
+        pool.lockedCapital -= amount;
+        pool.balance -= amount;
+        pool.updatedAt = block.timestamp; // solhint-disable-line
+
+        IRiskpool riskpool = _getRiskpoolComponent(metadata);
+        riskpool.processPolicyPayout(processId, amount);
+    }
+
+
     function increaseBalance(bytes32 processId, uint256 amount) 
         external override
         onlyPolicyFlow("Pool")

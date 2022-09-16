@@ -367,6 +367,10 @@ def test_process_policies_mix_batch_individual_processing(
     requestEvent = tx[0].events['LogAyiiRiskDataRequested'][0]
     print('ayii requestEvent {}'.format(requestEvent))
 
+    # attempt to process policy before oracle response is in
+    with brownie.reverts('ERROR:AYI-031:ORACLE_RESPONSE_MISSING'):
+        product.processPolicy(policyId[3], {'from': insurer})
+
 
     print('--- step test oracle response ----------------------------')
 
@@ -410,15 +414,24 @@ def test_process_policies_mix_batch_individual_processing(
 
     print('balanceOf(riskpoolWallet): {}'.format(token.balanceOf(riskpoolWallet)))
     print('sumInsured[0]: {}'.format(sumInsured[0]))
-    
-    # try to trigger without insurer role
+
+    assert product.policies(riskId[0]) == 5
+
+    # try to process without insurer role
     with brownie.reverts('AccessControl: account 0x5aeda56215b167893e80b4fe645ba6d5bab767de is missing role 0xf098b7742e998f92a3c749f35e64ef555edcecec4b78a00c532a4f385915955b'):
-        product.processPolicy(riskId[0], policyId[3], {'from': customer})
+        product.processPolicy(policyId[3], {'from': customer})
 
-    tx = product.processPolicy(riskId[0], policyId[3], {'from': insurer})
+    # try to process invalid processId
+    with brownie.reverts('ERROR:POC-101:APPLICATION_DOES_NOT_EXIST'):
+        product.processPolicy(s2b32('whateverId'), {'from': insurer})
+
+    assert product.policies(riskId[0]) == 5
+
+    tx = product.processPolicy(policyId[3], {'from': insurer})
     print(tx.info())
-
-    assert False
+    assert 'LogAyiiPolicyProcessed' in tx.events
+    assert tx.events['LogAyiiPolicyProcessed'][0]['policyId'] == policyId[3]
+    assert product.policies(riskId[0]) == 4
 
     # claim processing for policies associated with the specified risk
     # batch size=2 triggers processing of 2 policies for this risk
@@ -426,26 +439,15 @@ def test_process_policies_mix_batch_individual_processing(
     processedPolicyIds = tx.return_value
 
     assert len(processedPolicyIds) == 2
+    assert product.policies(riskId[0]) == 2
     assert processedPolicyIds[0] == policyId[4]
-    assert processedPolicyIds[1] == policyId[3]
+    assert processedPolicyIds[1] == policyId[2] # policyId[3] already processed individually 
 
     # process another 2 policies
     tx = product.processPoliciesForRisk(riskId[0], 2, {'from': insurer})
     processedPolicyIds = tx.return_value
 
     assert len(processedPolicyIds) == 2
-    assert processedPolicyIds[0] == policyId[2]
-    assert processedPolicyIds[1] == policyId[1]
-
-    # another 2 policies - BUT only one remains to be actually processed
-    tx = product.processPoliciesForRisk(riskId[0], 2, {'from': insurer})
-    processedPolicyIds = tx.return_value
-
-    assert len(processedPolicyIds) == 1
-    assert processedPolicyIds[0] == policyId[0]
-
-    # and finally another 2 policies - BUT none remains to be actually processed
-    tx = product.processPoliciesForRisk(riskId[0], 2, {'from': insurer})
-    processedPolicyIds = tx.return_value
-
-    assert len(processedPolicyIds) == 0
+    assert product.policies(riskId[0]) == 0
+    assert processedPolicyIds[0] == policyId[1]
+    assert processedPolicyIds[1] == policyId[0]

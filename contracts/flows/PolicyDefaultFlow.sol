@@ -272,7 +272,7 @@ contract PolicyDefaultFlow is
         policy.processPayout(processId, payoutId);
 
         PoolController pool = getPoolContract();
-        pool.decreaseBalance(processId, netPayoutAmount + feeAmount);
+        pool.processPayout(processId, netPayoutAmount + feeAmount);
     }
 
     function request(

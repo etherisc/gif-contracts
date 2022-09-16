@@ -159,13 +159,17 @@ def test_happy_path(
     assert riskpoolBalanceAfterPremiums == riskpoolBalanceAfterFunding + netPremium[0] + netPremium[1]
 
     # check risk bundle after premium
+    riskpoolExpectedCapital = riskpoolExpectedBalance
+    riskpoolExpectedLockedCapital = sumInsured[0] + sumInsured[1]
+    riskpoolExpectedBalance += netPremium[0] + netPremium[1]
+
     bundleAfterPremium = riskpool.getBundle(bundleIdx).dict()
     assert bundleAfterPremium['id'] == 1
     assert bundleAfterPremium['riskpoolId'] == riskpool.getId()
     assert bundleAfterPremium['state'] == 0
-    assert bundleAfterPremium['capital'] == riskpoolExpectedBalance
-    assert bundleAfterPremium['lockedCapital'] == sumInsured[0] + sumInsured[1]
-    assert bundleAfterPremium['balance'] == riskpoolExpectedBalance + netPremium[0] + netPremium[1]
+    assert bundleAfterPremium['capital'] == riskpoolExpectedCapital
+    assert bundleAfterPremium['lockedCapital'] == riskpoolExpectedLockedCapital
+    assert bundleAfterPremium['balance'] == riskpoolExpectedBalance
 
     policyId = [None, None]
     policyId = [tx[0].return_value, tx[1].return_value]
@@ -365,6 +369,16 @@ def test_happy_path(
     assert expectedPayoutAmount > 0
     assert expectedPayoutAmount <= sumInsured[0]
 
+    policy = instanceService.getPolicy(policyId[0]).dict()
+    print('policy {}'.format(policy))
+    assert policy['state'] == 2 # enum PolicyState {Active, Expired, Closed}
+    assert policy['claimsCount'] == 1
+    assert policy['openClaimsCount'] == 0
+    assert policy['payoutMaxAmount'] == sumInsured[0]
+    assert policy['payoutAmount'] == expectedPayoutAmount
+    assert policy['createdAt'] > 0
+    assert policy['updatedAt'] >= policy['createdAt']
+
     claim = instanceService.getClaim(policyId[0], 0).dict()
     print('claim {}'.format(claim))
     assert claim['state'] == 3 # ClaimState {Applied, Confirmed, Declined, Closed}
@@ -392,24 +406,23 @@ def test_happy_path(
     assert token.balanceOf(customer) == customerBalanceAfterPremium + expectedPayoutAmount 
     assert token.balanceOf(customer2) == customer2BalanceAfterPremium
 
+    riskpoolExpectedCapital -= expectedPayoutAmount
+    riskpoolExpectedLockedCapital = sumInsured[1]
+    riskpoolExpectedBalance -= expectedPayoutAmount
+
     # check risk bundle after payout
     bundleAfterPayout = riskpool.getBundle(bundleIdx).dict()
     assert bundleAfterPayout['id'] == 1
     assert bundleAfterPayout['riskpoolId'] == riskpool.getId()
     assert bundleAfterPayout['state'] == 0
-    assert bundleAfterPayout['capital'] == riskpoolExpectedBalance
-    assert bundleAfterPayout['lockedCapital'] == sumInsured[1]
-    assert bundleAfterPayout['balance'] == riskpoolExpectedBalance + netPremium[0] + netPremium[1] - expectedPayoutAmount
-
-    # record riskpool state after processing
-    balanceAfterProcessing = riskpool.getBalance()
-    valueLockedAfterProcessing = riskpool.getTotalValueLocked()
-    capacityAfterProcessing = riskpool.getCapacity()
+    assert bundleAfterPayout['capital'] == riskpoolExpectedCapital
+    assert bundleAfterPayout['lockedCapital'] == riskpoolExpectedLockedCapital
+    assert bundleAfterPayout['balance'] == riskpoolExpectedBalance
 
     # check book keeping on riskpool level
-    assert valueLockedAfterProcessing == valueLockedBeforeProcessing - sumInsured[0]
-    assert capacityAfterProcessing == capacityBeforeProcessing + sumInsured[0]
-    assert balanceAfterProcessing == balanceBeforeProcessing - expectedPayoutAmount
+    assert riskpool.getCapital() == riskpoolExpectedCapital
+    assert riskpool.getTotalValueLocked() == riskpoolExpectedLockedCapital
+    assert riskpool.getBalance() == riskpoolExpectedBalance
 
     print('--- step test process policies (risk[1]) -----------------')
 
@@ -433,14 +446,17 @@ def test_happy_path(
     assert claim['claimAmount'] == 0
 
     # check bundle state
+    riskpoolExpectedLockedCapital = 0
     bundleAfter2ndPayout = riskpool.getBundle(bundleIdx).dict()
-    assert bundleAfter2ndPayout['capital'] == riskpoolExpectedBalance
-    assert bundleAfter2ndPayout['lockedCapital'] == 0
-    assert bundleAfter2ndPayout['balance'] == riskpoolExpectedBalance + netPremium[0] + netPremium[1] - expectedPayoutAmount
+
+    assert bundleAfter2ndPayout['capital'] == riskpoolExpectedCapital
+    assert bundleAfter2ndPayout['lockedCapital'] == riskpoolExpectedLockedCapital
+    assert bundleAfter2ndPayout['balance'] == riskpoolExpectedBalance
 
     # check riskpool state
-    assert riskpool.getTotalValueLocked() == 0
-    assert riskpool.getBalance() == bundleAfter2ndPayout['balance']
+    assert riskpool.getCapital() == riskpoolExpectedCapital
+    assert riskpool.getTotalValueLocked() == riskpoolExpectedLockedCapital
+    assert riskpool.getBalance() == riskpoolExpectedBalance
 
     print('--- step test close bundle -------------------------------')
 
@@ -466,7 +482,13 @@ def test_happy_path(
     # verify bundle is burned and has 0 balance
     bundleAfterBurn = riskpool.getBundle(bundleIdx).dict()
     assert bundleAfterBurn['state'] == 3 # enum BundleState { Active, Locked, Closed, Burned }
+    assert bundleAfterBurn['capital'] == 0
+    assert bundleAfterBurn['lockedCapital'] == 0
     assert bundleAfterBurn['balance'] == 0
+
+    assert riskpool.getCapital() == 0
+    assert riskpool.getTotalValueLocked() == 0
+    assert riskpool.getBalance() == 0
 
     # verify bundle funds are now with investor
     assert bundleToken.exists(bundleNftId) == True

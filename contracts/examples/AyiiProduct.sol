@@ -416,27 +416,27 @@ contract AyiiProduct is
         for (uint256 i = 0; i < batchSize; i++) {
             // grab and process the last policy
             bytes32 policyId = EnumerableSet.at(_policies[riskId], elementIdx - i);
-            processPolicy(riskId, policyId);
+            processPolicy(policyId);
             processedPolicies[i] = policyId;
         }
 
         emit LogAyiiRiskProcessed(riskId, batchSize);
     }
 
-<<<<<<< HEAD
-=======
-    function processPolicy(bytes32 riskId, bytes32 policyId)
+    function processPolicy(bytes32 policyId)
         public
         onlyRole(INSURER_ROLE)
     {
+        IPolicy.Application memory application = _getApplication(policyId);
+        bytes32 riskId = abi.decode(application.data, (bytes32));
         Risk memory risk = _risks[riskId];
-        require(risk.responseAt > 0, "ERROR:AYI-030:ORACLE_RESPONSE_MISSING");
 
-        require(EnumerableSet.contains(_policies[riskId], policyId), "ERROR:AYI-031:POLICY_FOR_RISK_UNKNOWN");
+        require(risk.id == riskId, "ERROR:AYI-030:RISK_ID_INVALID");
+        require(risk.responseAt > 0, "ERROR:AYI-031:ORACLE_RESPONSE_MISSING");
+        require(EnumerableSet.contains(_policies[riskId], policyId), "ERROR:AYI-032:POLICY_FOR_RISK_UNKNOWN");
+
         EnumerableSet.remove(_policies[riskId], policyId);
 
-        IPolicy.Application memory application 
-            = _getApplication(policyId);
 
         uint256 claimAmount = calculatePayout(
             risk.payoutPercentage, 
@@ -465,7 +465,6 @@ contract AyiiProduct is
         emit LogAyiiPolicyProcessed(policyId);
     }
 
->>>>>>> 7bf9cc4 (intermediate state, 2 tests failing)
     function calculatePayout(uint256 payoutPercentage, uint256 sumInsuredAmount)
         public
         pure

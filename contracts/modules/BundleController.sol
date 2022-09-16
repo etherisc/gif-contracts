@@ -182,6 +182,41 @@ contract BundleController is
     }
 
 
+    function processPayout(uint256 bundleId, bytes32 processId, uint256 amount) 
+        external override 
+        onlyRiskpoolService
+    {
+        IPolicy.Policy memory policy = _policy.getPolicy(processId);
+        require(
+            policy.state != IPolicy.PolicyState.Closed,
+            "ERROR:POL-030:POLICY_STATE_INVALID"
+        );
+
+        // check there are policies and there is sufficient locked capital for policy
+        require(_activePolicies[bundleId] > 0, "ERROR:BUC-031:NO_ACTIVE_POLICIES_FOR_BUNDLE");
+        require(_valueLockedPerPolicy[bundleId][processId] >= amount, "ERROR:BUC-032:COLLATERAL_INSUFFICIENT_FOR_POLICY");
+
+        // make sure bundle exists and is not yet closed
+        Bundle storage bundle = _bundles[bundleId];
+        require(bundle.createdAt > 0, "ERROR:BUC-033:BUNDLE_DOES_NOT_EXIST");
+        require(
+            bundle.state == IBundle.BundleState.Active
+            || bundle.state == IBundle.BundleState.Locked, 
+            "ERROR:BUC-034:BUNDLE_STATE_INVALID");
+        require(bundle.capital >= amount, "ERROR:BUC-035:CAPITAL_TOO_LOW");
+        require(bundle.lockedCapital >= amount, "ERROR:BUC-036:LOCKED_CAPITAL_TOO_LOW");
+        require(bundle.balance >= amount, "ERROR:BUC-037:BALANCE_TOO_LOW");
+
+        _valueLockedPerPolicy[bundleId][processId] -= amount;
+        bundle.capital -= amount;
+        bundle.lockedCapital -= amount;
+        bundle.balance -= amount;
+        bundle.updatedAt = block.timestamp; // solhint-disable-line
+
+        emit LogBundlePayoutProcessed(bundleId, processId, amount);
+    }
+
+
     function releasePolicy(uint256 bundleId, bytes32 processId) 
         external override 
         onlyRiskpoolService
@@ -198,14 +233,10 @@ contract BundleController is
         require(bundle.createdAt > 0, "ERROR:BUC-024:BUNDLE_DOES_NOT_EXIST");
         require(_activePolicies[bundleId] > 0, "ERROR:BUC-025:NO_ACTIVE_POLICIES_FOR_BUNDLE");
 
-        uint256 lockedByBundleAmount = _valueLockedPerPolicy[bundleId][processId];
-        require(lockedByBundleAmount > 0, "ERROR:BUC-026:NOT_COLLATERALIZED_BY_BUNDLE");
-
-        remainingCollateralAmount = lockedByBundleAmount - policy.payoutAmount;
-
+        uint256 lockedForPolicyAmount = _valueLockedPerPolicy[bundleId][processId];
         // this should never ever fail ...
         require(
-            bundle.lockedCapital >= remainingCollateralAmount,
+            bundle.lockedCapital >= lockedForPolicyAmount,
             "PANIC:BUC-027:UNLOCK_CAPITAL_TOO_BIG"
         );
 
@@ -214,11 +245,11 @@ contract BundleController is
         delete _valueLockedPerPolicy[bundleId][processId];
 
         // update bundle capital
-        bundle.lockedCapital -= remainingCollateralAmount;
+        bundle.lockedCapital -= lockedForPolicyAmount;
         bundle.updatedAt = block.timestamp; // solhint-disable-line
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
-        emit LogBundlePolicyExpired(bundleId, processId, remainingCollateralAmount, capacityAmount);
+        emit LogBundlePolicyReleased(bundleId, processId, lockedForPolicyAmount, capacityAmount);
     }
 
 
@@ -229,7 +260,7 @@ contract BundleController is
     {
         Bundle storage bundle = _bundles[bundleId];
         bundle.balance += amount;
-        bundle.updatedAt = block.timestamp;
+        bundle.updatedAt = block.timestamp; // solhint-disable-line
     }
 
 
