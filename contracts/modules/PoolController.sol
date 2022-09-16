@@ -219,6 +219,44 @@ contract PoolController is
         }
     }
 
+
+    function processPremium(bytes32 processId, uint256 amount) 
+        external override
+        onlyPolicyFlow("Pool")
+    {
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
+        IRiskpool riskpool = _getRiskpoolComponent(metadata);
+        riskpool.processPolicyPremium(processId, amount);
+
+        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
+        IPool.Pool storage pool = _riskpools[riskpoolId];
+        pool.balance += amount;
+        pool.updatedAt = block.timestamp;
+    }
+
+
+    function processPayout(bytes32 processId, uint256 amount) 
+        external override
+        onlyPolicyFlow("Pool")
+    {
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
+        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
+        IPool.Pool storage pool = _riskpools[riskpoolId];
+        require(pool.createdAt > 0, "ERROR:POL-026:RISKPOOL_ID_INVALID");
+        require(pool.capital >= amount, "ERROR:POL-027:CAPITAL_TOO_LOW");
+        require(pool.lockedCapital >= amount, "ERROR:POL-028:LOCKED_CAPITAL_TOO_LOW");
+        require(pool.balance >= amount, "ERROR:POL-029:BALANCE_TOO_LOW");
+
+        pool.capital -= amount;
+        pool.lockedCapital -= amount;
+        pool.balance -= amount;
+        pool.updatedAt = block.timestamp; // solhint-disable-line
+
+        IRiskpool riskpool = _getRiskpoolComponent(metadata);
+        riskpool.processPolicyPayout(processId, amount);
+    }
+
+
     function release(bytes32 processId) 
         external override
         onlyPolicyFlow("Pool")
@@ -246,58 +284,6 @@ contract PoolController is
         // free memory
         delete _collateralAmount[processId];
         emit LogRiskpoolCollateralReleased(riskpoolId, processId, remainingCollateralAmount);
-    }
-
-
-    function processPayout(bytes32 processId, uint256 amount) 
-        external override
-        onlyPolicyFlow("Pool")
-    {
-        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
-        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
-        IPool.Pool storage pool = _riskpools[riskpoolId];
-        require(pool.createdAt > 0, "ERROR:POL-026:RISKPOOL_ID_INVALID");
-        require(pool.capital >= amount, "ERROR:POL-027:CAPITAL_TOO_LOW");
-        require(pool.lockedCapital >= amount, "ERROR:POL-028:LOCKED_CAPITAL_TOO_LOW");
-        require(pool.balance >= amount, "ERROR:POL-029:BALANCE_TOO_LOW");
-
-        pool.capital -= amount;
-        pool.lockedCapital -= amount;
-        pool.balance -= amount;
-        pool.updatedAt = block.timestamp; // solhint-disable-line
-
-        IRiskpool riskpool = _getRiskpoolComponent(metadata);
-        riskpool.processPolicyPayout(processId, amount);
-    }
-
-
-    function increaseBalance(bytes32 processId, uint256 amount) 
-        external override
-        onlyPolicyFlow("Pool")
-    {
-        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
-        IRiskpool riskpool = _getRiskpoolComponent(metadata);
-        riskpool.increaseBalance(processId, amount);
-
-        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
-        IPool.Pool storage pool = _riskpools[riskpoolId];
-        pool.balance += amount;
-        pool.updatedAt = block.timestamp;
-    }
-
-
-    function decreaseBalance(bytes32 processId, uint256 amount) 
-        external override
-        onlyPolicyFlow("Pool")
-    {
-        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
-        IRiskpool riskpool = _getRiskpoolComponent(metadata);
-        riskpool.decreaseBalance(processId, amount);
-
-        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
-        IPool.Pool storage pool = _riskpools[riskpoolId];
-        pool.balance -= amount;
-        pool.updatedAt = block.timestamp;
     }
 
     function setMaximumNumberOfActiveBundles(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)

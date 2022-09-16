@@ -368,7 +368,7 @@ def test_process_policies_mix_batch_individual_processing(
     print('ayii requestEvent {}'.format(requestEvent))
 
     # attempt to process policy before oracle response is in
-    with brownie.reverts('ERROR:AYI-031:ORACLE_RESPONSE_MISSING'):
+    with brownie.reverts('ERROR:AYI-032:ORACLE_RESPONSE_MISSING'):
         product.processPolicy(policyId[3], {'from': insurer})
 
 

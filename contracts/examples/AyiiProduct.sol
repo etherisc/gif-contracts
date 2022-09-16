@@ -431,9 +431,9 @@ contract AyiiProduct is
         bytes32 riskId = abi.decode(application.data, (bytes32));
         Risk memory risk = _risks[riskId];
 
-        require(risk.id == riskId, "ERROR:AYI-030:RISK_ID_INVALID");
-        require(risk.responseAt > 0, "ERROR:AYI-031:ORACLE_RESPONSE_MISSING");
-        require(EnumerableSet.contains(_policies[riskId], policyId), "ERROR:AYI-032:POLICY_FOR_RISK_UNKNOWN");
+        require(risk.id == riskId, "ERROR:AYI-031:RISK_ID_INVALID");
+        require(risk.responseAt > 0, "ERROR:AYI-032:ORACLE_RESPONSE_MISSING");
+        require(EnumerableSet.contains(_policies[riskId], policyId), "ERROR:AYI-033:POLICY_FOR_RISK_UNKNOWN");
 
         EnumerableSet.remove(_policies[riskId], policyId);
 

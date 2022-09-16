@@ -233,6 +233,13 @@ contract RiskpoolService is
         _bundle.collateralizePolicy(bundleId, processId, collateralAmount);
     }
 
+    function processPremium(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyOwningRiskpool(bundleId, true)
+    {        
+        _bundle.processPremium(bundleId, processId, amount);
+    }
+
     function processPayout(uint256 bundleId, bytes32 processId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)  
@@ -248,42 +255,10 @@ contract RiskpoolService is
         collateralAmount = _bundle.releasePolicy(bundleId, processId);
     }
 
-
-    function increaseBundleBalance(uint256 bundleId, uint256 amount)
-        external override
-        onlyOwningRiskpool(bundleId, true)
-        returns(uint256 newBalance)
-    {        
-        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
-        require(bundle.state == IBundle.BundleState.Active, "ERROR:RPS-030:BUNDLE_NOT_ACTIVE");
-
-        _bundle.increaseBalance(bundleId, amount);
-        newBalance = bundle.balance + amount;
-    }
-
-    function decreaseBundleBalance(uint256 bundleId, uint256 amount)
-        external override
-        onlyOwningRiskpool(bundleId, true)
-        returns(uint256 newBalance)
-    {
-        IBundle.Bundle memory bundle = _bundle.getBundle(bundleId);
-        require(
-            bundle.state != IBundle.BundleState.Closed
-            && bundle.state != IBundle.BundleState.Burned, 
-            "ERROR:RPS-031:BUNDLE_CLOSED_OR_BURNED"
-        );
-
-        require(bundle.balance >= amount, "ERROR:RPS-032:BUNDLE_BALANCE_TOO_LOW");
-
-        _bundle.decreaseBalance(bundleId, amount);
-        newBalance = bundle.balance - amount;
-    }
-
     function setMaximumNumberOfActiveBundles(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)
         external override
         onlyOwningRiskpoolId(riskpoolId, true)
     {
         _pool.setMaximumNumberOfActiveBundles(riskpoolId, maxNumberOfActiveBundles);
-    }
-    
+    }   
 }

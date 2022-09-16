@@ -147,7 +147,7 @@ contract PolicyDefaultFlow is
             policy.collectPremium(processId, netPremiumAmount + feeAmount);
 
             PoolController pool = getPoolContract();
-            pool.increaseBalance(processId, netPremiumAmount);
+            pool.processPremium(processId, netPremiumAmount);
         }
     }
     
