@@ -177,12 +177,8 @@ contract TreasuryModule is
     {
         require(_component.isProduct(feeSpec.componentId), "ERROR:TRS-022:NOT_PRODUCT");
         
-        // if fee spec already exists, keep original creation timestamp 
-        uint256 originalCreatedAt = 0;
-        if(_fees[feeSpec.componentId].createdAt > 0) {
-            originalCreatedAt = _fees[feeSpec.componentId].createdAt;
-        }
-
+        // record  original creation timestamp 
+        uint256 originalCreatedAt = _fees[feeSpec.componentId].createdAt;
         _fees[feeSpec.componentId] = feeSpec;
 
         // set original creation timestamp if fee spec already existed
@@ -204,12 +200,8 @@ contract TreasuryModule is
     {
         require(_component.isRiskpool(feeSpec.componentId), "ERROR:TRS-023:NOT_RISKPOOL");
 
-        // if fee spec already exists, keep original creation timestamp 
-        uint256 originalCreatedAt = 0;
-        if(_fees[feeSpec.componentId].createdAt > 0) {
-            originalCreatedAt = _fees[feeSpec.componentId].createdAt;
-        }
-
+        // record  original creation timestamp 
+        uint256 originalCreatedAt = _fees[feeSpec.componentId].createdAt;
         _fees[feeSpec.componentId] = feeSpec;
 
         // set original creation timestamp if fee spec already existed
