@@ -176,8 +176,16 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         require(_component.isProduct(feeSpec.componentId), "ERROR:TRS-022:NOT_PRODUCT");
-
+        
+        // record  original creation timestamp 
+        uint256 originalCreatedAt = _fees[feeSpec.componentId].createdAt;
         _fees[feeSpec.componentId] = feeSpec;
+
+        // set original creation timestamp if fee spec already existed
+        if (originalCreatedAt > 0) {
+            _fees[feeSpec.componentId].createdAt = originalCreatedAt;
+        }
+
         emit LogTreasuryPremiumFeesSet (
             feeSpec.componentId,
             feeSpec.fixedFee, 
@@ -192,7 +200,15 @@ contract TreasuryModule is
     {
         require(_component.isRiskpool(feeSpec.componentId), "ERROR:TRS-023:NOT_RISKPOOL");
 
+        // record  original creation timestamp 
+        uint256 originalCreatedAt = _fees[feeSpec.componentId].createdAt;
         _fees[feeSpec.componentId] = feeSpec;
+
+        // set original creation timestamp if fee spec already existed
+        if (originalCreatedAt > 0) {
+            _fees[feeSpec.componentId].createdAt = originalCreatedAt;
+        }
+
         emit LogTreasuryCapitalFeesSet (
             feeSpec.componentId,
             feeSpec.fixedFee, 
@@ -309,7 +325,11 @@ contract TreasuryModule is
 
         require(
             token.balanceOf(riskpoolWalletAddress) >= payout.amount, 
-            "ERROR:TRS-042:RISKPOOL_BALANCE_TOO_SMALL"
+            "ERROR:TRS-042:RISKPOOL_WALLET_BALANCE_TOO_SMALL"
+        );
+        require(
+            token.allowance(riskpoolWalletAddress, address(this)) >= payout.amount, 
+            "ERROR:TRS-043:PAYOUT_ALLOWANCE_TOO_SMALL"
         );
 
         // actual payout to policy holder
@@ -318,7 +338,7 @@ contract TreasuryModule is
         netPayoutAmount = payout.amount;
 
         emit LogTreasuryPayoutTransferred(riskpoolWalletAddress, metadata.owner, payout.amount);
-        require(success, "ERROR:TRS-043:PAYOUT_TRANSFER_FAILED");
+        require(success, "ERROR:TRS-044:PAYOUT_TRANSFER_FAILED");
 
         emit LogTreasuryPayoutProcessed(riskpoolId,  metadata.owner, payout.amount);
     }
@@ -344,18 +364,21 @@ contract TreasuryModule is
         // obtain relevant token for product/riskpool pair
         IERC20 token = _componentToken[bundle.riskpoolId];
 
-        // calculate and transfer fees
+        // calculate fees and net capital
         feeAmount = _calculateFee(feeSpec, capitalAmount);
+        netCapitalAmount = capitalAmount - feeAmount;
+
+        // check balance and allowance before starting any transfers
+        require(token.balanceOf(bundleOwner) >= capitalAmount, "ERROR:TRS-052:BALANCE_TOO_SMALL");
+        require(token.allowance(bundleOwner, address(this)) >= capitalAmount, "ERROR:TRS-053:CAPITAL_TRANSFER_ALLOWANCE_TOO_SMALL");
+
         bool success = TransferHelper.unifiedTransferFrom(token, bundleOwner, _instanceWalletAddress, feeAmount);
 
         emit LogTreasuryFeesTransferred(bundleOwner, _instanceWalletAddress, feeAmount);
-        require(success, "ERROR:TRS-053:FEE_TRANSFER_FAILED");
+        require(success, "ERROR:TRS-054:FEE_TRANSFER_FAILED");
 
         // transfer net capital
         address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
-        require(riskpoolWallet != address(0), "ERROR:TRS-054:RISKPOOL_WITHOUT_WALLET");
-
-        netCapitalAmount = capitalAmount - feeAmount;
         success = TransferHelper.unifiedTransferFrom(token, bundleOwner, riskpoolWallet, netCapitalAmount);
 
         emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, netCapitalAmount);
@@ -387,6 +410,15 @@ contract TreasuryModule is
         address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
         address bundleOwner = _bundle.getOwner(bundleId);
         IERC20 token = _componentToken[bundle.riskpoolId];
+
+        require(
+            token.balanceOf(riskpoolWallet) >= amount, 
+            "ERROR:TRS-061:RISKPOOL_WALLET_BALANCE_TOO_SMALL"
+        );
+        require(
+            token.allowance(riskpoolWallet, address(this)) >= amount, 
+            "ERROR:TRS-062:WITHDRAWAL_ALLOWANCE_TOO_SMALL"
+        );
 
         // TODO consider to introduce withdrawal fees
         // ideally symmetrical reusing capital fee spec for riskpool
