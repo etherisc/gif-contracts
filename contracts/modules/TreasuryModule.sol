@@ -368,17 +368,21 @@ contract TreasuryModule is
         // obtain relevant token for product/riskpool pair
         IERC20 token = _componentToken[bundle.riskpoolId];
 
-        // calculate and transfer fees
+        // calculate fees and net capital
         feeAmount = _calculateFee(feeSpec, capitalAmount);
+        netCapitalAmount = capitalAmount - feeAmount;
+
+        // check balance and allowance before starting any transfers
+        require(token.balanceOf(bundleOwner) >= capitalAmount, "ERROR:TRS-052:BALANCE_TOO_SMALL");
+        require(token.allowance(bundleOwner, address(this)) >= capitalAmount, "ERROR:TRS-053:ALLOWANCE_TOO_SMALL");
+
         bool success = TransferHelper.unifiedTransferFrom(token, bundleOwner, _instanceWalletAddress, feeAmount);
 
         emit LogTreasuryFeesTransferred(bundleOwner, _instanceWalletAddress, feeAmount);
-        require(success, "ERROR:TRS-053:FEE_TRANSFER_FAILED");
+        require(success, "ERROR:TRS-054:FEE_TRANSFER_FAILED");
 
         // transfer net capital
         address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
-
-        netCapitalAmount = capitalAmount - feeAmount;
         success = TransferHelper.unifiedTransferFrom(token, bundleOwner, riskpoolWallet, netCapitalAmount);
 
         emit LogTreasuryCapitalTransferred(bundleOwner, riskpoolWallet, netCapitalAmount);

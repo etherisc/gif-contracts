@@ -276,6 +276,66 @@ def test_guard_processWithdrawal(
         instance.getTreasury().processWithdrawal(bundle[0], "1000", {'from': theOutsider})
 
 
+def test_processCapital_balance_allowance_checks(
+    instance: GifInstance,
+    owner: Account,
+    testCoin,
+    productOwner: Account,
+    oracleProvider: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account,
+    customer: Account,
+    theOutsider: Account,
+):  
+    applicationFilter = bytes(0)
+
+    # prepare product and riskpool
+    (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
+        instance,
+        owner,
+        testCoin,
+        productOwner,
+        oracleProvider,
+        riskpoolKeeper,
+        capitalOwner,
+        True
+    )
+
+    # fund bundle
+    amount = 10000
+    testCoin.transfer(riskpoolKeeper, 0.5 * amount, {'from': owner})
+    riskpool = gifRiskpool.getContract()
+
+    # ensure bundle cannot be created with too small balance
+    with brownie.reverts("ERROR:TRS-052:BALANCE_TOO_SMALL"):
+        riskpool.createBundle(
+                    applicationFilter, 
+                    amount, 
+                    {'from': riskpoolKeeper})
+
+    # ensure bundle cannot be created without allowance
+    testCoin.transfer(riskpoolKeeper, 0.5 * amount, {'from': owner})
+    with brownie.reverts("ERROR:TRS-053:ALLOWANCE_TOO_SMALL"):
+        riskpool.createBundle(
+                    applicationFilter, 
+                    amount, 
+                    {'from': riskpoolKeeper})
+
+    # ensure bundle cannot be created with too small allowance
+    testCoin.approve(instance.getTreasury(), 0.5 * amount, {'from': riskpoolKeeper})
+    with brownie.reverts("ERROR:TRS-053:ALLOWANCE_TOO_SMALL"):
+        riskpool.createBundle(
+                    applicationFilter, 
+                    amount, 
+                    {'from': riskpoolKeeper})
+
+    # ensure bundle can be created
+    testCoin.approve(instance.getTreasury(), amount, {'from': riskpoolKeeper})
+    riskpool.createBundle(
+                applicationFilter, 
+                amount, 
+                {'from': riskpoolKeeper})
+
 
 def getProductAndRiskpool(
     instance: GifInstance,

@@ -105,41 +105,6 @@ def test_bundle_creation_with_riskpool_wallet_not_set(
             amount, 
             {'from': bundleOwner})
 
-def test_bundle_creation_allowance_too_small(
-    instance: GifInstance,
-    owner: Account,
-    testCoin,
-    productOwner: Account,
-    oracleProvider: Account,
-    riskpoolKeeper: Account,
-    capitalOwner: Account,
-):  
-    applicationFilter = bytes(0)
-
-    (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
-        instance,
-        owner,
-        testCoin,
-        productOwner,
-        oracleProvider,
-        riskpoolKeeper,
-        capitalOwner,
-        True
-    )
-
-    # prepare allowance too small for riskpool funding 
-    safetyFactor = 2
-    amount = 10000
-    testCoin.transfer(riskpoolKeeper, safetyFactor * amount, {'from': owner})
-    testCoin.approve(instance.getTreasury(), 0.9 * amount, {'from': riskpoolKeeper})
-
-    # ensures bundle creation fails due to insufficient allowance
-    with brownie.reverts("ERROR:TRS-055:CAPITAL_TRANSFER_FAILED"):
-        gifRiskpool.getContract().createBundle(
-                applicationFilter, 
-                amount, 
-                {'from': riskpoolKeeper})
-
 
 def test_bundle_withdrawal_allowance_too_small(
     instance: GifInstance,
