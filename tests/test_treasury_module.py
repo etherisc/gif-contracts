@@ -1,7 +1,9 @@
 import brownie
 import pytest
+import time
 
 from brownie.network.account import Account
+from brownie.network.state import Chain
 
 from scripts.const import ZERO_ADDRESS
 from scripts.instance import GifInstance
@@ -346,6 +348,82 @@ def test_two_products_same_riskpool(
 
     # ensure the two products are different
     assert gifProduct2.getContract().getId() != gifProduct.getContract().getId()
+
+
+def test_overwriting_capital_fees(
+    instance: GifInstance,
+    instanceOperator: Account,
+    gifTestProduct,
+    chain: Chain
+):
+    instanceService = instance.getInstanceService()
+    instanceOperatorService = instance.getInstanceOperatorService()
+    treasury = instance.getTreasury()
+
+    product = gifTestProduct.getContract()
+    riskpoolId = gifTestProduct.getRiskpool().getId()
+
+    hundredPercent = instanceService.getFeeFractionFullUnit()
+
+    existingFeeSpec = treasury.getFeeSpecification(riskpoolId)
+
+    # advance chain to ensure new timestamp
+    chain.sleep(31337)
+    chain.mine()
+
+    # ensure that the new fee spec has a new timstamp
+    newRiskpoolFeeSpec = instanceOperatorService.createFeeSpecification(
+        riskpoolId, 999, hundredPercent / 200, str.encode("a"))
+    assert existingFeeSpec[4] != newRiskpoolFeeSpec[4]
+
+    # ensure that the fee spec is updated and all values except for createdAt are updated
+    tx = instanceOperatorService.setCapitalFees(newRiskpoolFeeSpec, {"from": instanceOperator})    
+    updatedFeeSpec = treasury.getFeeSpecification(riskpoolId)
+
+    assert existingFeeSpec[0] == updatedFeeSpec[0]
+    assert existingFeeSpec[1] != updatedFeeSpec[1]
+    assert existingFeeSpec[2] != updatedFeeSpec[2]
+    assert existingFeeSpec[3] != updatedFeeSpec[3]
+    assert existingFeeSpec[4] == updatedFeeSpec[4]
+    assert existingFeeSpec[5] != updatedFeeSpec[5]
+
+
+def test_overwriting_premium_fees(
+    instance: GifInstance,
+    instanceOperator: Account,
+    gifTestProduct,
+    chain: Chain
+):
+    instanceService = instance.getInstanceService()
+    instanceOperatorService = instance.getInstanceOperatorService()
+    treasury = instance.getTreasury()
+
+    product = gifTestProduct.getContract()
+    productId = product.getId()
+
+    hundredPercent = instanceService.getFeeFractionFullUnit()
+
+    existingFeeSpec = treasury.getFeeSpecification(productId)
+
+    # advance chain to ensure new timestamp
+    chain.sleep(31337)
+    chain.mine()
+
+    # ensure that the new fee spec has a new timstamp
+    newProductFeeSpec = instanceOperatorService.createFeeSpecification(
+        productId, 999, hundredPercent / 200, str.encode("a"))
+    assert existingFeeSpec[4] != newProductFeeSpec[4]
+
+    # ensure that the fee spec is updated and all values except for createdAt are updated
+    tx = instanceOperatorService.setPremiumFees(newProductFeeSpec, {"from": instanceOperator})    
+    updatedFeeSpec = treasury.getFeeSpecification(productId)
+
+    assert existingFeeSpec[0] == updatedFeeSpec[0]
+    assert existingFeeSpec[1] != updatedFeeSpec[1]
+    assert existingFeeSpec[2] != updatedFeeSpec[2]
+    assert existingFeeSpec[3] != updatedFeeSpec[3]
+    assert existingFeeSpec[4] == updatedFeeSpec[4]
+    assert existingFeeSpec[5] != updatedFeeSpec[5]
 
 
 def getProductAndRiskpool(

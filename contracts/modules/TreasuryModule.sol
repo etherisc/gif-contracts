@@ -176,8 +176,20 @@ contract TreasuryModule is
         onlyInstanceOperator
     {
         require(_component.isProduct(feeSpec.componentId), "ERROR:TRS-022:NOT_PRODUCT");
+        
+        // if fee spec already exists, keep original creation timestamp 
+        uint256 originalCreatedAt = 0;
+        if(_fees[feeSpec.componentId].createdAt > 0) {
+            originalCreatedAt = _fees[feeSpec.componentId].createdAt;
+        }
 
         _fees[feeSpec.componentId] = feeSpec;
+
+        // set original creation timestamp if fee spec already existed
+        if (originalCreatedAt > 0) {
+            _fees[feeSpec.componentId].createdAt = originalCreatedAt;
+        }
+
         emit LogTreasuryPremiumFeesSet (
             feeSpec.componentId,
             feeSpec.fixedFee, 
@@ -192,7 +204,19 @@ contract TreasuryModule is
     {
         require(_component.isRiskpool(feeSpec.componentId), "ERROR:TRS-023:NOT_RISKPOOL");
 
+        // if fee spec already exists, keep original creation timestamp 
+        uint256 originalCreatedAt = 0;
+        if(_fees[feeSpec.componentId].createdAt > 0) {
+            originalCreatedAt = _fees[feeSpec.componentId].createdAt;
+        }
+
         _fees[feeSpec.componentId] = feeSpec;
+
+        // set original creation timestamp if fee spec already existed
+        if (originalCreatedAt > 0) {
+            _fees[feeSpec.componentId].createdAt = originalCreatedAt;
+        }
+
         emit LogTreasuryCapitalFeesSet (
             feeSpec.componentId,
             feeSpec.fixedFee, 
@@ -349,7 +373,7 @@ contract TreasuryModule is
         bool success = TransferHelper.unifiedTransferFrom(token, bundleOwner, _instanceWalletAddress, feeAmount);
 
         emit LogTreasuryFeesTransferred(bundleOwner, _instanceWalletAddress, feeAmount);
-        require(success, "ERROR:TRS-053:FEE_TRANSFER_FAILED");
+        require(success, Strings.toString(feeAmount));
 
         // transfer net capital
         address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);

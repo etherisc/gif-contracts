@@ -39,6 +39,7 @@ from brownie import (
 
 from brownie.network import accounts
 from brownie.network.account import Account
+from brownie.network.state import Chain
 
 from scripts.const import (
     GIF_RELEASE,
@@ -293,6 +294,11 @@ def bundleToken(owner) -> BundleToken:
 def testCoinSetup(testCoin, owner, customer) -> TestCoin:
     testCoin.transfer(customer, 10**6, {'from': owner})
     return testCoin
+
+@pytest.fixture(scope="module")
+def chain() -> Chain:
+    return Chain()
+
 
 def contractFromAddress(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
