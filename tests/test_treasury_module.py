@@ -106,62 +106,6 @@ def test_bundle_creation_with_riskpool_wallet_not_set(
             {'from': bundleOwner})
 
 
-def test_bundle_withdrawal_allowance_too_small(
-    instance: GifInstance,
-    owner: Account,
-    testCoin,
-    productOwner: Account,
-    oracleProvider: Account,
-    riskpoolKeeper: Account,
-    capitalOwner: Account,
-):  
-    applicationFilter = bytes(0)
-
-    # prepare product and riskpool
-    (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
-        instance,
-        owner,
-        testCoin,
-        productOwner,
-        oracleProvider,
-        riskpoolKeeper,
-        capitalOwner,
-        True
-    )
-
-    # fund bundle
-    safetyFactor = 2
-    amount = 10000
-    testCoin.transfer(riskpoolKeeper, safetyFactor * amount, {'from': owner})
-    testCoin.approve(instance.getTreasury(), amount, {'from': riskpoolKeeper})
-    riskpool = gifRiskpool.getContract()
-
-    riskpool.createBundle(
-                applicationFilter, 
-                amount, 
-                {'from': riskpoolKeeper})
-
-    bundle = riskpool.getBundle(0)
-    print(bundle)
-
-    (bundleId) = bundle[0]
-
-    # check bundle values with expectation
-    assert bundleId == 1
-
-    # close bundle
-    riskpool.closeBundle(bundleId, {'from': riskpoolKeeper})
-
-    # prepare allowance that is too small for bundle withdrawal
-    testCoin.approve(instance.getTreasury(), 0.9 * amount, {'from': riskpoolKeeper})
-
-    # ensures that burning bundle fails during token withdrawal due to insufficient allowance
-    with brownie.reverts("ERROR:TRS-063:WITHDRAWAL_TRANSFER_FAILED"):
-        riskpool.burnBundle(
-                bundleId, 
-                {'from': riskpoolKeeper})
-
-
 def test_two_products_different_coin_same_riskpool(
     instance: GifInstance,
     owner: Account,

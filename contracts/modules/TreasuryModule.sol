@@ -333,13 +333,12 @@ contract TreasuryModule is
 
         require(
             token.balanceOf(riskpoolWalletAddress) >= payout.amount, 
-            "ERROR:TRS-042:RISKPOOL_BALANCE_TOO_SMALL"
+            "ERROR:TRS-042:RISKPOOL_WALLET_BALANCE_TOO_SMALL"
         );
         require(
             token.allowance(riskpoolWalletAddress, address(this)) >= payout.amount, 
             "ERROR:TRS-043:PAYOUT_ALLOWANCE_TOO_SMALL"
         );
-
 
         // actual payout to policy holder
         bool success = TransferHelper.unifiedTransferFrom(token, riskpoolWalletAddress, metadata.owner, payout.amount);
@@ -419,6 +418,15 @@ contract TreasuryModule is
         address riskpoolWallet = getRiskpoolWallet(bundle.riskpoolId);
         address bundleOwner = _bundle.getOwner(bundleId);
         IERC20 token = _componentToken[bundle.riskpoolId];
+
+        require(
+            token.balanceOf(riskpoolWallet) >= amount, 
+            "ERROR:TRS-061:RISKPOOL_WALLET_BALANCE_TOO_SMALL"
+        );
+        require(
+            token.allowance(riskpoolWallet, address(this)) >= amount, 
+            "ERROR:TRS-062:WITHDRAWAL_ALLOWANCE_TOO_SMALL"
+        );
 
         // TODO consider to introduce withdrawal fees
         // ideally symmetrical reusing capital fee spec for riskpool

@@ -220,7 +220,7 @@ def test_processPayout_balance_allowance_checks(
     riskpoolWalletBalance = testCoin.balanceOf(riskpoolWallet)
     testCoin.transfer(productOwner, riskpoolWalletBalance, {'from': riskpoolWallet})
 
-    with brownie.reverts("ERROR:TRS-042:RISKPOOL_BALANCE_TOO_SMALL"):
+    with brownie.reverts("ERROR:TRS-042:RISKPOOL_WALLET_BALANCE_TOO_SMALL"):
         product.createPayout(processId, claimId, sumInsured, {'from': productOwner})
 
     # refill riskpool
@@ -406,6 +406,66 @@ def test_processCapital_balance_allowance_checks(
                 applicationFilter, 
                 amount, 
                 {'from': riskpoolKeeper})
+
+
+def test_processWithdrawal_balance_allowance_checks(
+    instance: GifInstance,
+    owner: Account,
+    testCoin,
+    productOwner: Account,
+    oracleProvider: Account,
+    riskpoolKeeper: Account,
+    capitalOwner: Account,
+    riskpoolWallet: Account,
+    theOutsider: Account,
+):  
+    applicationFilter = bytes(0)
+
+    # prepare product and riskpool
+    (gifProduct, gifRiskpool, gifOracle) = getProductAndRiskpool(
+        instance,
+        owner,
+        testCoin,
+        productOwner,
+        oracleProvider,
+        riskpoolKeeper,
+        capitalOwner,
+        True
+    )
+
+    # fund bundle
+    amount = 10000
+    testCoin.transfer(riskpoolKeeper, amount, {'from': owner})
+    riskpool = gifRiskpool.getContract()
+
+    # ensure bundle can be created
+    testCoin.approve(instance.getTreasury(), amount, {'from': riskpoolKeeper})
+    riskpool.createBundle(
+                applicationFilter, 
+                amount, 
+                {'from': riskpoolKeeper})
+
+    bundle = riskpool.getBundle(0)
+    bundleId = bundle[0]
+
+    # empty riskpool wallet
+    riskpoolWalletBalance = testCoin.balanceOf(riskpoolWallet)
+    testCoin.transfer(productOwner, riskpoolWalletBalance, {'from': riskpoolWallet})
+
+    # ensure defunding not possible on empty wallet
+    with brownie.reverts("ERROR:TRS-061:RISKPOOL_WALLET_BALANCE_TOO_SMALL"):
+        riskpool.defundBundle(bundleId, 9000, {'from': riskpoolKeeper})
+
+    # refill riskpool wallet
+    testCoin.transfer(riskpoolWallet, riskpoolWalletBalance, {'from': productOwner})
+
+    # ensure defunding not possible without allowance
+    with brownie.reverts("ERROR:TRS-062:WITHDRAWAL_ALLOWANCE_TOO_SMALL"):
+        riskpool.defundBundle(bundleId, 9000, {'from': riskpoolKeeper})
+
+    # ensure defunding possible if approval is made
+    testCoin.approve(instance.getTreasury(), 9000, {'from': riskpoolWallet})
+    riskpool.defundBundle(bundleId, 9000, {'from': riskpoolKeeper})
 
 
 def getProductAndRiskpool(
