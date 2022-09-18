@@ -275,6 +275,32 @@ contract TestProduct is
         _processPayout(policyId, payoutId);
     }
 
+    function newPayout(
+        bytes32 policyId, 
+        uint256 claimId, 
+        uint256 payoutAmount
+    ) 
+        external
+        onlyOwner
+        returns(uint256 payoutId)
+    {
+        payoutId = _newPayout(
+            policyId, 
+            claimId, 
+            payoutAmount, 
+            abi.encode(0));
+    }
+
+    function processPayout(
+        bytes32 policyId, 
+        uint256 payoutId
+    ) 
+        external
+        onlyOwner
+    {
+        _processPayout(policyId, payoutId);
+    }
+
     function oracleCallback(
         uint256 requestId, 
         bytes32 policyId, 

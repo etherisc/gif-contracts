@@ -3,7 +3,7 @@ from brownie import accounts
 # === GIF platform ========================================================== #
 
 # GIF release
-GIF_RELEASE = '1.6.0'
+GIF_RELEASE = '2.0.0'
 
 # GIF modules
 ACCESS_NAME = 'Access'
