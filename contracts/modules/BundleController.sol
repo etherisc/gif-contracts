@@ -36,10 +36,10 @@ contract BundleController is
 
     modifier onlyFundableBundle(uint256 bundleId) {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-031:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.createdAt > 0, "ERROR:BUC-002:BUNDLE_DOES_NOT_EXIST");
         require(
             bundle.state != IBundle.BundleState.Burned 
-            && bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-032:BUNDLE_BURNED_OR_CLOSED"
+            && bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-003:BUNDLE_BURNED_OR_CLOSED"
         );
         _;
     }
@@ -182,23 +182,81 @@ contract BundleController is
     }
 
 
+    function processPremium(uint256 bundleId, bytes32 processId, uint256 amount)
+        external override
+        onlyRiskpoolService
+        onlyFundableBundle(bundleId)
+    {
+        IPolicy.Policy memory policy = _policy.getPolicy(processId);
+        require(
+            policy.state != IPolicy.PolicyState.Closed,
+            "ERROR:POL-030:POLICY_STATE_INVALID"
+        );
+
+        Bundle storage bundle = _bundles[bundleId];
+        require(bundle.createdAt > 0, "ERROR:BUC-031:BUNDLE_DOES_NOT_EXIST");
+        
+        bundle.balance += amount;
+        bundle.updatedAt = block.timestamp; // solhint-disable-line
+    }
+
+
+    function processPayout(uint256 bundleId, bytes32 processId, uint256 amount) 
+        external override 
+        onlyRiskpoolService
+    {
+        IPolicy.Policy memory policy = _policy.getPolicy(processId);
+        require(
+            policy.state != IPolicy.PolicyState.Closed,
+            "ERROR:POL-040:POLICY_STATE_INVALID"
+        );
+
+        // check there are policies and there is sufficient locked capital for policy
+        require(_activePolicies[bundleId] > 0, "ERROR:BUC-041:NO_ACTIVE_POLICIES_FOR_BUNDLE");
+        require(_valueLockedPerPolicy[bundleId][processId] >= amount, "ERROR:BUC-042:COLLATERAL_INSUFFICIENT_FOR_POLICY");
+
+        // make sure bundle exists and is not yet closed
+        Bundle storage bundle = _bundles[bundleId];
+        require(bundle.createdAt > 0, "ERROR:BUC-043:BUNDLE_DOES_NOT_EXIST");
+        require(
+            bundle.state == IBundle.BundleState.Active
+            || bundle.state == IBundle.BundleState.Locked, 
+            "ERROR:BUC-044:BUNDLE_STATE_INVALID");
+        require(bundle.capital >= amount, "ERROR:BUC-045:CAPITAL_TOO_LOW");
+        require(bundle.lockedCapital >= amount, "ERROR:BUC-046:LOCKED_CAPITAL_TOO_LOW");
+        require(bundle.balance >= amount, "ERROR:BUC-047:BALANCE_TOO_LOW");
+
+        _valueLockedPerPolicy[bundleId][processId] -= amount;
+        bundle.capital -= amount;
+        bundle.lockedCapital -= amount;
+        bundle.balance -= amount;
+        bundle.updatedAt = block.timestamp; // solhint-disable-line
+
+        emit LogBundlePayoutProcessed(bundleId, processId, amount);
+    }
+
+
     function releasePolicy(uint256 bundleId, bytes32 processId) 
         external override 
         onlyRiskpoolService
-        returns(uint256 collateralAmount)
+        returns(uint256 remainingCollateralAmount)
     {
+        IPolicy.Policy memory policy = _policy.getPolicy(processId);
+        require(
+            policy.state == IPolicy.PolicyState.Closed,
+            "ERROR:POL-050:POLICY_STATE_INVALID"
+        );
+
         // make sure bundle exists and is not yet closed
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-024:BUNDLE_DOES_NOT_EXIST");
-        require(_activePolicies[bundleId] > 0, "ERROR:BUC-025:NO_ACTIVE_POLICIES_FOR_BUNDLE");
+        require(bundle.createdAt > 0, "ERROR:BUC-051:BUNDLE_DOES_NOT_EXIST");
+        require(_activePolicies[bundleId] > 0, "ERROR:BUC-052:NO_ACTIVE_POLICIES_FOR_BUNDLE");
 
-        collateralAmount = _valueLockedPerPolicy[bundleId][processId];
-        require(collateralAmount > 0, "ERROR:BUC-026:NOT_COLLATERALIZED_BY_BUNDLE");
-
+        uint256 lockedForPolicyAmount = _valueLockedPerPolicy[bundleId][processId];
         // this should never ever fail ...
         require(
-            bundle.lockedCapital >= collateralAmount,
-            "PANIC:BUC-027:UNLOCK_CAPITAL_TOO_BIG"
+            bundle.lockedCapital >= lockedForPolicyAmount,
+            "PANIC:BUC-053:UNLOCK_CAPITAL_TOO_BIG"
         );
 
         // policy no longer relevant for bundle
@@ -206,36 +264,11 @@ contract BundleController is
         delete _valueLockedPerPolicy[bundleId][processId];
 
         // update bundle capital
-        bundle.lockedCapital -= collateralAmount;
-        bundle.updatedAt = block.timestamp;
+        bundle.lockedCapital -= lockedForPolicyAmount;
+        bundle.updatedAt = block.timestamp; // solhint-disable-line
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
-        emit LogBundlePolicyExpired(bundleId, processId, collateralAmount, capacityAmount);
-    }
-
-
-    function increaseBalance(uint256 bundleId, uint256 amount)
-        external override
-        onlyRiskpoolService
-        onlyFundableBundle(bundleId)
-    {
-        Bundle storage bundle = _bundles[bundleId];
-        bundle.balance += amount;
-        bundle.updatedAt = block.timestamp;
-    }
-
-
-    function decreaseBalance(uint256 bundleId, uint256 amount)
-        external override
-        onlyRiskpoolService
-        onlyFundableBundle(bundleId)
-    {
-        Bundle storage bundle = _bundles[bundleId];
-
-        require(bundle.balance >= amount, "ERROR:BUC-035:BUNDLE_BALANCE_TOO_SMALL");
-
-        bundle.balance -= amount;
-        bundle.updatedAt = block.timestamp;
+        emit LogBundlePolicyReleased(bundleId, processId, lockedForPolicyAmount, capacityAmount);
     }
 
     function getOwner(uint256 bundleId) public view returns(address) { 
@@ -270,7 +303,7 @@ contract BundleController is
 
     function getBundle(uint256 bundleId) public view returns(Bundle memory) {
         Bundle memory bundle = _bundles[bundleId];
-        require(bundle.createdAt > 0, "ERROR:BUC-040:BUNDLE_DOES_NOT_EXIST");
+        require(bundle.createdAt > 0, "ERROR:BUC-060:BUNDLE_DOES_NOT_EXIST");
         return bundle;
     }
 
@@ -308,23 +341,22 @@ contract BundleController is
         if (oldState == BundleState.Active) {
             require(
                 newState == BundleState.Locked || newState == BundleState.Closed, 
-                "ERROR:BUC-050:ACTIVE_INVALID_TRANSITION"
+                "ERROR:BUC-070:ACTIVE_INVALID_TRANSITION"
             );
         } else if (oldState == BundleState.Locked) {
             require(
                 newState == BundleState.Active || newState == BundleState.Closed, 
-                "ERROR:BUC-051:LOCKED_INVALID_TRANSITION"
+                "ERROR:BUC-071:LOCKED_INVALID_TRANSITION"
             );
         } else if (oldState == BundleState.Closed) {
             require(
                 newState == BundleState.Burned, 
-                "ERROR:BUC-052:CLOSED_INVALID_TRANSITION"
+                "ERROR:BUC-072:CLOSED_INVALID_TRANSITION"
             );
         } else if (oldState == BundleState.Burned) {
-            revert("ERROR:BUC-053:BURNED_IS_FINAL_STATE");
+            revert("ERROR:BUC-073:BURNED_IS_FINAL_STATE");
         } else {
-            revert("ERROR:BOC-054:INITIAL_STATE_NOT_HANDLED");
+            revert("ERROR:BOC-074:INITIAL_STATE_NOT_HANDLED");
         }
     }
-    
 }

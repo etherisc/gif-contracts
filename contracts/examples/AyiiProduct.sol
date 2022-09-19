@@ -395,33 +395,74 @@ contract AyiiProduct is
 
     function processPoliciesForRisk(bytes32 riskId, uint256 batchSize)
         external
+        onlyRole(INSURER_ROLE)
         returns(bytes32 [] memory processedPolicies)
     {
         Risk memory risk = _risks[riskId];
         require(risk.responseAt > 0, "ERROR:AYI-030:ORACLE_RESPONSE_MISSING");
 
-        EnumerableSet.Bytes32Set storage policyIds = _policies[riskId];
-        uint256 elements = EnumerableSet.length(policyIds);
+        uint256 elements = EnumerableSet.length(_policies[riskId]);
+        if (elements == 0) {
+            emit LogAyiiRiskProcessed(riskId, 0);
+            return new bytes32[](0);
+        }
 
         if (batchSize == 0) { batchSize = elements; } 
-        else                { batchSize = min(batchSize, elements); }
+        else                 { batchSize = min(batchSize, elements); }
 
         processedPolicies = new bytes32[](batchSize);
+        uint256 elementIdx = elements - 1;
+
         for (uint256 i = 0; i < batchSize; i++) {
             // grab and process the last policy
-            bytes32 policyId = EnumerableSet.at(policyIds, EnumerableSet.length(policyIds) - 1);
-            _processPolicy(policyId, risk);
-
-            _expire(policyId);
-            _close(policyId);
-
+            bytes32 policyId = EnumerableSet.at(_policies[riskId], elementIdx - i);
+            processPolicy(policyId);
             processedPolicies[i] = policyId;
-            
-            // remove the last (processed) policy from the list
-            EnumerableSet.remove(policyIds, policyId);
         }
 
         emit LogAyiiRiskProcessed(riskId, batchSize);
+    }
+
+    function processPolicy(bytes32 policyId)
+        public
+        onlyRole(INSURER_ROLE)
+    {
+        IPolicy.Application memory application = _getApplication(policyId);
+        bytes32 riskId = abi.decode(application.data, (bytes32));
+        Risk memory risk = _risks[riskId];
+
+        require(risk.id == riskId, "ERROR:AYI-031:RISK_ID_INVALID");
+        require(risk.responseAt > 0, "ERROR:AYI-032:ORACLE_RESPONSE_MISSING");
+        require(EnumerableSet.contains(_policies[riskId], policyId), "ERROR:AYI-033:POLICY_FOR_RISK_UNKNOWN");
+
+        EnumerableSet.remove(_policies[riskId], policyId);
+
+
+        uint256 claimAmount = calculatePayout(
+            risk.payoutPercentage, 
+            application.sumInsuredAmount);
+        
+        uint256 claimId = _newClaim(policyId, claimAmount, "");
+        emit LogAyiiClaimCreated(policyId, claimId, claimAmount);
+
+        if (claimAmount > 0) {
+            uint256 payoutAmount = claimAmount;
+            _confirmClaim(policyId, claimId, payoutAmount);
+
+            uint256 payoutId = _newPayout(policyId, claimId, payoutAmount, "");
+            _processPayout(policyId, payoutId);
+
+            emit LogAyiiPayoutCreated(policyId, payoutAmount);
+        }
+        else {
+            _declineClaim(policyId, claimId);
+            _closeClaim(policyId, claimId);
+        }
+
+        _expire(policyId);
+        _close(policyId);
+
+        emit LogAyiiPolicyProcessed(policyId);
     }
 
     function calculatePayout(uint256 payoutPercentage, uint256 sumInsuredAmount)

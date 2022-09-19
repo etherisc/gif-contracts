@@ -147,7 +147,7 @@ contract PolicyDefaultFlow is
             policy.collectPremium(processId, netPremiumAmount + feeAmount);
 
             PoolController pool = getPoolContract();
-            pool.increaseBalance(processId, netPremiumAmount);
+            pool.processPremium(processId, netPremiumAmount);
         }
     }
     
@@ -272,7 +272,7 @@ contract PolicyDefaultFlow is
         policy.processPayout(processId, payoutId);
 
         PoolController pool = getPoolContract();
-        pool.decreaseBalance(processId, netPayoutAmount + feeAmount);
+        pool.processPayout(processId, netPayoutAmount + feeAmount);
     }
 
     function request(

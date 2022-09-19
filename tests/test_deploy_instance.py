@@ -63,7 +63,7 @@ def test_Bundle(instance: GifInstance, owner):
 
     assert bundle.bundles() == 0
 
-    with brownie.reverts('ERROR:BUC-040:BUNDLE_DOES_NOT_EXIST'):
+    with brownie.reverts('ERROR:BUC-060:BUNDLE_DOES_NOT_EXIST'):
         bundle.getBundle(0)
 
     with pytest.raises(AttributeError):
