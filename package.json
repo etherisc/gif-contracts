@@ -1,21 +1,29 @@
 {
-  "name": "@etherisc/gif-contracts",
-  "version": "2.0.0-staging-l",
+  "name": "@etherisc_com/gif-contracts",
+  "version": "2.0.0-rc.1",
   "description": "This repository holds the GIF core contracts and tools to develop, test and deploy GIF instances.",
-  "main": "index.js",
-  "files": [
-    "contracts/*"
-  ],
-  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/etherisc/gif-contracts.git"
   },
-  "keywords": [],
-  "author": "Etherisc project",
+  "files": [
+    "contracts/**/*sol"
+  ],
+  "keywords": [
+    "etherisc",
+    "gif",
+    "insurance",
+    "blockchain",
+    "ethereum",
+    "solidity"
+  ],
   "license": "Apache-2.0",
-  "homepage": "https://github.com/etherisc/gif-contracts#readme",
+  "homepage": "https://www.etherisc.com",
+  "bugs": {
+    "url": "https://github.com/etherisc/gif-contracts/issues"
+  },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.7.0"
+    "@openzeppelin/contracts": "4.7.3",
+    "@chainlink/contracts": "0.4.1"
   }
 }

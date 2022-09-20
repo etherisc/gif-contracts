@@ -12,3 +12,5 @@ tmp/
 
 .DS_Store
 .vscode/launch.json
+
+etherisc*.tgz
