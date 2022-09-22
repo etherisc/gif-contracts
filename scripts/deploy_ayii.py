@@ -116,6 +116,8 @@ def check_funds(stakeholders_accounts, erc20_token):
                 INSTANCE_OPERATOR,
                 REQUIRED_FUNDS[INSTANCE_OPERATOR] + fundsMissing - a[INSTANCE_OPERATOR].balance()
             ))
+    else:
+        native_token_success = True
 
     erc20_success = False
     if erc20_token:
