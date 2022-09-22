@@ -47,6 +47,8 @@ REQUIRED_FUNDS_S =   50000000000000000
 REQUIRED_FUNDS_M =  150000000000000000
 REQUIRED_FUNDS_L = 1500000000000000000
 
+INITIAL_ERC20_BUNDLE_FUNDING = 100000
+
 REQUIRED_FUNDS = {
     INSTANCE_OPERATOR: REQUIRED_FUNDS_L,
     INSTANCE_WALLET:   REQUIRED_FUNDS_S,
@@ -89,8 +91,9 @@ def stakeholders_accounts_ganache():
     }
 
 
-def check_funds(stakeholders_accounts):
+def check_funds(stakeholders_accounts, erc20_token):
     a = stakeholders_accounts
+
     fundsMissing = 0
     for accountName, requiredAmount in REQUIRED_FUNDS.items():
         if a[accountName].balance() >= REQUIRED_FUNDS[accountName]:
@@ -103,14 +106,36 @@ def check_funds(stakeholders_accounts):
                 a[accountName].balance()
             ))
     
+    native_token_success = False
     if fundsMissing > 0:
         if a[INSTANCE_OPERATOR].balance() >= REQUIRED_FUNDS[INSTANCE_OPERATOR] + fundsMissing:
-            print('{} sufficiently funded to cover missing funds'.format(INSTANCE_OPERATOR))
+            print('{} sufficiently funded with native token to cover missing funds'.format(INSTANCE_OPERATOR))
+            native_token_success = True
         else:
-            print('{} needs additional funding of {} to cover missing funds'.format(
+            print('{} needs additional funding of {} with native token to cover missing funds'.format(
                 INSTANCE_OPERATOR,
                 REQUIRED_FUNDS[INSTANCE_OPERATOR] + fundsMissing - a[INSTANCE_OPERATOR].balance()
             ))
+
+    erc20_success = False
+    if erc20_token:
+        erc20_success = check_erc20_funds(a, erc20_token)
+    else:
+        print('WARNING: no erc20 token defined, skipping erc20 funds checking')
+    
+    return native_token_success & erc20_success
+
+
+def check_erc20_funds(a, erc20_token):
+    if erc20_token.balanceOf(a[INSTANCE_OPERATOR]) >= INITIAL_ERC20_BUNDLE_FUNDING:
+        print('{} ERC20 funding ok'.format(INSTANCE_OPERATOR))
+        return True
+    else:
+        print('{} needs additional ERC20 funding of {} to cover missing funds'.format(
+            INSTANCE_OPERATOR,
+            INITIAL_ERC20_BUNDLE_FUNDING - erc20_token.balanceOf(a[INSTANCE_OPERATOR])))
+        print('IMPORTANT: manual transfer needed to ensure ERC20 funding')
+        return False
 
 
 def amend_funds(stakeholders_accounts):
@@ -120,6 +145,8 @@ def amend_funds(stakeholders_accounts):
             missingAmount = REQUIRED_FUNDS[accountName] - a[accountName].balance()
             print('funding {} with {}'.format(accountName, missingAmount))
             a[INSTANCE_OPERATOR].transfer(a[accountName], missingAmount)
+
+    print('re-run check_funds() to verify funding before deploy')
 
 
 def _get_balances(stakeholders_accounts):
@@ -190,16 +217,19 @@ def deploy(
     customer=a[CUSTOMER1]
     customer2=a[CUSTOMER2]
 
+    if not check_funds(a, erc20_token):
+        print('ERROR: insufficient funding, aborting deploy')
+        return
+
     # assess balances at beginning of deploy
     balances_before = _get_balances(stakeholders_accounts)
 
     if not erc20_token:
-        print('====== deploy erc20 test token ======')
-        erc20Token = TestCoin.deploy({'from': instanceOperator})
-    else:
-        print('====== setting erc20 token to {} ======'.format(erc20_token))
-        erc20Token = erc20_token
+        print('ERROR: no erc20 defined, aborting deploy')
+        return
 
+    print('====== setting erc20 token to {} ======'.format(erc20_token))
+    erc20Token = erc20_token
 
     print('====== deploy gif instance ======')
     instance = GifInstance(instanceOperator, instanceWallet=instanceWallet)
@@ -223,18 +253,17 @@ def deploy(
 
     print('====== create initial setup ======')
 
-    bundleInitialFunding=1000000
+    bundleInitialFunding = INITIAL_ERC20_BUNDLE_FUNDING
     print('1) investor {} funding (transfer/approve) with {} token for erc20 {}'.format(
         investor, bundleInitialFunding, erc20Token))
     
     erc20Token.transfer(investor, bundleInitialFunding, {'from': instanceOperator})
     erc20Token.approve(instance.getTreasury(), bundleInitialFunding, {'from': investor})
 
-    maxUint256 = 2**256-1
     print('2) riskpool wallet {} approval for instance treasury {}'.format(
         riskpoolWallet, instance.getTreasury()))
     
-    erc20Token.approve(instance.getTreasury(), maxUint256, {'from': riskpoolWallet})
+    erc20Token.approve(instance.getTreasury(), bundleInitialFunding, {'from': riskpoolWallet})
 
     print('3) riskpool bundle creation by investor {}'.format(
         investor))
@@ -273,7 +302,7 @@ def deploy(
 
     customerFunding=1000
     print('5) customer {} funding (transfer/approve) with {} token for erc20 {}'.format(
-        investor, customerFunding, erc20Token))
+        customer, customerFunding, erc20Token))
 
     erc20Token.transfer(customer, customerFunding, {'from': instanceOperator})
     erc20Token.approve(instance.getTreasury(), customerFunding, {'from': customer})
@@ -302,7 +331,7 @@ def deploy(
         INSURER: insurer,
         CUSTOMER1: customer,
         CUSTOMER2: customer2,
-        ERC20_TOKEM: contract_from_address(TestCoin, erc20Token),
+        ERC20_TOKEM: contract_from_address(interface.ERC20, erc20Token),
         INSTANCE: instance,
         INSTANCE_SERVICE: contract_from_address(InstanceService, instanceService),
         INSTANCE_OPERATOR_SERVICE: contract_from_address(InstanceOperatorService, instanceOperatorService),
