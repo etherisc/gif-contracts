@@ -23,7 +23,8 @@
     "url": "https://github.com/etherisc/gif-contracts/issues"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "4.7.3",
-    "@chainlink/contracts": "0.4.1"
+    "@chainlink/contracts": "0.4.1",
+    "@etherisc_com/gif-interface": "^2.0.0-cc9746c",
+    "@openzeppelin/contracts": "4.7.3"
   }
 }
