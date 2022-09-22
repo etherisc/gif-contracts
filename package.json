@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@chainlink/contracts": "0.4.1",
-    "@etherisc/gif-interface": "^2.0.0-7d19877",
+    "@etherisc/gif-interface": "^2.0.0-rc.1",
     "@openzeppelin/contracts": "4.7.3"
   }
 }
