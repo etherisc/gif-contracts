@@ -1,5 +1,5 @@
 {
-  "name": "@etherisc_com/gif-contracts",
+  "name": "@etherisc/gif-contracts",
   "version": "2.0.0-rc.1",
   "description": "This repository holds the GIF core contracts and tools to develop, test and deploy GIF instances.",
   "repository": {
