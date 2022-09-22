@@ -245,3 +245,11 @@ and including _prettier_ formatting
 solhint --config .solhint.prettier.json contracts/**/*.sol
 ```
 
+## Publish release to NPMJS
+
+```bash
+npm ci 
+npm version patch/minor/major --no-git-tag-version
+npm publish
+git commit -m 'bump version'
+```
