@@ -1,6 +1,6 @@
 {
   "name": "@etherisc/gif-contracts",
-  "version": "2.0.0-rc.1",
+  "version": "2.0.0-rc.1-0",
   "description": "This repository holds the GIF core contracts and tools to develop, test and deploy GIF instances.",
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@chainlink/contracts": "0.4.1",
-    "@etherisc/gif-interface": "2.0.0-34bc405",
+    "@etherisc/gif-interface": "2.0.0-rc.1-0",
     "@openzeppelin/contracts": "4.7.3"
   }
 }
