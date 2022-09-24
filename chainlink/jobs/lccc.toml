@@ -25,21 +25,24 @@ decode_cbor [
 fetch [
     type="http"
     method=POST
-    requestData="{\\"projectId\\": $(decode_cbor.projectId), \\"cropId\\": $(decode_cbor.cropId), \\"uaiId\\": $(decode_cbor.uaiId), }"
+    requestData="{\\"projectId\\": $(decode_cbor.projectId), \\"cropId\\": $(decode_cbor.cropId), \\"uaiId\\": $(decode_cbor.uaiId)}"
     url="https://lccc.etherisc.com/yield"
     ]
 
 
 // From the fetch result, we parse out the individual elements
-yield [ type="jsonparse" data="$(fetch)" path="yield" ]
+projectId [ type="jsonparse" data="$(fetch)" path="projectId" ]
+uaiId [ type="jsonparse" data="$(fetch)" path="uaiId" ]
+cropId [ type="jsonparse" data="$(fetch)" path="cropId" ]
+aaay [ type="jsonparse" data="$(fetch)" path="aaay" ]
 
 
 // Finally, we send a response on-chain.
 // The abi is the abi of the fulfill function in the receiving contract.
 encode_response [
 type="ethabiencode"
-abi="(bytes32 requestId, bool completed, uint256 deductible, uint256 hurdle, uint256 payout)"
-data="{\\"requestId\\": $(decode_log.requestId), \\"yield\\": $(yield)}"
+abi="(bytes32 requestId, bytes32 projectId, bytes32 uaiId, bytes32 cropId, uint256 aaay)"
+data="{\\"requestId\\": $(decode_log.requestId), \\"projectId\\": $(projectId), \\"uaiId\\": $(uaiId), \\"cropId\\": $(cropId), \\"aaay\\": $(aaay)}"
 ]
 
 encode_tx [
@@ -65,7 +68,10 @@ data="$(encode_tx)"
 
 decode_log -> decode_cbor -> fetch
 
-fetch -> yield -> encode_response
+fetch -> aaay -> encode_response
+fetch -> projectId -> encode_response
+fetch -> uaiId -> encode_response
+fetch -> cropId -> encode_response
 
 encode_response -> encode_tx -> submit_tx
 
