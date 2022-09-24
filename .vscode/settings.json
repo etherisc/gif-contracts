@@ -29,5 +29,6 @@
         "titleBar.activeForeground": "#e7e7e7",
         "titleBar.inactiveBackground": "#1d3c4399",
         "titleBar.inactiveForeground": "#e7e7e799"
-    }
+    },
+    "solidity.defaultCompiler": "localNodeModule"
 }

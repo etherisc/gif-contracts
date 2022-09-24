@@ -1,0 +1,82 @@
+type                = "directrequest"
+schemaVersion       = 1
+name                = "Get PULA Yield Data V3"
+contractAddress     = "0x7178a8Cad2fa94ff308c5dD5Aba4dbe3393D3c47"
+observationSource   = """
+//
+// Chainlink Job definition for the ratings oracle
+//
+// First, we parse the request log and the CBOR payload inside of it
+decode_log [
+    type="ethabidecodelog"
+    abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+    data="$(jobRun.logData)"
+    topics="$(jobRun.logTopics)"
+    ]
+
+// The result of the following element is a map
+decode_cbor [
+    type="cborparse"
+    data="$(decode_log.data)"
+    mode="diet"
+    ]
+
+// Then, we use the decoded request parameters to make an HTTP fetch
+fetch [
+    type="http"
+    method=GET
+    headers="[\\"Authorization\\",\\"Token 30c05a1abca64ec32b2e92225b754a6b3145c62d\\"]"
+    allowUnrestrictedNetworkAccess=true
+//    requestData="{\\"projectId\\": $(decode_cbor.projectId), \\"cropId\\": $(decode_cbor.cropId), \\"uaiId\\": $(decode_cbor.uaiId)}"
+//    url="https://mavuno-api.pula.cloud/api/yield/area-yield/$(decode_cbor.projectId)/$(decode_cbor.cropId)/$(decode_cbor.uaiId)"
+    url="https://mavuno-api.pula.cloud/api/yield/area-yield/4918/1/$(decode_cbor.uaiId)"
+    ]
+
+
+// From the fetch result, we parse out the individual elements
+projectId [ type="jsonparse" data="$(fetch)" path="projectId" ]
+uaiId [ type="jsonparse" data="$(fetch)" path="uaiId" ]
+cropId [ type="jsonparse" data="$(fetch)" path="cropId" ]
+aaay [ type="jsonparse" data="$(fetch)" path="aaay" ]
+
+
+// Finally, we send a response on-chain.
+// The abi is the abi of the fulfill function in the receiving contract.
+encode_response [
+type="ethabiencode"
+abi="(bytes32 requestId, bytes32 projectId, bytes32 uaiId, bytes32 cropId, uint256 aaay)"
+data="{\\"requestId\\": $(decode_log.requestId), \\"projectId\\": $(projectId), \\"uaiId\\": $(uaiId), \\"cropId\\": $(cropId), \\"aaay\\": $(aaay)}"
+]
+
+encode_tx [
+type="ethabiencode"
+abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\": $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_response)}"
+]
+//function fulfillOracleRequest(
+ //    bytes32 requestId,
+ //    uint256 payment,
+ //    address callbackAddress,
+ //    bytes4 callbackFunctionId,
+ //    uint256 expiration,
+ //    bytes32 data
+ //  )
+submit_tx [
+type="ethtx"
+to="0x7178a8Cad2fa94ff308c5dD5Aba4dbe3393D3c47"
+data="$(encode_tx)"
+]
+
+// Dependency graph
+
+decode_log -> decode_cbor -> fetch
+
+fetch -> aaay -> encode_response
+fetch -> projectId -> encode_response
+fetch -> uaiId -> encode_response
+fetch -> cropId -> encode_response
+
+encode_response -> encode_tx -> submit_tx
+
+"""
+
