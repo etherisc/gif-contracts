@@ -131,16 +131,19 @@ from scripts.util import (
 # for other chains, use accounts.add() and record the mnemonics
 a = stakeholders_accounts_ganache()
 
+# deploy TestCoin with instanceOperator 
+usdc = TestCoin.deploy({'from': a['instanceOperator']})
+
 # check_funds checks which stakeholder accounts need funding for the deploy
 # also, it checks if the instanceOperator has a balance that allows to provided
 # the missing funds for the other accounts
-check_funds(a)
+check_funds(a, usdc)
 
 # amend_funds transfers missing funds to stakeholder addresses using the
 # avaulable balance of the instanceOperator
 amend_funds(a)
 
-d = deploy_setup_including_token(a)
+d = deploy_setup_including_token(a, usdc)
 
 (
 componentOwnerService,customer1,customer2,erc20Token,instance,instanceOperator,instanceOperatorService,instanceService,

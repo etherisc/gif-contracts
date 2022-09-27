@@ -194,9 +194,10 @@ def _pretty_print_delta(title, balances_delta):
 
 def deploy_setup_including_token(
     stakeholders_accounts, 
+    erc20_token,
     publishSource=False
 ):
-    return deploy(stakeholders_accounts, None)
+    return deploy(stakeholders_accounts, erc20_token, None)
 
 
 def deploy(
