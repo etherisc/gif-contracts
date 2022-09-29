@@ -190,7 +190,7 @@ class GifAyiiOracle(object):
             oracleProvider))
         
         self.oracle = AyiiOracle.deploy(
-            s2b32('AyiiOracle'),
+            s2b32(name),
             instance.getRegistry(),
             chainLinkTokenAddress,
             chainLinkOracleAddress,
@@ -260,7 +260,7 @@ class GifAyiiProduct(object):
             productOwner))
         
         self.product = AyiiProduct.deploy(
-            s2b32('AyiiProduct'),
+            s2b32(name),
             registry,
             erc20Token.address,
             oracle.getId(),
