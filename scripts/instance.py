@@ -102,7 +102,7 @@ class GifInstance(GifRegistry):
     ):
         if registryAddress:
             self.fromRegistryAddress(registryAddress)
-            self.owner=owner
+            self.owner=self.instanceService.getInstanceOperator()
         
         elif owner:
             super().__init__(

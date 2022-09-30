@@ -1,3 +1,5 @@
+from brownie import web3
+
 from brownie.network import accounts
 from brownie.network.account import Account
 
@@ -43,9 +45,16 @@ RISK_ID2 = 'riskId2'
 PROCESS_ID1 = 'processId1'
 PROCESS_ID2 = 'processId2'
 
-REQUIRED_FUNDS_S =   50000000000000000
-REQUIRED_FUNDS_M =  150000000000000000
-REQUIRED_FUNDS_L = 1500000000000000000
+GAS_PRICE = web3.eth.gas_price
+GAS_PRICE_SAFETY_FACTOR = 1.25
+
+GAS_S = 2000000
+GAS_M = 3 * GAS_S
+GAS_L = 10 * GAS_M
+
+REQUIRED_FUNDS_S = int(GAS_PRICE * GAS_PRICE_SAFETY_FACTOR * GAS_S)
+REQUIRED_FUNDS_M = int(GAS_PRICE * GAS_PRICE_SAFETY_FACTOR * GAS_M)
+REQUIRED_FUNDS_L = int(GAS_PRICE * GAS_PRICE_SAFETY_FACTOR * GAS_L)
 
 INITIAL_ERC20_BUNDLE_FUNDING = 100000
 
@@ -61,6 +70,7 @@ REQUIRED_FUNDS = {
     CUSTOMER1:         REQUIRED_FUNDS_S,
     CUSTOMER2:         REQUIRED_FUNDS_S,
 }
+
 
 def stakeholders_accounts_ganache():
     # define stakeholder accounts    
@@ -92,8 +102,11 @@ def stakeholders_accounts_ganache():
 
 
 def check_funds(stakeholders_accounts, erc20_token):
+    _print_constants()
+
     a = stakeholders_accounts
 
+    native_token_success = True
     fundsMissing = 0
     for accountName, requiredAmount in REQUIRED_FUNDS.items():
         if a[accountName].balance() >= REQUIRED_FUNDS[accountName]:
@@ -106,15 +119,17 @@ def check_funds(stakeholders_accounts, erc20_token):
                 a[accountName].balance()
             ))
     
-    native_token_success = False
     if fundsMissing > 0:
+        native_token_success = False
+
         if a[INSTANCE_OPERATOR].balance() >= REQUIRED_FUNDS[INSTANCE_OPERATOR] + fundsMissing:
             print('{} sufficiently funded with native token to cover missing funds'.format(INSTANCE_OPERATOR))
-            native_token_success = True
         else:
-            print('{} needs additional funding of {} with native token to cover missing funds'.format(
+            additionalFunds = REQUIRED_FUNDS[INSTANCE_OPERATOR] + fundsMissing - a[INSTANCE_OPERATOR].balance()
+            print('{} needs additional funding of {} ({} ETH) with native token to cover missing funds'.format(
                 INSTANCE_OPERATOR,
-                REQUIRED_FUNDS[INSTANCE_OPERATOR] + fundsMissing - a[INSTANCE_OPERATOR].balance()
+                additionalFunds,
+                additionalFunds/10**18
             ))
     else:
         native_token_success = True
@@ -149,6 +164,20 @@ def amend_funds(stakeholders_accounts):
             a[INSTANCE_OPERATOR].transfer(a[accountName], missingAmount)
 
     print('re-run check_funds() to verify funding before deploy')
+
+
+def _print_constants():
+    print('chain id: {}'.format(web3.eth.chain_id))
+    print('gas price [Mwei]: {}'.format(GAS_PRICE/10**6))
+    print('gas price safety factor: {}'.format(GAS_PRICE_SAFETY_FACTOR))
+
+    print('gas S: {}'.format(GAS_S))
+    print('gas M: {}'.format(GAS_M))
+    print('gas L: {}'.format(GAS_L))
+
+    print('required S [ETH]: {}'.format(REQUIRED_FUNDS_S / 10**18))
+    print('required M [ETH]: {}'.format(REQUIRED_FUNDS_M / 10**18))
+    print('required L [ETH]: {}'.format(REQUIRED_FUNDS_L / 10**18))
 
 
 def _get_balances(stakeholders_accounts):
@@ -235,13 +264,13 @@ def deploy(
     erc20Token = erc20_token
 
     print('====== deploy gif instance ======')
-    instance = GifInstance(instanceOperator, instanceWallet=instanceWallet)
+    instance = GifInstance(instanceOperator, instanceWallet=instanceWallet, publishSource=publishSource)
     instanceService = instance.getInstanceService()
     instanceOperatorService = instance.getInstanceOperatorService()
     componentOwnerService = instance.getComponentOwnerService()
 
     print('====== deploy ayii product ======')
-    ayiiDeploy = GifAyiiProductComplete(instance, productOwner, insurer, oracleProvider, chainlinkNodeOperator, riskpoolKeeper, investor, erc20Token, riskpoolWallet)
+    ayiiDeploy = GifAyiiProductComplete(instance, productOwner, insurer, oracleProvider, chainlinkNodeOperator, riskpoolKeeper, investor, erc20Token, riskpoolWallet, publishSource=publishSource)
 
     # assess balances at beginning of deploy
     balances_after_deploy = _get_balances(stakeholders_accounts)
@@ -390,7 +419,12 @@ def from_component(componentAddress):
     return from_registry(component.getRegistry())
 
 
-def from_registry(registryAddress):
+def from_registry(
+    registryAddress,
+    productId=0,
+    oracleId=0,
+    riskpoolId=0
+):
     instance = GifInstance(registryAddress=registryAddress)
     instanceService = instance.getInstanceService()
 
@@ -403,37 +437,64 @@ def from_registry(registryAddress):
     riskpool = None
 
     if products >= 1:
-        if products > 1:
-            print('1 product expected, {} product available'.format(products))
-            print('returning last product available')
+        if productId > 0:
+            componentId = productId
+        else:
+            componentId = instanceService.getProductId(products-1)
+
+            if products > 1:
+                print('1 product expected, {} products available'.format(products))
+                print('returning last product available')
         
-        componentId = instanceService.getProductId(products-1)
-        component = instanceService.getComponent(componentId)
-        product = contract_from_address(AyiiProduct, component)
+        componentAddress = instanceService.getComponent(componentId)
+        product = contract_from_address(AyiiProduct, componentAddress)
+
+        if product.getType() != 1:
+            product = None
+            print('component (type={}) with id {} is not product'.format(product.getType(), componentId))
+            print('no product returned (None)')
     else:
-        print('1 product expected, no producta available')
+        print('1 product expected, no product available')
         print('no product returned (None)')
 
     if oracles >= 1:
-        if oracles > 1:
-            print('1 oracle expected, {} oracles available'.format(oracles))
-            print('returning last oracle available')
+        if oracleId > 0:
+            componentId = oracleId
+        else:
+            componentId = instanceService.getOracleId(oracles-1)
+
+            if oracles > 1:
+                print('1 oracle expected, {} oracles available'.format(oracles))
+                print('returning last oracle available')
         
-        componentId = instanceService.getOracleId(oracles-1)
-        component = instanceService.getComponent(componentId)        
-        oracle = contract_from_address(AyiiOracle, component)
+        componentAddress = instanceService.getComponent(componentId)
+        oracle = contract_from_address(AyiiOracle, componentAddress)
+
+        if oracle.getType() != 0:
+            oracle = None
+            print('component (type={}) with id {} is not oracle'.format(component.getType(), componentId))
+            print('no oracle returned (None)')
     else:
         print('1 oracle expected, no oracles available')
         print('no oracle returned (None)')
 
     if riskpools >= 1:
-        if riskpools > 1:
-            print('1 riskpool expected, {} riskpools available'.format(riskpools))
-            print('returning last riskpool available')
+        if riskpoolId > 0:
+            componentId = riskpoolId
+        else:
+            componentId = instanceService.getRiskpoolId(riskpools-1)
+
+            if riskpools > 1:
+                print('1 riskpool expected, {} riskpools available'.format(riskpools))
+                print('returning last riskpool available')
         
-        componentId = instanceService.getRiskpoolId(riskpools-1)
-        component = instanceService.getComponent(componentId)        
-        riskpool = contract_from_address(AyiiRiskpool, component)
+        componentAddress = instanceService.getComponent(componentId)
+        riskpool = contract_from_address(AyiiRiskpool, componentAddress)
+
+        if riskpool.getType() != 2:
+            riskpool = None
+            print('component (type={}) with id {} is not riskpool'.format(component.getType(), componentId))
+            print('no riskpool returned (None)')
     else:
         print('1 riskpool expected, no riskpools available')
         print('no riskpool returned (None)')
