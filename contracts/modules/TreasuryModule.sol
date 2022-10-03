@@ -315,16 +315,11 @@ contract TreasuryModule is
             uint256 netPayoutAmount
         )
     {
-        IPolicy.Payout memory payout =  _policy.getPayout(processId, payoutId);
-        require(
-            payout.state == IPolicy.PayoutState.Expected, 
-            "ERROR:TRS-040:PAYOUT_ALREADY_PROCESSED"
-        );
-
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         IERC20 token = getComponentToken(metadata.productId);
         (uint256 riskpoolId, address riskpoolWalletAddress) = _getRiskpoolWallet(processId);
 
+        IPolicy.Payout memory payout =  _policy.getPayout(processId, payoutId);
         require(
             token.balanceOf(riskpoolWalletAddress) >= payout.amount, 
             "ERROR:TRS-042:RISKPOOL_WALLET_BALANCE_TOO_SMALL"

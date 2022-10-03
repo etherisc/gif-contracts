@@ -16,6 +16,7 @@ from scripts.util import (
 
 from scripts.setup import (
     fund_riskpool,
+    fund_customer,
     apply_for_policy,
 )
 
@@ -131,7 +132,7 @@ def test_pause_unpause(
         riskpool.burnBundle(bundleId, {'from':bundleOwner})
 
     # ensure underwriting new policies is not possible for paused riskpool
-    with brownie.reverts("ERROR:POL-021:RISKPOOL_NOT_ACTIVE"):
+    with brownie.reverts("ERROR:POL-004:RISKPOOL_NOT_ACTIVE"):
         policyId2 = apply_for_policy(instance, owner, product, customer, testCoin, 100, 1000)
 
     # ensure existing policies may be closed while riskpool is paused
@@ -289,6 +290,7 @@ def test_suspend_resume(
     print(bundleFromCore)
 
     assert bundle2Id == bundleId + 1
+
 
 def test_suspend_archive(
     instance: GifInstance, 
@@ -689,3 +691,191 @@ def _getBundle(instance, riskpool, bundleIdx):
     instanceService = instance.getInstanceService()
     bundleId = riskpool.getBundleId(bundleIdx)
     return instanceService.getBundle(bundleId)
+
+def test_policy_application_with_inactive_riskpool(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    instanceOperator: Account,
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    customer: Account,
+    capitalOwner: Account
+):
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    riskpoolId = riskpool.getId()
+    initialFunding = 10000
+    fund_riskpool(instance, instanceOperator, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # pause riskpool
+    componentOwnerService = instance.getComponentOwnerService()
+    componentOwnerService.pause(riskpoolId, {'from': riskpoolKeeper})    
+    assert riskpool.getState() == 4
+
+    # attempt to create policy
+    product = gifTestProduct.getContract()
+    premium = 300
+    sumInsured = 2000
+
+    with brownie.reverts('ERROR:POL-004:RISKPOOL_NOT_ACTIVE'):
+        product.applyForPolicy(premium, sumInsured, bytes(0), bytes(0), {'from': customer})
+
+    assert product.policies() == 0
+
+    # unpuase riskpool again
+    componentOwnerService.unpause(riskpoolId, {'from': riskpoolKeeper})    
+    assert riskpool.getState() == 3
+
+    # verify that policy creation works
+    tx = product.applyForPolicy(premium, sumInsured, bytes(0), bytes(0), {'from': customer})
+    processId = tx.return_value
+
+    assert product.policies() == 1
+
+
+def test_collect_premium_with_inactive_riskpool(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    instanceOperator: Account,
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    customer: Account,
+    capitalOwner: Account
+):
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    riskpoolId = riskpool.getId()
+    initialFunding = 10000
+    fund_riskpool(instance, instanceOperator, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # create policy
+    product = gifTestProduct.getContract()
+    premium = 300
+    sumInsured = 2000
+    tx = product.applyForPolicy(premium, sumInsured, bytes(0), bytes(0), {'from': customer})
+    processId = tx.return_value
+
+    # ComponentState {Created,Proposed,Declined,Active,Paused,Suspended}
+    assert product.policies() == 1
+    assert riskpool.getState() == 3
+
+    # pause riskpool
+    componentOwnerService = instance.getComponentOwnerService()
+    componentOwnerService.pause(riskpoolId, {'from': riskpoolKeeper})
+    
+    assert riskpool.getState() == 4
+    # fund customer to pay premium now
+    fund_customer(instance, instanceOperator, customer, testCoin, premium)
+    assert testCoin.balanceOf(customer) == premium
+    assert testCoin.allowance(customer, instance.getTreasury()) == premium
+
+    # attempt to collect premium with paused riskpool
+    with brownie.reverts('ERROR:POL-004:RISKPOOL_NOT_ACTIVE'):
+        product.collectPremium(processId, premium, {'from': productOwner})
+
+    assert testCoin.balanceOf(customer) == premium
+
+    # unpuase riskpool
+    componentOwnerService.unpause(riskpoolId, {'from': riskpoolKeeper})    
+    assert riskpool.getState() == 3
+
+    # ensure that collecting premiums works again
+    tx = product.collectPremium(processId, premium, {'from': productOwner})
+    (success, fee, netPremium) = tx.return_value
+
+    assert success
+    assert testCoin.balanceOf(customer) == 0
+
+
+
+
+def test_payout_processing_with_inactive_riskpool(
+    instance: GifInstance, 
+    testCoin,
+    gifTestProduct: GifTestProduct, 
+    instanceOperator: Account,
+    productOwner: Account,
+    riskpoolKeeper: Account,
+    customer: Account,
+    capitalOwner: Account
+):
+    instanceService = instance.getInstanceService()
+
+    # prepare funded riskpool
+    riskpool = gifTestProduct.getRiskpool().getContract()
+    riskpoolId = riskpool.getId()
+    initialFunding = 10000
+    fund_riskpool(instance, instanceOperator, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
+
+    # fund customer to pay premium now
+    premium = 300
+    fund_customer(instance, instanceOperator, customer, testCoin, premium)
+    assert testCoin.balanceOf(customer) == premium
+    assert testCoin.allowance(customer, instance.getTreasury()) == premium
+
+    # create policy
+    product = gifTestProduct.getContract()
+    sumInsured = 2000
+    tx = product.applyForPolicy(premium, sumInsured, bytes(0), bytes(0), {'from': customer})
+    processId = tx.return_value
+
+    # ComponentState {Created,Proposed,Declined,Active,Paused,Suspended}
+    assert instanceService.processIds() == 1
+    assert instanceService.claims(processId) == 0
+    assert product.policies() == 1
+    assert riskpool.getState() == 3
+
+    # pause riskpool
+    componentOwnerService = instance.getComponentOwnerService()
+    componentOwnerService.pause(riskpoolId, {'from': riskpoolKeeper})
+    
+    assert riskpool.getState() == 4
+
+    claimAmount = 3 * premium
+    (claimId, payoutId) = create_claim_no_oracle(product, customer, productOwner, processId, claimAmount)
+
+    assert instanceService.claims(processId) == 1
+    assert instanceService.payouts(processId) == 1
+    assert testCoin.balanceOf(customer) == 0
+
+    # attempt to process payout
+    with brownie.reverts('ERROR:POL-004:RISKPOOL_NOT_ACTIVE'):
+        product.processPayout(processId, payoutId, {'from':productOwner})
+
+    assert instanceService.claims(processId) == 1
+    assert instanceService.payouts(processId) == 1
+    assert testCoin.balanceOf(customer) == 0
+
+    # unpause riskpool
+    componentOwnerService = instance.getComponentOwnerService()
+    componentOwnerService.unpause(riskpoolId, {'from': riskpoolKeeper})
+    
+    assert riskpool.getState() == 3
+
+    # enwure process payout works again
+    product.processPayout(processId, payoutId, {'from':productOwner})
+
+    assert instanceService.claims(processId) == 1
+    assert instanceService.payouts(processId) == 1
+    assert testCoin.balanceOf(customer) == claimAmount
+
+    # ensure it's not possible to process same payout a 2nd time
+    with brownie.reverts('ERROR:POC-091:POLICY_WITHOUT_OPEN_CLAIMS'):
+        product.processPayout(processId, payoutId, {'from':productOwner})
+
+    assert instanceService.claims(processId) == 1
+    assert instanceService.payouts(processId) == 1
+    assert testCoin.balanceOf(customer) == claimAmount
+
+
+def create_claim_no_oracle(product, customer, productOwner, processId, claimAmount):
+    tx = product.submitClaimNoOracle(processId, claimAmount, {'from':customer})
+    claimId = tx.return_value
+    product.confirmClaim(processId, claimId, claimAmount, {'from':productOwner})
+
+    tx = product.newPayout(processId, claimId, claimAmount, {'from':productOwner})
+    payoutId = tx.return_value
+
+    return (claimId, payoutId)

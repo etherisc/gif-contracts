@@ -9,7 +9,6 @@ import "../modules/TreasuryModule.sol";
 import "../shared/WithRegistry.sol";
 
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
-// import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
 import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
 import "@etherisc/gif-interface/contracts/modules/IPool.sol";
 
@@ -264,15 +263,17 @@ contract PolicyDefaultFlow is
             uint256 netPayoutAmount
         )
     {
-        TreasuryModule treasury = getTreasuryContract();
-        (feeAmount, netPayoutAmount) = treasury.processPayout(processId, payoutId);
+        PoolController pool = getPoolContract();
+        PolicyController policy = getPolicyContract();
+        IPolicy.Payout memory payout = policy.getPayout(processId, payoutId);
 
-        // if payout successful: update book keeping of policy and riskpool
-        IPolicy policy = getPolicyContract();
+        // book keeping of riskpool and policy
+        pool.processPayout(processId, payout.amount);
         policy.processPayout(processId, payoutId);
 
-        PoolController pool = getPoolContract();
-        pool.processPayout(processId, netPayoutAmount + feeAmount);
+        // move funds
+        TreasuryModule treasury = getTreasuryContract();
+        (feeAmount, netPayoutAmount) = treasury.processPayout(processId, payoutId);
     }
 
     function request(
