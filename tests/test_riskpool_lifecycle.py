@@ -55,7 +55,7 @@ def test_pause_unpause(
     fund_riskpool(instance, owner, capitalOwner, riskpool, bundleOwner, testCoin, initialFunding)
 
     riskpool.bundles() == 1
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     print(bundle)
 
     (
@@ -185,7 +185,7 @@ def test_suspend_resume(
     fund_riskpool(instance, owner, capitalOwner, riskpool, bundleOwner, testCoin, initialFunding)
 
     riskpool.bundles() == 1
-    bundle = riskpool.getBundle(0)
+    bundle =  _getBundle(instance, riskpool, 0)
     print(bundle)
 
     (
@@ -310,7 +310,7 @@ def test_suspend_archive(
     fund_riskpool(instance, owner, capitalOwner, riskpool, bundleOwner, testCoin, initialFunding)
 
     riskpool.bundles() == 1
-    bundle = riskpool.getBundle(0)
+    bundle =  _getBundle(instance, riskpool, 0)
     print(bundle)
 
     (
@@ -428,7 +428,7 @@ def test_pause_archive_as_owner(
     fund_riskpool(instance, owner, capitalOwner, riskpool, bundleOwner, testCoin, initialFunding)
 
     riskpool.bundles() == 1
-    bundle = riskpool.getBundle(0)
+    bundle =  _getBundle(instance, riskpool, 0)
     print(bundle)
 
     (
@@ -683,3 +683,9 @@ def test_propose_decline(
     # ensure that no bundles can be created on declined riskpool
     with brownie.reverts("ERROR:RPS-004:RISKPOOL_NOT_ACTIVE"):
         riskpool.createBundle(bytes(0), 50, {'from':riskpoolKeeper})
+
+
+def _getBundle(instance, riskpool, bundleIdx):
+    instanceService = instance.getInstanceService()
+    bundleId = riskpool.getBundleId(bundleIdx)
+    return instanceService.getBundle(bundleId)

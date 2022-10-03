@@ -58,7 +58,7 @@ def test_apply_decline(
     expectedCapital = expectedBalance
     expectedLockedCapital = 0
 
-    bundleId = riskpool.getBundle(0).dict()['id'] 
+    bundleId = _getBundleDict(instanceService, riskpool, 0)['id'] 
     bundle = instanceService.getBundle(bundleId).dict()
     assert bundle['id'] == bundleId
     assert bundle['riskpoolId'] == riskpool.getId()
@@ -109,7 +109,7 @@ def test_apply_revoke(
     expectedCapital = expectedBalance
     expectedLockedCapital = 0
 
-    bundleId = riskpool.getBundle(0).dict()['id'] 
+    bundleId = _getBundleDict(instanceService, riskpool, 0)['id'] 
     bundle = instanceService.getBundle(bundleId).dict()
     assert bundle['state'] == 0
     assert bundle['capital'] == expectedCapital
@@ -157,7 +157,7 @@ def test_apply_underwrite(
     expectedCapital = expectedBalance
     expectedLockedCapital = 0
 
-    bundleId = riskpool.getBundle(0).dict()['id'] 
+    bundleId = _getBundleDict(instanceService, riskpool, 0)['id'] 
     bundle = instanceService.getBundle(bundleId).dict()
     assert bundle['state'] == 0
     assert bundle['capital'] == expectedCapital
@@ -208,7 +208,7 @@ def test_collect_premium(
     expectedCapital = expectedBalance
     expectedLockedCapital = sumInsured
 
-    bundleId = riskpool.getBundle(0).dict()['id'] 
+    bundleId = _getBundleDict(instanceService, riskpool, 0)['id'] 
     bundle = instanceService.getBundle(bundleId).dict()
     assert bundle['state'] == 0
     assert bundle['capital'] == expectedCapital
@@ -269,7 +269,7 @@ def test_create_claim(
     expectedLockedCapital = sumInsured
     expectedBalance = netCapital + netPremium
 
-    bundleId = riskpool.getBundle(0).dict()['id'] 
+    bundleId = _getBundleDict(instanceService, riskpool, 0)['id'] 
     bundle = instanceService.getBundle(bundleId).dict()
     assert bundle['state'] == 0
     assert bundle['capital'] == expectedCapital
@@ -348,7 +348,7 @@ def test_expire_close_medium_claim(
     expectedLockedCapital = sumInsured
     expectedBalance = netCapital + netPremium
 
-    bundleId = riskpool.getBundle(0).dict()['id'] 
+    bundleId = _getBundleDict(instanceService, riskpool, 0)['id'] 
     bundle = instanceService.getBundle(bundleId).dict()
     assert bundle['state'] == 0
     assert bundle['capital'] == expectedCapital
@@ -408,7 +408,7 @@ def test_expire_close_max_claim(
     expectedLockedCapital = sumInsured
     expectedBalance = netCapital + netPremium
 
-    bundleId = riskpool.getBundle(0).dict()['id'] 
+    bundleId = _getBundleDict(instanceService, riskpool, 0)['id'] 
     bundle = instanceService.getBundle(bundleId).dict()
     assert bundle['state'] == 0
     assert bundle['capital'] == expectedCapital
@@ -494,3 +494,11 @@ def create_application(customer, premium, sumInsured, instance, owner, product, 
 
     processId = policy_tx.return_value
     return processId
+
+
+def _getBundleDict(instanceService, riskpool, bundleIdx):
+    return _getBundle(instanceService, riskpool, bundleIdx).dict()
+
+def _getBundle(instanceService, riskpool, bundleIdx):
+    bundleId = riskpool.getBundleId(bundleIdx)
+    return instanceService.getBundle(bundleId)

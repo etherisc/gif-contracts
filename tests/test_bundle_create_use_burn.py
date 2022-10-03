@@ -48,7 +48,7 @@ def test_create_bundle(
     fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     riskpool.bundles() == 1
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
 
     (
         bundleId,
@@ -113,7 +113,7 @@ def test_use_bundle(
     bundleOwner = riskpoolKeeper
     fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
     capitalFee = initialFunding / 20 + 42
     bundleExpectedCapital = initialFunding - capitalFee
     capitalOwnerBalance = testCoin.balanceOf(capitalOwner)
@@ -133,7 +133,7 @@ def test_use_bundle(
     sumInsured = 5000
     policyId = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
 
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
     print(bundle)
 
     premiumFee = premium / 10 + 3
@@ -188,7 +188,7 @@ def test_close_and_burn_bundle(
     fund_riskpool(instance, owner, capitalOwner, riskpool, bundleOwner, testCoin, initialFunding)
 
     pool = instanceService.getRiskpool(riskpool.getId()).dict()
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
 
     assert pool['id'] == bundle['riskpoolId']
     assert pool['capital'] == bundle['capital']
@@ -200,7 +200,7 @@ def test_close_and_burn_bundle(
     policyId = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
 
     pool = instanceService.getRiskpool(riskpool.getId()).dict()
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
 
     assert pool['capital'] == bundle['capital']
     assert pool['lockedCapital'] == bundle['lockedCapital']
@@ -213,14 +213,14 @@ def test_close_and_burn_bundle(
     product.expire(policyId, {'from': productOwner})
 
     pool = instanceService.getRiskpool(riskpool.getId()).dict()
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
 
     assert pool['capital'] == bundle['capital']
     assert pool['lockedCapital'] == bundle['lockedCapital']
     assert pool['balance'] == bundle['balance']
 
-    assert _getBundleDict(riskpool, 0)['lockedCapital'] == sumInsured
-    assert _getBundleDict(riskpool, 0)['balance'] == bundleBalance
+    assert _getBundleDict(instance, riskpool, 0)['lockedCapital'] == sumInsured
+    assert _getBundleDict(instance, riskpool, 0)['balance'] == bundleBalance
 
     # check that bundle may not be closed with non-closed policies
     with brownie.reverts('ERROR:BUC-001:NOT_BUNDLE_OWNER'):
@@ -231,7 +231,7 @@ def test_close_and_burn_bundle(
 
     assert _getPolicyDict(instance, policyId)['state'] == 1
 
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
     bundleBalance = bundle['balance']
     assert bundle['state'] == 0
     assert bundle['capital'] == bundleCapital
@@ -241,14 +241,14 @@ def test_close_and_burn_bundle(
     product.close(policyId, {'from': productOwner})
 
     pool = instanceService.getRiskpool(riskpool.getId()).dict()
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
 
     assert pool['capital'] == bundle['capital']
     assert pool['lockedCapital'] == bundle['lockedCapital']
     assert pool['balance'] == bundle['balance']
 
     assert _getPolicyDict(instance, policyId)['state'] == 2
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
     assert bundle['state'] == 0
     assert bundle['capital'] == bundleCapital
     assert bundle['lockedCapital'] == 0
@@ -261,13 +261,13 @@ def test_close_and_burn_bundle(
     riskpool.closeBundle(bundleId, {'from': bundleOwner})
 
     pool = instanceService.getRiskpool(riskpool.getId()).dict()
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
 
     assert pool['capital'] == bundle['capital']
     assert pool['lockedCapital'] == bundle['lockedCapital']
     assert pool['balance'] == bundle['balance']
 
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
     assert bundle['state'] == 2 # BundleState { Active, Locked, Closed, Burned }
     assert bundle['capital'] == bundleCapital
     assert bundle['lockedCapital'] == 0
@@ -293,14 +293,14 @@ def test_close_and_burn_bundle(
     assert netWithdrawalAmount == withdrawalAmount
 
     pool = instanceService.getRiskpool(riskpool.getId()).dict()
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
 
     assert pool['capital'] == bundle['capital']
     assert pool['lockedCapital'] == bundle['lockedCapital']
     assert pool['balance'] == bundle['balance']
 
     expectedBalance = bundleBalance - netWithdrawalAmount
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
     assert bundle['capital'] == bundleCapital - netWithdrawalAmount
     assert bundle['balance'] == expectedBalance
 
@@ -343,7 +343,7 @@ def test_close_and_burn_bundle(
     pool = instanceService.getRiskpool(riskpool.getId()).dict()
     print('pool after burn: {}\n'.format(pool))
 
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
     print('bundle after burn: {}'.format(bundle))
 
     assert pool['capital'] == bundle['capital']
@@ -379,7 +379,7 @@ def test_fund_defund_bundle(
     sumInsured = 5000
     policyId = apply_for_policy(instance, owner, product, customer, testCoin, premium, sumInsured)
 
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
     bundleId = bundle['id']
     bundleCapital = bundle['capital']
     bundleBalance = bundle['balance']
@@ -394,7 +394,7 @@ def test_fund_defund_bundle(
 
     assert netWithdrawlAmount == withdrawalAmount
 
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
     expectedCapital = bundleCapital - netWithdrawlAmount
     expectedBalance = bundleBalance - netWithdrawlAmount
     assert bundle['capital'] == expectedCapital
@@ -409,7 +409,7 @@ def test_fund_defund_bundle(
 
     assert netFundingAmount == fundingAmount - (fundingAmount / 20 + 42)
 
-    bundle = _getBundleDict(riskpool, 0)
+    bundle = _getBundleDict(instance, riskpool, 0)
     expectedCapital = bundleCapital - netWithdrawlAmount + netFundingAmount
     expectedBalance = bundleBalance - netWithdrawlAmount + netFundingAmount
     assert bundle['capital'] == expectedCapital
@@ -435,7 +435,7 @@ def test_create_two_bundles(
     fund_riskpool(instance, owner, capitalOwner, riskpool, riskpoolKeeper, testCoin, initialFunding)
 
     riskpool.bundles() == 1
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
 
     (
         bundleId,
@@ -472,7 +472,7 @@ def test_create_two_bundles(
 
     # assert that second bundle was created correctly
     assert 2 == riskpool.bundles()
-    bundle2 = riskpool.getBundle(1)
+    bundle2 = _getBundle(instance, riskpool, 1)
     
     (
         bundleId2,
@@ -499,5 +499,12 @@ def _getPolicyDict(instance, policyId):
     policyController = instance.getPolicy()
     return policyController.getPolicy(policyId).dict()
 
-def _getBundleDict(riskpool, bundleId):
-    return riskpool.getBundle(bundleId).dict()
+
+def _getBundleDict(instance, riskpool, bundleIdx):
+    return _getBundle(instance, riskpool, bundleIdx).dict()
+
+
+def _getBundle(instance, riskpool, bundleIdx):
+    instanceService = instance.getInstanceService()
+    bundleId = riskpool.getBundleId(bundleIdx)
+    return instanceService.getBundle(bundleId)

@@ -75,7 +75,7 @@ def test_happy_path(
 
     # check risk bundle in riskpool and book keeping after funding
     bundleIdx = 0
-    bundleAfterFunding = riskpool.getBundle(bundleIdx).dict()
+    bundleAfterFunding = _getBundleDict(instanceService, riskpool, bundleIdx)
     bundleId = bundleAfterFunding['id']
 
     assert bundleAfterFunding['id'] == 1
@@ -163,7 +163,7 @@ def test_happy_path(
     riskpoolExpectedLockedCapital = sumInsured[0] + sumInsured[1]
     riskpoolExpectedBalance += netPremium[0] + netPremium[1]
 
-    bundleAfterPremium = riskpool.getBundle(bundleIdx).dict()
+    bundleAfterPremium = _getBundleDict(instanceService, riskpool, bundleIdx)
     assert bundleAfterPremium['id'] == 1
     assert bundleAfterPremium['riskpoolId'] == riskpool.getId()
     assert bundleAfterPremium['state'] == 0
@@ -411,7 +411,7 @@ def test_happy_path(
     riskpoolExpectedBalance -= expectedPayoutAmount
 
     # check risk bundle after payout
-    bundleAfterPayout = riskpool.getBundle(bundleIdx).dict()
+    bundleAfterPayout = _getBundleDict(instanceService, riskpool, bundleIdx)
     assert bundleAfterPayout['id'] == 1
     assert bundleAfterPayout['riskpoolId'] == riskpool.getId()
     assert bundleAfterPayout['state'] == 0
@@ -447,7 +447,7 @@ def test_happy_path(
 
     # check bundle state
     riskpoolExpectedLockedCapital = 0
-    bundleAfter2ndPayout = riskpool.getBundle(bundleIdx).dict()
+    bundleAfter2ndPayout = _getBundleDict(instanceService, riskpool, bundleIdx)
 
     assert bundleAfter2ndPayout['capital'] == riskpoolExpectedCapital
     assert bundleAfter2ndPayout['lockedCapital'] == riskpoolExpectedLockedCapital
@@ -467,7 +467,7 @@ def test_happy_path(
     investorBalanceBeforeTokenBurn = token.balanceOf(investor)    
     assert investorBalanceBeforeBundleClose == investorBalanceBeforeTokenBurn
 
-    bundleBeforeBurn = riskpool.getBundle(bundleIdx).dict()
+    bundleBeforeBurn = _getBundleDict(instanceService, riskpool, bundleIdx)
     assert bundleBeforeBurn['state'] == 2 # enum BundleState { Active, Locked, Closed, Burned }
 
     # cheeck bundle token (nft)
@@ -480,7 +480,7 @@ def test_happy_path(
     print(tx.info())
 
     # verify bundle is burned and has 0 balance
-    bundleAfterBurn = riskpool.getBundle(bundleIdx).dict()
+    bundleAfterBurn = _getBundleDict(instanceService, riskpool, bundleIdx)
     assert bundleAfterBurn['state'] == 3 # enum BundleState { Active, Locked, Closed, Burned }
     assert bundleAfterBurn['capital'] == 0
     assert bundleAfterBurn['lockedCapital'] == 0
@@ -644,3 +644,10 @@ def get_payout_delta(
     )
 
     return abs(expectedPayoutPercentage * multiplier - calculatedPayout) / multiplier
+
+def _getBundleDict(instanceService, riskpool, bundleIdx):
+    return _getBundle(instanceService, riskpool, bundleIdx).dict()
+
+def _getBundle(instanceService, riskpool, bundleIdx):
+    bundleId = riskpool.getBundleId(bundleIdx)
+    return instanceService.getBundle(bundleId)

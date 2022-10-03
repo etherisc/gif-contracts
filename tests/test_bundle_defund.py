@@ -50,7 +50,7 @@ def test_fund_defund_simple(
     fund_riskpool(instance, owner, riskpoolWallet, riskpool, investor, testCoin, initialFunding)
 
     assert riskpool.bundles() == 1
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     (
         bundleId,
         riskpoolId,
@@ -86,7 +86,7 @@ def test_fund_defund_simple(
         balance,
         createdAt,
         updatedAt
-    ) = riskpool.getBundle(0)
+    ) = _getBundle(instance, riskpool, 0)
 
     assert capital == 0
     assert balance == 0
@@ -114,7 +114,7 @@ def test_fund_defund_with_policy(
     fund_riskpool(instance, owner, riskpoolWallet, riskpool, investor, testCoin, initialFunding)
 
     assert riskpool.bundles() == 1
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     print('bundle after funding: {}'.format(bundle))
 
     (
@@ -150,14 +150,14 @@ def test_fund_defund_with_policy(
 
     policyId = policy_tx.return_value
 
-    print('bundle after premium: {}'.format(riskpool.getBundle(0)))
+    print('bundle after premium: {}'.format(_getBundle(instance, riskpool, 0)))
 
     # expire and close policy to free locked capital in bundle
     product.expire(policyId)
     product.close(policyId)
 
     # record state before defunding
-    bundleBeforeDefunding = riskpool.getBundle(0)
+    bundleBeforeDefunding = _getBundle(instance, riskpool, 0)
     (
         bundleId,
         riskpoolId,
@@ -183,7 +183,7 @@ def test_fund_defund_with_policy(
 
     riskpool.defundBundle(bundleId, defundAmount, {'from':investor})
 
-    bundleAfterDefunding = riskpool.getBundle(0)
+    bundleAfterDefunding = _getBundle(instance, riskpool, 0)
     print('bundle after defunding by {}: {}'.format(defundAmount, bundleAfterDefunding))
 
     (
@@ -204,3 +204,9 @@ def test_fund_defund_with_policy(
 
     assert testCoin.balanceOf(riskpoolWallet) == 0
     assert testCoin.balanceOf(investor) == investorBalanceBeforeDefunding + defundAmount
+
+
+def _getBundle(instance, riskpool, bundleIdx):
+    instanceService = instance.getInstanceService()
+    bundleId = riskpool.getBundleId(bundleIdx)
+    return instanceService.getBundle(bundleId)

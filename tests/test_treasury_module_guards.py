@@ -55,7 +55,7 @@ def test_guard_processPremium(
                 amount, 
                 {'from': riskpoolKeeper})
 
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     print(bundle)
 
         # prepare prolicy application
@@ -135,7 +135,7 @@ def test_guard_processPayout(
                 amount, 
                 {'from': riskpoolKeeper})
 
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     print(bundle)
 
         # prepare prolicy application
@@ -201,7 +201,7 @@ def test_processPayout_balance_allowance_checks(
                 amount, 
                 {'from': riskpoolKeeper})
 
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     print(bundle)
 
         # prepare prolicy application
@@ -270,7 +270,7 @@ def test_guard_processCapital(
                 amount, 
                 {'from': riskpoolKeeper})
 
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     print(bundle)
 
     # ensure no withdrawal is possible from other than riskpoool service
@@ -327,7 +327,7 @@ def test_guard_processWithdrawal(
                 amount, 
                 {'from': riskpoolKeeper})
 
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     print(bundle)
 
     # ensure no withdrawal is possible from other than riskpoool service
@@ -445,7 +445,7 @@ def test_processWithdrawal_balance_allowance_checks(
                 amount, 
                 {'from': riskpoolKeeper})
 
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     bundleId = bundle[0]
 
     # empty riskpool wallet
@@ -504,3 +504,9 @@ def getProductAndRiskpool(
         gifRiskpool,
         gifOracle
     )
+
+
+def _getBundle(instance, riskpool, bundleIdx):
+    instanceService = instance.getInstanceService()
+    bundleId = riskpool.getBundleId(bundleIdx)
+    return instanceService.getBundle(bundleId)

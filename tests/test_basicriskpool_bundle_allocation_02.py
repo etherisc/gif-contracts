@@ -65,7 +65,7 @@ def test_bundle_allocation_with_three_uneven_bundles(
     # ensure every bundle has same locked capital
     for i in range(num_bundles):
         # get updates bundle values
-        bundle = riskpool.getBundle(i)
+        bundle = _getBundle(instance, riskpool, i)
         (
             _,
             _,
@@ -79,3 +79,8 @@ def test_bundle_allocation_with_three_uneven_bundles(
 
         assert expectedAllocation[i] == lockedCapital
 
+
+def _getBundle(instance, riskpool, bundleIdx):
+    instanceService = instance.getInstanceService()
+    bundleId = riskpool.getBundleId(bundleIdx)
+    return instanceService.getBundle(bundleId)
