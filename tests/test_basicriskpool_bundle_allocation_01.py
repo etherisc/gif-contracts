@@ -54,7 +54,7 @@ def test_bundle_allocation_with_one_bundle(
     assert 1 == riskpool.bundles()
 
     # ensure the bundles are configured
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     (
         bundleId,
         riskpoolId,
@@ -98,7 +98,7 @@ def test_bundle_allocation_with_one_bundle(
 
 
     # get updates bundle values
-    bundle = riskpool.getBundle(0)
+    bundle = _getBundle(instance, riskpool, 0)
     (
         bundleId,
         riskpoolId,
@@ -144,7 +144,7 @@ def test_bundle_allocation_with_three_equal_bundles(
     # ensure every bundle has same locked capital
     for i in range(num_bundles):
         # get updates bundle values
-        bundle = riskpool.getBundle(i)
+        bundle = _getBundle(instance, riskpool, i)
         (
             _,
             _,
@@ -212,3 +212,9 @@ def test_failing_bundle_allocation(
     application = instanceService.getApplication(processId)
     applicationState = application[0]
     assert applicationState == 0 # enum ApplicationState {Applied, Revoked, Underwritten, Declined}
+
+
+def _getBundle(instance, riskpool, bundleIdx):
+    instanceService = instance.getInstanceService()
+    bundleId = riskpool.getBundleId(bundleIdx)
+    return instanceService.getBundle(bundleId)

@@ -45,7 +45,7 @@ def test_create_bundle_max_active(
     assert riskpool.activeBundles() == 1
     assert instanceService.activeBundles(riskpoolId) == 1
 
-    bundle1 = riskpool.getBundle(0)
+    bundle1 = _getBundle(instance, riskpool, 0)
 
     # ensure creation of another bundle is not allowed (max active bundles is 1 by default)
     with brownie.reverts("ERROR:POL-043:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED"):
@@ -80,8 +80,8 @@ def test_create_bundle_max_active(
     assert riskpool.activeBundles() == 2
     assert instanceService.activeBundles(riskpoolId) == 2
 
-    bundle2 = riskpool.getBundle(1)
-    bundle3 = riskpool.getBundle(2)
+    bundle2 = _getBundle(instance, riskpool, 1)
+    bundle3 = _getBundle(instance, riskpool, 2)
     
     with brownie.reverts("ERROR:POL-043:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED"):
         riskpool.createBundle(
@@ -125,3 +125,8 @@ def test_create_bundle_max_active(
     assert riskpool.activeBundles() == 2
     assert instanceService.activeBundles(riskpoolId) == 2
 
+
+def _getBundle(instance, riskpool, bundleIdx):
+    instanceService = instance.getInstanceService()
+    bundleId = riskpool.getBundleId(bundleIdx)
+    return instanceService.getBundle(bundleId)

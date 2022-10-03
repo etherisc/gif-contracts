@@ -73,7 +73,7 @@ def test_process_policies_for_risk(
 
     # check risk bundle in riskpool and book keeping after funding
     bundleIdx = 0
-    bundleAfterFunding = riskpool.getBundle(bundleIdx).dict()
+    bundleAfterFunding = _getBundleDict(instance, riskpool, bundleIdx)
     bundleId = bundleAfterFunding['id']
 
     assert bundleAfterFunding['id'] == 1
@@ -300,7 +300,7 @@ def test_process_policies_mix_batch_individual_processing(
 
     # check risk bundle in riskpool and book keeping after funding
     bundleIdx = 0
-    bundleAfterFunding = riskpool.getBundle(bundleIdx).dict()
+    bundleAfterFunding = _getBundleDict(instance, riskpool, bundleIdx)
     bundleId = bundleAfterFunding['id']
 
     # cheeck bundle token (nft)
@@ -451,3 +451,13 @@ def test_process_policies_mix_batch_individual_processing(
     assert product.policies(riskId[0]) == 0
     assert processedPolicyIds[0] == policyId[1]
     assert processedPolicyIds[1] == policyId[0]
+
+
+def _getBundleDict(instance, riskpool, bundleIdx):
+    return _getBundle(instance, riskpool, bundleIdx).dict()
+
+
+def _getBundle(instance, riskpool, bundleIdx):
+    instanceService = instance.getInstanceService()
+    bundleId = riskpool.getBundleId(bundleIdx)
+    return instanceService.getBundle(bundleId)
