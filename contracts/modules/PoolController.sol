@@ -101,12 +101,12 @@ contract PoolController is
         _riskpoolIds.push(riskpoolId);
         _maxmimumNumberOfActiveBundlesForRiskpoolId[riskpoolId] = DEFAULT_MAX_NUMBER_OF_ACTIVE_BUNDLES;
         
-        require(pool.createdAt == 0, "ERROR:POL-004:RISKPOOL_ALREADY_REGISTERED");
+        require(pool.createdAt == 0, "ERROR:POL-005:RISKPOOL_ALREADY_REGISTERED");
 
-        require(wallet != address(0), "ERROR:POL-005:WALLET_ADDRESS_ZERO");
-        require(erc20Token != address(0), "ERROR:POL-006:ERC20_ADDRESS_ZERO");
-        require(collateralizationLevel <= COLLATERALIZATION_LEVEL_CAP, "ERROR:POL-007:COLLATERALIZATION_lEVEl_TOO_HIGH");
-        require(sumOfSumInsuredCap > 0, "ERROR:POL-008:SUM_OF_SUM_INSURED_CAP_ZERO");
+        require(wallet != address(0), "ERROR:POL-006:WALLET_ADDRESS_ZERO");
+        require(erc20Token != address(0), "ERROR:POL-007:ERC20_ADDRESS_ZERO");
+        require(collateralizationLevel <= COLLATERALIZATION_LEVEL_CAP, "ERROR:POL-008:COLLATERALIZATION_lEVEl_TOO_HIGH");
+        require(sumOfSumInsuredCap > 0, "ERROR:POL-009:SUM_OF_SUM_INSURED_CAP_ZERO");
 
         pool.id = riskpoolId; 
         pool.wallet = wallet; 
