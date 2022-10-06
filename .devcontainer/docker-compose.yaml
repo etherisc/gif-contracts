@@ -2,6 +2,12 @@ version: '3'
 
 
 services:
+  # ganache:
+  #   build:
+  #     context: ..
+  #     dockerfile: .devcontainer/Dockerfile.ganache
+  #   # ports:
+  #   #   - "7545:7545"
   brownie:
     # See https://aka.ms/vscode-remote/containers/non-root for details.
     user: vscode
