@@ -3,6 +3,7 @@
 # Install required solidity compiler version
 mkdir -p ~/.solcx/ 
 wget -O ~/.solcx/solc-v0.8.2 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.2+commit.661d1103 
+wget -O ~/.solcx/solc-v0.8.17 https://binaries.soliditylang.org/linux-amd64/solc-linux-amd64-v0.8.17+commit.8df45f5f
 chmod 755 ~/.solcx/solc* 
 
 # Retrieve brownie dependencies
