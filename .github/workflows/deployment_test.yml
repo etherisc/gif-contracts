@@ -13,22 +13,47 @@ jobs:
   deployment:
     name: Execute test deployment to local ganache chain
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    container:
+      image: ghcr.io/etherisc/gif-brownie-container-ghaction:main
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-      - name: Setup node environment
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
       
-      - name: Prepare environment 
-        run: .github/workflows/scripts/prepare_environment.sh
+      # copy the directories where stuff is installed in the base image
+      # github action force their own homedir (/github/home) which is mounted from outside
+      - name: copy brownie, solidity, pip and npm directories into gh action $HOME
+        run: |
+          cp -r /root/.brownie/ ~/.brownie
+          cp -r /root/.solcx/ ~/.solcx
+          cp -r /root/.cache/ ~/.cache
+          cp -r /root/.npm/ ~/.npm
+          source /usr/local/nvm/nvm.sh
+          node --version
+          nvm --version
 
       - name: Compile contracts
         run: brownie compile --all
       - run: touch .env
+
+      # shell does not read .bashrc so nvm must be sourced manually each time
+      - name: Start ganache
+        run: |
+          source /usr/local/nvm/nvm.sh
+          node -v
+          npm link ganache
+          ganache --version
+          ganache \
+            --mnemonic "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat" \
+            --chain.chainId 1234 \
+            --port 7545 \
+            --accounts 20 \
+            -q &
+
+      - name: Execute deployment
+        run: |
+          brownie networks add Local ganache host=http://127.0.0.1:7545 chainid=1234
+          brownie run test_deployment.py --network=ganache 
+
