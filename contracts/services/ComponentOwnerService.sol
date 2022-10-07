@@ -28,7 +28,7 @@ contract ComponentOwnerService is
         require(address(component) != address(0), "ERROR:COS-003:COMPONENT_ID_INVALID");
 
         address owner = component.getOwner();
-        bytes32 requiredRole = _component.getRequiredRole(component.getType());
+        bytes32 requiredRole = _component.getRequiredRole(_component.getComponentType(id));
 
         require(_msgSender() == owner, "ERROR:COS-004:NOT_OWNER");
         require(_access.hasRole(requiredRole, owner), "ERROR:COS-005:REQUIRED_ROLE_MISSING");
