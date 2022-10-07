@@ -106,16 +106,18 @@ contract TreasuryModule is
     {
         require(erc20Address != address(0), "ERROR:TRS-010:TOKEN_ADDRESS_ZERO");
 
-        IComponent component = _component.getComponent(productId);
         require(_component.isProduct(productId), "ERROR:TRS-011:NOT_PRODUCT");
-        require(address(_componentToken[productId]) == address(0), "ERROR:TRS-012:PRODUCT_TOKEN_ALREADY_SET");
-    
+        require(address(_componentToken[productId]) == address(0), "ERROR:TRS-012:PRODUCT_TOKEN_ALREADY_SET");    
+        
+        IComponent component = _component.getComponent(productId);
+        require(address(IProduct(address(component)).getToken()) == erc20Address, "ERROR:TRS-013:PRODUCT_TOKEN_ADDRESS_NOT_MATCHING");
+
         uint256 riskpoolId = _pool.getRiskPoolForProduct(productId);
 
         // require if riskpool token is already set and product token does match riskpool token
         require(address(_componentToken[riskpoolId]) == address(0)
-                || address(_componentToken[riskpoolId]) == address(IProduct(address(component)).getToken()), 
-                "ERROR:TRS-014:TOKEN_ADDRESS_NOT_MACHING");
+                || address(_componentToken[riskpoolId]) == erc20Address, 
+                "ERROR:TRS-014:RISKPOOL_TOKEN_ADDRESS_NOT_MACHING");
         
         _componentToken[productId] = IERC20(erc20Address);
         _componentToken[riskpoolId] = IERC20(erc20Address);
