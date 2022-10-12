@@ -150,6 +150,16 @@ contract TestProduct is
         (success, fee, netPremium) = _collectPremium(policyId, amount);
     }
 
+    function adjustPremiumSumInsured(
+        bytes32 processId,
+        uint256 expectedPremiumAmount,
+        uint256 sumInsuredAmount
+    )
+        external
+    {
+        _adjustPremiumSumInsured(processId, expectedPremiumAmount, sumInsuredAmount);
+    }
+
     function expire(bytes32 policyId) external onlyOwner {
         _expire(policyId);
     }
