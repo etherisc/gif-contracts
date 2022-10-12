@@ -131,7 +131,7 @@ def test_two_products_different_coin_same_riskpool(
     )
 
     # ensure that creating of another product with different token is not allowed
-    with brownie.reverts("ERROR:TRS-014:TOKEN_ADDRESS_NOT_MACHING"):
+    with brownie.reverts("ERROR:TRS-014:RISKPOOL_TOKEN_ADDRESS_NOT_MACHING"):
         GifTestProduct(
             instance, 
             testCoinX,
