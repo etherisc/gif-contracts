@@ -1,0 +1,51 @@
+name: Deployment test
+
+on: 
+  workflow_dispatch:
+  push:
+    branches: [ main, develop ]
+    tags:
+    - '*'
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  deployment:
+    name: Execute test deployment to local ganache chain
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Setup node environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      
+      - name: Prepare environment
+        run: .github/workflows/scripts/prepare_environment.sh
+          
+      - name: Compile contracts
+        run: brownie compile --all
+      - run: touch .env
+
+      # shell does not read .bashrc so nvm must be sourced manually each time
+      - name: Start ganache
+        run: |
+          ganache \
+            --mnemonic "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat" \
+            --chain.chainId 1234 \
+            --port 7545 \
+            --accounts 20 \
+            -q &
+
+      - name: Execute deployment
+        run: |
+          brownie networks add Local ganache host=http://127.0.0.1:7545 chainid=1234
+          brownie run test_deployment.py --network=ganache 
+

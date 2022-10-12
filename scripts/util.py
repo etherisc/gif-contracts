@@ -128,7 +128,7 @@ def deployGifModuleV2(
         publish_source=publishSource)
 
     moduleNameB32 = s2b32(moduleName)
-    controllerNameB32 = s2b32('{}Controller'.format(moduleName))[:32]
+    controllerNameB32 = s2b32('{}Controller'.format(moduleName)[:32])
 
     print('module {} ({}) register controller'.format(moduleName, controllerNameB32))
     registry.register(controllerNameB32, controller.address, {'from': owner})
