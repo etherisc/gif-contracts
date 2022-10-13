@@ -62,10 +62,20 @@ contract PoolController is
         _;
     }
 
-    modifier onlyTreasury() {
+    modifier onlyActivePool(uint256 riskpoolId) {
         require(
-            _msgSender() == _getContractAddress("Treasury"),
-            "ERROR:POL-003:NOT_TREASURY"
+            _component.getComponentState(riskpoolId) == IComponent.ComponentState.Active, 
+            "ERROR:POL-003:RISKPOOL_NOT_ACTIVE"
+        );
+        _;
+    }
+
+    modifier onlyActivePoolForProcess(bytes32 processId) {
+        IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
+        uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
+        require(
+            _component.getComponentState(riskpoolId) == IComponent.ComponentState.Active, 
+            "ERROR:POL-004:RISKPOOL_NOT_ACTIVE"
         );
         _;
     }
@@ -91,12 +101,12 @@ contract PoolController is
         _riskpoolIds.push(riskpoolId);
         _maxmimumNumberOfActiveBundlesForRiskpoolId[riskpoolId] = DEFAULT_MAX_NUMBER_OF_ACTIVE_BUNDLES;
         
-        require(pool.createdAt == 0, "ERROR:POL-004:RISKPOOL_ALREADY_REGISTERED");
+        require(pool.createdAt == 0, "ERROR:POL-005:RISKPOOL_ALREADY_REGISTERED");
 
-        require(wallet != address(0), "ERROR:POL-005:WALLET_ADDRESS_ZERO");
-        require(erc20Token != address(0), "ERROR:POL-006:ERC20_ADDRESS_ZERO");
-        require(collateralizationLevel <= COLLATERALIZATION_LEVEL_CAP, "ERROR:POL-007:COLLATERALIZATION_lEVEl_TOO_HIGH");
-        require(sumOfSumInsuredCap > 0, "ERROR:POL-008:SUM_OF_SUM_INSURED_CAP_ZERO");
+        require(wallet != address(0), "ERROR:POL-006:WALLET_ADDRESS_ZERO");
+        require(erc20Token != address(0), "ERROR:POL-007:ERC20_ADDRESS_ZERO");
+        require(collateralizationLevel <= COLLATERALIZATION_LEVEL_CAP, "ERROR:POL-008:COLLATERALIZATION_lEVEl_TOO_HIGH");
+        require(sumOfSumInsuredCap > 0, "ERROR:POL-009:SUM_OF_SUM_INSURED_CAP_ZERO");
 
         pool.id = riskpoolId; 
         pool.wallet = wallet; 
@@ -129,6 +139,7 @@ contract PoolController is
     function fund(uint256 riskpoolId, uint256 amount) 
         external
         onlyRiskpoolService
+        onlyActivePool(riskpoolId)
     {
         IPool.Pool storage pool = _riskpools[riskpoolId];
         pool.capital += amount;
@@ -139,6 +150,7 @@ contract PoolController is
     function defund(uint256 riskpoolId, uint256 amount) 
         external
         onlyRiskpoolService
+        onlyActivePool(riskpoolId)
     {
         IPool.Pool storage pool = _riskpools[riskpoolId];
 
@@ -152,6 +164,7 @@ contract PoolController is
     function underwrite(bytes32 processId) 
         external override 
         onlyPolicyFlow("Pool")
+        onlyActivePoolForProcess(processId)
         returns(bool success)
     {
         // check that application is in applied state
@@ -164,10 +177,6 @@ contract PoolController is
         // determine riskpool responsible for application
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];
-        require(
-            _component.getComponentState(riskpoolId) == IComponent.ComponentState.Active, 
-            "ERROR:POL-021:RISKPOOL_NOT_ACTIVE"
-        );
 
         // calculate required collateral amount
         uint256 sumInsuredAmount = application.sumInsuredAmount;
@@ -223,6 +232,7 @@ contract PoolController is
     function processPremium(bytes32 processId, uint256 amount) 
         external override
         onlyPolicyFlow("Pool")
+        onlyActivePoolForProcess(processId)
     {
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         IRiskpool riskpool = _getRiskpoolComponent(metadata);
@@ -238,6 +248,7 @@ contract PoolController is
     function processPayout(bytes32 processId, uint256 amount) 
         external override
         onlyPolicyFlow("Pool")
+        onlyActivePoolForProcess(processId)
     {
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         uint256 riskpoolId = _riskpoolIdForProductId[metadata.productId];

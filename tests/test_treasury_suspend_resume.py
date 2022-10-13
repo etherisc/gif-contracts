@@ -218,6 +218,11 @@ def test_process_payout(
     # resume treasury
     instanceOperatorService.resumeTreasury(ioDict)
 
+    # check that no funds have moved
+    assert customerBalanceBeforePayout == erc20Token.balanceOf(customer)
+    assert riskpoolBalanceBeforePayout == erc20Token.balanceOf(riskpoolWallet)
+    assert riskpool.getBalance() == erc20Token.balanceOf(riskpoolWallet)
+
     # trigger payout
     product.createPayout(policyId, claimId, claimAmount, {'from': productOwner})
 

@@ -492,7 +492,7 @@ def test_riskpool_inactive(
     applicationData = s2b32('application')
 
     # check that inactive product does not lead to policy creation
-    with brownie.reverts('ERROR:POL-021:RISKPOOL_NOT_ACTIVE'):
+    with brownie.reverts('ERROR:POL-004:RISKPOOL_NOT_ACTIVE'):
         apply_tx = product.applyForPolicy(
             premium,
             sumInsured,
