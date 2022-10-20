@@ -23,8 +23,8 @@ mv chainlink-${VERSION_CHAINLINK} chainlink@${VERSION_CHAINLINK}
 # Install ganache
 npm install --global ganache
 
-# Setup brownie
-wget https://raw.githubusercontent.com/eth-brownie/brownie/master/requirements.txt
-pip install -r requirements.txt 
-pip install eth-brownie 
+# Install brownie
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath 
+pipx install eth-brownie
 
