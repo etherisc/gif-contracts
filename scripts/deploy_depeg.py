@@ -284,7 +284,6 @@ def deploy(
     policyMinDuration = 30 * 24 * 3600
     policyMaxDuration = 90 * 24 * 3600
     annualPercentageReturn = riskpool.getApr100PercentLevel() / 20;
-    applicationFilter = bytes(0)
     riskpool.createBundle(
             policyMinSumInsured,
             policyMaxSumInsured,
@@ -365,11 +364,13 @@ def deploy(
 
 
 def help():
-    print('from scripts.deploy_depeg import all_in_1, new_policy, inspect_bundle, inspect_applications, help')
+    print('from scripts.deploy_depeg import all_in_1, new_bundle, new_policy, inspect_bundle, inspect_applications, help')
     print('(customer, product, riskpool, riskpoolWallet, usd1, instanceService, processId, d) = all_in_1()')
     print('instanceService.getPolicy(processId)')
     print('instanceService.getBundle(1)')
     print('inspect_bundle(d, 1)')
+    print('inspect_bundles(d)')
+    print('inspect_applications(d)')
 
 
 
@@ -386,6 +387,39 @@ def all_in_1():
     processId = d[PROCESS_ID1]
 
     return (customer, product, riskpool, riskpoolWallet, usd1, instanceService, processId, d)
+
+
+def new_bundle(
+    d,
+    funding,
+    minSumInsured,
+    maxSumInsured,
+    minDurationDays,
+    maxDurationDays,
+    aprPercentage
+):
+    instance = d['instance']
+    instanceOperator = d['instanceOperator']
+    investor = d['investor']
+    riskpool = d['riskpool']
+    tokenAddress = riskpool.getErc20Token()
+    token = contract_from_address(TestCoin, tokenAddress)
+
+    token.transfer(investor, funding, {'from': instanceOperator})
+    token.approve(instance.getTreasury(), funding, {'from': investor})
+
+    apr100level = riskpool.getApr100PercentLevel();
+    apr = apr100level * aprPercentage / 100
+
+    spd = 24*3600
+    riskpool.createBundle(
+        minSumInsured,
+        maxSumInsured,
+        minDurationDays * spd,
+        maxDurationDays * spd,
+        apr,
+        funding, 
+        {'from': investor})
 
 
 def new_policy(
@@ -458,6 +492,49 @@ def inspect_applications(d):
             suminsured,
             duration/(24*3600),
             maxpremium
+        ))
+
+
+def inspect_bundles(d):
+    instanceService = d[INSTANCE_SERVICE]
+    riskpool = d[RISKPOOL]
+    riskpoolId = riskpool.getId()
+    activeBundles = instanceService.activeBundles(riskpoolId)
+
+    # print header row
+    print('i riskpool bundle minsuminsured maxsuminsured minduration maxduration apr capital locked capacity')
+
+    # print individual rows
+    for idx in range(activeBundles):
+        bundleId = instanceService.getActiveBundleId(riskpoolId, idx)
+        bundle = instanceService.getBundle(bundleId)
+        filter = bundle[4]
+        (
+            minSumInsured,
+            maxSumInsured,
+            minDuration,
+            maxDuration,
+            annualPercentageReturn
+
+        ) = riskpool.decodeBundleParamsFromFilter(filter)
+
+        apr = 100 * annualPercentageReturn/riskpool.getApr100PercentLevel()
+        capital = bundle[5]
+        locked = bundle[6]
+        capacity = bundle[5]-bundle[6]
+
+        print('{} {} {} {} {} {} {} {} {} {} {}'.format(
+            idx,
+            riskpoolId,
+            bundleId,
+            minSumInsured,
+            maxSumInsured,
+            minDuration/(24*3600),
+            maxDuration/(24*3600),
+            apr,
+            capital,
+            locked,
+            capacity
         ))
 
 
