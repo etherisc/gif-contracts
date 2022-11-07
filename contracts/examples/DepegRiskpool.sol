@@ -87,8 +87,7 @@ contract DepegRiskpool is
     //   + .1 create application
     //   + .2 figure out if there's a matching bundle
     //   + .3 add function that let's user query conditions based on active bundles
-    // TODO function defined in base class Riskpool -> needs to be virtual!
-    function getFilterDataStructureTemp() external pure returns(string memory) {
+    function getFilterDataStructure() external override pure returns(string memory) {
         return "(uint256 minSumInsured,uint256 maxSumInsured,uint256 minDuration,uint256 maxDuration,uint256 annualPercentageReturn)";
     }
 
@@ -112,7 +111,7 @@ contract DepegRiskpool is
     }
 
     function decodeBundleParamsFromFilter(
-        bytes calldata filter
+        bytes memory filter
     )
         public pure
         returns (
@@ -148,7 +147,7 @@ contract DepegRiskpool is
 
 
     function decodeApplicationParameterFromData(
-        bytes calldata data
+        bytes memory data
     )
         public pure
         returns (
@@ -162,10 +161,14 @@ contract DepegRiskpool is
         ) = abi.decode(data, (uint256, uint256));
     }
 
+    function getBundleFilter(uint256 bundleId) public view returns (bytes memory filter) {
+        IBundle.Bundle memory bundle = _instanceService.getBundle(bundleId);
+        filter = bundle.filter;
+    }
 
     function bundleMatchesApplication(
-        IBundle.Bundle calldata bundle, 
-        IPolicy.Application calldata application
+        IBundle.Bundle memory bundle, 
+        IPolicy.Application memory application
     ) 
         public override
         pure

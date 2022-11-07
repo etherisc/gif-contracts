@@ -302,17 +302,11 @@ def deploy(
     erc20Token.approve(instance.getTreasury(), customerFunding, {'from': customer})
 
     # policy creation
-    premium = [300, 400]
-    sumInsured = [2000, 3000]
-    print('6) policy creation (2x) for customers {}, {}'.format(
-        customer, customer2))
-
-    tx = [None, None]
-    tx[0] = product.applyForPolicy(premium[0], sumInsured[0], {'from': customer})
-    tx[1] = product.applyForPolicy(premium[1], sumInsured[1], {'from': customer2})
-
-    processId1 = tx[0].events['LogDepegPolicyCreated']['policyId']
-    processId2 = tx[1].events['LogDepegPolicyCreated']['policyId']
+    sumInsured = 20000
+    duration = 50
+    maxPremium = 1000
+    print('6) policy creation for customers {}'.format(customer))
+    processId = new_policy(product, customer, sumInsured, duration, maxPremium)
 
     deploy_result = {
         INSTANCE_OPERATOR: instanceOperator,
@@ -330,8 +324,7 @@ def deploy(
         COMPONENT_OWNER_SERVICE: contract_from_address(ComponentOwnerService, componentOwnerService),
         PRODUCT: contract_from_address(DepegProduct, product),
         RISKPOOL: contract_from_address(DepegRiskpool, riskpool),
-        PROCESS_ID1: processId1,
-        PROCESS_ID2: processId2,
+        PROCESS_ID1: processId,
     }
 
     print('deploy_result: {}'.format(deploy_result))
@@ -372,12 +365,15 @@ def deploy(
 
 
 def help():
-    print('from scripts.deploy_depeg import allIn1, inspect_bundle')
-    print('(customer, product, riskpool, riskpoolWallet, usd1, instanceService, d) = allIn1()')
+    print('from scripts.deploy_depeg import all_in_1, new_policy, inspect_bundle, inspect_applications, help')
+    print('(customer, product, riskpool, riskpoolWallet, usd1, instanceService, processId, d) = all_in_1()')
+    print('instanceService.getPolicy(processId)')
+    print('instanceService.getBundle(1)')
     print('inspect_bundle(d, 1)')
 
 
-def allIn1():
+
+def all_in_1():
     a = stakeholders_accounts_ganache()
     usd1 = TestCoin.deploy({'from':a[INSTANCE_OPERATOR]})
     d = deploy_setup_including_token(a, usd1)
@@ -387,8 +383,82 @@ def allIn1():
     product = d[PRODUCT]
     riskpool = d[RISKPOOL]
     riskpoolWallet = d[RISKPOOL_WALLET]
+    processId = d[PROCESS_ID1]
 
-    return (customer, product, riskpool, riskpoolWallet, usd1, instanceService, d)
+    return (customer, product, riskpool, riskpoolWallet, usd1, instanceService, processId, d)
+
+
+def new_policy(
+    product,
+    customer,
+    sumInsured,
+    durationDays,
+    maxPremium  
+) -> str:
+    duration = durationDays*24*3600
+    tx = product.applyForPolicy(sumInsured, duration, maxPremium, {'from': customer})
+
+    if 'LogDepegApplicationCreated' in tx.events:
+        processId = tx.events['LogDepegApplicationCreated']['policyId']
+    else:
+        processId = None
+
+    applicationSuccess = 'success' if processId else 'failed'
+    policySuccess = 'success' if 'LogDepegPolicyCreated' in tx.events else 'failed'
+
+    print('processId {} application {} policy {}'.format(
+        processId,
+        applicationSuccess,
+        policySuccess))
+
+    return processId
+
+
+def inspect_applications(d):
+    instanceService = d[INSTANCE_SERVICE]
+    product = d[PRODUCT]
+    riskpool = d[RISKPOOL]
+
+    processIds = product.applications()
+
+    # print header row
+    print('i customer product id type state premium suminsured duration maxpremium')
+
+    # print individual rows
+    for idx in range(processIds):
+        # TODO instanceService needs method getProcessId(idx)
+        processId = product.getApplicationId(idx) 
+        metadata = instanceService.getMetadata(processId)
+        customer = metadata[0]
+        productId = metadata[1]
+
+        application = instanceService.getApplication(processId)
+        state = application[0]
+        premium = application[1]
+        suminsured = application[2]
+        appdata = application[3]
+        (duration, maxpremium) = riskpool.decodeApplicationParameterFromData(appdata)
+
+        if state == 2:
+            policy = instanceService.getPolicy(processId)
+            state = policy[0]
+            kind = 'policy'
+        else:
+            policy = None
+            kind = 'application'
+
+        print('{} {} {} {} {} {} {} {} {} {}'.format(
+            idx,
+            customer[:6],
+            productId,
+            processId,
+            kind,
+            state,
+            premium,
+            suminsured,
+            duration/(24*3600),
+            maxpremium
+        ))
 
 
 def inspect_bundle(d, bundleId):

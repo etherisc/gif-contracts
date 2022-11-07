@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
+/*
+from scripts.deploy_depeg import help
+help()
+ */
+
+
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
 import "@etherisc/gif-interface/contracts/components/Product.sol";
 
@@ -124,6 +130,6 @@ contract DepegProduct is
     }
 
     function getApplicationDataStructure() external override pure returns(string memory dataStructure) {
-        return "TODO";
+        return "(uint256 duration,uint256 maxPremium)";
     }
 }
