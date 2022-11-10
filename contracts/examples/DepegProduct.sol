@@ -1,14 +1,11 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.8.2;
 
-/*
-from scripts.deploy_depeg import help
-help()
- */
-
+import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 
 import "@etherisc/gif-interface/contracts/components/IComponent.sol";
 import "@etherisc/gif-interface/contracts/components/Product.sol";
+
 
 import "./DepegRiskpool.sol";
 
@@ -89,6 +86,51 @@ contract DepegProduct is
                 policyHolder, 
                 premium, 
                 sumInsured);
+        }
+    }
+
+    function getBestQuote(
+        uint256 sumInsured,
+        uint256 duration
+    )
+        public 
+        // view // TODO should be view, for now bundleMatchesApplication forces non-view visibility
+        returns(uint256 lowestPremiumAmount)
+    {
+        bytes memory applicationData = _riskPool.encodeApplicationParameterAsData(
+            duration, 
+            sumInsured - 1 // ridiculously high max premium
+        );
+
+        IPolicy.Application memory applicationForQuote = IPolicy.Application(
+            IPolicy.ApplicationState.Applied, // state, not relevant
+            0, // premium, not relevant
+            sumInsured,
+            applicationData, // contains duration
+            0, // created at, not relevant
+            0 // updated at, not relevant
+        );
+
+        uint256[] memory bundleIds = _riskPool.getActiveBundleIds();
+
+        for(uint256 i = 0; i < bundleIds.length; i++) {
+            IBundle.Bundle memory bundle = _instanceService.getBundle(bundleIds[i]);
+
+            // check if bundle has enough capital
+            if(applicationForQuote.sumInsuredAmount < bundle.capital - bundle.lockedCapital) {
+                // check if application parameters match with bundle parameters
+                if(_riskPool.bundleMatchesApplication2(bundle, applicationForQuote)) {
+                    (
+                        uint256 minSumInsured,
+                        uint256 maxSumInsured,
+                        uint256 minDuration,
+                        uint256 maxDuration,
+                        uint256 annualPercentageReturn
+                    ) = _riskPool.decodeBundleParamsFromFilter(bundle.filter);
+
+                    return _riskPool.calculatePremium(sumInsured, duration, annualPercentageReturn);
+                }
+            }
         }
     }
 

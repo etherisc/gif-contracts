@@ -264,34 +264,31 @@ def deploy(
 
     print('====== create initial setup ======')
 
-    bundleInitialFunding = INITIAL_ERC20_BUNDLE_FUNDING
-    print('1) investor {} funding (transfer/approve) with {} token for erc20 {}'.format(
-        investor, bundleInitialFunding, erc20Token))
-    
-    erc20Token.transfer(investor, bundleInitialFunding, {'from': instanceOperator})
-    erc20Token.approve(instance.getTreasury(), bundleInitialFunding, {'from': investor})
+    print('1) set up bundles for erc20')
+    tmp_d = {}
+    tmp_d['instance'] = instance
+    tmp_d[INSTANCE_OPERATOR] = instanceOperator
+    tmp_d[INSTANCE_SERVICE] = instanceService
+    tmp_d[PRODUCT] = product
+    tmp_d[CUSTOMER1] = customer
+    tmp_d[INVESTOR] = investor
+    tmp_d[RISKPOOL] = riskpool
+    initialFunding = 100000
+    maxSumInsured = 20000
 
     print('2) riskpool wallet {} approval for instance treasury {}'.format(
         riskpoolWallet, instance.getTreasury()))
     
-    erc20Token.approve(instance.getTreasury(), bundleInitialFunding, {'from': riskpoolWallet})
+    erc20Token.approve(instance.getTreasury(), 10 * initialFunding, {'from': riskpoolWallet})
 
     print('3) riskpool bundle creation by investor {}'.format(
         investor))
-
-    policyMinSumInsured =  1000
-    policyMaxSumInsured = 50000
-    policyMinDuration = 30 * 24 * 3600
-    policyMaxDuration = 90 * 24 * 3600
-    annualPercentageReturn = riskpool.getApr100PercentLevel() / 20;
-    riskpool.createBundle(
-            policyMinSumInsured,
-            policyMaxSumInsured,
-            policyMinDuration,
-            policyMaxDuration,
-            annualPercentageReturn,
-            bundleInitialFunding, 
-            {'from': investor})
+    
+    new_bundle(tmp_d, initialFunding, 8000, maxSumInsured, 60, 90, 1.7)
+    new_bundle(tmp_d, initialFunding, 4000, maxSumInsured, 30, 80, 2.1)
+    new_bundle(tmp_d, initialFunding, 5000, maxSumInsured, 14, 30, 3.3)
+    new_bundle(tmp_d, initialFunding, 2000, maxSumInsured, 20, 60, 4.2)
+    new_bundle(tmp_d, initialFunding, 1000, maxSumInsured, 10, 45, 5.0)
 
     customerFunding=1000
     print('5) customer {} funding (transfer/approve) with {} token for erc20 {}'.format(
@@ -305,7 +302,7 @@ def deploy(
     duration = 50
     maxPremium = 1000
     print('6) policy creation for customers {}'.format(customer))
-    processId = new_policy(product, customer, sumInsured, duration, maxPremium)
+    processId = new_policy(tmp_d, sumInsured, duration, maxPremium)
 
     deploy_result = {
         INSTANCE_OPERATOR: instanceOperator,
@@ -364,7 +361,7 @@ def deploy(
 
 
 def help():
-    print('from scripts.deploy_depeg import all_in_1, new_bundle, new_policy, inspect_bundle, inspect_applications, help')
+    print('from scripts.deploy_depeg import all_in_1, new_bundle, best_quote, new_policy, inspect_bundle, inspect_bundles, inspect_applications, help')
     print('(customer, product, riskpool, riskpoolWallet, usd1, instanceService, processId, d) = all_in_1()')
     print('instanceService.getPolicy(processId)')
     print('instanceService.getBundle(1)')
@@ -422,13 +419,39 @@ def new_bundle(
         {'from': investor})
 
 
+def best_quote(
+    d,
+    sumInsured,
+    durationDays,
+) -> int:
+    product = d[PRODUCT]
+    customer = d[CUSTOMER1]
+    instanceService = d[INSTANCE_SERVICE]
+
+    duration = durationDays * 24 * 3600
+    tx = product.getBestQuote(sumInsured, duration, {'from': customer})
+    netPremium = tx.return_value
+
+    feeStructure = instanceService.getFeeSpecification(product.getId())
+    feeFullUnit = instanceService.getFeeFractionFullUnit()
+    feeFixedAmount = feeStructure[1]
+    feeFractionPercentage = feeStructure[2]/feeFullUnit
+
+    premium = (netPremium + feeFixedAmount)/(1.0 - feeFractionPercentage)
+    feeFractionAmount = int(premium * feeStructure[2]/feeFullUnit)
+
+    print('premium {} (net premium {}, fixed fee {}, fractional fee {:.2f} ({:.2}%))'.format(
+        premium, netPremium, feeFixedAmount, feeFractionAmount, 100 * feeFractionPercentage))
+
+
 def new_policy(
-    product,
-    customer,
+    d,
     sumInsured,
     durationDays,
     maxPremium  
 ) -> str:
+    product = d[PRODUCT]
+    customer = d[CUSTOMER1]
     duration = durationDays*24*3600
     tx = product.applyForPolicy(sumInsured, duration, maxPremium, {'from': customer})
 
@@ -499,14 +522,14 @@ def inspect_bundles(d):
     instanceService = d[INSTANCE_SERVICE]
     riskpool = d[RISKPOOL]
     riskpoolId = riskpool.getId()
-    activeBundles = instanceService.activeBundles(riskpoolId)
+    activeBundleIds = riskpool.getActiveBundleIds()
 
     # print header row
-    print('i riskpool bundle minsuminsured maxsuminsured minduration maxduration apr capital locked capacity')
+    print('i riskpool bundle apr minsuminsured maxsuminsured minduration maxduration capital locked capacity')
 
     # print individual rows
-    for idx in range(activeBundles):
-        bundleId = instanceService.getActiveBundleId(riskpoolId, idx)
+    for idx in range(len(activeBundleIds)):
+        bundleId = activeBundleIds[idx]
         bundle = instanceService.getBundle(bundleId)
         filter = bundle[4]
         (
@@ -522,19 +545,21 @@ def inspect_bundles(d):
         capital = bundle[5]
         locked = bundle[6]
         capacity = bundle[5]-bundle[6]
+        policies = riskpool.getActivePolicies(bundleId)
 
-        print('{} {} {} {} {} {} {} {} {} {} {}'.format(
+        print('{} {} {} {:.3f} {} {} {} {} {} {} {} {}'.format(
             idx,
             riskpoolId,
             bundleId,
+            apr,
             minSumInsured,
             maxSumInsured,
             minDuration/(24*3600),
             maxDuration/(24*3600),
-            apr,
             capital,
             locked,
-            capacity
+            capacity,
+            policies
         ))
 
 

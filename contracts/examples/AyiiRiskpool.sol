@@ -3,6 +3,7 @@ pragma solidity 0.8.2;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
+import "./BasicRiskpool2.sol";
 import "@etherisc/gif-interface/contracts/components/BasicRiskpool.sol";
 import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";

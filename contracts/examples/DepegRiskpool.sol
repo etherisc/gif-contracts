@@ -3,13 +3,16 @@ pragma solidity 0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
+import "./BasicRiskpool2.sol";
 import "@etherisc/gif-interface/contracts/components/BasicRiskpool.sol";
 import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 
 contract DepegRiskpool is 
-    BasicRiskpool
+    BasicRiskpool2
 {
+
+    event LogBundleMatchesApplication(uint256 bundleId, bool sumInsuredOk, bool durationOk, bool premiumOk);
 
     uint256 public constant USD_RISK_CAPITAL_CAP = 1 * 10**6;
 
@@ -31,7 +34,7 @@ contract DepegRiskpool is
         address wallet,
         address registry
     )
-        BasicRiskpool(name, getFullCollateralizationLevel(), sumOfSumInsuredCap, erc20Token, wallet, registry)
+        BasicRiskpool2(name, getFullCollateralizationLevel(), sumOfSumInsuredCap, erc20Token, wallet, registry)
     {
         ERC20 token = ERC20(erc20Token);
         _poolRiskCapitalCap = USD_RISK_CAPITAL_CAP * 10 ** token.decimals();
@@ -166,14 +169,48 @@ contract DepegRiskpool is
         filter = bundle.filter;
     }
 
+    // sorts bundles on increasing annual percentage return
+    function isHigherPriorityBundle(uint256 firstBundleId, uint256 secondBundleId) 
+        public override 
+        view 
+        returns (bool firstBundleIsHigherPriority) 
+    {
+        uint256 firstApr = _getBundleApr(firstBundleId);
+        uint256 secondApr = _getBundleApr(secondBundleId);
+        firstBundleIsHigherPriority = (firstApr < secondApr);
+    }
+
+    function _getBundleApr(uint256 bundleId) internal view returns (uint256 apr) {
+        bytes memory filter = getBundleFilter(bundleId);
+        (
+            uint256 minSumInsured,
+            uint256 maxSumInsured,
+            uint256 minDuration,
+            uint256 maxDuration,
+            uint256 annualPercentageReturn
+        ) = decodeBundleParamsFromFilter(filter);
+
+        apr = annualPercentageReturn;
+    }
+
+
     function bundleMatchesApplication(
         IBundle.Bundle memory bundle, 
         IPolicy.Application memory application
     ) 
+        public view override
+        returns(bool isMatching) 
+    {}
+
+    function bundleMatchesApplication2(
+        IBundle.Bundle memory bundle, 
+        IPolicy.Application memory application
+    ) 
         public override
-        pure
         returns(bool isMatching) 
     {
+        uint256 bundleId = bundle.id;
+
         (
             uint256 minSumInsured,
             uint256 maxSumInsured,
@@ -188,23 +225,42 @@ contract DepegRiskpool is
         ) = decodeApplicationParameterFromData(application.data);
 
         uint256 sumInsured = application.sumInsuredAmount;
+        bool sumInsuredOk = true;
+        bool durationOk = true;
+        bool premiumOk = true;
 
-        if(sumInsured < minSumInsured) { return false; }
-        if(sumInsured > maxSumInsured) { return false; }
+        if(sumInsured < minSumInsured) { sumInsuredOk = false; }
+        if(sumInsured > maxSumInsured) { sumInsuredOk = false; }
         
-        if(duration < minDuration) { return false; }
-        if(duration > maxDuration) { return false; }
+        if(duration < minDuration) { durationOk = false; }
+        if(duration > maxDuration) { durationOk = false; }
         
+        uint256 premium = calculatePremium(sumInsured, duration, annualPercentageReturn);
+        if(premium > maxPremium) { premiumOk = false; }
+
+        isMatching = (sumInsuredOk && durationOk && premiumOk);
+
+        emit LogBundleMatchesApplication(bundleId, sumInsuredOk, durationOk, premiumOk);
+    }
+
+    function calculatePremium(
+        uint256 sumInsured,
+        uint256 duration,
+        uint256 annualPercentageReturn
+    ) 
+        public view
+        returns(uint256 premiumAmount) 
+    {
         uint256 policyDurationReturn = annualPercentageReturn * duration / ONE_YEAR_DURATION;
-        uint256 premium = sumInsured * policyDurationReturn / APR_100_PERCENTAGE;
-
-        if(premium > maxPremium) { return false; }
-
-        return true;
+        premiumAmount = sumInsured * policyDurationReturn / APR_100_PERCENTAGE;
     }
 
     function getBundleRiskCapitalCap() public view returns (uint256 bundleRiskCapitalCap) {
         return _bundleRiskCapitalCap;
+    }
+
+    function getOneYearDuration() public pure returns(uint256 apr100PercentLevel) { 
+        return ONE_YEAR_DURATION;
     }
 
     function getApr100PercentLevel() public pure returns(uint256 apr100PercentLevel) { 
