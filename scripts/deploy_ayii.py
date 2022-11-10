@@ -3,6 +3,7 @@ from brownie import web3
 from brownie.network import accounts
 from brownie.network.account import Account
 
+# pylint: disable-msg=E0611
 from brownie import (
     interface,
     network,

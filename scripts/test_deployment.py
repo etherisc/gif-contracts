@@ -19,6 +19,7 @@ from scripts.util import (
     contract_from_address,
 )
 
+# pylint: disable-msg=E0611
 from brownie import (
     TestCoin
 )

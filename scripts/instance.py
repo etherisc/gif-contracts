@@ -7,6 +7,7 @@ from brownie.convert import to_bytes
 from brownie.network import accounts
 from brownie.network.account import Account
 
+# pylint: disable-msg=E0611
 from brownie import (
     Wei,
     Contract, 

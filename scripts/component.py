@@ -1,10 +1,10 @@
 from web3 import Web3
 
-from brownie import Contract
 from brownie.convert import to_bytes
 from brownie.network import accounts
 from brownie.network.account import Account
 
+# pylint: disable-msg=E0611
 from brownie import (
     Wei,
     interface,    

@@ -28,9 +28,7 @@ RUN pip3 install thefuck --user \
 RUN echo 'eval "$(mcfly init zsh)"' >> ~/.zshrc \
     && touch ~/.zsh_history
 
-RUN python3 -m pip install --user pipx \
-    && python3 -m pipx ensurepath \
-    && pipx install eth-brownie
+RUN pip install eth-brownie
 
 # [Optional] Uncomment this line to install global node packages.
 RUN npm install -g ganache solhint prettier prettier-plugin-solidity solhint-plugin-prettier

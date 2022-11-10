@@ -1,5 +1,6 @@
 from web3 import Web3
 
+# pylint: disable-msg=E0611
 from brownie import (
     Contract, 
     CoreProxy,
