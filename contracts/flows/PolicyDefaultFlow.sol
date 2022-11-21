@@ -9,6 +9,7 @@ import "../modules/TreasuryModule.sol";
 import "../shared/WithRegistry.sol";
 
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
+// import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
 import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
 import "@etherisc/gif-interface/contracts/modules/IPool.sol";
 
@@ -111,6 +112,11 @@ contract PolicyDefaultFlow is
         PoolController pool = getPoolContract();
         success = pool.underwrite(processId);
 
+        // TODO remove premium collection part below
+        // this should be implemented on the prduct level
+        // it's too much magic in the platform and not transparent enough
+        // also, bad naming: the function name is 'underwrite? and not
+        // 'underwriteAndIfSuccessfulCollectPremiumToo'
         if (success) {
             PolicyController policyController = getPolicyContract();
             policyController.underwriteApplication(processId);
@@ -263,17 +269,15 @@ contract PolicyDefaultFlow is
             uint256 netPayoutAmount
         )
     {
-        PoolController pool = getPoolContract();
-        PolicyController policy = getPolicyContract();
-        IPolicy.Payout memory payout = policy.getPayout(processId, payoutId);
-
-        // book keeping of riskpool and policy
-        pool.processPayout(processId, payout.amount);
-        policy.processPayout(processId, payoutId);
-
-        // move funds
         TreasuryModule treasury = getTreasuryContract();
         (feeAmount, netPayoutAmount) = treasury.processPayout(processId, payoutId);
+
+        // if payout successful: update book keeping of policy and riskpool
+        IPolicy policy = getPolicyContract();
+        policy.processPayout(processId, payoutId);
+
+        PoolController pool = getPoolContract();
+        pool.processPayout(processId, netPayoutAmount + feeAmount);
     }
 
     function request(
