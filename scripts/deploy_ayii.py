@@ -229,6 +229,83 @@ def deploy_setup_including_token(
     return deploy(stakeholders_accounts, erc20_token, None)
 
 
+
+def verify_deploy(
+    stakeholders_accounts, 
+    erc20_token,
+    registry_address
+):
+    # define stakeholder accounts
+    a = stakeholders_accounts
+    instanceOperator=a[INSTANCE_OPERATOR]
+    instanceWallet=a[INSTANCE_WALLET]
+    oracleProvider=a[ORACLE_PROVIDER]
+    chainlinkNodeOperator=a[NODE_OPERATOR]
+    riskpoolKeeper=a[RISKPOOL_KEEPER]
+    riskpoolWallet=a[RISKPOOL_WALLET]
+    investor=a[INVESTOR]
+    productOwner=a[PRODUCT_OWNER]
+    insurer=a[INSURER]
+    customer=a[CUSTOMER1]
+    customer2=a[CUSTOMER2]
+
+    (
+        instance, 
+        product, 
+        oracle, 
+        riskpool
+    ) = from_registry(registry_address)
+
+    instanceService = instance.getInstanceService()
+    riskpoolId = 1
+    oracleId = 2
+    productId = 3
+
+    verify_element('Registry', instanceService.getRegistry(), registry_address)
+    verify_element('InstanceOperator', instanceService.getInstanceOperator(), instanceOperator)
+    verify_element('InstanceWallet', instanceService.getInstanceWallet(), instanceWallet)
+
+    verify_element('RiskpoolId', riskpool.getId(), riskpoolId)
+    verify_element('RiskpoolType', instanceService.getComponentType(riskpoolId), 2)
+    verify_element('RiskpoolState', instanceService.getComponentState(riskpoolId), 3)
+    verify_element('RiskpoolKeeper', riskpool.owner(), riskpoolKeeper)
+    verify_element('RiskpoolWallet', instanceService.getRiskpoolWallet(riskpoolId), riskpoolWallet)
+    verify_element('RiskpoolBalance', instanceService.getBalance(riskpoolId), erc20_token.balanceOf(riskpoolWallet))
+    verify_element('RiskpoolToken', riskpool.getErc20Token(), erc20_token.address)
+
+    verify_element('OracleId', oracle.getId(), oracleId)
+    verify_element('OracleType', instanceService.getComponentType(oracleId), 0)
+    verify_element('OracleState', instanceService.getComponentState(oracleId), 3)
+    verify_element('OracleProvider', oracle.owner(), oracleProvider)
+
+    verify_element('ProductId', product.getId(), productId)
+    verify_element('ProductType', instanceService.getComponentType(productId), 1)
+    verify_element('ProductState', instanceService.getComponentState(productId), 3)
+    verify_element('ProductOwner', product.owner(), productOwner)
+    verify_element('ProductToken', product.getToken(), erc20_token.address)
+    verify_element('ProductRiskpool', product.getRiskpoolId(), riskpoolId)
+
+    print('InstanceWalletBalance {:.2f}'.format(erc20_token.balanceOf(instanceService.getInstanceWallet())/10**erc20_token.decimals()))
+    print('RiskpoolWalletTVL {:.2f}'.format(instanceService.getTotalValueLocked(riskpoolId)/10**erc20_token.decimals()))
+    print('RiskpoolWalletCapacity {:.2f}'.format(instanceService.getCapacity(riskpoolId)/10**erc20_token.decimals()))
+    print('RiskpoolWalletBalance {:.2f}'.format(erc20_token.balanceOf(instanceService.getRiskpoolWallet(riskpoolId))/10**erc20_token.decimals()))
+    print('RiskpoolBundles {}'.format(riskpool.bundles()))
+    print('RiskpoolBundle[0] {}'.format(riskpool.getBundle(0).dict()))
+    print('ProductRisks {}'.format(product.risks()))
+    print('ProductApplications {}'.format(product.applications()))
+
+
+def verify_element(
+    element,
+    value,
+    expected_value
+):
+    if value == expected_value:
+        print('{} OK {}'.format(element, value))
+    else:
+        print('{} ERROR {} expected {}'.format(element, value, expected_value))
+
+
 def deploy(
     stakeholders_accounts, 
     erc20_token,
