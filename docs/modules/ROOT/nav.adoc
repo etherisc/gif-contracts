@@ -1,5 +1,6 @@
 * xref:index.adoc[Overview]
-// * xref:extending-contracts.adoc[Extending Contracts]
+////
+* xref:extending-contracts.adoc[Extending Contracts]
 * xref:upgradeable.adoc[Using with Upgrades]
 
 * xref:releases-stability.adoc[Releases & Stability]
@@ -17,3 +18,4 @@
 ** xref:gsn-strategies.adoc[Strategies]
 
 * xref:utilities.adoc[Utilities]
+////
