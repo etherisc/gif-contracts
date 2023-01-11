@@ -1,12 +1,10 @@
-= Contracts
+= GIF Contracts
 
-*A library for secure smart contract development.* Build on a solid foundation of community-vetted code.
+*Secure and audited smart contracts to develop decentralized insurance applications.* 
 
- * Implementations of standards like xref:erc20.adoc[ERC20] and xref:erc721.adoc[ERC721].
- * Flexible xref:access-control.adoc[role-based permissioning] scheme.
- * Reusable xref:utilities.adoc[Solidity components] to build custom contracts and complex decentralized systems.
- * First-class integration with the xref:gsn.adoc[Gas Station Network] for systems with no gas fees!
- * https://github.com/OpenZeppelin/openzeppelin-contracts/tree/master/audit[Audited] by leading security firms (_last full audit on v2.0.0_).
+ * GIF Contracts is a library of smart contracts for decentralized insurance applications.
+
+
 
 == Overview
 
@@ -14,10 +12,10 @@
 === Installation
 
 ```console
-$ npm install @openzeppelin/contracts
+$ npm install @etherisc/gif-contracts
 ```
 
-OpenZeppelin Contracts features a xref:releases-stability.adoc#api-stability[stable API], which means your contracts won't break unexpectedly when upgrading to a newer minor version.
+Etherisc GIF Contracts features a xref:releases-stability.adoc#api-stability[stable API], which means your contracts won't break unexpectedly when upgrading to a newer minor version.
 
 [[usage]]
 === Usage
@@ -26,27 +24,40 @@ Once installed, you can use the contracts in the library by importing them:
 
 [source,solidity]
 ----
-// contracts/MyNFT.sol
+// contracts/MyProduct.sol
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@etherisc/gif-interface/contracts/components/Product.sol";
 
-contract MyNFT is ERC721 {
-    constructor() ERC721("MyNFT", "MNFT") public {
+contract MyProduct is Product {
+
+    bytes32 public constant POLICY_FLOW = "PolicyDefaultFlow";
+
+    constructor(
+        bytes32 productName,
+        address token,
+        address registry,
+        uint256 riskpoolId,
+    )
+        Product(productName, token, POLICY_FLOW, riskpoolId, registry)
+    {
     }
 }
 ----
 
-TIP: If you're new to smart contract development, head to xref:learn::developing-smart-contracts.adoc[Developing Smart Contracts] to learn about creating a new project and compiling your contracts.
+TIP: If you're new to smart contract development, head to ... 
+// TODO: Add resource here 
+to learn about creating a new project and compiling your contracts.
 
 To keep your system secure, you should **always** use the installed code as-is, and neither copy-paste it from online sources, nor modify it yourself. The library is designed so that only the contracts and functions you use are deployed, so you don't need to worry about it needlessly increasing gas costs.
 
 [[next-steps]]
 == Learn More
 
-The guides in the sidebar will teach about different concepts, and how to use the related contracts that OpenZeppelin Contracts provides:
+The guides in the sidebar will teach about different concepts, and how to use the related contracts that GIF Contracts provides:
 
+////
 * xref:access-control.adoc[Access Control]: decide who can perform each of the actions on your system.
 * xref:tokens.adoc[Tokens]: create tradable assets or collectibles, like the well known xref:erc20.adoc[ERC20] and xref:erc721.adoc[ERC721] standards.
 * xref:gsn.adoc[Gas Station Network]: let your users interact with your contracts without having to pay for gas themselves.
@@ -59,3 +70,4 @@ Finally, you may want to take a look at the https://blog.openzeppelin.com/guides
 * https://blog.openzeppelin.com/the-hitchhikers-guide-to-smart-contracts-in-ethereum-848f08001f05[The Hitchhiker’s Guide to Smart Contracts in Ethereum] will help you get an overview of the various tools available for smart contract development, and help you set up your environment.
 * https://blog.openzeppelin.com/a-gentle-introduction-to-ethereum-programming-part-1-783cc7796094[A Gentle Introduction to Ethereum Programming, Part 1] provides very useful information on an introductory level, including many basic concepts from the Ethereum platform.
 * For a more in-depth dive, you may read the guide https://blog.openzeppelin.com/designing-the-architecture-for-your-ethereum-application-9cec086f8317[Designing the architecture for your Ethereum application], which discusses how to better structure your application and its relationship to the real world.
+////
