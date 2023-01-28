@@ -13,10 +13,18 @@ import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 import "@etherisc/gif-interface/contracts/modules/IRegistry.sol";
 import "@etherisc/gif-interface/contracts/modules/IPool.sol";
 
-
-contract PolicyDefaultFlow is 
-    WithRegistry 
-{
+/**
+ * @dev Core of the governance system, designed to be extended though various modules.
+ *
+ * This contract is abstract and requires several function to be implemented in various modules:
+ *
+ * - A counting module must implement {quorum}, {_quorumReached}, {_voteSucceeded} and {_countVote}
+ * - A voting module must implement {_getVotes}
+ * - Additionally, the {votingPeriod} must also be implemented
+ *
+ * _Available since v4.3._
+ */
+contract PolicyDefaultFlow is WithRegistry {
     bytes32 public constant NAME = "PolicyDefaultFlow";
 
     modifier onlyActivePolicy(bytes32 processId) {
@@ -49,8 +57,13 @@ contract PolicyDefaultFlow is
     modifier onlyResponsibleProduct(bytes32 processId) {
         PolicyController policy = getPolicyContract();
         IPolicy.Metadata memory metadata = policy.getMetadata(processId);
-        ComponentController component = ComponentController(getContractFromRegistry("Component"));
-        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-004:PROCESSID_PRODUCT_MISMATCH");
+        ComponentController component = ComponentController(
+            getContractFromRegistry("Component")
+        );
+        require(
+            metadata.productId == component.getComponentId(address(msg.sender)),
+            "ERROR:PFD-004:PROCESSID_PRODUCT_MISMATCH"
+        );
         _;
     }
 
@@ -59,43 +72,43 @@ contract PolicyDefaultFlow is
         bytes32 processId = getQueryContract().getProcessId(requestId);
         PolicyController policy = getPolicyContract();
         IPolicy.Metadata memory metadata = policy.getMetadata(processId);
-        ComponentController component = ComponentController(getContractFromRegistry("Component"));
-        require(metadata.productId == component.getComponentId(address(msg.sender)), "ERROR:PFD-005:REQUESTID_PRODUCT_MISMATCH");
+        ComponentController component = ComponentController(
+            getContractFromRegistry("Component")
+        );
+        require(
+            metadata.productId == component.getComponentId(address(msg.sender)),
+            "ERROR:PFD-005:REQUESTID_PRODUCT_MISMATCH"
+        );
         _;
     }
 
     // ComponentController private _component;
 
     // solhint-disable-next-line no-empty-blocks
-    constructor(address _registry) 
-        WithRegistry(_registry) 
-    { 
-    }
+    constructor(address _registry) WithRegistry(_registry) {}
 
     function newApplication(
         address owner,
         uint256 premiumAmount,
         uint256 sumInsuredAmount,
-        bytes calldata metaData, 
-        bytes calldata applicationData 
-    )
-        external 
-        returns(bytes32 processId)
-    {
+        bytes calldata metaData,
+        bytes calldata applicationData
+    ) external returns (bytes32 processId) {
         ComponentController component = getComponentContract();
         uint256 productId = component.getComponentId(msg.sender);
 
         IPolicy policy = getPolicyContract();
         processId = policy.createPolicyFlow(owner, productId, metaData);
         policy.createApplication(
-            processId, 
-            premiumAmount, 
-            sumInsuredAmount, 
-            applicationData);
+            processId,
+            premiumAmount,
+            sumInsuredAmount,
+            applicationData
+        );
     }
 
     function revoke(bytes32 processId)
-        external 
+        external
         onlyResponsibleProduct(processId)
     {
         IPolicy policy = getPolicyContract();
@@ -103,10 +116,10 @@ contract PolicyDefaultFlow is
     }
 
     /* success implies the successful creation of a policy */
-    function underwrite(bytes32 processId) 
-        external 
+    function underwrite(bytes32 processId)
+        external
         onlyResponsibleProduct(processId)
-        returns(bool success) 
+        returns (bool success)
     {
         // attempt to get the collateral to secure the policy
         PoolController pool = getPoolContract();
@@ -118,29 +131,34 @@ contract PolicyDefaultFlow is
             policyController.createPolicy(processId);
 
             // transfer premium amount
-            IPolicy.Policy memory policy = policyController.getPolicy(processId);
+            IPolicy.Policy memory policy = policyController.getPolicy(
+                processId
+            );
             collectPremium(processId, policy.premiumExpectedAmount);
         }
     }
 
     /* success implies the successful collection of the amount for the policy.
      * valid amounts need to be > 0 up to the full premium amount
-     * if no fee structure is defined for the policy, this call will revert. 
+     * if no fee structure is defined for the policy, this call will revert.
      */
-    function collectPremium(bytes32 processId, uint256 amount) 
-        public 
+    function collectPremium(bytes32 processId, uint256 amount)
+        public
         notClosedPolicy(processId)
         onlyResponsibleProduct(processId)
-        returns(
-            bool success, 
-            uint256 feeAmount, 
+        returns (
+            bool success,
+            uint256 feeAmount,
             uint256 netPremiumAmount
-        ) 
+        )
     {
         TreasuryModule treasury = getTreasuryContract();
         PolicyController policy = getPolicyContract();
 
-        (success, feeAmount, netPremiumAmount) = treasury.processPremium(processId, amount);
+        (success, feeAmount, netPremiumAmount) = treasury.processPremium(
+            processId,
+            amount
+        );
 
         // if premium collected: update book keeping of policy and riskpool
         if (success) {
@@ -150,30 +168,29 @@ contract PolicyDefaultFlow is
             pool.processPremium(processId, netPremiumAmount);
         }
     }
-    
+
     function adjustPremiumSumInsured(
-        bytes32 processId, 
+        bytes32 processId,
         uint256 expectedPremiumAmount,
         uint256 sumInsuredAmount
-    )
-        external
-        notClosedPolicy(processId)
-        onlyResponsibleProduct(processId)
-    {
+    ) external notClosedPolicy(processId) onlyResponsibleProduct(processId) {
         PolicyController policy = getPolicyContract();
-        policy.adjustPremiumSumInsured(processId, expectedPremiumAmount, sumInsuredAmount);
+        policy.adjustPremiumSumInsured(
+            processId,
+            expectedPremiumAmount,
+            sumInsuredAmount
+        );
     }
 
-
-    function decline(bytes32 processId) 
+    function decline(bytes32 processId)
+        external
         onlyResponsibleProduct(processId)
-        external 
     {
         IPolicy policy = getPolicyContract();
         policy.declineApplication(processId);
     }
 
-    function expire(bytes32 processId) 
+    function expire(bytes32 processId)
         external
         onlyActivePolicy(processId)
         onlyResponsibleProduct(processId)
@@ -182,7 +199,7 @@ contract PolicyDefaultFlow is
         policy.expirePolicy(processId);
     }
 
-    function close(bytes32 processId) 
+    function close(bytes32 processId)
         external
         onlyExpiredPolicy(processId)
         onlyResponsibleProduct(processId)
@@ -195,7 +212,7 @@ contract PolicyDefaultFlow is
     }
 
     function newClaim(
-        bytes32 processId, 
+        bytes32 processId,
         uint256 claimAmount,
         bytes calldata data
     )
@@ -204,34 +221,28 @@ contract PolicyDefaultFlow is
         onlyResponsibleProduct(processId)
         returns (uint256 claimId)
     {
-        claimId = getPolicyContract().createClaim(
-            processId, 
-            claimAmount,
-            data);
+        claimId = getPolicyContract().createClaim(processId, claimAmount, data);
     }
 
     function confirmClaim(
         bytes32 processId,
         uint256 claimId,
         uint256 confirmedAmount
-    ) 
-        external
-        onlyResponsibleProduct(processId) 
-    {
+    ) external onlyResponsibleProduct(processId) {
         PolicyController policy = getPolicyContract();
         policy.confirmClaim(processId, claimId, confirmedAmount);
     }
 
-    function declineClaim(bytes32 processId, uint256 claimId) 
-        external 
+    function declineClaim(bytes32 processId, uint256 claimId)
+        external
         onlyResponsibleProduct(processId)
     {
         PolicyController policy = getPolicyContract();
         policy.declineClaim(processId, claimId);
     }
 
-    function closeClaim(bytes32 processId, uint256 claimId) 
-        external 
+    function closeClaim(bytes32 processId, uint256 claimId)
+        external
         onlyResponsibleProduct(processId)
     {
         PolicyController policy = getPolicyContract();
@@ -243,29 +254,29 @@ contract PolicyDefaultFlow is
         uint256 claimId,
         uint256 amount,
         bytes calldata data
-    ) 
-        external 
-        onlyResponsibleProduct(processId)
-        returns(uint256 payoutId)
-    {
-        payoutId = getPolicyContract()
-            .createPayout(processId, claimId, amount, data);
+    ) external onlyResponsibleProduct(processId) returns (uint256 payoutId) {
+        payoutId = getPolicyContract().createPayout(
+            processId,
+            claimId,
+            amount,
+            data
+        );
     }
 
-    function processPayout(
-        bytes32 processId,
-        uint256 payoutId
-    )
-        external 
+    function processPayout(bytes32 processId, uint256 payoutId)
+        external
         onlyResponsibleProduct(processId)
-        returns(
+        returns (
             bool success,
             uint256 feeAmount,
             uint256 netPayoutAmount
         )
     {
         TreasuryModule treasury = getTreasuryContract();
-        (feeAmount, netPayoutAmount) = treasury.processPayout(processId, payoutId);
+        (feeAmount, netPayoutAmount) = treasury.processPayout(
+            processId,
+            payoutId
+        );
 
         // if payout successful: update book keeping of policy and riskpool
         IPolicy policy = getPolicyContract();
@@ -281,11 +292,7 @@ contract PolicyDefaultFlow is
         string calldata _callbackMethodName,
         address _callbackContractAddress,
         uint256 _responsibleOracleId
-    ) 
-        external 
-        onlyResponsibleProduct(processId)
-        returns (uint256 _requestId) 
-    {
+    ) external onlyResponsibleProduct(processId) returns (uint256 _requestId) {
         _requestId = getQueryContract().request(
             processId,
             _input,
@@ -295,10 +302,8 @@ contract PolicyDefaultFlow is
         );
     }
 
-    function cancelRequest(
-        uint256 requestId
-    ) 
-        external 
+    function cancelRequest(uint256 requestId)
+        external
         onlyMatchingProduct(requestId)
     {
         getQueryContract().cancel(requestId);
@@ -331,7 +336,11 @@ contract PolicyDefaultFlow is
         return policy.getPayout(processId, payoutId).data;
     }
 
-    function getComponentContract() internal view returns (ComponentController) {
+    function getComponentContract()
+        internal
+        view
+        returns (ComponentController)
+    {
         return ComponentController(getContractFromRegistry("Component"));
     }
 
