@@ -117,7 +117,8 @@
 :xref-CoreController-_getContractAddress-bytes32-: xref:shared.adoc#CoreController-_getContractAddress-bytes32-
 :xref-PoolController-onlyInstanceOperatorService--: xref:modules.adoc#PoolController-onlyInstanceOperatorService--
 :xref-PoolController-onlyRiskpoolService--: xref:modules.adoc#PoolController-onlyRiskpoolService--
-:xref-PoolController-onlyTreasury--: xref:modules.adoc#PoolController-onlyTreasury--
+:xref-PoolController-onlyActivePool-uint256-: xref:modules.adoc#PoolController-onlyActivePool-uint256-
+:xref-PoolController-onlyActivePoolForProcess-bytes32-: xref:modules.adoc#PoolController-onlyActivePoolForProcess-bytes32-
 :xref-PoolController-_afterInitialize--: xref:modules.adoc#PoolController-_afterInitialize--
 :xref-PoolController-registerRiskpool-uint256-address-address-uint256-uint256-: xref:modules.adoc#PoolController-registerRiskpool-uint256-address-address-uint256-uint256-
 :xref-PoolController-setRiskpoolForProduct-uint256-uint256-: xref:modules.adoc#PoolController-setRiskpoolForProduct-uint256-uint256-
@@ -235,7 +236,7 @@ NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/
 
 [.contract]
 [[AccessController]]
-=== `++AccessController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/modules/AccessController.sol[{github-icon},role=heading-link]
+=== `++AccessController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/modules/AccessController.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -425,7 +426,7 @@ import "@etherisc/gif-contracts/contracts/modules/AccessController.sol";
 
 [.contract]
 [[BundleController]]
-=== `++BundleController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/modules/BundleController.sol[{github-icon},role=heading-link]
+=== `++BundleController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/modules/BundleController.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -653,7 +654,7 @@ import "@etherisc/gif-contracts/contracts/modules/BundleController.sol";
 
 [.contract]
 [[ComponentController]]
-=== `++ComponentController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/modules/ComponentController.sol[{github-icon},role=heading-link]
+=== `++ComponentController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/modules/ComponentController.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -872,7 +873,7 @@ import "@etherisc/gif-contracts/contracts/modules/ComponentController.sol";
 
 [.contract]
 [[LicenseController]]
-=== `++LicenseController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/modules/LicenseController.sol[{github-icon},role=heading-link]
+=== `++LicenseController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/modules/LicenseController.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -968,7 +969,7 @@ import "@etherisc/gif-contracts/contracts/modules/LicenseController.sol";
 
 [.contract]
 [[PolicyController]]
-=== `++PolicyController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/modules/PolicyController.sol[{github-icon},role=heading-link]
+=== `++PolicyController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/modules/PolicyController.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -1159,7 +1160,8 @@ import "@etherisc/gif-contracts/contracts/modules/PolicyController.sol";
 :DEFAULT_MAX_NUMBER_OF_ACTIVE_BUNDLES: pass:normal[xref:#PoolController-DEFAULT_MAX_NUMBER_OF_ACTIVE_BUNDLES-uint256[`++DEFAULT_MAX_NUMBER_OF_ACTIVE_BUNDLES++`]]
 :onlyInstanceOperatorService: pass:normal[xref:#PoolController-onlyInstanceOperatorService--[`++onlyInstanceOperatorService++`]]
 :onlyRiskpoolService: pass:normal[xref:#PoolController-onlyRiskpoolService--[`++onlyRiskpoolService++`]]
-:onlyTreasury: pass:normal[xref:#PoolController-onlyTreasury--[`++onlyTreasury++`]]
+:onlyActivePool: pass:normal[xref:#PoolController-onlyActivePool-uint256-[`++onlyActivePool++`]]
+:onlyActivePoolForProcess: pass:normal[xref:#PoolController-onlyActivePoolForProcess-bytes32-[`++onlyActivePoolForProcess++`]]
 :_afterInitialize: pass:normal[xref:#PoolController-_afterInitialize--[`++_afterInitialize++`]]
 :registerRiskpool: pass:normal[xref:#PoolController-registerRiskpool-uint256-address-address-uint256-uint256-[`++registerRiskpool++`]]
 :setRiskpoolForProduct: pass:normal[xref:#PoolController-setRiskpoolForProduct-uint256-uint256-[`++setRiskpoolForProduct++`]]
@@ -1185,7 +1187,7 @@ import "@etherisc/gif-contracts/contracts/modules/PolicyController.sol";
 
 [.contract]
 [[PoolController]]
-=== `++PoolController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/modules/PoolController.sol[{github-icon},role=heading-link]
+=== `++PoolController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/modules/PoolController.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -1197,7 +1199,8 @@ import "@etherisc/gif-contracts/contracts/modules/PoolController.sol";
 --
 * {xref-PoolController-onlyInstanceOperatorService--}[`++onlyInstanceOperatorService()++`]
 * {xref-PoolController-onlyRiskpoolService--}[`++onlyRiskpoolService()++`]
-* {xref-PoolController-onlyTreasury--}[`++onlyTreasury()++`]
+* {xref-PoolController-onlyActivePool-uint256-}[`++onlyActivePool(riskpoolId)++`]
+* {xref-PoolController-onlyActivePoolForProcess-bytes32-}[`++onlyActivePoolForProcess(processId)++`]
 --
 
 [.contract-index]
@@ -1271,8 +1274,12 @@ import "@etherisc/gif-contracts/contracts/modules/PoolController.sol";
 ==== `[.contract-item-name]#++onlyRiskpoolService++#++()++` [.item-kind]#modifier#
 
 [.contract-item]
-[[PoolController-onlyTreasury--]]
-==== `[.contract-item-name]#++onlyTreasury++#++()++` [.item-kind]#modifier#
+[[PoolController-onlyActivePool-uint256-]]
+==== `[.contract-item-name]#++onlyActivePool++#++(uint256 riskpoolId)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[PoolController-onlyActivePoolForProcess-bytes32-]]
+==== `[.contract-item-name]#++onlyActivePoolForProcess++#++(bytes32 processId)++` [.item-kind]#modifier#
 
 [.contract-item]
 [[PoolController-_afterInitialize--]]
@@ -1374,7 +1381,7 @@ import "@etherisc/gif-contracts/contracts/modules/PoolController.sol";
 
 [.contract]
 [[QueryModule]]
-=== `++QueryModule++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/modules/QueryModule.sol[{github-icon},role=heading-link]
+=== `++QueryModule++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/modules/QueryModule.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -1492,7 +1499,7 @@ import "@etherisc/gif-contracts/contracts/modules/QueryModule.sol";
 
 [.contract]
 [[RegistryController]]
-=== `++RegistryController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/modules/RegistryController.sol[{github-icon},role=heading-link]
+=== `++RegistryController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/modules/RegistryController.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -1669,7 +1676,7 @@ Deregister contract in certain release
 
 [.contract]
 [[TreasuryModule]]
-=== `++TreasuryModule++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/modules/TreasuryModule.sol[{github-icon},role=heading-link]
+=== `++TreasuryModule++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/modules/TreasuryModule.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity

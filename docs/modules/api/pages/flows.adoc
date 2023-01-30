@@ -73,16 +73,12 @@ NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/
 
 [.contract]
 [[PolicyDefaultFlow]]
-=== `++PolicyDefaultFlow++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/flows/PolicyDefaultFlow.sol[{github-icon},role=heading-link]
+=== `++PolicyDefaultFlow++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/flows/PolicyDefaultFlow.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
 import "@etherisc/gif-contracts/contracts/flows/PolicyDefaultFlow.sol";
 ```
-
-This contract defines the high-level lifecycle of a policy.
-
-The contract ensures that all state transistions are always valid.
 
 [.contract-index]
 .Modifiers

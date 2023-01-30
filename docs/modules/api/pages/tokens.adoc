@@ -33,7 +33,7 @@ NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/
 
 [.contract]
 [[BundleToken]]
-=== `++BundleToken++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/tokens/BundleToken.sol[{github-icon},role=heading-link]
+=== `++BundleToken++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/tokens/BundleToken.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -193,7 +193,7 @@ import "@etherisc/gif-contracts/contracts/tokens/BundleToken.sol";
 
 [.contract]
 [[RiskpoolToken]]
-=== `++RiskpoolToken++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/tokens/RiskpoolToken.sol[{github-icon},role=heading-link]
+=== `++RiskpoolToken++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/tokens/RiskpoolToken.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity

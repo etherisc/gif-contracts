@@ -46,6 +46,7 @@
 :xref-TestProduct-underwrite-bytes32-: xref:test.adoc#TestProduct-underwrite-bytes32-
 :xref-TestProduct-collectPremium-bytes32-: xref:test.adoc#TestProduct-collectPremium-bytes32-
 :xref-TestProduct-collectPremium-bytes32-uint256-: xref:test.adoc#TestProduct-collectPremium-bytes32-uint256-
+:xref-TestProduct-adjustPremiumSumInsured-bytes32-uint256-uint256-: xref:test.adoc#TestProduct-adjustPremiumSumInsured-bytes32-uint256-uint256-
 :xref-TestProduct-expire-bytes32-: xref:test.adoc#TestProduct-expire-bytes32-
 :xref-TestProduct-close-bytes32-: xref:test.adoc#TestProduct-close-bytes32-
 :xref-TestProduct-submitClaim-bytes32-uint256-: xref:test.adoc#TestProduct-submitClaim-bytes32-uint256-
@@ -109,7 +110,7 @@ NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/
 
 [.contract]
 [[TestCoin]]
-=== `++TestCoin++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestCoin.sol[{github-icon},role=heading-link]
+=== `++TestCoin++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/test/TestCoin.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -179,7 +180,7 @@ import "@etherisc/gif-contracts/contracts/test/TestCoin.sol";
 
 [.contract]
 [[TestCoinAlternativeImplementation]]
-=== `++TestCoinAlternativeImplementation++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestCoinAlternativeImplementation.sol[{github-icon},role=heading-link]
+=== `++TestCoinAlternativeImplementation++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/test/TestCoinAlternativeImplementation.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -280,7 +281,7 @@ import "@etherisc/gif-contracts/contracts/test/TestCoinAlternativeImplementation
 
 [.contract]
 [[TestCompromisedProduct]]
-=== `++TestCompromisedProduct++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestCompromisedProduct.sol[{github-icon},role=heading-link]
+=== `++TestCompromisedProduct++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/test/TestCompromisedProduct.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -491,7 +492,7 @@ import "@etherisc/gif-contracts/contracts/test/TestCompromisedProduct.sol";
 
 [.contract]
 [[TestOracle]]
-=== `++TestOracle++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestOracle.sol[{github-icon},role=heading-link]
+=== `++TestOracle++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/test/TestOracle.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -635,6 +636,7 @@ import "@etherisc/gif-contracts/contracts/test/TestOracle.sol";
 :underwrite: pass:normal[xref:#TestProduct-underwrite-bytes32-[`++underwrite++`]]
 :collectPremium: pass:normal[xref:#TestProduct-collectPremium-bytes32-[`++collectPremium++`]]
 :collectPremium: pass:normal[xref:#TestProduct-collectPremium-bytes32-uint256-[`++collectPremium++`]]
+:adjustPremiumSumInsured: pass:normal[xref:#TestProduct-adjustPremiumSumInsured-bytes32-uint256-uint256-[`++adjustPremiumSumInsured++`]]
 :expire: pass:normal[xref:#TestProduct-expire-bytes32-[`++expire++`]]
 :close: pass:normal[xref:#TestProduct-close-bytes32-[`++close++`]]
 :submitClaim: pass:normal[xref:#TestProduct-submitClaim-bytes32-uint256-[`++submitClaim++`]]
@@ -655,7 +657,7 @@ import "@etherisc/gif-contracts/contracts/test/TestOracle.sol";
 
 [.contract]
 [[TestProduct]]
-=== `++TestProduct++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestProduct.sol[{github-icon},role=heading-link]
+=== `++TestProduct++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/test/TestProduct.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -674,6 +676,7 @@ import "@etherisc/gif-contracts/contracts/test/TestProduct.sol";
 * {xref-TestProduct-underwrite-bytes32-}[`++underwrite(processId)++`]
 * {xref-TestProduct-collectPremium-bytes32-}[`++collectPremium(policyId)++`]
 * {xref-TestProduct-collectPremium-bytes32-uint256-}[`++collectPremium(policyId, amount)++`]
+* {xref-TestProduct-adjustPremiumSumInsured-bytes32-uint256-uint256-}[`++adjustPremiumSumInsured(processId, expectedPremiumAmount, sumInsuredAmount)++`]
 * {xref-TestProduct-expire-bytes32-}[`++expire(policyId)++`]
 * {xref-TestProduct-close-bytes32-}[`++close(policyId)++`]
 * {xref-TestProduct-submitClaim-bytes32-uint256-}[`++submitClaim(policyId, claimAmount)++`]
@@ -854,6 +857,10 @@ import "@etherisc/gif-contracts/contracts/test/TestProduct.sol";
 ==== `[.contract-item-name]#++collectPremium++#++(bytes32 policyId, uint256 amount) → bool success, uint256 fee, uint256 netPremium++` [.item-kind]#external#
 
 [.contract-item]
+[[TestProduct-adjustPremiumSumInsured-bytes32-uint256-uint256-]]
+==== `[.contract-item-name]#++adjustPremiumSumInsured++#++(bytes32 processId, uint256 expectedPremiumAmount, uint256 sumInsuredAmount)++` [.item-kind]#external#
+
+[.contract-item]
 [[TestProduct-expire-bytes32-]]
 ==== `[.contract-item-name]#++expire++#++(bytes32 policyId)++` [.item-kind]#external#
 
@@ -937,7 +944,7 @@ import "@etherisc/gif-contracts/contracts/test/TestProduct.sol";
 
 [.contract]
 [[TestRegistryCompromisedController]]
-=== `++TestRegistryCompromisedController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestRegistryCompromisedController.sol[{github-icon},role=heading-link]
+=== `++TestRegistryCompromisedController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/test/TestRegistryCompromisedController.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -968,7 +975,7 @@ import "@etherisc/gif-contracts/contracts/test/TestRegistryCompromisedController
 
 [.contract]
 [[TestRegistryControllerUpdated]]
-=== `++TestRegistryControllerUpdated++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestRegistryControllerUpdated.sol[{github-icon},role=heading-link]
+=== `++TestRegistryControllerUpdated++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/test/TestRegistryControllerUpdated.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -1056,7 +1063,7 @@ import "@etherisc/gif-contracts/contracts/test/TestRegistryControllerUpdated.sol
 
 [.contract]
 [[TestRiskpool]]
-=== `++TestRiskpool++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestRiskpool.sol[{github-icon},role=heading-link]
+=== `++TestRiskpool++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/test/TestRiskpool.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
@@ -1223,7 +1230,7 @@ import "@etherisc/gif-contracts/contracts/test/TestRiskpool.sol";
 
 [.contract]
 [[TestTransferFrom]]
-=== `++TestTransferFrom++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestTransferFrom.sol[{github-icon},role=heading-link]
+=== `++TestTransferFrom++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0-rc.1-0/contracts/test/TestTransferFrom.sol[{github-icon},role=heading-link]
 
 [.hljs-theme-light.nopadding]
 ```solidity
