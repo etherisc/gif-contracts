@@ -1,0 +1,319 @@
+:github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
+:xref-CoreController-onlyInstanceOperator--: xref:shared.adoc#CoreController-onlyInstanceOperator--
+:xref-CoreController-onlyPolicyFlow-bytes32-: xref:shared.adoc#CoreController-onlyPolicyFlow-bytes32-
+:xref-CoreController-constructor--: xref:shared.adoc#CoreController-constructor--
+:xref-CoreController-initialize-address-: xref:shared.adoc#CoreController-initialize-address-
+:xref-CoreController-_getName--: xref:shared.adoc#CoreController-_getName--
+:xref-CoreController-_afterInitialize--: xref:shared.adoc#CoreController-_afterInitialize--
+:xref-CoreController-_getContractAddress-bytes32-: xref:shared.adoc#CoreController-_getContractAddress-bytes32-
+:xref-CoreProxy-onlyAdmin--: xref:shared.adoc#CoreProxy-onlyAdmin--
+:xref-CoreProxy-constructor-address-bytes-: xref:shared.adoc#CoreProxy-constructor-address-bytes-
+:xref-CoreProxy-implementation--: xref:shared.adoc#CoreProxy-implementation--
+:xref-CoreProxy-upgradeToAndCall-address-bytes-: xref:shared.adoc#CoreProxy-upgradeToAndCall-address-bytes-
+:xref-TransferHelper-unifiedTransferFrom-contract-IERC20-address-address-uint256-: xref:shared.adoc#TransferHelper-unifiedTransferFrom-contract-IERC20-address-address-uint256-
+:xref-TransferHelper-LogTransferHelperInputValidation1Failed-bool-address-address-: xref:shared.adoc#TransferHelper-LogTransferHelperInputValidation1Failed-bool-address-address-
+:xref-TransferHelper-LogTransferHelperInputValidation2Failed-uint256-uint256-: xref:shared.adoc#TransferHelper-LogTransferHelperInputValidation2Failed-uint256-uint256-
+:xref-TransferHelper-LogTransferHelperCallFailed-bool-uint256-bytes-: xref:shared.adoc#TransferHelper-LogTransferHelperCallFailed-bool-uint256-bytes-
+:xref-WithRegistry-onlyInstanceOperator--: xref:shared.adoc#WithRegistry-onlyInstanceOperator--
+:xref-WithRegistry-onlyOracleService--: xref:shared.adoc#WithRegistry-onlyOracleService--
+:xref-WithRegistry-onlyOracleOwner--: xref:shared.adoc#WithRegistry-onlyOracleOwner--
+:xref-WithRegistry-onlyProductOwner--: xref:shared.adoc#WithRegistry-onlyProductOwner--
+:xref-WithRegistry-constructor-address-: xref:shared.adoc#WithRegistry-constructor-address-
+:xref-WithRegistry-getContractFromRegistry-bytes32-: xref:shared.adoc#WithRegistry-getContractFromRegistry-bytes32-
+:xref-WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-: xref:shared.adoc#WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-
+:xref-WithRegistry-getReleaseFromRegistry--: xref:shared.adoc#WithRegistry-getReleaseFromRegistry--
+= Shared
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/shared
+
+== Contracts
+
+:_registry: pass:normal[xref:#CoreController-_registry-contract-IRegistry[`++_registry++`]]
+:_access: pass:normal[xref:#CoreController-_access-contract-IAccess[`++_access++`]]
+:constructor: pass:normal[xref:#CoreController-constructor--[`++constructor++`]]
+:onlyInstanceOperator: pass:normal[xref:#CoreController-onlyInstanceOperator--[`++onlyInstanceOperator++`]]
+:onlyPolicyFlow: pass:normal[xref:#CoreController-onlyPolicyFlow-bytes32-[`++onlyPolicyFlow++`]]
+:initialize: pass:normal[xref:#CoreController-initialize-address-[`++initialize++`]]
+:_getName: pass:normal[xref:#CoreController-_getName--[`++_getName++`]]
+:_afterInitialize: pass:normal[xref:#CoreController-_afterInitialize--[`++_afterInitialize++`]]
+:_getContractAddress: pass:normal[xref:#CoreController-_getContractAddress-bytes32-[`++_getContractAddress++`]]
+
+[.contract]
+[[CoreController]]
+=== `++CoreController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/shared/CoreController.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/shared/CoreController.sol";
+```
+
+[.contract-index]
+.Modifiers
+--
+* {xref-CoreController-onlyInstanceOperator--}[`++onlyInstanceOperator()++`]
+* {xref-CoreController-onlyPolicyFlow-bytes32-}[`++onlyPolicyFlow(module)++`]
+--
+
+[.contract-index]
+.Functions
+--
+* {xref-CoreController-constructor--}[`++constructor()++`]
+* {xref-CoreController-initialize-address-}[`++initialize(registry)++`]
+* {xref-CoreController-_getName--}[`++_getName()++`]
+* {xref-CoreController-_afterInitialize--}[`++_afterInitialize()++`]
+* {xref-CoreController-_getContractAddress-bytes32-}[`++_getContractAddress(contractName)++`]
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-_disableInitializers--[`++_disableInitializers()++`]
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-Initialized-uint8-[`++Initialized(version)++`]
+
+--
+
+[.contract-item]
+[[CoreController-onlyInstanceOperator--]]
+==== `[.contract-item-name]#++onlyInstanceOperator++#++()++` [.item-kind]#modifier#
+
+[.contract-item]
+[[CoreController-onlyPolicyFlow-bytes32-]]
+==== `[.contract-item-name]#++onlyPolicyFlow++#++(bytes32 module)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[CoreController-constructor--]]
+==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
+
+[.contract-item]
+[[CoreController-initialize-address-]]
+==== `[.contract-item-name]#++initialize++#++(address registry)++` [.item-kind]#public#
+
+[.contract-item]
+[[CoreController-_getName--]]
+==== `[.contract-item-name]#++_getName++#++() → bytes32++` [.item-kind]#internal#
+
+[.contract-item]
+[[CoreController-_afterInitialize--]]
+==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
+
+[.contract-item]
+[[CoreController-_getContractAddress-bytes32-]]
+==== `[.contract-item-name]#++_getContractAddress++#++(bytes32 contractName) → address contractAddress++` [.item-kind]#internal#
+
+:onlyAdmin: pass:normal[xref:#CoreProxy-onlyAdmin--[`++onlyAdmin++`]]
+:constructor: pass:normal[xref:#CoreProxy-constructor-address-bytes-[`++constructor++`]]
+:implementation: pass:normal[xref:#CoreProxy-implementation--[`++implementation++`]]
+:upgradeToAndCall: pass:normal[xref:#CoreProxy-upgradeToAndCall-address-bytes-[`++upgradeToAndCall++`]]
+
+[.contract]
+[[CoreProxy]]
+=== `++CoreProxy++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/shared/CoreProxy.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/shared/CoreProxy.sol";
+```
+
+[.contract-index]
+.Modifiers
+--
+* {xref-CoreProxy-onlyAdmin--}[`++onlyAdmin()++`]
+--
+
+[.contract-index]
+.Functions
+--
+* {xref-CoreProxy-constructor-address-bytes-}[`++constructor(_controller, encoded_initializer)++`]
+* {xref-CoreProxy-implementation--}[`++implementation()++`]
+* {xref-CoreProxy-upgradeToAndCall-address-bytes-}[`++upgradeToAndCall(newImplementation, data)++`]
+
+[.contract-subindex-inherited]
+.ERC1967Proxy
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Proxy-_implementation--[`++_implementation()++`]
+
+[.contract-subindex-inherited]
+.ERC1967Upgrade
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-_getImplementation--[`++_getImplementation()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-_upgradeTo-address-[`++_upgradeTo(newImplementation)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-_upgradeToAndCall-address-bytes-bool-[`++_upgradeToAndCall(newImplementation, data, forceCall)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-_upgradeToAndCallUUPS-address-bytes-bool-[`++_upgradeToAndCallUUPS(newImplementation, data, forceCall)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-_getAdmin--[`++_getAdmin()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-_changeAdmin-address-[`++_changeAdmin(newAdmin)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-_getBeacon--[`++_getBeacon()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-_upgradeBeaconToAndCall-address-bytes-bool-[`++_upgradeBeaconToAndCall(newBeacon, data, forceCall)++`]
+
+[.contract-subindex-inherited]
+.Proxy
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Proxy-_delegate-address-[`++_delegate(implementation)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Proxy-_fallback--[`++_fallback()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Proxy-fallback--[`++fallback()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Proxy-receive--[`++receive()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Proxy-_beforeFallback--[`++_beforeFallback()++`]
+
+[.contract-subindex-inherited]
+.ICoreProxy
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.ERC1967Proxy
+
+[.contract-subindex-inherited]
+.ERC1967Upgrade
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-Upgraded-address-[`++Upgraded(implementation)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-AdminChanged-address-address-[`++AdminChanged(previousAdmin, newAdmin)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#ERC1967Upgrade-BeaconUpgraded-address-[`++BeaconUpgraded(beacon)++`]
+
+[.contract-subindex-inherited]
+.Proxy
+
+[.contract-subindex-inherited]
+.ICoreProxy
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/shared/ICoreProxy.sol[`++LogCoreContractUpgraded(oldImplementation, newImplemntation)++`]
+
+--
+
+[.contract-item]
+[[CoreProxy-onlyAdmin--]]
+==== `[.contract-item-name]#++onlyAdmin++#++()++` [.item-kind]#modifier#
+
+[.contract-item]
+[[CoreProxy-constructor-address-bytes-]]
+==== `[.contract-item-name]#++constructor++#++(address _controller, bytes encoded_initializer)++` [.item-kind]#public#
+
+[.contract-item]
+[[CoreProxy-implementation--]]
+==== `[.contract-item-name]#++implementation++#++() → address++` [.item-kind]#external#
+
+[.contract-item]
+[[CoreProxy-upgradeToAndCall-address-bytes-]]
+==== `[.contract-item-name]#++upgradeToAndCall++#++(address newImplementation, bytes data)++` [.item-kind]#external#
+
+:LogTransferHelperInputValidation1Failed: pass:normal[xref:#TransferHelper-LogTransferHelperInputValidation1Failed-bool-address-address-[`++LogTransferHelperInputValidation1Failed++`]]
+:LogTransferHelperInputValidation2Failed: pass:normal[xref:#TransferHelper-LogTransferHelperInputValidation2Failed-uint256-uint256-[`++LogTransferHelperInputValidation2Failed++`]]
+:LogTransferHelperCallFailed: pass:normal[xref:#TransferHelper-LogTransferHelperCallFailed-bool-uint256-bytes-[`++LogTransferHelperCallFailed++`]]
+:unifiedTransferFrom: pass:normal[xref:#TransferHelper-unifiedTransferFrom-contract-IERC20-address-address-uint256-[`++unifiedTransferFrom++`]]
+
+[.contract]
+[[TransferHelper]]
+=== `++TransferHelper++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/shared/TransferHelper.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/shared/TransferHelper.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-TransferHelper-unifiedTransferFrom-contract-IERC20-address-address-uint256-}[`++unifiedTransferFrom(token, from, to, value)++`]
+
+--
+
+[.contract-index]
+.Events
+--
+* {xref-TransferHelper-LogTransferHelperInputValidation1Failed-bool-address-address-}[`++LogTransferHelperInputValidation1Failed(tokenIsContract, from, to)++`]
+* {xref-TransferHelper-LogTransferHelperInputValidation2Failed-uint256-uint256-}[`++LogTransferHelperInputValidation2Failed(balance, allowance)++`]
+* {xref-TransferHelper-LogTransferHelperCallFailed-bool-uint256-bytes-}[`++LogTransferHelperCallFailed(callSuccess, returnDataLength, returnData)++`]
+
+--
+
+[.contract-item]
+[[TransferHelper-unifiedTransferFrom-contract-IERC20-address-address-uint256-]]
+==== `[.contract-item-name]#++unifiedTransferFrom++#++(contract IERC20 token, address from, address to, uint256 value) → bool success++` [.item-kind]#internal#
+
+[.contract-item]
+[[TransferHelper-LogTransferHelperInputValidation1Failed-bool-address-address-]]
+==== `[.contract-item-name]#++LogTransferHelperInputValidation1Failed++#++(bool tokenIsContract, address from, address to)++` [.item-kind]#event#
+
+[.contract-item]
+[[TransferHelper-LogTransferHelperInputValidation2Failed-uint256-uint256-]]
+==== `[.contract-item-name]#++LogTransferHelperInputValidation2Failed++#++(uint256 balance, uint256 allowance)++` [.item-kind]#event#
+
+[.contract-item]
+[[TransferHelper-LogTransferHelperCallFailed-bool-uint256-bytes-]]
+==== `[.contract-item-name]#++LogTransferHelperCallFailed++#++(bool callSuccess, uint256 returnDataLength, bytes returnData)++` [.item-kind]#event#
+
+:registry: pass:normal[xref:#WithRegistry-registry-contract-IRegistry[`++registry++`]]
+:onlyInstanceOperator: pass:normal[xref:#WithRegistry-onlyInstanceOperator--[`++onlyInstanceOperator++`]]
+:onlyOracleService: pass:normal[xref:#WithRegistry-onlyOracleService--[`++onlyOracleService++`]]
+:onlyOracleOwner: pass:normal[xref:#WithRegistry-onlyOracleOwner--[`++onlyOracleOwner++`]]
+:onlyProductOwner: pass:normal[xref:#WithRegistry-onlyProductOwner--[`++onlyProductOwner++`]]
+:constructor: pass:normal[xref:#WithRegistry-constructor-address-[`++constructor++`]]
+:getContractFromRegistry: pass:normal[xref:#WithRegistry-getContractFromRegistry-bytes32-[`++getContractFromRegistry++`]]
+:getContractInReleaseFromRegistry: pass:normal[xref:#WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-[`++getContractInReleaseFromRegistry++`]]
+:getReleaseFromRegistry: pass:normal[xref:#WithRegistry-getReleaseFromRegistry--[`++getReleaseFromRegistry++`]]
+
+[.contract]
+[[WithRegistry]]
+=== `++WithRegistry++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/shared/WithRegistry.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/shared/WithRegistry.sol";
+```
+
+[.contract-index]
+.Modifiers
+--
+* {xref-WithRegistry-onlyInstanceOperator--}[`++onlyInstanceOperator()++`]
+* {xref-WithRegistry-onlyOracleService--}[`++onlyOracleService()++`]
+* {xref-WithRegistry-onlyOracleOwner--}[`++onlyOracleOwner()++`]
+* {xref-WithRegistry-onlyProductOwner--}[`++onlyProductOwner()++`]
+--
+
+[.contract-index]
+.Functions
+--
+* {xref-WithRegistry-constructor-address-}[`++constructor(_registry)++`]
+* {xref-WithRegistry-getContractFromRegistry-bytes32-}[`++getContractFromRegistry(_contractName)++`]
+* {xref-WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-}[`++getContractInReleaseFromRegistry(_release, _contractName)++`]
+* {xref-WithRegistry-getReleaseFromRegistry--}[`++getReleaseFromRegistry()++`]
+
+--
+
+[.contract-item]
+[[WithRegistry-onlyInstanceOperator--]]
+==== `[.contract-item-name]#++onlyInstanceOperator++#++()++` [.item-kind]#modifier#
+
+[.contract-item]
+[[WithRegistry-onlyOracleService--]]
+==== `[.contract-item-name]#++onlyOracleService++#++()++` [.item-kind]#modifier#
+
+[.contract-item]
+[[WithRegistry-onlyOracleOwner--]]
+==== `[.contract-item-name]#++onlyOracleOwner++#++()++` [.item-kind]#modifier#
+
+[.contract-item]
+[[WithRegistry-onlyProductOwner--]]
+==== `[.contract-item-name]#++onlyProductOwner++#++()++` [.item-kind]#modifier#
+
+[.contract-item]
+[[WithRegistry-constructor-address-]]
+==== `[.contract-item-name]#++constructor++#++(address _registry)++` [.item-kind]#public#
+
+[.contract-item]
+[[WithRegistry-getContractFromRegistry-bytes32-]]
+==== `[.contract-item-name]#++getContractFromRegistry++#++(bytes32 _contractName) → address _addr++` [.item-kind]#public#
+
+[.contract-item]
+[[WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-]]
+==== `[.contract-item-name]#++getContractInReleaseFromRegistry++#++(bytes32 _release, bytes32 _contractName) → address _addr++` [.item-kind]#internal#
+
+[.contract-item]
+[[WithRegistry-getReleaseFromRegistry--]]
+==== `[.contract-item-name]#++getReleaseFromRegistry++#++() → bytes32 _release++` [.item-kind]#internal#
+

@@ -1,0 +1,253 @@
+:github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
+:xref-PolicyDefaultFlow-onlyActivePolicy-bytes32-: xref:flows.adoc#PolicyDefaultFlow-onlyActivePolicy-bytes32-
+:xref-PolicyDefaultFlow-onlyExpiredPolicy-bytes32-: xref:flows.adoc#PolicyDefaultFlow-onlyExpiredPolicy-bytes32-
+:xref-PolicyDefaultFlow-notClosedPolicy-bytes32-: xref:flows.adoc#PolicyDefaultFlow-notClosedPolicy-bytes32-
+:xref-PolicyDefaultFlow-onlyResponsibleProduct-bytes32-: xref:flows.adoc#PolicyDefaultFlow-onlyResponsibleProduct-bytes32-
+:xref-PolicyDefaultFlow-onlyMatchingProduct-uint256-: xref:flows.adoc#PolicyDefaultFlow-onlyMatchingProduct-uint256-
+:xref-PolicyDefaultFlow-constructor-address-: xref:flows.adoc#PolicyDefaultFlow-constructor-address-
+:xref-PolicyDefaultFlow-newApplication-address-uint256-uint256-bytes-bytes-: xref:flows.adoc#PolicyDefaultFlow-newApplication-address-uint256-uint256-bytes-bytes-
+:xref-PolicyDefaultFlow-revoke-bytes32-: xref:flows.adoc#PolicyDefaultFlow-revoke-bytes32-
+:xref-PolicyDefaultFlow-underwrite-bytes32-: xref:flows.adoc#PolicyDefaultFlow-underwrite-bytes32-
+:xref-PolicyDefaultFlow-collectPremium-bytes32-uint256-: xref:flows.adoc#PolicyDefaultFlow-collectPremium-bytes32-uint256-
+:xref-PolicyDefaultFlow-adjustPremiumSumInsured-bytes32-uint256-uint256-: xref:flows.adoc#PolicyDefaultFlow-adjustPremiumSumInsured-bytes32-uint256-uint256-
+:xref-PolicyDefaultFlow-decline-bytes32-: xref:flows.adoc#PolicyDefaultFlow-decline-bytes32-
+:xref-PolicyDefaultFlow-expire-bytes32-: xref:flows.adoc#PolicyDefaultFlow-expire-bytes32-
+:xref-PolicyDefaultFlow-close-bytes32-: xref:flows.adoc#PolicyDefaultFlow-close-bytes32-
+:xref-PolicyDefaultFlow-newClaim-bytes32-uint256-bytes-: xref:flows.adoc#PolicyDefaultFlow-newClaim-bytes32-uint256-bytes-
+:xref-PolicyDefaultFlow-confirmClaim-bytes32-uint256-uint256-: xref:flows.adoc#PolicyDefaultFlow-confirmClaim-bytes32-uint256-uint256-
+:xref-PolicyDefaultFlow-declineClaim-bytes32-uint256-: xref:flows.adoc#PolicyDefaultFlow-declineClaim-bytes32-uint256-
+:xref-PolicyDefaultFlow-closeClaim-bytes32-uint256-: xref:flows.adoc#PolicyDefaultFlow-closeClaim-bytes32-uint256-
+:xref-PolicyDefaultFlow-newPayout-bytes32-uint256-uint256-bytes-: xref:flows.adoc#PolicyDefaultFlow-newPayout-bytes32-uint256-uint256-bytes-
+:xref-PolicyDefaultFlow-processPayout-bytes32-uint256-: xref:flows.adoc#PolicyDefaultFlow-processPayout-bytes32-uint256-
+:xref-PolicyDefaultFlow-request-bytes32-bytes-string-address-uint256-: xref:flows.adoc#PolicyDefaultFlow-request-bytes32-bytes-string-address-uint256-
+:xref-PolicyDefaultFlow-cancelRequest-uint256-: xref:flows.adoc#PolicyDefaultFlow-cancelRequest-uint256-
+:xref-PolicyDefaultFlow-getApplicationData-bytes32-: xref:flows.adoc#PolicyDefaultFlow-getApplicationData-bytes32-
+:xref-PolicyDefaultFlow-getClaimData-bytes32-uint256-: xref:flows.adoc#PolicyDefaultFlow-getClaimData-bytes32-uint256-
+:xref-PolicyDefaultFlow-getPayoutData-bytes32-uint256-: xref:flows.adoc#PolicyDefaultFlow-getPayoutData-bytes32-uint256-
+:xref-PolicyDefaultFlow-getComponentContract--: xref:flows.adoc#PolicyDefaultFlow-getComponentContract--
+:xref-PolicyDefaultFlow-getPoolContract--: xref:flows.adoc#PolicyDefaultFlow-getPoolContract--
+:xref-PolicyDefaultFlow-getPolicyContract--: xref:flows.adoc#PolicyDefaultFlow-getPolicyContract--
+:xref-PolicyDefaultFlow-getQueryContract--: xref:flows.adoc#PolicyDefaultFlow-getQueryContract--
+:xref-PolicyDefaultFlow-getTreasuryContract--: xref:flows.adoc#PolicyDefaultFlow-getTreasuryContract--
+:xref-WithRegistry-getContractFromRegistry-bytes32-: xref:shared.adoc#WithRegistry-getContractFromRegistry-bytes32-
+:xref-WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-: xref:shared.adoc#WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-
+:xref-WithRegistry-getReleaseFromRegistry--: xref:shared.adoc#WithRegistry-getReleaseFromRegistry--
+= Flows
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/flows
+
+== Contracts
+
+:NAME: pass:normal[xref:#PolicyDefaultFlow-NAME-bytes32[`++NAME++`]]
+:onlyActivePolicy: pass:normal[xref:#PolicyDefaultFlow-onlyActivePolicy-bytes32-[`++onlyActivePolicy++`]]
+:onlyExpiredPolicy: pass:normal[xref:#PolicyDefaultFlow-onlyExpiredPolicy-bytes32-[`++onlyExpiredPolicy++`]]
+:notClosedPolicy: pass:normal[xref:#PolicyDefaultFlow-notClosedPolicy-bytes32-[`++notClosedPolicy++`]]
+:onlyResponsibleProduct: pass:normal[xref:#PolicyDefaultFlow-onlyResponsibleProduct-bytes32-[`++onlyResponsibleProduct++`]]
+:onlyMatchingProduct: pass:normal[xref:#PolicyDefaultFlow-onlyMatchingProduct-uint256-[`++onlyMatchingProduct++`]]
+:constructor: pass:normal[xref:#PolicyDefaultFlow-constructor-address-[`++constructor++`]]
+:newApplication: pass:normal[xref:#PolicyDefaultFlow-newApplication-address-uint256-uint256-bytes-bytes-[`++newApplication++`]]
+:revoke: pass:normal[xref:#PolicyDefaultFlow-revoke-bytes32-[`++revoke++`]]
+:underwrite: pass:normal[xref:#PolicyDefaultFlow-underwrite-bytes32-[`++underwrite++`]]
+:collectPremium: pass:normal[xref:#PolicyDefaultFlow-collectPremium-bytes32-uint256-[`++collectPremium++`]]
+:adjustPremiumSumInsured: pass:normal[xref:#PolicyDefaultFlow-adjustPremiumSumInsured-bytes32-uint256-uint256-[`++adjustPremiumSumInsured++`]]
+:decline: pass:normal[xref:#PolicyDefaultFlow-decline-bytes32-[`++decline++`]]
+:expire: pass:normal[xref:#PolicyDefaultFlow-expire-bytes32-[`++expire++`]]
+:close: pass:normal[xref:#PolicyDefaultFlow-close-bytes32-[`++close++`]]
+:newClaim: pass:normal[xref:#PolicyDefaultFlow-newClaim-bytes32-uint256-bytes-[`++newClaim++`]]
+:confirmClaim: pass:normal[xref:#PolicyDefaultFlow-confirmClaim-bytes32-uint256-uint256-[`++confirmClaim++`]]
+:declineClaim: pass:normal[xref:#PolicyDefaultFlow-declineClaim-bytes32-uint256-[`++declineClaim++`]]
+:closeClaim: pass:normal[xref:#PolicyDefaultFlow-closeClaim-bytes32-uint256-[`++closeClaim++`]]
+:newPayout: pass:normal[xref:#PolicyDefaultFlow-newPayout-bytes32-uint256-uint256-bytes-[`++newPayout++`]]
+:processPayout: pass:normal[xref:#PolicyDefaultFlow-processPayout-bytes32-uint256-[`++processPayout++`]]
+:request: pass:normal[xref:#PolicyDefaultFlow-request-bytes32-bytes-string-address-uint256-[`++request++`]]
+:cancelRequest: pass:normal[xref:#PolicyDefaultFlow-cancelRequest-uint256-[`++cancelRequest++`]]
+:getApplicationData: pass:normal[xref:#PolicyDefaultFlow-getApplicationData-bytes32-[`++getApplicationData++`]]
+:getClaimData: pass:normal[xref:#PolicyDefaultFlow-getClaimData-bytes32-uint256-[`++getClaimData++`]]
+:getPayoutData: pass:normal[xref:#PolicyDefaultFlow-getPayoutData-bytes32-uint256-[`++getPayoutData++`]]
+:getComponentContract: pass:normal[xref:#PolicyDefaultFlow-getComponentContract--[`++getComponentContract++`]]
+:getPoolContract: pass:normal[xref:#PolicyDefaultFlow-getPoolContract--[`++getPoolContract++`]]
+:getPolicyContract: pass:normal[xref:#PolicyDefaultFlow-getPolicyContract--[`++getPolicyContract++`]]
+:getQueryContract: pass:normal[xref:#PolicyDefaultFlow-getQueryContract--[`++getQueryContract++`]]
+:getTreasuryContract: pass:normal[xref:#PolicyDefaultFlow-getTreasuryContract--[`++getTreasuryContract++`]]
+
+[.contract]
+[[PolicyDefaultFlow]]
+=== `++PolicyDefaultFlow++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/flows/PolicyDefaultFlow.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/flows/PolicyDefaultFlow.sol";
+```
+
+This contract defines the high-level lifecycle of a policy.
+
+The contract ensures that all state transistions are always valid.
+
+[.contract-index]
+.Modifiers
+--
+* {xref-PolicyDefaultFlow-onlyActivePolicy-bytes32-}[`++onlyActivePolicy(processId)++`]
+* {xref-PolicyDefaultFlow-onlyExpiredPolicy-bytes32-}[`++onlyExpiredPolicy(processId)++`]
+* {xref-PolicyDefaultFlow-notClosedPolicy-bytes32-}[`++notClosedPolicy(processId)++`]
+* {xref-PolicyDefaultFlow-onlyResponsibleProduct-bytes32-}[`++onlyResponsibleProduct(processId)++`]
+* {xref-PolicyDefaultFlow-onlyMatchingProduct-uint256-}[`++onlyMatchingProduct(requestId)++`]
+--
+
+[.contract-index]
+.Functions
+--
+* {xref-PolicyDefaultFlow-constructor-address-}[`++constructor(_registry)++`]
+* {xref-PolicyDefaultFlow-newApplication-address-uint256-uint256-bytes-bytes-}[`++newApplication(owner, premiumAmount, sumInsuredAmount, metaData, applicationData)++`]
+* {xref-PolicyDefaultFlow-revoke-bytes32-}[`++revoke(processId)++`]
+* {xref-PolicyDefaultFlow-underwrite-bytes32-}[`++underwrite(processId)++`]
+* {xref-PolicyDefaultFlow-collectPremium-bytes32-uint256-}[`++collectPremium(processId, amount)++`]
+* {xref-PolicyDefaultFlow-adjustPremiumSumInsured-bytes32-uint256-uint256-}[`++adjustPremiumSumInsured(processId, expectedPremiumAmount, sumInsuredAmount)++`]
+* {xref-PolicyDefaultFlow-decline-bytes32-}[`++decline(processId)++`]
+* {xref-PolicyDefaultFlow-expire-bytes32-}[`++expire(processId)++`]
+* {xref-PolicyDefaultFlow-close-bytes32-}[`++close(processId)++`]
+* {xref-PolicyDefaultFlow-newClaim-bytes32-uint256-bytes-}[`++newClaim(processId, claimAmount, data)++`]
+* {xref-PolicyDefaultFlow-confirmClaim-bytes32-uint256-uint256-}[`++confirmClaim(processId, claimId, confirmedAmount)++`]
+* {xref-PolicyDefaultFlow-declineClaim-bytes32-uint256-}[`++declineClaim(processId, claimId)++`]
+* {xref-PolicyDefaultFlow-closeClaim-bytes32-uint256-}[`++closeClaim(processId, claimId)++`]
+* {xref-PolicyDefaultFlow-newPayout-bytes32-uint256-uint256-bytes-}[`++newPayout(processId, claimId, amount, data)++`]
+* {xref-PolicyDefaultFlow-processPayout-bytes32-uint256-}[`++processPayout(processId, payoutId)++`]
+* {xref-PolicyDefaultFlow-request-bytes32-bytes-string-address-uint256-}[`++request(processId, _input, _callbackMethodName, _callbackContractAddress, _responsibleOracleId)++`]
+* {xref-PolicyDefaultFlow-cancelRequest-uint256-}[`++cancelRequest(requestId)++`]
+* {xref-PolicyDefaultFlow-getApplicationData-bytes32-}[`++getApplicationData(processId)++`]
+* {xref-PolicyDefaultFlow-getClaimData-bytes32-uint256-}[`++getClaimData(processId, claimId)++`]
+* {xref-PolicyDefaultFlow-getPayoutData-bytes32-uint256-}[`++getPayoutData(processId, payoutId)++`]
+* {xref-PolicyDefaultFlow-getComponentContract--}[`++getComponentContract()++`]
+* {xref-PolicyDefaultFlow-getPoolContract--}[`++getPoolContract()++`]
+* {xref-PolicyDefaultFlow-getPolicyContract--}[`++getPolicyContract()++`]
+* {xref-PolicyDefaultFlow-getQueryContract--}[`++getQueryContract()++`]
+* {xref-PolicyDefaultFlow-getTreasuryContract--}[`++getTreasuryContract()++`]
+
+[.contract-subindex-inherited]
+.WithRegistry
+* {xref-WithRegistry-getContractFromRegistry-bytes32-}[`++getContractFromRegistry(_contractName)++`]
+* {xref-WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-}[`++getContractInReleaseFromRegistry(_release, _contractName)++`]
+* {xref-WithRegistry-getReleaseFromRegistry--}[`++getReleaseFromRegistry()++`]
+
+--
+
+[.contract-item]
+[[PolicyDefaultFlow-onlyActivePolicy-bytes32-]]
+==== `[.contract-item-name]#++onlyActivePolicy++#++(bytes32 processId)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[PolicyDefaultFlow-onlyExpiredPolicy-bytes32-]]
+==== `[.contract-item-name]#++onlyExpiredPolicy++#++(bytes32 processId)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[PolicyDefaultFlow-notClosedPolicy-bytes32-]]
+==== `[.contract-item-name]#++notClosedPolicy++#++(bytes32 processId)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[PolicyDefaultFlow-onlyResponsibleProduct-bytes32-]]
+==== `[.contract-item-name]#++onlyResponsibleProduct++#++(bytes32 processId)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[PolicyDefaultFlow-onlyMatchingProduct-uint256-]]
+==== `[.contract-item-name]#++onlyMatchingProduct++#++(uint256 requestId)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[PolicyDefaultFlow-constructor-address-]]
+==== `[.contract-item-name]#++constructor++#++(address _registry)++` [.item-kind]#public#
+
+[.contract-item]
+[[PolicyDefaultFlow-newApplication-address-uint256-uint256-bytes-bytes-]]
+==== `[.contract-item-name]#++newApplication++#++(address owner, uint256 premiumAmount, uint256 sumInsuredAmount, bytes metaData, bytes applicationData) → bytes32 processId++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-revoke-bytes32-]]
+==== `[.contract-item-name]#++revoke++#++(bytes32 processId)++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-underwrite-bytes32-]]
+==== `[.contract-item-name]#++underwrite++#++(bytes32 processId) → bool success++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-collectPremium-bytes32-uint256-]]
+==== `[.contract-item-name]#++collectPremium++#++(bytes32 processId, uint256 amount) → bool success, uint256 feeAmount, uint256 netPremiumAmount++` [.item-kind]#public#
+
+[.contract-item]
+[[PolicyDefaultFlow-adjustPremiumSumInsured-bytes32-uint256-uint256-]]
+==== `[.contract-item-name]#++adjustPremiumSumInsured++#++(bytes32 processId, uint256 expectedPremiumAmount, uint256 sumInsuredAmount)++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-decline-bytes32-]]
+==== `[.contract-item-name]#++decline++#++(bytes32 processId)++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-expire-bytes32-]]
+==== `[.contract-item-name]#++expire++#++(bytes32 processId)++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-close-bytes32-]]
+==== `[.contract-item-name]#++close++#++(bytes32 processId)++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-newClaim-bytes32-uint256-bytes-]]
+==== `[.contract-item-name]#++newClaim++#++(bytes32 processId, uint256 claimAmount, bytes data) → uint256 claimId++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-confirmClaim-bytes32-uint256-uint256-]]
+==== `[.contract-item-name]#++confirmClaim++#++(bytes32 processId, uint256 claimId, uint256 confirmedAmount)++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-declineClaim-bytes32-uint256-]]
+==== `[.contract-item-name]#++declineClaim++#++(bytes32 processId, uint256 claimId)++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-closeClaim-bytes32-uint256-]]
+==== `[.contract-item-name]#++closeClaim++#++(bytes32 processId, uint256 claimId)++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-newPayout-bytes32-uint256-uint256-bytes-]]
+==== `[.contract-item-name]#++newPayout++#++(bytes32 processId, uint256 claimId, uint256 amount, bytes data) → uint256 payoutId++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-processPayout-bytes32-uint256-]]
+==== `[.contract-item-name]#++processPayout++#++(bytes32 processId, uint256 payoutId) → bool success, uint256 feeAmount, uint256 netPayoutAmount++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-request-bytes32-bytes-string-address-uint256-]]
+==== `[.contract-item-name]#++request++#++(bytes32 processId, bytes _input, string _callbackMethodName, address _callbackContractAddress, uint256 _responsibleOracleId) → uint256 _requestId++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-cancelRequest-uint256-]]
+==== `[.contract-item-name]#++cancelRequest++#++(uint256 requestId)++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-getApplicationData-bytes32-]]
+==== `[.contract-item-name]#++getApplicationData++#++(bytes32 processId) → bytes++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-getClaimData-bytes32-uint256-]]
+==== `[.contract-item-name]#++getClaimData++#++(bytes32 processId, uint256 claimId) → bytes++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-getPayoutData-bytes32-uint256-]]
+==== `[.contract-item-name]#++getPayoutData++#++(bytes32 processId, uint256 payoutId) → bytes++` [.item-kind]#external#
+
+[.contract-item]
+[[PolicyDefaultFlow-getComponentContract--]]
+==== `[.contract-item-name]#++getComponentContract++#++() → contract ComponentController++` [.item-kind]#internal#
+
+[.contract-item]
+[[PolicyDefaultFlow-getPoolContract--]]
+==== `[.contract-item-name]#++getPoolContract++#++() → contract PoolController++` [.item-kind]#internal#
+
+[.contract-item]
+[[PolicyDefaultFlow-getPolicyContract--]]
+==== `[.contract-item-name]#++getPolicyContract++#++() → contract PolicyController++` [.item-kind]#internal#
+
+[.contract-item]
+[[PolicyDefaultFlow-getQueryContract--]]
+==== `[.contract-item-name]#++getQueryContract++#++() → contract QueryModule++` [.item-kind]#internal#
+
+[.contract-item]
+[[PolicyDefaultFlow-getTreasuryContract--]]
+==== `[.contract-item-name]#++getTreasuryContract++#++() → contract TreasuryModule++` [.item-kind]#internal#
+

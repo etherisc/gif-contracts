@@ -1,0 +1,25 @@
+= Modules
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/modules
+
+== Contracts
+
+{{AccessController}}
+
+{{BundleController}}
+
+{{ComponentController}}
+
+{{LicenseController}}
+
+{{PolicyController}}
+
+{{PoolController}}
+
+{{QueryModule}}
+
+{{RegistryController}}
+
+{{TreasuryModule}}
+

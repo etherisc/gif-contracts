@@ -1,0 +1,257 @@
+:github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
+:xref-BundleToken-onlyBundleModule--: xref:tokens.adoc#BundleToken-onlyBundleModule--
+:xref-BundleToken-constructor--: xref:tokens.adoc#BundleToken-constructor--
+:xref-BundleToken-setBundleModule-address-: xref:tokens.adoc#BundleToken-setBundleModule-address-
+:xref-BundleToken-mint-uint256-address-: xref:tokens.adoc#BundleToken-mint-uint256-address-
+:xref-BundleToken-burn-uint256-: xref:tokens.adoc#BundleToken-burn-uint256-
+:xref-BundleToken-burned-uint256-: xref:tokens.adoc#BundleToken-burned-uint256-
+:xref-BundleToken-getBundleId-uint256-: xref:tokens.adoc#BundleToken-getBundleId-uint256-
+:xref-BundleToken-getBundleModuleAddress--: xref:tokens.adoc#BundleToken-getBundleModuleAddress--
+:xref-BundleToken-exists-uint256-: xref:tokens.adoc#BundleToken-exists-uint256-
+:xref-BundleToken-totalSupply--: xref:tokens.adoc#BundleToken-totalSupply--
+:xref-RiskpoolToken-constructor--: xref:tokens.adoc#RiskpoolToken-constructor--
+= Tokens
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/tokens
+
+== Contracts
+
+:NAME: pass:normal[xref:#BundleToken-NAME-string[`++NAME++`]]
+:SYMBOL: pass:normal[xref:#BundleToken-SYMBOL-string[`++SYMBOL++`]]
+:bundleIdForTokenId: pass:normal[xref:#BundleToken-bundleIdForTokenId-mapping-uint256----uint256-[`++bundleIdForTokenId++`]]
+:onlyBundleModule: pass:normal[xref:#BundleToken-onlyBundleModule--[`++onlyBundleModule++`]]
+:constructor: pass:normal[xref:#BundleToken-constructor--[`++constructor++`]]
+:setBundleModule: pass:normal[xref:#BundleToken-setBundleModule-address-[`++setBundleModule++`]]
+:mint: pass:normal[xref:#BundleToken-mint-uint256-address-[`++mint++`]]
+:burn: pass:normal[xref:#BundleToken-burn-uint256-[`++burn++`]]
+:burned: pass:normal[xref:#BundleToken-burned-uint256-[`++burned++`]]
+:getBundleId: pass:normal[xref:#BundleToken-getBundleId-uint256-[`++getBundleId++`]]
+:getBundleModuleAddress: pass:normal[xref:#BundleToken-getBundleModuleAddress--[`++getBundleModuleAddress++`]]
+:exists: pass:normal[xref:#BundleToken-exists-uint256-[`++exists++`]]
+:totalSupply: pass:normal[xref:#BundleToken-totalSupply--[`++totalSupply++`]]
+
+[.contract]
+[[BundleToken]]
+=== `++BundleToken++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/tokens/BundleToken.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/tokens/BundleToken.sol";
+```
+
+[.contract-index]
+.Modifiers
+--
+* {xref-BundleToken-onlyBundleModule--}[`++onlyBundleModule()++`]
+--
+
+[.contract-index]
+.Functions
+--
+* {xref-BundleToken-constructor--}[`++constructor()++`]
+* {xref-BundleToken-setBundleModule-address-}[`++setBundleModule(bundleModule)++`]
+* {xref-BundleToken-mint-uint256-address-}[`++mint(bundleId, to)++`]
+* {xref-BundleToken-burn-uint256-}[`++burn(tokenId)++`]
+* {xref-BundleToken-burned-uint256-}[`++burned(tokenId)++`]
+* {xref-BundleToken-getBundleId-uint256-}[`++getBundleId(tokenId)++`]
+* {xref-BundleToken-getBundleModuleAddress--}[`++getBundleModuleAddress()++`]
+* {xref-BundleToken-exists-uint256-}[`++exists(tokenId)++`]
+* {xref-BundleToken-totalSupply--}[`++totalSupply()++`]
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-owner--[`++owner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_checkOwner--[`++_checkOwner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-renounceOwnership--[`++renounceOwnership()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-transferOwnership-address-[`++transferOwnership(newOwner)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_transferOwnership-address-[`++_transferOwnership(newOwner)++`]
+
+[.contract-subindex-inherited]
+.ERC721
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-supportsInterface-bytes4-[`++supportsInterface(interfaceId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-balanceOf-address-[`++balanceOf(owner)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-ownerOf-uint256-[`++ownerOf(tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-name--[`++name()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-symbol--[`++symbol()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-tokenURI-uint256-[`++tokenURI(tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_baseURI--[`++_baseURI()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-approve-address-uint256-[`++approve(to, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-getApproved-uint256-[`++getApproved(tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-setApprovalForAll-address-bool-[`++setApprovalForAll(operator, approved)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-isApprovedForAll-address-address-[`++isApprovedForAll(owner, operator)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-transferFrom-address-address-uint256-[`++transferFrom(from, to, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-safeTransferFrom-address-address-uint256-[`++safeTransferFrom(from, to, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-safeTransferFrom-address-address-uint256-bytes-[`++safeTransferFrom(from, to, tokenId, data)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_safeTransfer-address-address-uint256-bytes-[`++_safeTransfer(from, to, tokenId, data)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_exists-uint256-[`++_exists(tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_isApprovedOrOwner-address-uint256-[`++_isApprovedOrOwner(spender, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_safeMint-address-uint256-[`++_safeMint(to, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_safeMint-address-uint256-bytes-[`++_safeMint(to, tokenId, data)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_mint-address-uint256-[`++_mint(to, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_burn-uint256-[`++_burn(tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_transfer-address-address-uint256-[`++_transfer(from, to, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_approve-address-uint256-[`++_approve(to, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_setApprovalForAll-address-address-bool-[`++_setApprovalForAll(owner, operator, approved)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_requireMinted-uint256-[`++_requireMinted(tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_beforeTokenTransfer-address-address-uint256-[`++_beforeTokenTransfer(from, to, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#ERC721-_afterTokenTransfer-address-address-uint256-[`++_afterTokenTransfer(from, to, tokenId)++`]
+
+[.contract-subindex-inherited]
+.IERC721Metadata
+
+[.contract-subindex-inherited]
+.IBundleToken
+
+[.contract-subindex-inherited]
+.IERC721
+
+[.contract-subindex-inherited]
+.ERC165
+
+[.contract-subindex-inherited]
+.IERC165
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-OwnershipTransferred-address-address-[`++OwnershipTransferred(previousOwner, newOwner)++`]
+
+[.contract-subindex-inherited]
+.ERC721
+
+[.contract-subindex-inherited]
+.IERC721Metadata
+
+[.contract-subindex-inherited]
+.IBundleToken
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/tokens/IBundleToken.sol[`++LogBundleTokenMinted(bundleId, tokenId, tokenOwner)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/tokens/IBundleToken.sol[`++LogBundleTokenBurned(bundleId, tokenId)++`]
+
+[.contract-subindex-inherited]
+.IERC721
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#IERC721-Transfer-address-address-uint256-[`++Transfer(from, to, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#IERC721-Approval-address-address-uint256-[`++Approval(owner, approved, tokenId)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC721#IERC721-ApprovalForAll-address-address-bool-[`++ApprovalForAll(owner, operator, approved)++`]
+
+[.contract-subindex-inherited]
+.ERC165
+
+[.contract-subindex-inherited]
+.IERC165
+
+--
+
+[.contract-item]
+[[BundleToken-onlyBundleModule--]]
+==== `[.contract-item-name]#++onlyBundleModule++#++()++` [.item-kind]#modifier#
+
+[.contract-item]
+[[BundleToken-constructor--]]
+==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
+
+[.contract-item]
+[[BundleToken-setBundleModule-address-]]
+==== `[.contract-item-name]#++setBundleModule++#++(address bundleModule)++` [.item-kind]#external#
+
+[.contract-item]
+[[BundleToken-mint-uint256-address-]]
+==== `[.contract-item-name]#++mint++#++(uint256 bundleId, address to) → uint256 tokenId++` [.item-kind]#external#
+
+[.contract-item]
+[[BundleToken-burn-uint256-]]
+==== `[.contract-item-name]#++burn++#++(uint256 tokenId)++` [.item-kind]#external#
+
+[.contract-item]
+[[BundleToken-burned-uint256-]]
+==== `[.contract-item-name]#++burned++#++(uint256 tokenId) → bool isBurned++` [.item-kind]#external#
+
+[.contract-item]
+[[BundleToken-getBundleId-uint256-]]
+==== `[.contract-item-name]#++getBundleId++#++(uint256 tokenId) → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[BundleToken-getBundleModuleAddress--]]
+==== `[.contract-item-name]#++getBundleModuleAddress++#++() → address++` [.item-kind]#external#
+
+[.contract-item]
+[[BundleToken-exists-uint256-]]
+==== `[.contract-item-name]#++exists++#++(uint256 tokenId) → bool++` [.item-kind]#external#
+
+[.contract-item]
+[[BundleToken-totalSupply--]]
+==== `[.contract-item-name]#++totalSupply++#++() → uint256 tokenCount++` [.item-kind]#external#
+
+:NAME: pass:normal[xref:#RiskpoolToken-NAME-string[`++NAME++`]]
+:SYMBOL: pass:normal[xref:#RiskpoolToken-SYMBOL-string[`++SYMBOL++`]]
+:constructor: pass:normal[xref:#RiskpoolToken-constructor--[`++constructor++`]]
+
+[.contract]
+[[RiskpoolToken]]
+=== `++RiskpoolToken++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/tokens/RiskpoolToken.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/tokens/RiskpoolToken.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-RiskpoolToken-constructor--}[`++constructor()++`]
+
+[.contract-subindex-inherited]
+.ERC20
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-name--[`++name()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-symbol--[`++symbol()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-decimals--[`++decimals()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-totalSupply--[`++totalSupply()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-balanceOf-address-[`++balanceOf(account)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-transfer-address-uint256-[`++transfer(to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-allowance-address-address-[`++allowance(owner, spender)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-approve-address-uint256-[`++approve(spender, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-transferFrom-address-address-uint256-[`++transferFrom(from, to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-increaseAllowance-address-uint256-[`++increaseAllowance(spender, addedValue)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-decreaseAllowance-address-uint256-[`++decreaseAllowance(spender, subtractedValue)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_transfer-address-address-uint256-[`++_transfer(from, to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_mint-address-uint256-[`++_mint(account, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_burn-address-uint256-[`++_burn(account, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_approve-address-address-uint256-[`++_approve(owner, spender, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_spendAllowance-address-address-uint256-[`++_spendAllowance(owner, spender, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_beforeTokenTransfer-address-address-uint256-[`++_beforeTokenTransfer(from, to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_afterTokenTransfer-address-address-uint256-[`++_afterTokenTransfer(from, to, amount)++`]
+
+[.contract-subindex-inherited]
+.IERC20Metadata
+
+[.contract-subindex-inherited]
+.IERC20
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.ERC20
+
+[.contract-subindex-inherited]
+.IERC20Metadata
+
+[.contract-subindex-inherited]
+.IERC20
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#IERC20-Transfer-address-address-uint256-[`++Transfer(from, to, value)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#IERC20-Approval-address-address-uint256-[`++Approval(owner, spender, value)++`]
+
+--
+
+[.contract-item]
+[[RiskpoolToken-constructor--]]
+==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
+

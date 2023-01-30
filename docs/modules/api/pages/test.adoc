@@ -1,0 +1,1264 @@
+:github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
+:xref-TestCoin-constructor--: xref:test.adoc#TestCoin-constructor--
+:xref-TestCoinAlternativeImplementation-constructor--: xref:test.adoc#TestCoinAlternativeImplementation-constructor--
+:xref-TestCoinAlternativeImplementation-transferFrom-address-address-uint256-: xref:test.adoc#TestCoinAlternativeImplementation-transferFrom-address-address-uint256-
+:xref-TestCompromisedProduct-onlyPolicyHolder-bytes32-: xref:test.adoc#TestCompromisedProduct-onlyPolicyHolder-bytes32-
+:xref-TestCompromisedProduct-constructor-bytes32-address-uint256-uint256-address-: xref:test.adoc#TestCompromisedProduct-constructor-bytes32-address-uint256-uint256-address-
+:xref-TestCompromisedProduct-applyForPolicy-uint256-uint256-bytes-bytes-: xref:test.adoc#TestCompromisedProduct-applyForPolicy-uint256-uint256-bytes-bytes-
+:xref-TestCompromisedProduct-collectPremium-bytes32-: xref:test.adoc#TestCompromisedProduct-collectPremium-bytes32-
+:xref-TestCompromisedProduct-submitClaim-bytes32-uint256-: xref:test.adoc#TestCompromisedProduct-submitClaim-bytes32-uint256-
+:xref-TestCompromisedProduct-getToken--: xref:test.adoc#TestCompromisedProduct-getToken--
+:xref-TestCompromisedProduct-getPolicyFlow--: xref:test.adoc#TestCompromisedProduct-getPolicyFlow--
+:xref-TestCompromisedProduct-getRiskpoolId--: xref:test.adoc#TestCompromisedProduct-getRiskpoolId--
+:xref-TestCompromisedProduct-getApplicationDataStructure--: xref:test.adoc#TestCompromisedProduct-getApplicationDataStructure--
+:xref-TestCompromisedProduct-getClaimDataStructure--: xref:test.adoc#TestCompromisedProduct-getClaimDataStructure--
+:xref-TestCompromisedProduct-getPayoutDataStructure--: xref:test.adoc#TestCompromisedProduct-getPayoutDataStructure--
+:xref-TestCompromisedProduct-riskPoolCapacityCallback-uint256-: xref:test.adoc#TestCompromisedProduct-riskPoolCapacityCallback-uint256-
+:xref-TestCompromisedProduct-setId-uint256-: xref:test.adoc#TestCompromisedProduct-setId-uint256-
+:xref-TestCompromisedProduct-getName--: xref:test.adoc#TestCompromisedProduct-getName--
+:xref-TestCompromisedProduct-getId--: xref:test.adoc#TestCompromisedProduct-getId--
+:xref-TestCompromisedProduct-getType--: xref:test.adoc#TestCompromisedProduct-getType--
+:xref-TestCompromisedProduct-getState--: xref:test.adoc#TestCompromisedProduct-getState--
+:xref-TestCompromisedProduct-getOwner--: xref:test.adoc#TestCompromisedProduct-getOwner--
+:xref-TestCompromisedProduct-getRegistry--: xref:test.adoc#TestCompromisedProduct-getRegistry--
+:xref-TestCompromisedProduct-isProduct--: xref:test.adoc#TestCompromisedProduct-isProduct--
+:xref-TestCompromisedProduct-isOracle--: xref:test.adoc#TestCompromisedProduct-isOracle--
+:xref-TestCompromisedProduct-isRiskpool--: xref:test.adoc#TestCompromisedProduct-isRiskpool--
+:xref-TestCompromisedProduct-proposalCallback--: xref:test.adoc#TestCompromisedProduct-proposalCallback--
+:xref-TestCompromisedProduct-approvalCallback--: xref:test.adoc#TestCompromisedProduct-approvalCallback--
+:xref-TestCompromisedProduct-declineCallback--: xref:test.adoc#TestCompromisedProduct-declineCallback--
+:xref-TestCompromisedProduct-suspendCallback--: xref:test.adoc#TestCompromisedProduct-suspendCallback--
+:xref-TestCompromisedProduct-resumeCallback--: xref:test.adoc#TestCompromisedProduct-resumeCallback--
+:xref-TestCompromisedProduct-pauseCallback--: xref:test.adoc#TestCompromisedProduct-pauseCallback--
+:xref-TestCompromisedProduct-unpauseCallback--: xref:test.adoc#TestCompromisedProduct-unpauseCallback--
+:xref-TestCompromisedProduct-archiveCallback--: xref:test.adoc#TestCompromisedProduct-archiveCallback--
+:xref-TestOracle-constructor-bytes32-address-: xref:test.adoc#TestOracle-constructor-bytes32-address-
+:xref-TestOracle-request-uint256-bytes-: xref:test.adoc#TestOracle-request-uint256-bytes-
+:xref-TestOracle-cancel-uint256-: xref:test.adoc#TestOracle-cancel-uint256-
+:xref-TestOracle-respond-uint256-bool-: xref:test.adoc#TestOracle-respond-uint256-bool-
+:xref-TestOracle-_oracleCalculation-uint256-: xref:test.adoc#TestOracle-_oracleCalculation-uint256-
+:xref-TestProduct-constructor-bytes32-address-address-uint256-uint256-address-: xref:test.adoc#TestProduct-constructor-bytes32-address-address-uint256-uint256-address-
+:xref-TestProduct-applyForPolicy-uint256-uint256-bytes-bytes-: xref:test.adoc#TestProduct-applyForPolicy-uint256-uint256-bytes-bytes-
+:xref-TestProduct-applyForPolicy-address-payable-uint256-uint256-bytes-bytes-: xref:test.adoc#TestProduct-applyForPolicy-address-payable-uint256-uint256-bytes-bytes-
+:xref-TestProduct-newAppliation-uint256-uint256-bytes-bytes-: xref:test.adoc#TestProduct-newAppliation-uint256-uint256-bytes-bytes-
+:xref-TestProduct-revoke-bytes32-: xref:test.adoc#TestProduct-revoke-bytes32-
+:xref-TestProduct-decline-bytes32-: xref:test.adoc#TestProduct-decline-bytes32-
+:xref-TestProduct-underwrite-bytes32-: xref:test.adoc#TestProduct-underwrite-bytes32-
+:xref-TestProduct-collectPremium-bytes32-: xref:test.adoc#TestProduct-collectPremium-bytes32-
+:xref-TestProduct-collectPremium-bytes32-uint256-: xref:test.adoc#TestProduct-collectPremium-bytes32-uint256-
+:xref-TestProduct-expire-bytes32-: xref:test.adoc#TestProduct-expire-bytes32-
+:xref-TestProduct-close-bytes32-: xref:test.adoc#TestProduct-close-bytes32-
+:xref-TestProduct-submitClaim-bytes32-uint256-: xref:test.adoc#TestProduct-submitClaim-bytes32-uint256-
+:xref-TestProduct-submitClaimNoOracle-bytes32-uint256-: xref:test.adoc#TestProduct-submitClaimNoOracle-bytes32-uint256-
+:xref-TestProduct-submitClaimWithDeferredResponse-bytes32-uint256-: xref:test.adoc#TestProduct-submitClaimWithDeferredResponse-bytes32-uint256-
+:xref-TestProduct-confirmClaim-bytes32-uint256-uint256-: xref:test.adoc#TestProduct-confirmClaim-bytes32-uint256-uint256-
+:xref-TestProduct-declineClaim-bytes32-uint256-: xref:test.adoc#TestProduct-declineClaim-bytes32-uint256-
+:xref-TestProduct-closeClaim-bytes32-uint256-: xref:test.adoc#TestProduct-closeClaim-bytes32-uint256-
+:xref-TestProduct-createPayout-bytes32-uint256-uint256-: xref:test.adoc#TestProduct-createPayout-bytes32-uint256-uint256-
+:xref-TestProduct-newPayout-bytes32-uint256-uint256-: xref:test.adoc#TestProduct-newPayout-bytes32-uint256-uint256-
+:xref-TestProduct-processPayout-bytes32-uint256-: xref:test.adoc#TestProduct-processPayout-bytes32-uint256-
+:xref-TestProduct-oracleCallback-uint256-bytes32-bytes-: xref:test.adoc#TestProduct-oracleCallback-uint256-bytes32-bytes-
+:xref-TestProduct-getClaimId-bytes32-: xref:test.adoc#TestProduct-getClaimId-bytes32-
+:xref-TestProduct-getPayoutId-bytes32-: xref:test.adoc#TestProduct-getPayoutId-bytes32-
+:xref-TestProduct-applications--: xref:test.adoc#TestProduct-applications--
+:xref-TestProduct-policies--: xref:test.adoc#TestProduct-policies--
+:xref-TestProduct-claims--: xref:test.adoc#TestProduct-claims--
+:xref-TestProduct-LogTestProductFundingReceived-address-uint256-: xref:test.adoc#TestProduct-LogTestProductFundingReceived-address-uint256-
+:xref-TestProduct-LogTestOracleCallbackReceived-uint256-bytes32-bytes-: xref:test.adoc#TestProduct-LogTestOracleCallbackReceived-uint256-bytes32-bytes-
+:xref-TestRegistryCompromisedController-getContract-bytes32-: xref:test.adoc#TestRegistryCompromisedController-getContract-bytes32-
+:xref-TestRegistryCompromisedController-upgradeToV2-address-address-: xref:test.adoc#TestRegistryCompromisedController-upgradeToV2-address-address-
+:xref-TestRegistryControllerUpdated-setMessage-string-: xref:test.adoc#TestRegistryControllerUpdated-setMessage-string-
+:xref-TestRegistryControllerUpdated-getMessage--: xref:test.adoc#TestRegistryControllerUpdated-getMessage--
+:xref-TestRegistryControllerUpdated-upgradeToV2-string-: xref:test.adoc#TestRegistryControllerUpdated-upgradeToV2-string-
+:xref-RegistryController-initializeRegistry-bytes32-: xref:modules.adoc#RegistryController-initializeRegistry-bytes32-
+:xref-RegistryController-ensureSender-address-bytes32-: xref:modules.adoc#RegistryController-ensureSender-address-bytes32-
+:xref-RegistryController-getRelease--: xref:modules.adoc#RegistryController-getRelease--
+:xref-RegistryController-getContract-bytes32-: xref:modules.adoc#RegistryController-getContract-bytes32-
+:xref-RegistryController-register-bytes32-address-: xref:modules.adoc#RegistryController-register-bytes32-address-
+:xref-RegistryController-deregister-bytes32-: xref:modules.adoc#RegistryController-deregister-bytes32-
+:xref-RegistryController-getContractInRelease-bytes32-bytes32-: xref:modules.adoc#RegistryController-getContractInRelease-bytes32-bytes32-
+:xref-RegistryController-registerInRelease-bytes32-bytes32-address-: xref:modules.adoc#RegistryController-registerInRelease-bytes32-bytes32-address-
+:xref-RegistryController-deregisterInRelease-bytes32-bytes32-: xref:modules.adoc#RegistryController-deregisterInRelease-bytes32-bytes32-
+:xref-RegistryController-prepareRelease-bytes32-: xref:modules.adoc#RegistryController-prepareRelease-bytes32-
+:xref-RegistryController-contracts--: xref:modules.adoc#RegistryController-contracts--
+:xref-RegistryController-contractName-uint256-: xref:modules.adoc#RegistryController-contractName-uint256-
+:xref-RegistryController-_getContractInRelease-bytes32-bytes32-: xref:modules.adoc#RegistryController-_getContractInRelease-bytes32-bytes32-
+:xref-RegistryController-_registerInRelease-bytes32-bool-bytes32-address-: xref:modules.adoc#RegistryController-_registerInRelease-bytes32-bool-bytes32-address-
+:xref-RegistryController-_deregisterInRelease-bytes32-bytes32-: xref:modules.adoc#RegistryController-_deregisterInRelease-bytes32-bytes32-
+:xref-CoreController-initialize-address-: xref:shared.adoc#CoreController-initialize-address-
+:xref-CoreController-_getName--: xref:shared.adoc#CoreController-_getName--
+:xref-CoreController-_afterInitialize--: xref:shared.adoc#CoreController-_afterInitialize--
+:xref-CoreController-_getContractAddress-bytes32-: xref:shared.adoc#CoreController-_getContractAddress-bytes32-
+:xref-TestRiskpool-constructor-bytes32-uint256-address-address-address-: xref:test.adoc#TestRiskpool-constructor-bytes32-uint256-address-address-address-
+:xref-TestRiskpool-bundleMatchesApplication-struct-IBundle-Bundle-struct-IPolicy-Application-: xref:test.adoc#TestRiskpool-bundleMatchesApplication-struct-IBundle-Bundle-struct-IPolicy-Application-
+:xref-TestTransferFrom-unifiedTransferFrom-contract-IERC20-address-address-uint256-: xref:test.adoc#TestTransferFrom-unifiedTransferFrom-contract-IERC20-address-address-uint256-
+:xref-TestTransferFrom-LogTransferHelperInputValidation1Failed-bool-address-address-: xref:test.adoc#TestTransferFrom-LogTransferHelperInputValidation1Failed-bool-address-address-
+:xref-TestTransferFrom-LogTransferHelperInputValidation2Failed-uint256-uint256-: xref:test.adoc#TestTransferFrom-LogTransferHelperInputValidation2Failed-uint256-uint256-
+:xref-TestTransferFrom-LogTransferHelperCallFailed-bool-uint256-bytes-: xref:test.adoc#TestTransferFrom-LogTransferHelperCallFailed-bool-uint256-bytes-
+= Test
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/test
+
+== Contracts
+
+:NAME: pass:normal[xref:#TestCoin-NAME-string[`++NAME++`]]
+:SYMBOL: pass:normal[xref:#TestCoin-SYMBOL-string[`++SYMBOL++`]]
+:INITIAL_SUPPLY: pass:normal[xref:#TestCoin-INITIAL_SUPPLY-uint256[`++INITIAL_SUPPLY++`]]
+:constructor: pass:normal[xref:#TestCoin-constructor--[`++constructor++`]]
+
+[.contract]
+[[TestCoin]]
+=== `++TestCoin++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestCoin.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/test/TestCoin.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-TestCoin-constructor--}[`++constructor()++`]
+
+[.contract-subindex-inherited]
+.ERC20
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-name--[`++name()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-symbol--[`++symbol()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-decimals--[`++decimals()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-totalSupply--[`++totalSupply()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-balanceOf-address-[`++balanceOf(account)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-transfer-address-uint256-[`++transfer(to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-allowance-address-address-[`++allowance(owner, spender)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-approve-address-uint256-[`++approve(spender, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-transferFrom-address-address-uint256-[`++transferFrom(from, to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-increaseAllowance-address-uint256-[`++increaseAllowance(spender, addedValue)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-decreaseAllowance-address-uint256-[`++decreaseAllowance(spender, subtractedValue)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_transfer-address-address-uint256-[`++_transfer(from, to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_mint-address-uint256-[`++_mint(account, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_burn-address-uint256-[`++_burn(account, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_approve-address-address-uint256-[`++_approve(owner, spender, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_spendAllowance-address-address-uint256-[`++_spendAllowance(owner, spender, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_beforeTokenTransfer-address-address-uint256-[`++_beforeTokenTransfer(from, to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_afterTokenTransfer-address-address-uint256-[`++_afterTokenTransfer(from, to, amount)++`]
+
+[.contract-subindex-inherited]
+.IERC20Metadata
+
+[.contract-subindex-inherited]
+.IERC20
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.ERC20
+
+[.contract-subindex-inherited]
+.IERC20Metadata
+
+[.contract-subindex-inherited]
+.IERC20
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#IERC20-Transfer-address-address-uint256-[`++Transfer(from, to, value)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#IERC20-Approval-address-address-uint256-[`++Approval(owner, spender, value)++`]
+
+--
+
+[.contract-item]
+[[TestCoin-constructor--]]
+==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
+
+:NAME: pass:normal[xref:#TestCoinAlternativeImplementation-NAME-string[`++NAME++`]]
+:SYMBOL: pass:normal[xref:#TestCoinAlternativeImplementation-SYMBOL-string[`++SYMBOL++`]]
+:INITIAL_SUPPLY: pass:normal[xref:#TestCoinAlternativeImplementation-INITIAL_SUPPLY-uint256[`++INITIAL_SUPPLY++`]]
+:constructor: pass:normal[xref:#TestCoinAlternativeImplementation-constructor--[`++constructor++`]]
+:transferFrom: pass:normal[xref:#TestCoinAlternativeImplementation-transferFrom-address-address-uint256-[`++transferFrom++`]]
+
+[.contract]
+[[TestCoinAlternativeImplementation]]
+=== `++TestCoinAlternativeImplementation++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestCoinAlternativeImplementation.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/test/TestCoinAlternativeImplementation.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-TestCoinAlternativeImplementation-constructor--}[`++constructor()++`]
+* {xref-TestCoinAlternativeImplementation-transferFrom-address-address-uint256-}[`++transferFrom(_from, _to, _value)++`]
+
+[.contract-subindex-inherited]
+.ERC20
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-name--[`++name()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-symbol--[`++symbol()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-decimals--[`++decimals()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-totalSupply--[`++totalSupply()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-balanceOf-address-[`++balanceOf(account)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-transfer-address-uint256-[`++transfer(to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-allowance-address-address-[`++allowance(owner, spender)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-approve-address-uint256-[`++approve(spender, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-increaseAllowance-address-uint256-[`++increaseAllowance(spender, addedValue)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-decreaseAllowance-address-uint256-[`++decreaseAllowance(spender, subtractedValue)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_transfer-address-address-uint256-[`++_transfer(from, to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_mint-address-uint256-[`++_mint(account, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_burn-address-uint256-[`++_burn(account, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_approve-address-address-uint256-[`++_approve(owner, spender, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_spendAllowance-address-address-uint256-[`++_spendAllowance(owner, spender, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_beforeTokenTransfer-address-address-uint256-[`++_beforeTokenTransfer(from, to, amount)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#ERC20-_afterTokenTransfer-address-address-uint256-[`++_afterTokenTransfer(from, to, amount)++`]
+
+[.contract-subindex-inherited]
+.IERC20Metadata
+
+[.contract-subindex-inherited]
+.IERC20
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.ERC20
+
+[.contract-subindex-inherited]
+.IERC20Metadata
+
+[.contract-subindex-inherited]
+.IERC20
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#IERC20-Transfer-address-address-uint256-[`++Transfer(from, to, value)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/token/ERC20#IERC20-Approval-address-address-uint256-[`++Approval(owner, spender, value)++`]
+
+--
+
+[.contract-item]
+[[TestCoinAlternativeImplementation-constructor--]]
+==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
+
+[.contract-item]
+[[TestCoinAlternativeImplementation-transferFrom-address-address-uint256-]]
+==== `[.contract-item-name]#++transferFrom++#++(address _from, address _to, uint256 _value) → bool++` [.item-kind]#public#
+
+:FAKE_STATE: pass:normal[xref:#TestCompromisedProduct-FAKE_STATE-enum-IComponent-ComponentState[`++FAKE_STATE++`]]
+:POLICY_FLOW: pass:normal[xref:#TestCompromisedProduct-POLICY_FLOW-bytes32[`++POLICY_FLOW++`]]
+:onlyPolicyHolder: pass:normal[xref:#TestCompromisedProduct-onlyPolicyHolder-bytes32-[`++onlyPolicyHolder++`]]
+:constructor: pass:normal[xref:#TestCompromisedProduct-constructor-bytes32-address-uint256-uint256-address-[`++constructor++`]]
+:applyForPolicy: pass:normal[xref:#TestCompromisedProduct-applyForPolicy-uint256-uint256-bytes-bytes-[`++applyForPolicy++`]]
+:collectPremium: pass:normal[xref:#TestCompromisedProduct-collectPremium-bytes32-[`++collectPremium++`]]
+:submitClaim: pass:normal[xref:#TestCompromisedProduct-submitClaim-bytes32-uint256-[`++submitClaim++`]]
+:getToken: pass:normal[xref:#TestCompromisedProduct-getToken--[`++getToken++`]]
+:getPolicyFlow: pass:normal[xref:#TestCompromisedProduct-getPolicyFlow--[`++getPolicyFlow++`]]
+:getRiskpoolId: pass:normal[xref:#TestCompromisedProduct-getRiskpoolId--[`++getRiskpoolId++`]]
+:getApplicationDataStructure: pass:normal[xref:#TestCompromisedProduct-getApplicationDataStructure--[`++getApplicationDataStructure++`]]
+:getClaimDataStructure: pass:normal[xref:#TestCompromisedProduct-getClaimDataStructure--[`++getClaimDataStructure++`]]
+:getPayoutDataStructure: pass:normal[xref:#TestCompromisedProduct-getPayoutDataStructure--[`++getPayoutDataStructure++`]]
+:riskPoolCapacityCallback: pass:normal[xref:#TestCompromisedProduct-riskPoolCapacityCallback-uint256-[`++riskPoolCapacityCallback++`]]
+:setId: pass:normal[xref:#TestCompromisedProduct-setId-uint256-[`++setId++`]]
+:getName: pass:normal[xref:#TestCompromisedProduct-getName--[`++getName++`]]
+:getId: pass:normal[xref:#TestCompromisedProduct-getId--[`++getId++`]]
+:getType: pass:normal[xref:#TestCompromisedProduct-getType--[`++getType++`]]
+:getState: pass:normal[xref:#TestCompromisedProduct-getState--[`++getState++`]]
+:getOwner: pass:normal[xref:#TestCompromisedProduct-getOwner--[`++getOwner++`]]
+:getRegistry: pass:normal[xref:#TestCompromisedProduct-getRegistry--[`++getRegistry++`]]
+:isProduct: pass:normal[xref:#TestCompromisedProduct-isProduct--[`++isProduct++`]]
+:isOracle: pass:normal[xref:#TestCompromisedProduct-isOracle--[`++isOracle++`]]
+:isRiskpool: pass:normal[xref:#TestCompromisedProduct-isRiskpool--[`++isRiskpool++`]]
+:proposalCallback: pass:normal[xref:#TestCompromisedProduct-proposalCallback--[`++proposalCallback++`]]
+:approvalCallback: pass:normal[xref:#TestCompromisedProduct-approvalCallback--[`++approvalCallback++`]]
+:declineCallback: pass:normal[xref:#TestCompromisedProduct-declineCallback--[`++declineCallback++`]]
+:suspendCallback: pass:normal[xref:#TestCompromisedProduct-suspendCallback--[`++suspendCallback++`]]
+:resumeCallback: pass:normal[xref:#TestCompromisedProduct-resumeCallback--[`++resumeCallback++`]]
+:pauseCallback: pass:normal[xref:#TestCompromisedProduct-pauseCallback--[`++pauseCallback++`]]
+:unpauseCallback: pass:normal[xref:#TestCompromisedProduct-unpauseCallback--[`++unpauseCallback++`]]
+:archiveCallback: pass:normal[xref:#TestCompromisedProduct-archiveCallback--[`++archiveCallback++`]]
+
+[.contract]
+[[TestCompromisedProduct]]
+=== `++TestCompromisedProduct++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestCompromisedProduct.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/test/TestCompromisedProduct.sol";
+```
+
+[.contract-index]
+.Modifiers
+--
+* {xref-TestCompromisedProduct-onlyPolicyHolder-bytes32-}[`++onlyPolicyHolder(policyId)++`]
+--
+
+[.contract-index]
+.Functions
+--
+* {xref-TestCompromisedProduct-constructor-bytes32-address-uint256-uint256-address-}[`++constructor(fakeProductName, tokenAddress, fakeComponentId, fakeRiskpoolId, registryAddress)++`]
+* {xref-TestCompromisedProduct-applyForPolicy-uint256-uint256-bytes-bytes-}[`++applyForPolicy(premium, sumInsured, metaData, applicationData)++`]
+* {xref-TestCompromisedProduct-collectPremium-bytes32-}[`++collectPremium(policyId)++`]
+* {xref-TestCompromisedProduct-submitClaim-bytes32-uint256-}[`++submitClaim(policyId, claimAmount)++`]
+* {xref-TestCompromisedProduct-getToken--}[`++getToken()++`]
+* {xref-TestCompromisedProduct-getPolicyFlow--}[`++getPolicyFlow()++`]
+* {xref-TestCompromisedProduct-getRiskpoolId--}[`++getRiskpoolId()++`]
+* {xref-TestCompromisedProduct-getApplicationDataStructure--}[`++getApplicationDataStructure()++`]
+* {xref-TestCompromisedProduct-getClaimDataStructure--}[`++getClaimDataStructure()++`]
+* {xref-TestCompromisedProduct-getPayoutDataStructure--}[`++getPayoutDataStructure()++`]
+* {xref-TestCompromisedProduct-riskPoolCapacityCallback-uint256-}[`++riskPoolCapacityCallback(capacity)++`]
+* {xref-TestCompromisedProduct-setId-uint256-}[`++setId(id)++`]
+* {xref-TestCompromisedProduct-getName--}[`++getName()++`]
+* {xref-TestCompromisedProduct-getId--}[`++getId()++`]
+* {xref-TestCompromisedProduct-getType--}[`++getType()++`]
+* {xref-TestCompromisedProduct-getState--}[`++getState()++`]
+* {xref-TestCompromisedProduct-getOwner--}[`++getOwner()++`]
+* {xref-TestCompromisedProduct-getRegistry--}[`++getRegistry()++`]
+* {xref-TestCompromisedProduct-isProduct--}[`++isProduct()++`]
+* {xref-TestCompromisedProduct-isOracle--}[`++isOracle()++`]
+* {xref-TestCompromisedProduct-isRiskpool--}[`++isRiskpool()++`]
+* {xref-TestCompromisedProduct-proposalCallback--}[`++proposalCallback()++`]
+* {xref-TestCompromisedProduct-approvalCallback--}[`++approvalCallback()++`]
+* {xref-TestCompromisedProduct-declineCallback--}[`++declineCallback()++`]
+* {xref-TestCompromisedProduct-suspendCallback--}[`++suspendCallback()++`]
+* {xref-TestCompromisedProduct-resumeCallback--}[`++resumeCallback()++`]
+* {xref-TestCompromisedProduct-pauseCallback--}[`++pauseCallback()++`]
+* {xref-TestCompromisedProduct-unpauseCallback--}[`++unpauseCallback()++`]
+* {xref-TestCompromisedProduct-archiveCallback--}[`++archiveCallback()++`]
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-owner--[`++owner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_checkOwner--[`++_checkOwner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-renounceOwnership--[`++renounceOwnership()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-transferOwnership-address-[`++transferOwnership(newOwner)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_transferOwnership-address-[`++_transferOwnership(newOwner)++`]
+
+[.contract-subindex-inherited]
+.IProduct
+
+[.contract-subindex-inherited]
+.IComponent
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-OwnershipTransferred-address-address-[`++OwnershipTransferred(previousOwner, newOwner)++`]
+
+[.contract-subindex-inherited]
+.IProduct
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IProduct.sol[`++LogProductCreated(productAddress)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IProduct.sol[`++LogProductProposed(componentId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IProduct.sol[`++LogProductApproved(componentId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IProduct.sol[`++LogProductDeclined(componentId)++`]
+
+[.contract-subindex-inherited]
+.IComponent
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IComponent.sol[`++LogComponentCreated(componentName, componentType, componentAddress, registryAddress)++`]
+
+--
+
+[.contract-item]
+[[TestCompromisedProduct-onlyPolicyHolder-bytes32-]]
+==== `[.contract-item-name]#++onlyPolicyHolder++#++(bytes32 policyId)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[TestCompromisedProduct-constructor-bytes32-address-uint256-uint256-address-]]
+==== `[.contract-item-name]#++constructor++#++(bytes32 fakeProductName, address tokenAddress, uint256 fakeComponentId, uint256 fakeRiskpoolId, address registryAddress)++` [.item-kind]#public#
+
+[.contract-item]
+[[TestCompromisedProduct-applyForPolicy-uint256-uint256-bytes-bytes-]]
+==== `[.contract-item-name]#++applyForPolicy++#++(uint256 premium, uint256 sumInsured, bytes metaData, bytes applicationData) → bytes32 processId++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-collectPremium-bytes32-]]
+==== `[.contract-item-name]#++collectPremium++#++(bytes32 policyId)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-submitClaim-bytes32-uint256-]]
+==== `[.contract-item-name]#++submitClaim++#++(bytes32 policyId, uint256 claimAmount)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getToken--]]
+==== `[.contract-item-name]#++getToken++#++() → address token++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getPolicyFlow--]]
+==== `[.contract-item-name]#++getPolicyFlow++#++() → address policyFlow++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getRiskpoolId--]]
+==== `[.contract-item-name]#++getRiskpoolId++#++() → uint256 riskpoolId++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getApplicationDataStructure--]]
+==== `[.contract-item-name]#++getApplicationDataStructure++#++() → string dataStructure++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getClaimDataStructure--]]
+==== `[.contract-item-name]#++getClaimDataStructure++#++() → string dataStructure++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getPayoutDataStructure--]]
+==== `[.contract-item-name]#++getPayoutDataStructure++#++() → string dataStructure++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-riskPoolCapacityCallback-uint256-]]
+==== `[.contract-item-name]#++riskPoolCapacityCallback++#++(uint256 capacity)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-setId-uint256-]]
+==== `[.contract-item-name]#++setId++#++(uint256 id)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getName--]]
+==== `[.contract-item-name]#++getName++#++() → bytes32++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getId--]]
+==== `[.contract-item-name]#++getId++#++() → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getType--]]
+==== `[.contract-item-name]#++getType++#++() → enum IComponent.ComponentType++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getState--]]
+==== `[.contract-item-name]#++getState++#++() → enum IComponent.ComponentState++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getOwner--]]
+==== `[.contract-item-name]#++getOwner++#++() → address++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-getRegistry--]]
+==== `[.contract-item-name]#++getRegistry++#++() → contract IRegistry++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-isProduct--]]
+==== `[.contract-item-name]#++isProduct++#++() → bool++` [.item-kind]#public#
+
+[.contract-item]
+[[TestCompromisedProduct-isOracle--]]
+==== `[.contract-item-name]#++isOracle++#++() → bool++` [.item-kind]#public#
+
+[.contract-item]
+[[TestCompromisedProduct-isRiskpool--]]
+==== `[.contract-item-name]#++isRiskpool++#++() → bool++` [.item-kind]#public#
+
+[.contract-item]
+[[TestCompromisedProduct-proposalCallback--]]
+==== `[.contract-item-name]#++proposalCallback++#++()++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-approvalCallback--]]
+==== `[.contract-item-name]#++approvalCallback++#++()++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-declineCallback--]]
+==== `[.contract-item-name]#++declineCallback++#++()++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-suspendCallback--]]
+==== `[.contract-item-name]#++suspendCallback++#++()++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-resumeCallback--]]
+==== `[.contract-item-name]#++resumeCallback++#++()++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-pauseCallback--]]
+==== `[.contract-item-name]#++pauseCallback++#++()++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-unpauseCallback--]]
+==== `[.contract-item-name]#++unpauseCallback++#++()++` [.item-kind]#external#
+
+[.contract-item]
+[[TestCompromisedProduct-archiveCallback--]]
+==== `[.contract-item-name]#++archiveCallback++#++()++` [.item-kind]#external#
+
+:constructor: pass:normal[xref:#TestOracle-constructor-bytes32-address-[`++constructor++`]]
+:request: pass:normal[xref:#TestOracle-request-uint256-bytes-[`++request++`]]
+:cancel: pass:normal[xref:#TestOracle-cancel-uint256-[`++cancel++`]]
+:respond: pass:normal[xref:#TestOracle-respond-uint256-bool-[`++respond++`]]
+:_oracleCalculation: pass:normal[xref:#TestOracle-_oracleCalculation-uint256-[`++_oracleCalculation++`]]
+
+[.contract]
+[[TestOracle]]
+=== `++TestOracle++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestOracle.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/test/TestOracle.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-TestOracle-constructor-bytes32-address-}[`++constructor(oracleName, registry)++`]
+* {xref-TestOracle-request-uint256-bytes-}[`++request(requestId, input)++`]
+* {xref-TestOracle-cancel-uint256-}[`++cancel(requestId)++`]
+* {xref-TestOracle-respond-uint256-bool-}[`++respond(requestId, isLossEvent)++`]
+* {xref-TestOracle-_oracleCalculation-uint256-}[`++_oracleCalculation(counter)++`]
+
+[.contract-subindex-inherited]
+.Oracle
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Oracle.sol[`++_afterApprove()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Oracle.sol[`++_afterPropose()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Oracle.sol[`++_afterDecline()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Oracle.sol[`++_respond(requestId, data)++`]
+
+[.contract-subindex-inherited]
+.Component
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++setId(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getName()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getId()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getType()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getState()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getOwner()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++isProduct()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++isOracle()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++isRiskpool()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getRegistry()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++proposalCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++approvalCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++declineCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++suspendCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++resumeCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++pauseCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++unpauseCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++archiveCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterSuspend()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterResume()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterPause()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterUnpause()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterArchive()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getAccess()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getInstanceService()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getComponentOwnerService()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getContractAddress(contractName)++`]
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-owner--[`++owner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_checkOwner--[`++_checkOwner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-renounceOwnership--[`++renounceOwnership()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-transferOwnership-address-[`++transferOwnership(newOwner)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_transferOwnership-address-[`++_transferOwnership(newOwner)++`]
+
+[.contract-subindex-inherited]
+.IComponentEvents
+
+[.contract-subindex-inherited]
+.IOracle
+
+[.contract-subindex-inherited]
+.IComponent
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.Oracle
+
+[.contract-subindex-inherited]
+.Component
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-OwnershipTransferred-address-address-[`++OwnershipTransferred(previousOwner, newOwner)++`]
+
+[.contract-subindex-inherited]
+.IComponentEvents
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentProposed(componentName, componentType, componentAddress, id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentApproved(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentDeclined(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentSuspended(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentResumed(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentPaused(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentUnpaused(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentArchived(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentStateChanged(id, stateOld, stateNew)++`]
+
+[.contract-subindex-inherited]
+.IOracle
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IOracle.sol[`++LogOracleCreated(oracleAddress)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IOracle.sol[`++LogOracleProposed(componentId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IOracle.sol[`++LogOracleApproved(componentId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IOracle.sol[`++LogOracleDeclined(componentId)++`]
+
+[.contract-subindex-inherited]
+.IComponent
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IComponent.sol[`++LogComponentCreated(componentName, componentType, componentAddress, registryAddress)++`]
+
+--
+
+[.contract-item]
+[[TestOracle-constructor-bytes32-address-]]
+==== `[.contract-item-name]#++constructor++#++(bytes32 oracleName, address registry)++` [.item-kind]#public#
+
+[.contract-item]
+[[TestOracle-request-uint256-bytes-]]
+==== `[.contract-item-name]#++request++#++(uint256 requestId, bytes input)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestOracle-cancel-uint256-]]
+==== `[.contract-item-name]#++cancel++#++(uint256 requestId)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestOracle-respond-uint256-bool-]]
+==== `[.contract-item-name]#++respond++#++(uint256 requestId, bool isLossEvent)++` [.item-kind]#public#
+
+[.contract-item]
+[[TestOracle-_oracleCalculation-uint256-]]
+==== `[.contract-item-name]#++_oracleCalculation++#++(uint256 counter) → bool isLossEvent++` [.item-kind]#internal#
+
+:POLICY_FLOW: pass:normal[xref:#TestProduct-POLICY_FLOW-bytes32[`++POLICY_FLOW++`]]
+:ORACLE_CALLBACK_METHOD_NAME: pass:normal[xref:#TestProduct-ORACLE_CALLBACK_METHOD_NAME-string[`++ORACLE_CALLBACK_METHOD_NAME++`]]
+:LogTestProductFundingReceived: pass:normal[xref:#TestProduct-LogTestProductFundingReceived-address-uint256-[`++LogTestProductFundingReceived++`]]
+:LogTestOracleCallbackReceived: pass:normal[xref:#TestProduct-LogTestOracleCallbackReceived-uint256-bytes32-bytes-[`++LogTestOracleCallbackReceived++`]]
+:constructor: pass:normal[xref:#TestProduct-constructor-bytes32-address-address-uint256-uint256-address-[`++constructor++`]]
+:applyForPolicy: pass:normal[xref:#TestProduct-applyForPolicy-uint256-uint256-bytes-bytes-[`++applyForPolicy++`]]
+:applyForPolicy: pass:normal[xref:#TestProduct-applyForPolicy-address-payable-uint256-uint256-bytes-bytes-[`++applyForPolicy++`]]
+:newAppliation: pass:normal[xref:#TestProduct-newAppliation-uint256-uint256-bytes-bytes-[`++newAppliation++`]]
+:revoke: pass:normal[xref:#TestProduct-revoke-bytes32-[`++revoke++`]]
+:decline: pass:normal[xref:#TestProduct-decline-bytes32-[`++decline++`]]
+:underwrite: pass:normal[xref:#TestProduct-underwrite-bytes32-[`++underwrite++`]]
+:collectPremium: pass:normal[xref:#TestProduct-collectPremium-bytes32-[`++collectPremium++`]]
+:collectPremium: pass:normal[xref:#TestProduct-collectPremium-bytes32-uint256-[`++collectPremium++`]]
+:expire: pass:normal[xref:#TestProduct-expire-bytes32-[`++expire++`]]
+:close: pass:normal[xref:#TestProduct-close-bytes32-[`++close++`]]
+:submitClaim: pass:normal[xref:#TestProduct-submitClaim-bytes32-uint256-[`++submitClaim++`]]
+:submitClaimNoOracle: pass:normal[xref:#TestProduct-submitClaimNoOracle-bytes32-uint256-[`++submitClaimNoOracle++`]]
+:submitClaimWithDeferredResponse: pass:normal[xref:#TestProduct-submitClaimWithDeferredResponse-bytes32-uint256-[`++submitClaimWithDeferredResponse++`]]
+:confirmClaim: pass:normal[xref:#TestProduct-confirmClaim-bytes32-uint256-uint256-[`++confirmClaim++`]]
+:declineClaim: pass:normal[xref:#TestProduct-declineClaim-bytes32-uint256-[`++declineClaim++`]]
+:closeClaim: pass:normal[xref:#TestProduct-closeClaim-bytes32-uint256-[`++closeClaim++`]]
+:createPayout: pass:normal[xref:#TestProduct-createPayout-bytes32-uint256-uint256-[`++createPayout++`]]
+:newPayout: pass:normal[xref:#TestProduct-newPayout-bytes32-uint256-uint256-[`++newPayout++`]]
+:processPayout: pass:normal[xref:#TestProduct-processPayout-bytes32-uint256-[`++processPayout++`]]
+:oracleCallback: pass:normal[xref:#TestProduct-oracleCallback-uint256-bytes32-bytes-[`++oracleCallback++`]]
+:getClaimId: pass:normal[xref:#TestProduct-getClaimId-bytes32-[`++getClaimId++`]]
+:getPayoutId: pass:normal[xref:#TestProduct-getPayoutId-bytes32-[`++getPayoutId++`]]
+:applications: pass:normal[xref:#TestProduct-applications--[`++applications++`]]
+:policies: pass:normal[xref:#TestProduct-policies--[`++policies++`]]
+:claims: pass:normal[xref:#TestProduct-claims--[`++claims++`]]
+
+[.contract]
+[[TestProduct]]
+=== `++TestProduct++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestProduct.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/test/TestProduct.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-TestProduct-constructor-bytes32-address-address-uint256-uint256-address-}[`++constructor(productName, tokenAddress, capitalOwner, oracleId, riskpoolId, registryAddress)++`]
+* {xref-TestProduct-applyForPolicy-uint256-uint256-bytes-bytes-}[`++applyForPolicy(premium, sumInsured, metaData, applicationData)++`]
+* {xref-TestProduct-applyForPolicy-address-payable-uint256-uint256-bytes-bytes-}[`++applyForPolicy(policyHolder, premium, sumInsured, metaData, applicationData)++`]
+* {xref-TestProduct-newAppliation-uint256-uint256-bytes-bytes-}[`++newAppliation(premium, sumInsured, metaData, applicationData)++`]
+* {xref-TestProduct-revoke-bytes32-}[`++revoke(processId)++`]
+* {xref-TestProduct-decline-bytes32-}[`++decline(processId)++`]
+* {xref-TestProduct-underwrite-bytes32-}[`++underwrite(processId)++`]
+* {xref-TestProduct-collectPremium-bytes32-}[`++collectPremium(policyId)++`]
+* {xref-TestProduct-collectPremium-bytes32-uint256-}[`++collectPremium(policyId, amount)++`]
+* {xref-TestProduct-expire-bytes32-}[`++expire(policyId)++`]
+* {xref-TestProduct-close-bytes32-}[`++close(policyId)++`]
+* {xref-TestProduct-submitClaim-bytes32-uint256-}[`++submitClaim(policyId, claimAmount)++`]
+* {xref-TestProduct-submitClaimNoOracle-bytes32-uint256-}[`++submitClaimNoOracle(policyId, claimAmount)++`]
+* {xref-TestProduct-submitClaimWithDeferredResponse-bytes32-uint256-}[`++submitClaimWithDeferredResponse(policyId, claimAmount)++`]
+* {xref-TestProduct-confirmClaim-bytes32-uint256-uint256-}[`++confirmClaim(policyId, claimId, confirmedAmount)++`]
+* {xref-TestProduct-declineClaim-bytes32-uint256-}[`++declineClaim(policyId, claimId)++`]
+* {xref-TestProduct-closeClaim-bytes32-uint256-}[`++closeClaim(policyId, claimId)++`]
+* {xref-TestProduct-createPayout-bytes32-uint256-uint256-}[`++createPayout(policyId, claimId, payoutAmount)++`]
+* {xref-TestProduct-newPayout-bytes32-uint256-uint256-}[`++newPayout(policyId, claimId, payoutAmount)++`]
+* {xref-TestProduct-processPayout-bytes32-uint256-}[`++processPayout(policyId, payoutId)++`]
+* {xref-TestProduct-oracleCallback-uint256-bytes32-bytes-}[`++oracleCallback(requestId, policyId, responseData)++`]
+* {xref-TestProduct-getClaimId-bytes32-}[`++getClaimId(policyId)++`]
+* {xref-TestProduct-getPayoutId-bytes32-}[`++getPayoutId(policyId)++`]
+* {xref-TestProduct-applications--}[`++applications()++`]
+* {xref-TestProduct-policies--}[`++policies()++`]
+* {xref-TestProduct-claims--}[`++claims()++`]
+
+[.contract-subindex-inherited]
+.Product
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++getToken()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++getPolicyFlow()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++getRiskpoolId()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_afterApprove()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_afterPropose()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_afterDecline()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_newApplication(applicationOwner, premiumAmount, sumInsuredAmount, metaData, applicationData)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_collectPremium(processId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_collectPremium(processId, amount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_adjustPremiumSumInsured(processId, expectedPremiumAmount, sumInsuredAmount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_revoke(processId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_underwrite(processId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_decline(processId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_expire(processId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_close(processId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_newClaim(processId, claimAmount, data)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_confirmClaim(processId, claimId, payoutAmount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_declineClaim(processId, claimId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_closeClaim(processId, claimId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_newPayout(processId, claimId, amount, data)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_processPayout(processId, payoutId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_request(processId, input, callbackMethodName, responsibleOracleId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_cancelRequest(requestId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_getMetadata(processId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_getApplication(processId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_getPolicy(processId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_getClaim(processId, claimId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++_getPayout(processId, payoutId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++getApplicationDataStructure()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++getClaimDataStructure()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++getPayoutDataStructure()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Product.sol[`++riskPoolCapacityCallback(capacity)++`]
+
+[.contract-subindex-inherited]
+.Component
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++setId(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getName()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getId()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getType()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getState()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getOwner()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++isProduct()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++isOracle()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++isRiskpool()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getRegistry()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++proposalCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++approvalCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++declineCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++suspendCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++resumeCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++pauseCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++unpauseCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++archiveCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterSuspend()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterResume()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterPause()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterUnpause()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterArchive()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getAccess()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getInstanceService()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getComponentOwnerService()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getContractAddress(contractName)++`]
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-owner--[`++owner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_checkOwner--[`++_checkOwner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-renounceOwnership--[`++renounceOwnership()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-transferOwnership-address-[`++transferOwnership(newOwner)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_transferOwnership-address-[`++_transferOwnership(newOwner)++`]
+
+[.contract-subindex-inherited]
+.IComponentEvents
+
+[.contract-subindex-inherited]
+.IProduct
+
+[.contract-subindex-inherited]
+.IComponent
+
+--
+
+[.contract-index]
+.Events
+--
+* {xref-TestProduct-LogTestProductFundingReceived-address-uint256-}[`++LogTestProductFundingReceived(sender, amount)++`]
+* {xref-TestProduct-LogTestOracleCallbackReceived-uint256-bytes32-bytes-}[`++LogTestOracleCallbackReceived(requestId, policyId, response)++`]
+
+[.contract-subindex-inherited]
+.Product
+
+[.contract-subindex-inherited]
+.Component
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-OwnershipTransferred-address-address-[`++OwnershipTransferred(previousOwner, newOwner)++`]
+
+[.contract-subindex-inherited]
+.IComponentEvents
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentProposed(componentName, componentType, componentAddress, id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentApproved(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentDeclined(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentSuspended(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentResumed(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentPaused(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentUnpaused(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentArchived(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentStateChanged(id, stateOld, stateNew)++`]
+
+[.contract-subindex-inherited]
+.IProduct
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IProduct.sol[`++LogProductCreated(productAddress)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IProduct.sol[`++LogProductProposed(componentId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IProduct.sol[`++LogProductApproved(componentId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IProduct.sol[`++LogProductDeclined(componentId)++`]
+
+[.contract-subindex-inherited]
+.IComponent
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IComponent.sol[`++LogComponentCreated(componentName, componentType, componentAddress, registryAddress)++`]
+
+--
+
+[.contract-item]
+[[TestProduct-constructor-bytes32-address-address-uint256-uint256-address-]]
+==== `[.contract-item-name]#++constructor++#++(bytes32 productName, address tokenAddress, address capitalOwner, uint256 oracleId, uint256 riskpoolId, address registryAddress)++` [.item-kind]#public#
+
+[.contract-item]
+[[TestProduct-applyForPolicy-uint256-uint256-bytes-bytes-]]
+==== `[.contract-item-name]#++applyForPolicy++#++(uint256 premium, uint256 sumInsured, bytes metaData, bytes applicationData) → bytes32 processId++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-applyForPolicy-address-payable-uint256-uint256-bytes-bytes-]]
+==== `[.contract-item-name]#++applyForPolicy++#++(address payable policyHolder, uint256 premium, uint256 sumInsured, bytes metaData, bytes applicationData) → bytes32 processId++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-newAppliation-uint256-uint256-bytes-bytes-]]
+==== `[.contract-item-name]#++newAppliation++#++(uint256 premium, uint256 sumInsured, bytes metaData, bytes applicationData) → bytes32 processId++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-revoke-bytes32-]]
+==== `[.contract-item-name]#++revoke++#++(bytes32 processId)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-decline-bytes32-]]
+==== `[.contract-item-name]#++decline++#++(bytes32 processId)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-underwrite-bytes32-]]
+==== `[.contract-item-name]#++underwrite++#++(bytes32 processId)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-collectPremium-bytes32-]]
+==== `[.contract-item-name]#++collectPremium++#++(bytes32 policyId) → bool success, uint256 fee, uint256 netPremium++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-collectPremium-bytes32-uint256-]]
+==== `[.contract-item-name]#++collectPremium++#++(bytes32 policyId, uint256 amount) → bool success, uint256 fee, uint256 netPremium++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-expire-bytes32-]]
+==== `[.contract-item-name]#++expire++#++(bytes32 policyId)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-close-bytes32-]]
+==== `[.contract-item-name]#++close++#++(bytes32 policyId)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-submitClaim-bytes32-uint256-]]
+==== `[.contract-item-name]#++submitClaim++#++(bytes32 policyId, uint256 claimAmount) → uint256 claimId++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-submitClaimNoOracle-bytes32-uint256-]]
+==== `[.contract-item-name]#++submitClaimNoOracle++#++(bytes32 policyId, uint256 claimAmount) → uint256 claimId++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-submitClaimWithDeferredResponse-bytes32-uint256-]]
+==== `[.contract-item-name]#++submitClaimWithDeferredResponse++#++(bytes32 policyId, uint256 claimAmount) → uint256 claimId, uint256 requestId++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-confirmClaim-bytes32-uint256-uint256-]]
+==== `[.contract-item-name]#++confirmClaim++#++(bytes32 policyId, uint256 claimId, uint256 confirmedAmount)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-declineClaim-bytes32-uint256-]]
+==== `[.contract-item-name]#++declineClaim++#++(bytes32 policyId, uint256 claimId)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-closeClaim-bytes32-uint256-]]
+==== `[.contract-item-name]#++closeClaim++#++(bytes32 policyId, uint256 claimId)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-createPayout-bytes32-uint256-uint256-]]
+==== `[.contract-item-name]#++createPayout++#++(bytes32 policyId, uint256 claimId, uint256 payoutAmount) → uint256 payoutId++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-newPayout-bytes32-uint256-uint256-]]
+==== `[.contract-item-name]#++newPayout++#++(bytes32 policyId, uint256 claimId, uint256 payoutAmount) → uint256 payoutId++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-processPayout-bytes32-uint256-]]
+==== `[.contract-item-name]#++processPayout++#++(bytes32 policyId, uint256 payoutId)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-oracleCallback-uint256-bytes32-bytes-]]
+==== `[.contract-item-name]#++oracleCallback++#++(uint256 requestId, bytes32 policyId, bytes responseData)++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-getClaimId-bytes32-]]
+==== `[.contract-item-name]#++getClaimId++#++(bytes32 policyId) → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-getPayoutId-bytes32-]]
+==== `[.contract-item-name]#++getPayoutId++#++(bytes32 policyId) → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-applications--]]
+==== `[.contract-item-name]#++applications++#++() → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-policies--]]
+==== `[.contract-item-name]#++policies++#++() → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-claims--]]
+==== `[.contract-item-name]#++claims++#++() → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[TestProduct-LogTestProductFundingReceived-address-uint256-]]
+==== `[.contract-item-name]#++LogTestProductFundingReceived++#++(address sender, uint256 amount)++` [.item-kind]#event#
+
+[.contract-item]
+[[TestProduct-LogTestOracleCallbackReceived-uint256-bytes32-bytes-]]
+==== `[.contract-item-name]#++LogTestOracleCallbackReceived++#++(uint256 requestId, bytes32 policyId, bytes response)++` [.item-kind]#event#
+
+:POLICY: pass:normal[xref:#TestRegistryCompromisedController-POLICY-bytes32[`++POLICY++`]]
+:QUERY: pass:normal[xref:#TestRegistryCompromisedController-QUERY-bytes32[`++QUERY++`]]
+:contracts: pass:normal[xref:#TestRegistryCompromisedController-contracts-mapping-bytes32----address-[`++contracts++`]]
+:getContract: pass:normal[xref:#TestRegistryCompromisedController-getContract-bytes32-[`++getContract++`]]
+:upgradeToV2: pass:normal[xref:#TestRegistryCompromisedController-upgradeToV2-address-address-[`++upgradeToV2++`]]
+
+[.contract]
+[[TestRegistryCompromisedController]]
+=== `++TestRegistryCompromisedController++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestRegistryCompromisedController.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/test/TestRegistryCompromisedController.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-TestRegistryCompromisedController-getContract-bytes32-}[`++getContract(contractName)++`]
+* {xref-TestRegistryCompromisedController-upgradeToV2-address-address-}[`++upgradeToV2(compromisedPolicyModuleAddress, originalQueryModuleAddress)++`]
+
+--
+
+[.contract-item]
+[[TestRegistryCompromisedController-getContract-bytes32-]]
+==== `[.contract-item-name]#++getContract++#++(bytes32 contractName) → address moduleAddress++` [.item-kind]#external#
+
+[.contract-item]
+[[TestRegistryCompromisedController-upgradeToV2-address-address-]]
+==== `[.contract-item-name]#++upgradeToV2++#++(address compromisedPolicyModuleAddress, address originalQueryModuleAddress)++` [.item-kind]#public#
+
+:message: pass:normal[xref:#TestRegistryControllerUpdated-message-string[`++message++`]]
+:upgradeV2: pass:normal[xref:#TestRegistryControllerUpdated-upgradeV2-bool[`++upgradeV2++`]]
+:setMessage: pass:normal[xref:#TestRegistryControllerUpdated-setMessage-string-[`++setMessage++`]]
+:getMessage: pass:normal[xref:#TestRegistryControllerUpdated-getMessage--[`++getMessage++`]]
+:upgradeToV2: pass:normal[xref:#TestRegistryControllerUpdated-upgradeToV2-string-[`++upgradeToV2++`]]
+
+[.contract]
+[[TestRegistryControllerUpdated]]
+=== `++TestRegistryControllerUpdated++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestRegistryControllerUpdated.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/test/TestRegistryControllerUpdated.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-TestRegistryControllerUpdated-setMessage-string-}[`++setMessage(_message)++`]
+* {xref-TestRegistryControllerUpdated-getMessage--}[`++getMessage()++`]
+* {xref-TestRegistryControllerUpdated-upgradeToV2-string-}[`++upgradeToV2(_message)++`]
+
+[.contract-subindex-inherited]
+.RegistryController
+* {xref-RegistryController-initializeRegistry-bytes32-}[`++initializeRegistry(_initialRelease)++`]
+* {xref-RegistryController-ensureSender-address-bytes32-}[`++ensureSender(sender, _contractName)++`]
+* {xref-RegistryController-getRelease--}[`++getRelease()++`]
+* {xref-RegistryController-getContract-bytes32-}[`++getContract(_contractName)++`]
+* {xref-RegistryController-register-bytes32-address-}[`++register(_contractName, _contractAddress)++`]
+* {xref-RegistryController-deregister-bytes32-}[`++deregister(_contractName)++`]
+* {xref-RegistryController-getContractInRelease-bytes32-bytes32-}[`++getContractInRelease(_release, _contractName)++`]
+* {xref-RegistryController-registerInRelease-bytes32-bytes32-address-}[`++registerInRelease(_release, _contractName, _contractAddress)++`]
+* {xref-RegistryController-deregisterInRelease-bytes32-bytes32-}[`++deregisterInRelease(_release, _contractName)++`]
+* {xref-RegistryController-prepareRelease-bytes32-}[`++prepareRelease(_newRelease)++`]
+* {xref-RegistryController-contracts--}[`++contracts()++`]
+* {xref-RegistryController-contractName-uint256-}[`++contractName(idx)++`]
+* {xref-RegistryController-_getContractInRelease-bytes32-bytes32-}[`++_getContractInRelease(_release, _contractName)++`]
+* {xref-RegistryController-_registerInRelease-bytes32-bool-bytes32-address-}[`++_registerInRelease(_release, isNewRelease, _contractName, _contractAddress)++`]
+* {xref-RegistryController-_deregisterInRelease-bytes32-bytes32-}[`++_deregisterInRelease(_release, _contractName)++`]
+
+[.contract-subindex-inherited]
+.CoreController
+* {xref-CoreController-initialize-address-}[`++initialize(registry)++`]
+* {xref-CoreController-_getName--}[`++_getName()++`]
+* {xref-CoreController-_afterInitialize--}[`++_afterInitialize()++`]
+* {xref-CoreController-_getContractAddress-bytes32-}[`++_getContractAddress(contractName)++`]
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-_disableInitializers--[`++_disableInitializers()++`]
+
+[.contract-subindex-inherited]
+.IRegistry
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.RegistryController
+
+[.contract-subindex-inherited]
+.CoreController
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-Initialized-uint8-[`++Initialized(version)++`]
+
+[.contract-subindex-inherited]
+.IRegistry
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IRegistry.sol[`++LogContractRegistered(release, contractName, contractAddress, isNew)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IRegistry.sol[`++LogContractDeregistered(release, contractName)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IRegistry.sol[`++LogReleasePrepared(release)++`]
+
+--
+
+[.contract-item]
+[[TestRegistryControllerUpdated-setMessage-string-]]
+==== `[.contract-item-name]#++setMessage++#++(string _message)++` [.item-kind]#public#
+
+[.contract-item]
+[[TestRegistryControllerUpdated-getMessage--]]
+==== `[.contract-item-name]#++getMessage++#++() → string++` [.item-kind]#public#
+
+[.contract-item]
+[[TestRegistryControllerUpdated-upgradeToV2-string-]]
+==== `[.contract-item-name]#++upgradeToV2++#++(string _message)++` [.item-kind]#public#
+
+:SUM_OF_SUM_INSURED_CAP: pass:normal[xref:#TestRiskpool-SUM_OF_SUM_INSURED_CAP-uint256[`++SUM_OF_SUM_INSURED_CAP++`]]
+:constructor: pass:normal[xref:#TestRiskpool-constructor-bytes32-uint256-address-address-address-[`++constructor++`]]
+:bundleMatchesApplication: pass:normal[xref:#TestRiskpool-bundleMatchesApplication-struct-IBundle-Bundle-struct-IPolicy-Application-[`++bundleMatchesApplication++`]]
+
+[.contract]
+[[TestRiskpool]]
+=== `++TestRiskpool++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestRiskpool.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/test/TestRiskpool.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-TestRiskpool-constructor-bytes32-uint256-address-address-address-}[`++constructor(name, collateralization, erc20Token, wallet, registry)++`]
+* {xref-TestRiskpool-bundleMatchesApplication-struct-IBundle-Bundle-struct-IPolicy-Application-}[`++bundleMatchesApplication(bundle, application)++`]
+
+[.contract-subindex-inherited]
+.BasicRiskpool
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/BasicRiskpool.sol[`++_lockCollateral(processId, collateralAmount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/BasicRiskpool.sol[`++_processPayout(processId, amount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/BasicRiskpool.sol[`++_processPremium(processId, amount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/BasicRiskpool.sol[`++_releaseCollateral(processId)++`]
+
+[.contract-subindex-inherited]
+.Riskpool
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++_afterPropose()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++createBundle(filter, initialAmount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++fundBundle(bundleId, amount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++defundBundle(bundleId, amount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++lockBundle(bundleId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++unlockBundle(bundleId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++closeBundle(bundleId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++burnBundle(bundleId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++collateralizePolicy(processId, collateralAmount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++processPolicyPayout(processId, amount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++processPolicyPremium(processId, amount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++releasePolicy(processId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++setMaximumNumberOfActiveBundles(maximumNumberOfActiveBundles)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getMaximumNumberOfActiveBundles()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getWallet()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getErc20Token()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getSumOfSumInsuredCap()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getFullCollateralizationLevel()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getCollateralizationLevel()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++bundles()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getBundle(idx)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++activeBundles()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getActiveBundleId(idx)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getFilterDataStructure()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getCapital()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getTotalValueLocked()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getCapacity()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++getBalance()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Riskpool.sol[`++_afterArchive()++`]
+
+[.contract-subindex-inherited]
+.Component
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++setId(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getName()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getId()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getType()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getState()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getOwner()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++isProduct()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++isOracle()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++isRiskpool()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++getRegistry()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++proposalCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++approvalCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++declineCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++suspendCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++resumeCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++pauseCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++unpauseCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++archiveCallback()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterApprove()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterDecline()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterSuspend()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterResume()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterPause()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_afterUnpause()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getAccess()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getInstanceService()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getComponentOwnerService()++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/Component.sol[`++_getContractAddress(contractName)++`]
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-owner--[`++owner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_checkOwner--[`++_checkOwner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-renounceOwnership--[`++renounceOwnership()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-transferOwnership-address-[`++transferOwnership(newOwner)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_transferOwnership-address-[`++_transferOwnership(newOwner)++`]
+
+[.contract-subindex-inherited]
+.IComponentEvents
+
+[.contract-subindex-inherited]
+.IRiskpool
+
+[.contract-subindex-inherited]
+.IComponent
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.BasicRiskpool
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/BasicRiskpool.sol[`++LogBasicRiskpoolBundlesAndPolicies(activeBundles, bundleId)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/BasicRiskpool.sol[`++LogBasicRiskpoolCandidateBundleAmountCheck(index, bundleId, maxAmount, collateralAmount)++`]
+
+[.contract-subindex-inherited]
+.Riskpool
+
+[.contract-subindex-inherited]
+.Component
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-OwnershipTransferred-address-address-[`++OwnershipTransferred(previousOwner, newOwner)++`]
+
+[.contract-subindex-inherited]
+.IComponentEvents
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentProposed(componentName, componentType, componentAddress, id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentApproved(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentDeclined(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentSuspended(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentResumed(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentPaused(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentUnpaused(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentArchived(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/modules/IComponentEvents.sol[`++LogComponentStateChanged(id, stateOld, stateNew)++`]
+
+[.contract-subindex-inherited]
+.IRiskpool
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IRiskpool.sol[`++LogRiskpoolCreated(riskpoolAddress)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IRiskpool.sol[`++LogRiskpoolProposed(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IRiskpool.sol[`++LogRiskpoolApproved(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IRiskpool.sol[`++LogRiskpoolDeclined(id)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IRiskpool.sol[`++LogRiskpoolBundleCreated(bundleId, amount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IRiskpool.sol[`++LogRiskpoolBundleMatchesPolicy(bundleId, isMatching)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IRiskpool.sol[`++LogRiskpoolCollateralLocked(processId, collateralAmount, isSecured)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IRiskpool.sol[`++LogRiskpoolPremiumProcessed(processId, amount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IRiskpool.sol[`++LogRiskpoolPayoutProcessed(processId, amount)++`]
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IRiskpool.sol[`++LogRiskpoolCollateralReleased(processId, collateralAmount)++`]
+
+[.contract-subindex-inherited]
+.IComponent
+* https://github.com/etherisc/gif-interface/blob/develop/contracts/components/IComponent.sol[`++LogComponentCreated(componentName, componentType, componentAddress, registryAddress)++`]
+
+--
+
+[.contract-item]
+[[TestRiskpool-constructor-bytes32-uint256-address-address-address-]]
+==== `[.contract-item-name]#++constructor++#++(bytes32 name, uint256 collateralization, address erc20Token, address wallet, address registry)++` [.item-kind]#public#
+
+[.contract-item]
+[[TestRiskpool-bundleMatchesApplication-struct-IBundle-Bundle-struct-IPolicy-Application-]]
+==== `[.contract-item-name]#++bundleMatchesApplication++#++(struct IBundle.Bundle bundle, struct IPolicy.Application application) → bool isMatching++` [.item-kind]#public#
+
+:LogTransferHelperInputValidation1Failed: pass:normal[xref:#TestTransferFrom-LogTransferHelperInputValidation1Failed-bool-address-address-[`++LogTransferHelperInputValidation1Failed++`]]
+:LogTransferHelperInputValidation2Failed: pass:normal[xref:#TestTransferFrom-LogTransferHelperInputValidation2Failed-uint256-uint256-[`++LogTransferHelperInputValidation2Failed++`]]
+:LogTransferHelperCallFailed: pass:normal[xref:#TestTransferFrom-LogTransferHelperCallFailed-bool-uint256-bytes-[`++LogTransferHelperCallFailed++`]]
+:unifiedTransferFrom: pass:normal[xref:#TestTransferFrom-unifiedTransferFrom-contract-IERC20-address-address-uint256-[`++unifiedTransferFrom++`]]
+
+[.contract]
+[[TestTransferFrom]]
+=== `++TestTransferFrom++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/test/TestTransferFrom.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/test/TestTransferFrom.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-TestTransferFrom-unifiedTransferFrom-contract-IERC20-address-address-uint256-}[`++unifiedTransferFrom(token, from, to, amount)++`]
+
+--
+
+[.contract-index]
+.Events
+--
+* {xref-TestTransferFrom-LogTransferHelperInputValidation1Failed-bool-address-address-}[`++LogTransferHelperInputValidation1Failed(tokenIsContract, from, to)++`]
+* {xref-TestTransferFrom-LogTransferHelperInputValidation2Failed-uint256-uint256-}[`++LogTransferHelperInputValidation2Failed(balance, allowance)++`]
+* {xref-TestTransferFrom-LogTransferHelperCallFailed-bool-uint256-bytes-}[`++LogTransferHelperCallFailed(callSuccess, returnDataLength, returnData)++`]
+
+--
+
+[.contract-item]
+[[TestTransferFrom-unifiedTransferFrom-contract-IERC20-address-address-uint256-]]
+==== `[.contract-item-name]#++unifiedTransferFrom++#++(contract IERC20 token, address from, address to, uint256 amount) → bool++` [.item-kind]#external#
+
+[.contract-item]
+[[TestTransferFrom-LogTransferHelperInputValidation1Failed-bool-address-address-]]
+==== `[.contract-item-name]#++LogTransferHelperInputValidation1Failed++#++(bool tokenIsContract, address from, address to)++` [.item-kind]#event#
+
+[.contract-item]
+[[TestTransferFrom-LogTransferHelperInputValidation2Failed-uint256-uint256-]]
+==== `[.contract-item-name]#++LogTransferHelperInputValidation2Failed++#++(uint256 balance, uint256 allowance)++` [.item-kind]#event#
+
+[.contract-item]
+[[TestTransferFrom-LogTransferHelperCallFailed-bool-uint256-bytes-]]
+==== `[.contract-item-name]#++LogTransferHelperCallFailed++#++(bool callSuccess, uint256 returnDataLength, bytes returnData)++` [.item-kind]#event#
+

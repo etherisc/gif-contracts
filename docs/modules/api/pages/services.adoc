@@ -1,0 +1,1134 @@
+:github-icon: pass:[<svg class="icon"><use href="#github-icon"/></svg>]
+:xref-ComponentOwnerService-onlyOwnerWithRoleFromComponent-contract-IComponent-: xref:services.adoc#ComponentOwnerService-onlyOwnerWithRoleFromComponent-contract-IComponent-
+:xref-ComponentOwnerService-onlyOwnerWithRole-uint256-: xref:services.adoc#ComponentOwnerService-onlyOwnerWithRole-uint256-
+:xref-ComponentOwnerService-_afterInitialize--: xref:services.adoc#ComponentOwnerService-_afterInitialize--
+:xref-ComponentOwnerService-propose-contract-IComponent-: xref:services.adoc#ComponentOwnerService-propose-contract-IComponent-
+:xref-ComponentOwnerService-stake-uint256-: xref:services.adoc#ComponentOwnerService-stake-uint256-
+:xref-ComponentOwnerService-withdraw-uint256-: xref:services.adoc#ComponentOwnerService-withdraw-uint256-
+:xref-ComponentOwnerService-pause-uint256-: xref:services.adoc#ComponentOwnerService-pause-uint256-
+:xref-ComponentOwnerService-unpause-uint256-: xref:services.adoc#ComponentOwnerService-unpause-uint256-
+:xref-ComponentOwnerService-archive-uint256-: xref:services.adoc#ComponentOwnerService-archive-uint256-
+:xref-CoreController-initialize-address-: xref:shared.adoc#CoreController-initialize-address-
+:xref-CoreController-_getName--: xref:shared.adoc#CoreController-_getName--
+:xref-CoreController-_getContractAddress-bytes32-: xref:shared.adoc#CoreController-_getContractAddress-bytes32-
+:xref-InstanceOperatorService-onlyInstanceOperatorAddress--: xref:services.adoc#InstanceOperatorService-onlyInstanceOperatorAddress--
+:xref-InstanceOperatorService-_afterInitialize--: xref:services.adoc#InstanceOperatorService-_afterInitialize--
+:xref-InstanceOperatorService-prepareRelease-bytes32-: xref:services.adoc#InstanceOperatorService-prepareRelease-bytes32-
+:xref-InstanceOperatorService-register-bytes32-address-: xref:services.adoc#InstanceOperatorService-register-bytes32-address-
+:xref-InstanceOperatorService-deregister-bytes32-: xref:services.adoc#InstanceOperatorService-deregister-bytes32-
+:xref-InstanceOperatorService-registerInRelease-bytes32-bytes32-address-: xref:services.adoc#InstanceOperatorService-registerInRelease-bytes32-bytes32-address-
+:xref-InstanceOperatorService-deregisterInRelease-bytes32-bytes32-: xref:services.adoc#InstanceOperatorService-deregisterInRelease-bytes32-bytes32-
+:xref-InstanceOperatorService-createRole-bytes32-: xref:services.adoc#InstanceOperatorService-createRole-bytes32-
+:xref-InstanceOperatorService-invalidateRole-bytes32-: xref:services.adoc#InstanceOperatorService-invalidateRole-bytes32-
+:xref-InstanceOperatorService-grantRole-bytes32-address-: xref:services.adoc#InstanceOperatorService-grantRole-bytes32-address-
+:xref-InstanceOperatorService-revokeRole-bytes32-address-: xref:services.adoc#InstanceOperatorService-revokeRole-bytes32-address-
+:xref-InstanceOperatorService-approve-uint256-: xref:services.adoc#InstanceOperatorService-approve-uint256-
+:xref-InstanceOperatorService-decline-uint256-: xref:services.adoc#InstanceOperatorService-decline-uint256-
+:xref-InstanceOperatorService-suspend-uint256-: xref:services.adoc#InstanceOperatorService-suspend-uint256-
+:xref-InstanceOperatorService-resume-uint256-: xref:services.adoc#InstanceOperatorService-resume-uint256-
+:xref-InstanceOperatorService-archive-uint256-: xref:services.adoc#InstanceOperatorService-archive-uint256-
+:xref-InstanceOperatorService-setDefaultStaking-uint16-bytes-: xref:services.adoc#InstanceOperatorService-setDefaultStaking-uint16-bytes-
+:xref-InstanceOperatorService-adjustStakingRequirements-uint256-bytes-: xref:services.adoc#InstanceOperatorService-adjustStakingRequirements-uint256-bytes-
+:xref-InstanceOperatorService-suspendTreasury--: xref:services.adoc#InstanceOperatorService-suspendTreasury--
+:xref-InstanceOperatorService-resumeTreasury--: xref:services.adoc#InstanceOperatorService-resumeTreasury--
+:xref-InstanceOperatorService-setInstanceWallet-address-: xref:services.adoc#InstanceOperatorService-setInstanceWallet-address-
+:xref-InstanceOperatorService-setRiskpoolWallet-uint256-address-: xref:services.adoc#InstanceOperatorService-setRiskpoolWallet-uint256-address-
+:xref-InstanceOperatorService-setProductToken-uint256-address-: xref:services.adoc#InstanceOperatorService-setProductToken-uint256-address-
+:xref-InstanceOperatorService-createFeeSpecification-uint256-uint256-uint256-bytes-: xref:services.adoc#InstanceOperatorService-createFeeSpecification-uint256-uint256-uint256-bytes-
+:xref-InstanceOperatorService-setPremiumFees-struct-ITreasury-FeeSpecification-: xref:services.adoc#InstanceOperatorService-setPremiumFees-struct-ITreasury-FeeSpecification-
+:xref-InstanceOperatorService-setCapitalFees-struct-ITreasury-FeeSpecification-: xref:services.adoc#InstanceOperatorService-setCapitalFees-struct-ITreasury-FeeSpecification-
+:xref-CoreController-initialize-address-: xref:shared.adoc#CoreController-initialize-address-
+:xref-CoreController-_getName--: xref:shared.adoc#CoreController-_getName--
+:xref-CoreController-_getContractAddress-bytes32-: xref:shared.adoc#CoreController-_getContractAddress-bytes32-
+:xref-InstanceService-_afterInitialize--: xref:services.adoc#InstanceService-_afterInitialize--
+:xref-InstanceService-_setChainNames--: xref:services.adoc#InstanceService-_setChainNames--
+:xref-InstanceService-getChainId--: xref:services.adoc#InstanceService-getChainId--
+:xref-InstanceService-getChainName--: xref:services.adoc#InstanceService-getChainName--
+:xref-InstanceService-getInstanceId--: xref:services.adoc#InstanceService-getInstanceId--
+:xref-InstanceService-getInstanceOperator--: xref:services.adoc#InstanceService-getInstanceOperator--
+:xref-InstanceService-getComponentOwnerService--: xref:services.adoc#InstanceService-getComponentOwnerService--
+:xref-InstanceService-getInstanceOperatorService--: xref:services.adoc#InstanceService-getInstanceOperatorService--
+:xref-InstanceService-getOracleService--: xref:services.adoc#InstanceService-getOracleService--
+:xref-InstanceService-getProductService--: xref:services.adoc#InstanceService-getProductService--
+:xref-InstanceService-getRiskpoolService--: xref:services.adoc#InstanceService-getRiskpoolService--
+:xref-InstanceService-getRegistry--: xref:services.adoc#InstanceService-getRegistry--
+:xref-InstanceService-contracts--: xref:services.adoc#InstanceService-contracts--
+:xref-InstanceService-contractName-uint256-: xref:services.adoc#InstanceService-contractName-uint256-
+:xref-InstanceService-getDefaultAdminRole--: xref:services.adoc#InstanceService-getDefaultAdminRole--
+:xref-InstanceService-getProductOwnerRole--: xref:services.adoc#InstanceService-getProductOwnerRole--
+:xref-InstanceService-getOracleProviderRole--: xref:services.adoc#InstanceService-getOracleProviderRole--
+:xref-InstanceService-getRiskpoolKeeperRole--: xref:services.adoc#InstanceService-getRiskpoolKeeperRole--
+:xref-InstanceService-hasRole-bytes32-address-: xref:services.adoc#InstanceService-hasRole-bytes32-address-
+:xref-InstanceService-products--: xref:services.adoc#InstanceService-products--
+:xref-InstanceService-oracles--: xref:services.adoc#InstanceService-oracles--
+:xref-InstanceService-riskpools--: xref:services.adoc#InstanceService-riskpools--
+:xref-InstanceService-getComponentId-address-: xref:services.adoc#InstanceService-getComponentId-address-
+:xref-InstanceService-getComponentType-uint256-: xref:services.adoc#InstanceService-getComponentType-uint256-
+:xref-InstanceService-getComponentState-uint256-: xref:services.adoc#InstanceService-getComponentState-uint256-
+:xref-InstanceService-getComponent-uint256-: xref:services.adoc#InstanceService-getComponent-uint256-
+:xref-InstanceService-getOracleId-uint256-: xref:services.adoc#InstanceService-getOracleId-uint256-
+:xref-InstanceService-getRiskpoolId-uint256-: xref:services.adoc#InstanceService-getRiskpoolId-uint256-
+:xref-InstanceService-getProductId-uint256-: xref:services.adoc#InstanceService-getProductId-uint256-
+:xref-InstanceService-getStakingRequirements-uint256-: xref:services.adoc#InstanceService-getStakingRequirements-uint256-
+:xref-InstanceService-getStakedAssets-uint256-: xref:services.adoc#InstanceService-getStakedAssets-uint256-
+:xref-InstanceService-processIds--: xref:services.adoc#InstanceService-processIds--
+:xref-InstanceService-getMetadata-bytes32-: xref:services.adoc#InstanceService-getMetadata-bytes32-
+:xref-InstanceService-getApplication-bytes32-: xref:services.adoc#InstanceService-getApplication-bytes32-
+:xref-InstanceService-getPolicy-bytes32-: xref:services.adoc#InstanceService-getPolicy-bytes32-
+:xref-InstanceService-claims-bytes32-: xref:services.adoc#InstanceService-claims-bytes32-
+:xref-InstanceService-payouts-bytes32-: xref:services.adoc#InstanceService-payouts-bytes32-
+:xref-InstanceService-getClaim-bytes32-uint256-: xref:services.adoc#InstanceService-getClaim-bytes32-uint256-
+:xref-InstanceService-getPayout-bytes32-uint256-: xref:services.adoc#InstanceService-getPayout-bytes32-uint256-
+:xref-InstanceService-getRiskpool-uint256-: xref:services.adoc#InstanceService-getRiskpool-uint256-
+:xref-InstanceService-getFullCollateralizationLevel--: xref:services.adoc#InstanceService-getFullCollateralizationLevel--
+:xref-InstanceService-getCapital-uint256-: xref:services.adoc#InstanceService-getCapital-uint256-
+:xref-InstanceService-getTotalValueLocked-uint256-: xref:services.adoc#InstanceService-getTotalValueLocked-uint256-
+:xref-InstanceService-getCapacity-uint256-: xref:services.adoc#InstanceService-getCapacity-uint256-
+:xref-InstanceService-getBalance-uint256-: xref:services.adoc#InstanceService-getBalance-uint256-
+:xref-InstanceService-activeBundles-uint256-: xref:services.adoc#InstanceService-activeBundles-uint256-
+:xref-InstanceService-getActiveBundleId-uint256-uint256-: xref:services.adoc#InstanceService-getActiveBundleId-uint256-uint256-
+:xref-InstanceService-getMaximumNumberOfActiveBundles-uint256-: xref:services.adoc#InstanceService-getMaximumNumberOfActiveBundles-uint256-
+:xref-InstanceService-getBundleToken--: xref:services.adoc#InstanceService-getBundleToken--
+:xref-InstanceService-getBundle-uint256-: xref:services.adoc#InstanceService-getBundle-uint256-
+:xref-InstanceService-bundles--: xref:services.adoc#InstanceService-bundles--
+:xref-InstanceService-unburntBundles-uint256-: xref:services.adoc#InstanceService-unburntBundles-uint256-
+:xref-InstanceService-getTreasuryAddress--: xref:services.adoc#InstanceService-getTreasuryAddress--
+:xref-InstanceService-getInstanceWallet--: xref:services.adoc#InstanceService-getInstanceWallet--
+:xref-InstanceService-getRiskpoolWallet-uint256-: xref:services.adoc#InstanceService-getRiskpoolWallet-uint256-
+:xref-InstanceService-getComponentToken-uint256-: xref:services.adoc#InstanceService-getComponentToken-uint256-
+:xref-InstanceService-getFeeFractionFullUnit--: xref:services.adoc#InstanceService-getFeeFractionFullUnit--
+:xref-CoreController-initialize-address-: xref:shared.adoc#CoreController-initialize-address-
+:xref-CoreController-_getName--: xref:shared.adoc#CoreController-_getName--
+:xref-CoreController-_getContractAddress-bytes32-: xref:shared.adoc#CoreController-_getContractAddress-bytes32-
+:xref-OracleService-_afterInitialize--: xref:services.adoc#OracleService-_afterInitialize--
+:xref-OracleService-respond-uint256-bytes-: xref:services.adoc#OracleService-respond-uint256-bytes-
+:xref-CoreController-initialize-address-: xref:shared.adoc#CoreController-initialize-address-
+:xref-CoreController-_getName--: xref:shared.adoc#CoreController-_getName--
+:xref-CoreController-_getContractAddress-bytes32-: xref:shared.adoc#CoreController-_getContractAddress-bytes32-
+:xref-ProductService-constructor-address-: xref:services.adoc#ProductService-constructor-address-
+:xref-ProductService-fallback--: xref:services.adoc#ProductService-fallback--
+:xref-ProductService-_delegate-address-: xref:services.adoc#ProductService-_delegate-address-
+:xref-ProductService-_license--: xref:services.adoc#ProductService-_license--
+:xref-WithRegistry-getContractFromRegistry-bytes32-: xref:shared.adoc#WithRegistry-getContractFromRegistry-bytes32-
+:xref-WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-: xref:shared.adoc#WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-
+:xref-WithRegistry-getReleaseFromRegistry--: xref:shared.adoc#WithRegistry-getReleaseFromRegistry--
+:xref-RiskpoolService-onlyProposedRiskpool--: xref:services.adoc#RiskpoolService-onlyProposedRiskpool--
+:xref-RiskpoolService-onlyActiveRiskpool--: xref:services.adoc#RiskpoolService-onlyActiveRiskpool--
+:xref-RiskpoolService-onlyOwningRiskpool-uint256-bool-: xref:services.adoc#RiskpoolService-onlyOwningRiskpool-uint256-bool-
+:xref-RiskpoolService-onlyOwningRiskpoolId-uint256-bool-: xref:services.adoc#RiskpoolService-onlyOwningRiskpoolId-uint256-bool-
+:xref-RiskpoolService-_afterInitialize--: xref:services.adoc#RiskpoolService-_afterInitialize--
+:xref-RiskpoolService-registerRiskpool-address-address-uint256-uint256-: xref:services.adoc#RiskpoolService-registerRiskpool-address-address-uint256-uint256-
+:xref-RiskpoolService-createBundle-address-bytes-uint256-: xref:services.adoc#RiskpoolService-createBundle-address-bytes-uint256-
+:xref-RiskpoolService-fundBundle-uint256-uint256-: xref:services.adoc#RiskpoolService-fundBundle-uint256-uint256-
+:xref-RiskpoolService-defundBundle-uint256-uint256-: xref:services.adoc#RiskpoolService-defundBundle-uint256-uint256-
+:xref-RiskpoolService-lockBundle-uint256-: xref:services.adoc#RiskpoolService-lockBundle-uint256-
+:xref-RiskpoolService-unlockBundle-uint256-: xref:services.adoc#RiskpoolService-unlockBundle-uint256-
+:xref-RiskpoolService-closeBundle-uint256-: xref:services.adoc#RiskpoolService-closeBundle-uint256-
+:xref-RiskpoolService-burnBundle-uint256-: xref:services.adoc#RiskpoolService-burnBundle-uint256-
+:xref-RiskpoolService-collateralizePolicy-uint256-bytes32-uint256-: xref:services.adoc#RiskpoolService-collateralizePolicy-uint256-bytes32-uint256-
+:xref-RiskpoolService-processPremium-uint256-bytes32-uint256-: xref:services.adoc#RiskpoolService-processPremium-uint256-bytes32-uint256-
+:xref-RiskpoolService-processPayout-uint256-bytes32-uint256-: xref:services.adoc#RiskpoolService-processPayout-uint256-bytes32-uint256-
+:xref-RiskpoolService-releasePolicy-uint256-bytes32-: xref:services.adoc#RiskpoolService-releasePolicy-uint256-bytes32-
+:xref-RiskpoolService-setMaximumNumberOfActiveBundles-uint256-uint256-: xref:services.adoc#RiskpoolService-setMaximumNumberOfActiveBundles-uint256-uint256-
+:xref-CoreController-initialize-address-: xref:shared.adoc#CoreController-initialize-address-
+:xref-CoreController-_getName--: xref:shared.adoc#CoreController-_getName--
+:xref-CoreController-_getContractAddress-bytes32-: xref:shared.adoc#CoreController-_getContractAddress-bytes32-
+= Services
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/services
+
+== Contracts
+
+:onlyOwnerWithRoleFromComponent: pass:normal[xref:#ComponentOwnerService-onlyOwnerWithRoleFromComponent-contract-IComponent-[`++onlyOwnerWithRoleFromComponent++`]]
+:onlyOwnerWithRole: pass:normal[xref:#ComponentOwnerService-onlyOwnerWithRole-uint256-[`++onlyOwnerWithRole++`]]
+:_afterInitialize: pass:normal[xref:#ComponentOwnerService-_afterInitialize--[`++_afterInitialize++`]]
+:propose: pass:normal[xref:#ComponentOwnerService-propose-contract-IComponent-[`++propose++`]]
+:stake: pass:normal[xref:#ComponentOwnerService-stake-uint256-[`++stake++`]]
+:withdraw: pass:normal[xref:#ComponentOwnerService-withdraw-uint256-[`++withdraw++`]]
+:pause: pass:normal[xref:#ComponentOwnerService-pause-uint256-[`++pause++`]]
+:unpause: pass:normal[xref:#ComponentOwnerService-unpause-uint256-[`++unpause++`]]
+:archive: pass:normal[xref:#ComponentOwnerService-archive-uint256-[`++archive++`]]
+
+[.contract]
+[[ComponentOwnerService]]
+=== `++ComponentOwnerService++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/services/ComponentOwnerService.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/services/ComponentOwnerService.sol";
+```
+
+[.contract-index]
+.Modifiers
+--
+* {xref-ComponentOwnerService-onlyOwnerWithRoleFromComponent-contract-IComponent-}[`++onlyOwnerWithRoleFromComponent(component)++`]
+* {xref-ComponentOwnerService-onlyOwnerWithRole-uint256-}[`++onlyOwnerWithRole(id)++`]
+--
+
+[.contract-index]
+.Functions
+--
+* {xref-ComponentOwnerService-_afterInitialize--}[`++_afterInitialize()++`]
+* {xref-ComponentOwnerService-propose-contract-IComponent-}[`++propose(component)++`]
+* {xref-ComponentOwnerService-stake-uint256-}[`++stake(id)++`]
+* {xref-ComponentOwnerService-withdraw-uint256-}[`++withdraw(id)++`]
+* {xref-ComponentOwnerService-pause-uint256-}[`++pause(id)++`]
+* {xref-ComponentOwnerService-unpause-uint256-}[`++unpause(id)++`]
+* {xref-ComponentOwnerService-archive-uint256-}[`++archive(id)++`]
+
+[.contract-subindex-inherited]
+.CoreController
+* {xref-CoreController-initialize-address-}[`++initialize(registry)++`]
+* {xref-CoreController-_getName--}[`++_getName()++`]
+* {xref-CoreController-_getContractAddress-bytes32-}[`++_getContractAddress(contractName)++`]
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-_disableInitializers--[`++_disableInitializers()++`]
+
+[.contract-subindex-inherited]
+.IComponentOwnerService
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.CoreController
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-Initialized-uint8-[`++Initialized(version)++`]
+
+[.contract-subindex-inherited]
+.IComponentOwnerService
+
+--
+
+[.contract-item]
+[[ComponentOwnerService-onlyOwnerWithRoleFromComponent-contract-IComponent-]]
+==== `[.contract-item-name]#++onlyOwnerWithRoleFromComponent++#++(contract IComponent component)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[ComponentOwnerService-onlyOwnerWithRole-uint256-]]
+==== `[.contract-item-name]#++onlyOwnerWithRole++#++(uint256 id)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[ComponentOwnerService-_afterInitialize--]]
+==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
+
+[.contract-item]
+[[ComponentOwnerService-propose-contract-IComponent-]]
+==== `[.contract-item-name]#++propose++#++(contract IComponent component)++` [.item-kind]#external#
+
+[.contract-item]
+[[ComponentOwnerService-stake-uint256-]]
+==== `[.contract-item-name]#++stake++#++(uint256 id)++` [.item-kind]#external#
+
+[.contract-item]
+[[ComponentOwnerService-withdraw-uint256-]]
+==== `[.contract-item-name]#++withdraw++#++(uint256 id)++` [.item-kind]#external#
+
+[.contract-item]
+[[ComponentOwnerService-pause-uint256-]]
+==== `[.contract-item-name]#++pause++#++(uint256 id)++` [.item-kind]#external#
+
+[.contract-item]
+[[ComponentOwnerService-unpause-uint256-]]
+==== `[.contract-item-name]#++unpause++#++(uint256 id)++` [.item-kind]#external#
+
+[.contract-item]
+[[ComponentOwnerService-archive-uint256-]]
+==== `[.contract-item-name]#++archive++#++(uint256 id)++` [.item-kind]#external#
+
+:onlyInstanceOperatorAddress: pass:normal[xref:#InstanceOperatorService-onlyInstanceOperatorAddress--[`++onlyInstanceOperatorAddress++`]]
+:_afterInitialize: pass:normal[xref:#InstanceOperatorService-_afterInitialize--[`++_afterInitialize++`]]
+:prepareRelease: pass:normal[xref:#InstanceOperatorService-prepareRelease-bytes32-[`++prepareRelease++`]]
+:register: pass:normal[xref:#InstanceOperatorService-register-bytes32-address-[`++register++`]]
+:deregister: pass:normal[xref:#InstanceOperatorService-deregister-bytes32-[`++deregister++`]]
+:registerInRelease: pass:normal[xref:#InstanceOperatorService-registerInRelease-bytes32-bytes32-address-[`++registerInRelease++`]]
+:deregisterInRelease: pass:normal[xref:#InstanceOperatorService-deregisterInRelease-bytes32-bytes32-[`++deregisterInRelease++`]]
+:createRole: pass:normal[xref:#InstanceOperatorService-createRole-bytes32-[`++createRole++`]]
+:invalidateRole: pass:normal[xref:#InstanceOperatorService-invalidateRole-bytes32-[`++invalidateRole++`]]
+:grantRole: pass:normal[xref:#InstanceOperatorService-grantRole-bytes32-address-[`++grantRole++`]]
+:revokeRole: pass:normal[xref:#InstanceOperatorService-revokeRole-bytes32-address-[`++revokeRole++`]]
+:approve: pass:normal[xref:#InstanceOperatorService-approve-uint256-[`++approve++`]]
+:decline: pass:normal[xref:#InstanceOperatorService-decline-uint256-[`++decline++`]]
+:suspend: pass:normal[xref:#InstanceOperatorService-suspend-uint256-[`++suspend++`]]
+:resume: pass:normal[xref:#InstanceOperatorService-resume-uint256-[`++resume++`]]
+:archive: pass:normal[xref:#InstanceOperatorService-archive-uint256-[`++archive++`]]
+:setDefaultStaking: pass:normal[xref:#InstanceOperatorService-setDefaultStaking-uint16-bytes-[`++setDefaultStaking++`]]
+:adjustStakingRequirements: pass:normal[xref:#InstanceOperatorService-adjustStakingRequirements-uint256-bytes-[`++adjustStakingRequirements++`]]
+:suspendTreasury: pass:normal[xref:#InstanceOperatorService-suspendTreasury--[`++suspendTreasury++`]]
+:resumeTreasury: pass:normal[xref:#InstanceOperatorService-resumeTreasury--[`++resumeTreasury++`]]
+:setInstanceWallet: pass:normal[xref:#InstanceOperatorService-setInstanceWallet-address-[`++setInstanceWallet++`]]
+:setRiskpoolWallet: pass:normal[xref:#InstanceOperatorService-setRiskpoolWallet-uint256-address-[`++setRiskpoolWallet++`]]
+:setProductToken: pass:normal[xref:#InstanceOperatorService-setProductToken-uint256-address-[`++setProductToken++`]]
+:createFeeSpecification: pass:normal[xref:#InstanceOperatorService-createFeeSpecification-uint256-uint256-uint256-bytes-[`++createFeeSpecification++`]]
+:setPremiumFees: pass:normal[xref:#InstanceOperatorService-setPremiumFees-struct-ITreasury-FeeSpecification-[`++setPremiumFees++`]]
+:setCapitalFees: pass:normal[xref:#InstanceOperatorService-setCapitalFees-struct-ITreasury-FeeSpecification-[`++setCapitalFees++`]]
+
+[.contract]
+[[InstanceOperatorService]]
+=== `++InstanceOperatorService++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/services/InstanceOperatorService.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/services/InstanceOperatorService.sol";
+```
+
+[.contract-index]
+.Modifiers
+--
+* {xref-InstanceOperatorService-onlyInstanceOperatorAddress--}[`++onlyInstanceOperatorAddress()++`]
+--
+
+[.contract-index]
+.Functions
+--
+* {xref-InstanceOperatorService-_afterInitialize--}[`++_afterInitialize()++`]
+* {xref-InstanceOperatorService-prepareRelease-bytes32-}[`++prepareRelease(_newRelease)++`]
+* {xref-InstanceOperatorService-register-bytes32-address-}[`++register(_contractName, _contractAddress)++`]
+* {xref-InstanceOperatorService-deregister-bytes32-}[`++deregister(_contractName)++`]
+* {xref-InstanceOperatorService-registerInRelease-bytes32-bytes32-address-}[`++registerInRelease(_release, _contractName, _contractAddress)++`]
+* {xref-InstanceOperatorService-deregisterInRelease-bytes32-bytes32-}[`++deregisterInRelease(_release, _contractName)++`]
+* {xref-InstanceOperatorService-createRole-bytes32-}[`++createRole(_role)++`]
+* {xref-InstanceOperatorService-invalidateRole-bytes32-}[`++invalidateRole(_role)++`]
+* {xref-InstanceOperatorService-grantRole-bytes32-address-}[`++grantRole(role, principal)++`]
+* {xref-InstanceOperatorService-revokeRole-bytes32-address-}[`++revokeRole(role, principal)++`]
+* {xref-InstanceOperatorService-approve-uint256-}[`++approve(id)++`]
+* {xref-InstanceOperatorService-decline-uint256-}[`++decline(id)++`]
+* {xref-InstanceOperatorService-suspend-uint256-}[`++suspend(id)++`]
+* {xref-InstanceOperatorService-resume-uint256-}[`++resume(id)++`]
+* {xref-InstanceOperatorService-archive-uint256-}[`++archive(id)++`]
+* {xref-InstanceOperatorService-setDefaultStaking-uint16-bytes-}[`++setDefaultStaking(componentType, data)++`]
+* {xref-InstanceOperatorService-adjustStakingRequirements-uint256-bytes-}[`++adjustStakingRequirements(id, data)++`]
+* {xref-InstanceOperatorService-suspendTreasury--}[`++suspendTreasury()++`]
+* {xref-InstanceOperatorService-resumeTreasury--}[`++resumeTreasury()++`]
+* {xref-InstanceOperatorService-setInstanceWallet-address-}[`++setInstanceWallet(walletAddress)++`]
+* {xref-InstanceOperatorService-setRiskpoolWallet-uint256-address-}[`++setRiskpoolWallet(riskpoolId, riskpoolWalletAddress)++`]
+* {xref-InstanceOperatorService-setProductToken-uint256-address-}[`++setProductToken(productId, erc20Address)++`]
+* {xref-InstanceOperatorService-createFeeSpecification-uint256-uint256-uint256-bytes-}[`++createFeeSpecification(componentId, fixedFee, fractionalFee, feeCalculationData)++`]
+* {xref-InstanceOperatorService-setPremiumFees-struct-ITreasury-FeeSpecification-}[`++setPremiumFees(feeSpec)++`]
+* {xref-InstanceOperatorService-setCapitalFees-struct-ITreasury-FeeSpecification-}[`++setCapitalFees(feeSpec)++`]
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-owner--[`++owner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_checkOwner--[`++_checkOwner()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-renounceOwnership--[`++renounceOwnership()++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-transferOwnership-address-[`++transferOwnership(newOwner)++`]
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-_transferOwnership-address-[`++_transferOwnership(newOwner)++`]
+
+[.contract-subindex-inherited]
+.CoreController
+* {xref-CoreController-initialize-address-}[`++initialize(registry)++`]
+* {xref-CoreController-_getName--}[`++_getName()++`]
+* {xref-CoreController-_getContractAddress-bytes32-}[`++_getContractAddress(contractName)++`]
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-_disableInitializers--[`++_disableInitializers()++`]
+
+[.contract-subindex-inherited]
+.IInstanceOperatorService
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.Ownable
+* https://docs.openzeppelin.com/contracts/3.x/api/access#Ownable-OwnershipTransferred-address-address-[`++OwnershipTransferred(previousOwner, newOwner)++`]
+
+[.contract-subindex-inherited]
+.CoreController
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-Initialized-uint8-[`++Initialized(version)++`]
+
+[.contract-subindex-inherited]
+.IInstanceOperatorService
+
+--
+
+[.contract-item]
+[[InstanceOperatorService-onlyInstanceOperatorAddress--]]
+==== `[.contract-item-name]#++onlyInstanceOperatorAddress++#++()++` [.item-kind]#modifier#
+
+[.contract-item]
+[[InstanceOperatorService-_afterInitialize--]]
+==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
+
+[.contract-item]
+[[InstanceOperatorService-prepareRelease-bytes32-]]
+==== `[.contract-item-name]#++prepareRelease++#++(bytes32 _newRelease)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-register-bytes32-address-]]
+==== `[.contract-item-name]#++register++#++(bytes32 _contractName, address _contractAddress)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-deregister-bytes32-]]
+==== `[.contract-item-name]#++deregister++#++(bytes32 _contractName)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-registerInRelease-bytes32-bytes32-address-]]
+==== `[.contract-item-name]#++registerInRelease++#++(bytes32 _release, bytes32 _contractName, address _contractAddress)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-deregisterInRelease-bytes32-bytes32-]]
+==== `[.contract-item-name]#++deregisterInRelease++#++(bytes32 _release, bytes32 _contractName)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-createRole-bytes32-]]
+==== `[.contract-item-name]#++createRole++#++(bytes32 _role)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-invalidateRole-bytes32-]]
+==== `[.contract-item-name]#++invalidateRole++#++(bytes32 _role)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-grantRole-bytes32-address-]]
+==== `[.contract-item-name]#++grantRole++#++(bytes32 role, address principal)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-revokeRole-bytes32-address-]]
+==== `[.contract-item-name]#++revokeRole++#++(bytes32 role, address principal)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-approve-uint256-]]
+==== `[.contract-item-name]#++approve++#++(uint256 id)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-decline-uint256-]]
+==== `[.contract-item-name]#++decline++#++(uint256 id)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-suspend-uint256-]]
+==== `[.contract-item-name]#++suspend++#++(uint256 id)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-resume-uint256-]]
+==== `[.contract-item-name]#++resume++#++(uint256 id)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-archive-uint256-]]
+==== `[.contract-item-name]#++archive++#++(uint256 id)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-setDefaultStaking-uint16-bytes-]]
+==== `[.contract-item-name]#++setDefaultStaking++#++(uint16 componentType, bytes data)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-adjustStakingRequirements-uint256-bytes-]]
+==== `[.contract-item-name]#++adjustStakingRequirements++#++(uint256 id, bytes data)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-suspendTreasury--]]
+==== `[.contract-item-name]#++suspendTreasury++#++()++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-resumeTreasury--]]
+==== `[.contract-item-name]#++resumeTreasury++#++()++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-setInstanceWallet-address-]]
+==== `[.contract-item-name]#++setInstanceWallet++#++(address walletAddress)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-setRiskpoolWallet-uint256-address-]]
+==== `[.contract-item-name]#++setRiskpoolWallet++#++(uint256 riskpoolId, address riskpoolWalletAddress)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-setProductToken-uint256-address-]]
+==== `[.contract-item-name]#++setProductToken++#++(uint256 productId, address erc20Address)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-createFeeSpecification-uint256-uint256-uint256-bytes-]]
+==== `[.contract-item-name]#++createFeeSpecification++#++(uint256 componentId, uint256 fixedFee, uint256 fractionalFee, bytes feeCalculationData) → struct ITreasury.FeeSpecification++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-setPremiumFees-struct-ITreasury-FeeSpecification-]]
+==== `[.contract-item-name]#++setPremiumFees++#++(struct ITreasury.FeeSpecification feeSpec)++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceOperatorService-setCapitalFees-struct-ITreasury-FeeSpecification-]]
+==== `[.contract-item-name]#++setCapitalFees++#++(struct ITreasury.FeeSpecification feeSpec)++` [.item-kind]#external#
+
+:BUNDLE_NAME: pass:normal[xref:#InstanceService-BUNDLE_NAME-bytes32[`++BUNDLE_NAME++`]]
+:COMPONENT_NAME: pass:normal[xref:#InstanceService-COMPONENT_NAME-bytes32[`++COMPONENT_NAME++`]]
+:POLICY_NAME: pass:normal[xref:#InstanceService-POLICY_NAME-bytes32[`++POLICY_NAME++`]]
+:POOL_NAME: pass:normal[xref:#InstanceService-POOL_NAME-bytes32[`++POOL_NAME++`]]
+:TREASURY_NAME: pass:normal[xref:#InstanceService-TREASURY_NAME-bytes32[`++TREASURY_NAME++`]]
+:COMPONENT_OWNER_SERVICE_NAME: pass:normal[xref:#InstanceService-COMPONENT_OWNER_SERVICE_NAME-bytes32[`++COMPONENT_OWNER_SERVICE_NAME++`]]
+:INSTANCE_OPERATOR_SERVICE_NAME: pass:normal[xref:#InstanceService-INSTANCE_OPERATOR_SERVICE_NAME-bytes32[`++INSTANCE_OPERATOR_SERVICE_NAME++`]]
+:ORACLE_SERVICE_NAME: pass:normal[xref:#InstanceService-ORACLE_SERVICE_NAME-bytes32[`++ORACLE_SERVICE_NAME++`]]
+:PRODUCT_SERVICE_NAME: pass:normal[xref:#InstanceService-PRODUCT_SERVICE_NAME-bytes32[`++PRODUCT_SERVICE_NAME++`]]
+:RISKPOOL_SERVICE_NAME: pass:normal[xref:#InstanceService-RISKPOOL_SERVICE_NAME-bytes32[`++RISKPOOL_SERVICE_NAME++`]]
+:_bundle: pass:normal[xref:#InstanceService-_bundle-contract-BundleController[`++_bundle++`]]
+:_component: pass:normal[xref:#InstanceService-_component-contract-ComponentController[`++_component++`]]
+:_policy: pass:normal[xref:#InstanceService-_policy-contract-PolicyController[`++_policy++`]]
+:_pool: pass:normal[xref:#InstanceService-_pool-contract-PoolController[`++_pool++`]]
+:_afterInitialize: pass:normal[xref:#InstanceService-_afterInitialize--[`++_afterInitialize++`]]
+:_setChainNames: pass:normal[xref:#InstanceService-_setChainNames--[`++_setChainNames++`]]
+:getChainId: pass:normal[xref:#InstanceService-getChainId--[`++getChainId++`]]
+:getChainName: pass:normal[xref:#InstanceService-getChainName--[`++getChainName++`]]
+:getInstanceId: pass:normal[xref:#InstanceService-getInstanceId--[`++getInstanceId++`]]
+:getInstanceOperator: pass:normal[xref:#InstanceService-getInstanceOperator--[`++getInstanceOperator++`]]
+:getComponentOwnerService: pass:normal[xref:#InstanceService-getComponentOwnerService--[`++getComponentOwnerService++`]]
+:getInstanceOperatorService: pass:normal[xref:#InstanceService-getInstanceOperatorService--[`++getInstanceOperatorService++`]]
+:getOracleService: pass:normal[xref:#InstanceService-getOracleService--[`++getOracleService++`]]
+:getProductService: pass:normal[xref:#InstanceService-getProductService--[`++getProductService++`]]
+:getRiskpoolService: pass:normal[xref:#InstanceService-getRiskpoolService--[`++getRiskpoolService++`]]
+:getRegistry: pass:normal[xref:#InstanceService-getRegistry--[`++getRegistry++`]]
+:contracts: pass:normal[xref:#InstanceService-contracts--[`++contracts++`]]
+:contractName: pass:normal[xref:#InstanceService-contractName-uint256-[`++contractName++`]]
+:getDefaultAdminRole: pass:normal[xref:#InstanceService-getDefaultAdminRole--[`++getDefaultAdminRole++`]]
+:getProductOwnerRole: pass:normal[xref:#InstanceService-getProductOwnerRole--[`++getProductOwnerRole++`]]
+:getOracleProviderRole: pass:normal[xref:#InstanceService-getOracleProviderRole--[`++getOracleProviderRole++`]]
+:getRiskpoolKeeperRole: pass:normal[xref:#InstanceService-getRiskpoolKeeperRole--[`++getRiskpoolKeeperRole++`]]
+:hasRole: pass:normal[xref:#InstanceService-hasRole-bytes32-address-[`++hasRole++`]]
+:products: pass:normal[xref:#InstanceService-products--[`++products++`]]
+:oracles: pass:normal[xref:#InstanceService-oracles--[`++oracles++`]]
+:riskpools: pass:normal[xref:#InstanceService-riskpools--[`++riskpools++`]]
+:getComponentId: pass:normal[xref:#InstanceService-getComponentId-address-[`++getComponentId++`]]
+:getComponentType: pass:normal[xref:#InstanceService-getComponentType-uint256-[`++getComponentType++`]]
+:getComponentState: pass:normal[xref:#InstanceService-getComponentState-uint256-[`++getComponentState++`]]
+:getComponent: pass:normal[xref:#InstanceService-getComponent-uint256-[`++getComponent++`]]
+:getOracleId: pass:normal[xref:#InstanceService-getOracleId-uint256-[`++getOracleId++`]]
+:getRiskpoolId: pass:normal[xref:#InstanceService-getRiskpoolId-uint256-[`++getRiskpoolId++`]]
+:getProductId: pass:normal[xref:#InstanceService-getProductId-uint256-[`++getProductId++`]]
+:getStakingRequirements: pass:normal[xref:#InstanceService-getStakingRequirements-uint256-[`++getStakingRequirements++`]]
+:getStakedAssets: pass:normal[xref:#InstanceService-getStakedAssets-uint256-[`++getStakedAssets++`]]
+:processIds: pass:normal[xref:#InstanceService-processIds--[`++processIds++`]]
+:getMetadata: pass:normal[xref:#InstanceService-getMetadata-bytes32-[`++getMetadata++`]]
+:getApplication: pass:normal[xref:#InstanceService-getApplication-bytes32-[`++getApplication++`]]
+:getPolicy: pass:normal[xref:#InstanceService-getPolicy-bytes32-[`++getPolicy++`]]
+:claims: pass:normal[xref:#InstanceService-claims-bytes32-[`++claims++`]]
+:payouts: pass:normal[xref:#InstanceService-payouts-bytes32-[`++payouts++`]]
+:getClaim: pass:normal[xref:#InstanceService-getClaim-bytes32-uint256-[`++getClaim++`]]
+:getPayout: pass:normal[xref:#InstanceService-getPayout-bytes32-uint256-[`++getPayout++`]]
+:getRiskpool: pass:normal[xref:#InstanceService-getRiskpool-uint256-[`++getRiskpool++`]]
+:getFullCollateralizationLevel: pass:normal[xref:#InstanceService-getFullCollateralizationLevel--[`++getFullCollateralizationLevel++`]]
+:getCapital: pass:normal[xref:#InstanceService-getCapital-uint256-[`++getCapital++`]]
+:getTotalValueLocked: pass:normal[xref:#InstanceService-getTotalValueLocked-uint256-[`++getTotalValueLocked++`]]
+:getCapacity: pass:normal[xref:#InstanceService-getCapacity-uint256-[`++getCapacity++`]]
+:getBalance: pass:normal[xref:#InstanceService-getBalance-uint256-[`++getBalance++`]]
+:activeBundles: pass:normal[xref:#InstanceService-activeBundles-uint256-[`++activeBundles++`]]
+:getActiveBundleId: pass:normal[xref:#InstanceService-getActiveBundleId-uint256-uint256-[`++getActiveBundleId++`]]
+:getMaximumNumberOfActiveBundles: pass:normal[xref:#InstanceService-getMaximumNumberOfActiveBundles-uint256-[`++getMaximumNumberOfActiveBundles++`]]
+:getBundleToken: pass:normal[xref:#InstanceService-getBundleToken--[`++getBundleToken++`]]
+:getBundle: pass:normal[xref:#InstanceService-getBundle-uint256-[`++getBundle++`]]
+:bundles: pass:normal[xref:#InstanceService-bundles--[`++bundles++`]]
+:unburntBundles: pass:normal[xref:#InstanceService-unburntBundles-uint256-[`++unburntBundles++`]]
+:getTreasuryAddress: pass:normal[xref:#InstanceService-getTreasuryAddress--[`++getTreasuryAddress++`]]
+:getInstanceWallet: pass:normal[xref:#InstanceService-getInstanceWallet--[`++getInstanceWallet++`]]
+:getRiskpoolWallet: pass:normal[xref:#InstanceService-getRiskpoolWallet-uint256-[`++getRiskpoolWallet++`]]
+:getComponentToken: pass:normal[xref:#InstanceService-getComponentToken-uint256-[`++getComponentToken++`]]
+:getFeeFractionFullUnit: pass:normal[xref:#InstanceService-getFeeFractionFullUnit--[`++getFeeFractionFullUnit++`]]
+
+[.contract]
+[[InstanceService]]
+=== `++InstanceService++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/services/InstanceService.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/services/InstanceService.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-InstanceService-_afterInitialize--}[`++_afterInitialize()++`]
+* {xref-InstanceService-_setChainNames--}[`++_setChainNames()++`]
+* {xref-InstanceService-getChainId--}[`++getChainId()++`]
+* {xref-InstanceService-getChainName--}[`++getChainName()++`]
+* {xref-InstanceService-getInstanceId--}[`++getInstanceId()++`]
+* {xref-InstanceService-getInstanceOperator--}[`++getInstanceOperator()++`]
+* {xref-InstanceService-getComponentOwnerService--}[`++getComponentOwnerService()++`]
+* {xref-InstanceService-getInstanceOperatorService--}[`++getInstanceOperatorService()++`]
+* {xref-InstanceService-getOracleService--}[`++getOracleService()++`]
+* {xref-InstanceService-getProductService--}[`++getProductService()++`]
+* {xref-InstanceService-getRiskpoolService--}[`++getRiskpoolService()++`]
+* {xref-InstanceService-getRegistry--}[`++getRegistry()++`]
+* {xref-InstanceService-contracts--}[`++contracts()++`]
+* {xref-InstanceService-contractName-uint256-}[`++contractName(idx)++`]
+* {xref-InstanceService-getDefaultAdminRole--}[`++getDefaultAdminRole()++`]
+* {xref-InstanceService-getProductOwnerRole--}[`++getProductOwnerRole()++`]
+* {xref-InstanceService-getOracleProviderRole--}[`++getOracleProviderRole()++`]
+* {xref-InstanceService-getRiskpoolKeeperRole--}[`++getRiskpoolKeeperRole()++`]
+* {xref-InstanceService-hasRole-bytes32-address-}[`++hasRole(role, principal)++`]
+* {xref-InstanceService-products--}[`++products()++`]
+* {xref-InstanceService-oracles--}[`++oracles()++`]
+* {xref-InstanceService-riskpools--}[`++riskpools()++`]
+* {xref-InstanceService-getComponentId-address-}[`++getComponentId(componentAddress)++`]
+* {xref-InstanceService-getComponentType-uint256-}[`++getComponentType(componentId)++`]
+* {xref-InstanceService-getComponentState-uint256-}[`++getComponentState(componentId)++`]
+* {xref-InstanceService-getComponent-uint256-}[`++getComponent(id)++`]
+* {xref-InstanceService-getOracleId-uint256-}[`++getOracleId(idx)++`]
+* {xref-InstanceService-getRiskpoolId-uint256-}[`++getRiskpoolId(idx)++`]
+* {xref-InstanceService-getProductId-uint256-}[`++getProductId(idx)++`]
+* {xref-InstanceService-getStakingRequirements-uint256-}[`++getStakingRequirements(id)++`]
+* {xref-InstanceService-getStakedAssets-uint256-}[`++getStakedAssets(id)++`]
+* {xref-InstanceService-processIds--}[`++processIds()++`]
+* {xref-InstanceService-getMetadata-bytes32-}[`++getMetadata(bpKey)++`]
+* {xref-InstanceService-getApplication-bytes32-}[`++getApplication(processId)++`]
+* {xref-InstanceService-getPolicy-bytes32-}[`++getPolicy(processId)++`]
+* {xref-InstanceService-claims-bytes32-}[`++claims(processId)++`]
+* {xref-InstanceService-payouts-bytes32-}[`++payouts(processId)++`]
+* {xref-InstanceService-getClaim-bytes32-uint256-}[`++getClaim(processId, claimId)++`]
+* {xref-InstanceService-getPayout-bytes32-uint256-}[`++getPayout(processId, payoutId)++`]
+* {xref-InstanceService-getRiskpool-uint256-}[`++getRiskpool(riskpoolId)++`]
+* {xref-InstanceService-getFullCollateralizationLevel--}[`++getFullCollateralizationLevel()++`]
+* {xref-InstanceService-getCapital-uint256-}[`++getCapital(riskpoolId)++`]
+* {xref-InstanceService-getTotalValueLocked-uint256-}[`++getTotalValueLocked(riskpoolId)++`]
+* {xref-InstanceService-getCapacity-uint256-}[`++getCapacity(riskpoolId)++`]
+* {xref-InstanceService-getBalance-uint256-}[`++getBalance(riskpoolId)++`]
+* {xref-InstanceService-activeBundles-uint256-}[`++activeBundles(riskpoolId)++`]
+* {xref-InstanceService-getActiveBundleId-uint256-uint256-}[`++getActiveBundleId(riskpoolId, bundleIdx)++`]
+* {xref-InstanceService-getMaximumNumberOfActiveBundles-uint256-}[`++getMaximumNumberOfActiveBundles(riskpoolId)++`]
+* {xref-InstanceService-getBundleToken--}[`++getBundleToken()++`]
+* {xref-InstanceService-getBundle-uint256-}[`++getBundle(bundleId)++`]
+* {xref-InstanceService-bundles--}[`++bundles()++`]
+* {xref-InstanceService-unburntBundles-uint256-}[`++unburntBundles(riskpoolId)++`]
+* {xref-InstanceService-getTreasuryAddress--}[`++getTreasuryAddress()++`]
+* {xref-InstanceService-getInstanceWallet--}[`++getInstanceWallet()++`]
+* {xref-InstanceService-getRiskpoolWallet-uint256-}[`++getRiskpoolWallet(riskpoolId)++`]
+* {xref-InstanceService-getComponentToken-uint256-}[`++getComponentToken(componentId)++`]
+* {xref-InstanceService-getFeeFractionFullUnit--}[`++getFeeFractionFullUnit()++`]
+
+[.contract-subindex-inherited]
+.CoreController
+* {xref-CoreController-initialize-address-}[`++initialize(registry)++`]
+* {xref-CoreController-_getName--}[`++_getName()++`]
+* {xref-CoreController-_getContractAddress-bytes32-}[`++_getContractAddress(contractName)++`]
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-_disableInitializers--[`++_disableInitializers()++`]
+
+[.contract-subindex-inherited]
+.IInstanceService
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.CoreController
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-Initialized-uint8-[`++Initialized(version)++`]
+
+[.contract-subindex-inherited]
+.IInstanceService
+
+--
+
+[.contract-item]
+[[InstanceService-_afterInitialize--]]
+==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
+
+[.contract-item]
+[[InstanceService-_setChainNames--]]
+==== `[.contract-item-name]#++_setChainNames++#++()++` [.item-kind]#internal#
+
+[.contract-item]
+[[InstanceService-getChainId--]]
+==== `[.contract-item-name]#++getChainId++#++() → uint256 chainId++` [.item-kind]#public#
+
+[.contract-item]
+[[InstanceService-getChainName--]]
+==== `[.contract-item-name]#++getChainName++#++() → string chainName++` [.item-kind]#public#
+
+[.contract-item]
+[[InstanceService-getInstanceId--]]
+==== `[.contract-item-name]#++getInstanceId++#++() → bytes32 instanceId++` [.item-kind]#public#
+
+[.contract-item]
+[[InstanceService-getInstanceOperator--]]
+==== `[.contract-item-name]#++getInstanceOperator++#++() → address++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getComponentOwnerService--]]
+==== `[.contract-item-name]#++getComponentOwnerService++#++() → contract IComponentOwnerService service++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getInstanceOperatorService--]]
+==== `[.contract-item-name]#++getInstanceOperatorService++#++() → contract IInstanceOperatorService service++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getOracleService--]]
+==== `[.contract-item-name]#++getOracleService++#++() → contract IOracleService service++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getProductService--]]
+==== `[.contract-item-name]#++getProductService++#++() → contract IProductService service++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getRiskpoolService--]]
+==== `[.contract-item-name]#++getRiskpoolService++#++() → contract IRiskpoolService service++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getRegistry--]]
+==== `[.contract-item-name]#++getRegistry++#++() → contract IRegistry service++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-contracts--]]
+==== `[.contract-item-name]#++contracts++#++() → uint256 numberOfContracts++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-contractName-uint256-]]
+==== `[.contract-item-name]#++contractName++#++(uint256 idx) → bytes32 name++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getDefaultAdminRole--]]
+==== `[.contract-item-name]#++getDefaultAdminRole++#++() → bytes32++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getProductOwnerRole--]]
+==== `[.contract-item-name]#++getProductOwnerRole++#++() → bytes32++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getOracleProviderRole--]]
+==== `[.contract-item-name]#++getOracleProviderRole++#++() → bytes32++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getRiskpoolKeeperRole--]]
+==== `[.contract-item-name]#++getRiskpoolKeeperRole++#++() → bytes32++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-hasRole-bytes32-address-]]
+==== `[.contract-item-name]#++hasRole++#++(bytes32 role, address principal) → bool++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-products--]]
+==== `[.contract-item-name]#++products++#++() → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-oracles--]]
+==== `[.contract-item-name]#++oracles++#++() → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-riskpools--]]
+==== `[.contract-item-name]#++riskpools++#++() → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getComponentId-address-]]
+==== `[.contract-item-name]#++getComponentId++#++(address componentAddress) → uint256 componentId++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getComponentType-uint256-]]
+==== `[.contract-item-name]#++getComponentType++#++(uint256 componentId) → enum IComponent.ComponentType componentType++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getComponentState-uint256-]]
+==== `[.contract-item-name]#++getComponentState++#++(uint256 componentId) → enum IComponent.ComponentState componentState++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getComponent-uint256-]]
+==== `[.contract-item-name]#++getComponent++#++(uint256 id) → contract IComponent++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getOracleId-uint256-]]
+==== `[.contract-item-name]#++getOracleId++#++(uint256 idx) → uint256 oracleId++` [.item-kind]#public#
+
+[.contract-item]
+[[InstanceService-getRiskpoolId-uint256-]]
+==== `[.contract-item-name]#++getRiskpoolId++#++(uint256 idx) → uint256 riskpoolId++` [.item-kind]#public#
+
+[.contract-item]
+[[InstanceService-getProductId-uint256-]]
+==== `[.contract-item-name]#++getProductId++#++(uint256 idx) → uint256 productId++` [.item-kind]#public#
+
+[.contract-item]
+[[InstanceService-getStakingRequirements-uint256-]]
+==== `[.contract-item-name]#++getStakingRequirements++#++(uint256 id) → bytes data++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getStakedAssets-uint256-]]
+==== `[.contract-item-name]#++getStakedAssets++#++(uint256 id) → bytes data++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-processIds--]]
+==== `[.contract-item-name]#++processIds++#++() → uint256 numberOfProcessIds++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getMetadata-bytes32-]]
+==== `[.contract-item-name]#++getMetadata++#++(bytes32 bpKey) → struct IPolicy.Metadata metadata++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getApplication-bytes32-]]
+==== `[.contract-item-name]#++getApplication++#++(bytes32 processId) → struct IPolicy.Application application++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getPolicy-bytes32-]]
+==== `[.contract-item-name]#++getPolicy++#++(bytes32 processId) → struct IPolicy.Policy policy++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-claims-bytes32-]]
+==== `[.contract-item-name]#++claims++#++(bytes32 processId) → uint256 numberOfClaims++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-payouts-bytes32-]]
+==== `[.contract-item-name]#++payouts++#++(bytes32 processId) → uint256 numberOfPayouts++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getClaim-bytes32-uint256-]]
+==== `[.contract-item-name]#++getClaim++#++(bytes32 processId, uint256 claimId) → struct IPolicy.Claim claim++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getPayout-bytes32-uint256-]]
+==== `[.contract-item-name]#++getPayout++#++(bytes32 processId, uint256 payoutId) → struct IPolicy.Payout payout++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getRiskpool-uint256-]]
+==== `[.contract-item-name]#++getRiskpool++#++(uint256 riskpoolId) → struct IPool.Pool riskPool++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getFullCollateralizationLevel--]]
+==== `[.contract-item-name]#++getFullCollateralizationLevel++#++() → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getCapital-uint256-]]
+==== `[.contract-item-name]#++getCapital++#++(uint256 riskpoolId) → uint256 capitalAmount++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getTotalValueLocked-uint256-]]
+==== `[.contract-item-name]#++getTotalValueLocked++#++(uint256 riskpoolId) → uint256 totalValueLockedAmount++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getCapacity-uint256-]]
+==== `[.contract-item-name]#++getCapacity++#++(uint256 riskpoolId) → uint256 capacityAmount++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getBalance-uint256-]]
+==== `[.contract-item-name]#++getBalance++#++(uint256 riskpoolId) → uint256 balanceAmount++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-activeBundles-uint256-]]
+==== `[.contract-item-name]#++activeBundles++#++(uint256 riskpoolId) → uint256 numberOfActiveBundles++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getActiveBundleId-uint256-uint256-]]
+==== `[.contract-item-name]#++getActiveBundleId++#++(uint256 riskpoolId, uint256 bundleIdx) → uint256 bundleId++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getMaximumNumberOfActiveBundles-uint256-]]
+==== `[.contract-item-name]#++getMaximumNumberOfActiveBundles++#++(uint256 riskpoolId) → uint256 maximumNumberOfActiveBundles++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getBundleToken--]]
+==== `[.contract-item-name]#++getBundleToken++#++() → contract IBundleToken token++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getBundle-uint256-]]
+==== `[.contract-item-name]#++getBundle++#++(uint256 bundleId) → struct IBundle.Bundle bundle++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-bundles--]]
+==== `[.contract-item-name]#++bundles++#++() → uint256++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-unburntBundles-uint256-]]
+==== `[.contract-item-name]#++unburntBundles++#++(uint256 riskpoolId) → uint256 numberOfUnburntBundles++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getTreasuryAddress--]]
+==== `[.contract-item-name]#++getTreasuryAddress++#++() → address++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getInstanceWallet--]]
+==== `[.contract-item-name]#++getInstanceWallet++#++() → address++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getRiskpoolWallet-uint256-]]
+==== `[.contract-item-name]#++getRiskpoolWallet++#++(uint256 riskpoolId) → address++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getComponentToken-uint256-]]
+==== `[.contract-item-name]#++getComponentToken++#++(uint256 componentId) → contract IERC20++` [.item-kind]#external#
+
+[.contract-item]
+[[InstanceService-getFeeFractionFullUnit--]]
+==== `[.contract-item-name]#++getFeeFractionFullUnit++#++() → uint256++` [.item-kind]#external#
+
+:_afterInitialize: pass:normal[xref:#OracleService-_afterInitialize--[`++_afterInitialize++`]]
+:respond: pass:normal[xref:#OracleService-respond-uint256-bytes-[`++respond++`]]
+
+[.contract]
+[[OracleService]]
+=== `++OracleService++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/services/OracleService.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/services/OracleService.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-OracleService-_afterInitialize--}[`++_afterInitialize()++`]
+* {xref-OracleService-respond-uint256-bytes-}[`++respond(_requestId, _data)++`]
+
+[.contract-subindex-inherited]
+.CoreController
+* {xref-CoreController-initialize-address-}[`++initialize(registry)++`]
+* {xref-CoreController-_getName--}[`++_getName()++`]
+* {xref-CoreController-_getContractAddress-bytes32-}[`++_getContractAddress(contractName)++`]
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-_disableInitializers--[`++_disableInitializers()++`]
+
+[.contract-subindex-inherited]
+.IOracleService
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.CoreController
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-Initialized-uint8-[`++Initialized(version)++`]
+
+[.contract-subindex-inherited]
+.IOracleService
+
+--
+
+[.contract-item]
+[[OracleService-_afterInitialize--]]
+==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
+
+[.contract-item]
+[[OracleService-respond-uint256-bytes-]]
+==== `[.contract-item-name]#++respond++#++(uint256 _requestId, bytes _data)++` [.item-kind]#external#
+
+:NAME: pass:normal[xref:#ProductService-NAME-bytes32[`++NAME++`]]
+:constructor: pass:normal[xref:#ProductService-constructor-address-[`++constructor++`]]
+:fallback: pass:normal[xref:#ProductService-fallback--[`++fallback++`]]
+:_delegate: pass:normal[xref:#ProductService-_delegate-address-[`++_delegate++`]]
+:_license: pass:normal[xref:#ProductService-_license--[`++_license++`]]
+
+[.contract]
+[[ProductService]]
+=== `++ProductService++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/services/ProductService.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/services/ProductService.sol";
+```
+
+[.contract-index]
+.Functions
+--
+* {xref-ProductService-constructor-address-}[`++constructor(_registry)++`]
+* {xref-ProductService-fallback--}[`++fallback()++`]
+* {xref-ProductService-_delegate-address-}[`++_delegate(implementation)++`]
+* {xref-ProductService-_license--}[`++_license()++`]
+
+[.contract-subindex-inherited]
+.WithRegistry
+* {xref-WithRegistry-getContractFromRegistry-bytes32-}[`++getContractFromRegistry(_contractName)++`]
+* {xref-WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-}[`++getContractInReleaseFromRegistry(_release, _contractName)++`]
+* {xref-WithRegistry-getReleaseFromRegistry--}[`++getReleaseFromRegistry()++`]
+
+--
+
+[.contract-item]
+[[ProductService-constructor-address-]]
+==== `[.contract-item-name]#++constructor++#++(address _registry)++` [.item-kind]#public#
+
+[.contract-item]
+[[ProductService-fallback--]]
+==== `[.contract-item-name]#++fallback++#++()++` [.item-kind]#external#
+
+[.contract-item]
+[[ProductService-_delegate-address-]]
+==== `[.contract-item-name]#++_delegate++#++(address implementation)++` [.item-kind]#internal#
+
+Delegates the current call to `implementation`.
+
+This function does not return to its internal call site, it will return directly to the external caller.
+This function is a 1:1 copy of _delegate from
+https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.6/contracts/proxy/Proxy.sol
+
+[.contract-item]
+[[ProductService-_license--]]
+==== `[.contract-item-name]#++_license++#++() → contract ILicense++` [.item-kind]#internal#
+
+:RISKPOOL_NAME: pass:normal[xref:#RiskpoolService-RISKPOOL_NAME-bytes32[`++RISKPOOL_NAME++`]]
+:onlyProposedRiskpool: pass:normal[xref:#RiskpoolService-onlyProposedRiskpool--[`++onlyProposedRiskpool++`]]
+:onlyActiveRiskpool: pass:normal[xref:#RiskpoolService-onlyActiveRiskpool--[`++onlyActiveRiskpool++`]]
+:onlyOwningRiskpool: pass:normal[xref:#RiskpoolService-onlyOwningRiskpool-uint256-bool-[`++onlyOwningRiskpool++`]]
+:onlyOwningRiskpoolId: pass:normal[xref:#RiskpoolService-onlyOwningRiskpoolId-uint256-bool-[`++onlyOwningRiskpoolId++`]]
+:_afterInitialize: pass:normal[xref:#RiskpoolService-_afterInitialize--[`++_afterInitialize++`]]
+:registerRiskpool: pass:normal[xref:#RiskpoolService-registerRiskpool-address-address-uint256-uint256-[`++registerRiskpool++`]]
+:createBundle: pass:normal[xref:#RiskpoolService-createBundle-address-bytes-uint256-[`++createBundle++`]]
+:fundBundle: pass:normal[xref:#RiskpoolService-fundBundle-uint256-uint256-[`++fundBundle++`]]
+:defundBundle: pass:normal[xref:#RiskpoolService-defundBundle-uint256-uint256-[`++defundBundle++`]]
+:lockBundle: pass:normal[xref:#RiskpoolService-lockBundle-uint256-[`++lockBundle++`]]
+:unlockBundle: pass:normal[xref:#RiskpoolService-unlockBundle-uint256-[`++unlockBundle++`]]
+:closeBundle: pass:normal[xref:#RiskpoolService-closeBundle-uint256-[`++closeBundle++`]]
+:burnBundle: pass:normal[xref:#RiskpoolService-burnBundle-uint256-[`++burnBundle++`]]
+:collateralizePolicy: pass:normal[xref:#RiskpoolService-collateralizePolicy-uint256-bytes32-uint256-[`++collateralizePolicy++`]]
+:processPremium: pass:normal[xref:#RiskpoolService-processPremium-uint256-bytes32-uint256-[`++processPremium++`]]
+:processPayout: pass:normal[xref:#RiskpoolService-processPayout-uint256-bytes32-uint256-[`++processPayout++`]]
+:releasePolicy: pass:normal[xref:#RiskpoolService-releasePolicy-uint256-bytes32-[`++releasePolicy++`]]
+:setMaximumNumberOfActiveBundles: pass:normal[xref:#RiskpoolService-setMaximumNumberOfActiveBundles-uint256-uint256-[`++setMaximumNumberOfActiveBundles++`]]
+
+[.contract]
+[[RiskpoolService]]
+=== `++RiskpoolService++` link:https://github.com/etherisc/gif-contracts/blob/release-v2.0.0/contracts/services/RiskpoolService.sol[{github-icon},role=heading-link]
+
+[.hljs-theme-light.nopadding]
+```solidity
+import "@etherisc/gif-contracts/contracts/services/RiskpoolService.sol";
+```
+
+[.contract-index]
+.Modifiers
+--
+* {xref-RiskpoolService-onlyProposedRiskpool--}[`++onlyProposedRiskpool()++`]
+* {xref-RiskpoolService-onlyActiveRiskpool--}[`++onlyActiveRiskpool()++`]
+* {xref-RiskpoolService-onlyOwningRiskpool-uint256-bool-}[`++onlyOwningRiskpool(bundleId, mustBeActive)++`]
+* {xref-RiskpoolService-onlyOwningRiskpoolId-uint256-bool-}[`++onlyOwningRiskpoolId(riskpoolId, mustBeActive)++`]
+--
+
+[.contract-index]
+.Functions
+--
+* {xref-RiskpoolService-_afterInitialize--}[`++_afterInitialize()++`]
+* {xref-RiskpoolService-registerRiskpool-address-address-uint256-uint256-}[`++registerRiskpool(wallet, erc20Token, collateralizationLevel, sumOfSumInsuredCap)++`]
+* {xref-RiskpoolService-createBundle-address-bytes-uint256-}[`++createBundle(owner, filter, initialCapital)++`]
+* {xref-RiskpoolService-fundBundle-uint256-uint256-}[`++fundBundle(bundleId, amount)++`]
+* {xref-RiskpoolService-defundBundle-uint256-uint256-}[`++defundBundle(bundleId, amount)++`]
+* {xref-RiskpoolService-lockBundle-uint256-}[`++lockBundle(bundleId)++`]
+* {xref-RiskpoolService-unlockBundle-uint256-}[`++unlockBundle(bundleId)++`]
+* {xref-RiskpoolService-closeBundle-uint256-}[`++closeBundle(bundleId)++`]
+* {xref-RiskpoolService-burnBundle-uint256-}[`++burnBundle(bundleId)++`]
+* {xref-RiskpoolService-collateralizePolicy-uint256-bytes32-uint256-}[`++collateralizePolicy(bundleId, processId, collateralAmount)++`]
+* {xref-RiskpoolService-processPremium-uint256-bytes32-uint256-}[`++processPremium(bundleId, processId, amount)++`]
+* {xref-RiskpoolService-processPayout-uint256-bytes32-uint256-}[`++processPayout(bundleId, processId, amount)++`]
+* {xref-RiskpoolService-releasePolicy-uint256-bytes32-}[`++releasePolicy(bundleId, processId)++`]
+* {xref-RiskpoolService-setMaximumNumberOfActiveBundles-uint256-uint256-}[`++setMaximumNumberOfActiveBundles(riskpoolId, maxNumberOfActiveBundles)++`]
+
+[.contract-subindex-inherited]
+.CoreController
+* {xref-CoreController-initialize-address-}[`++initialize(registry)++`]
+* {xref-CoreController-_getName--}[`++_getName()++`]
+* {xref-CoreController-_getContractAddress-bytes32-}[`++_getContractAddress(contractName)++`]
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-_disableInitializers--[`++_disableInitializers()++`]
+
+[.contract-subindex-inherited]
+.IRiskpoolService
+
+--
+
+[.contract-index]
+.Events
+--
+
+[.contract-subindex-inherited]
+.CoreController
+
+[.contract-subindex-inherited]
+.Initializable
+* https://docs.openzeppelin.com/contracts/3.x/api/proxy#Initializable-Initialized-uint8-[`++Initialized(version)++`]
+
+[.contract-subindex-inherited]
+.IRiskpoolService
+
+--
+
+[.contract-item]
+[[RiskpoolService-onlyProposedRiskpool--]]
+==== `[.contract-item-name]#++onlyProposedRiskpool++#++()++` [.item-kind]#modifier#
+
+[.contract-item]
+[[RiskpoolService-onlyActiveRiskpool--]]
+==== `[.contract-item-name]#++onlyActiveRiskpool++#++()++` [.item-kind]#modifier#
+
+[.contract-item]
+[[RiskpoolService-onlyOwningRiskpool-uint256-bool-]]
+==== `[.contract-item-name]#++onlyOwningRiskpool++#++(uint256 bundleId, bool mustBeActive)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[RiskpoolService-onlyOwningRiskpoolId-uint256-bool-]]
+==== `[.contract-item-name]#++onlyOwningRiskpoolId++#++(uint256 riskpoolId, bool mustBeActive)++` [.item-kind]#modifier#
+
+[.contract-item]
+[[RiskpoolService-_afterInitialize--]]
+==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
+
+[.contract-item]
+[[RiskpoolService-registerRiskpool-address-address-uint256-uint256-]]
+==== `[.contract-item-name]#++registerRiskpool++#++(address wallet, address erc20Token, uint256 collateralizationLevel, uint256 sumOfSumInsuredCap)++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-createBundle-address-bytes-uint256-]]
+==== `[.contract-item-name]#++createBundle++#++(address owner, bytes filter, uint256 initialCapital) → uint256 bundleId++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-fundBundle-uint256-uint256-]]
+==== `[.contract-item-name]#++fundBundle++#++(uint256 bundleId, uint256 amount) → uint256 netAmount++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-defundBundle-uint256-uint256-]]
+==== `[.contract-item-name]#++defundBundle++#++(uint256 bundleId, uint256 amount) → uint256 netAmount++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-lockBundle-uint256-]]
+==== `[.contract-item-name]#++lockBundle++#++(uint256 bundleId)++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-unlockBundle-uint256-]]
+==== `[.contract-item-name]#++unlockBundle++#++(uint256 bundleId)++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-closeBundle-uint256-]]
+==== `[.contract-item-name]#++closeBundle++#++(uint256 bundleId)++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-burnBundle-uint256-]]
+==== `[.contract-item-name]#++burnBundle++#++(uint256 bundleId)++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-collateralizePolicy-uint256-bytes32-uint256-]]
+==== `[.contract-item-name]#++collateralizePolicy++#++(uint256 bundleId, bytes32 processId, uint256 collateralAmount)++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-processPremium-uint256-bytes32-uint256-]]
+==== `[.contract-item-name]#++processPremium++#++(uint256 bundleId, bytes32 processId, uint256 amount)++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-processPayout-uint256-bytes32-uint256-]]
+==== `[.contract-item-name]#++processPayout++#++(uint256 bundleId, bytes32 processId, uint256 amount)++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-releasePolicy-uint256-bytes32-]]
+==== `[.contract-item-name]#++releasePolicy++#++(uint256 bundleId, bytes32 processId) → uint256 collateralAmount++` [.item-kind]#external#
+
+[.contract-item]
+[[RiskpoolService-setMaximumNumberOfActiveBundles-uint256-uint256-]]
+==== `[.contract-item-name]#++setMaximumNumberOfActiveBundles++#++(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)++` [.item-kind]#external#
+

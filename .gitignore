@@ -14,3 +14,7 @@ tmp/
 .vscode/launch.json
 
 etherisc*.tgz
+
+#hardhat
+/cache
+/artifacts

@@ -24,9 +24,18 @@
   "bugs": {
     "url": "https://github.com/etherisc/gif-contracts/issues"
   },
+  "scripts": {
+    "prepare-docs": "scripts/prepare-docs.sh"
+  },
   "dependencies": {
     "@chainlink/contracts": "0.4.1",
     "@etherisc/gif-interface": "2.0.0-rc.1-0",
     "@openzeppelin/contracts": "4.7.3"
+  },
+  "devDependencies": {
+    "hardhat": "^2.12.6",
+    "lodash.startcase": "^4.4.0",
+    "solidity-ast": "^0.4.40",
+    "solidity-docgen": "^0.6.0-beta.34"
   }
 }
