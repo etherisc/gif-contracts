@@ -44,8 +44,6 @@ jobs:
   test:
     name: Compile and run tests
     needs: [have-contracts-changed]
-    # only run if contracts have changed
-    if: ${{ needs.have-contracts-changed.outputs.contracts-changed == 'true' || needs.have-contracts-changed.outputs.tests-changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -67,6 +65,8 @@ jobs:
         run: brownie compile --all
       - run: touch .env
       - name: Execute tests
+        # only run if contracts have changed
+        if: ${{ needs.have-contracts-changed.outputs.contracts-changed == 'true' || needs.have-contracts-changed.outputs.tests-changed == 'true' }}
         run: brownie test -n auto
         
       - name: Install solhint linter
@@ -87,7 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [have-contracts-changed, test]
     # only run if tests successfull and contracts have changed
-    if: ${{ github.ref != 'refs/heads/main' && contains(join(needs.*.result, ','), 'success') && needs.have-contracts-changed.outputs.contracts-changed == 'true' }}
+    if: ${{ github.ref != 'refs/heads/main' && contains(join(needs.*.result, ','), 'success') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -112,7 +112,6 @@ jobs:
       - run: npm publish --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPMJS_ACCESS_TOKEN }}
-  
 
   deployment:
     name: Execute test deployment to local ganache chain
