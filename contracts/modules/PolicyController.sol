@@ -5,6 +5,48 @@ import "../shared/CoreController.sol";
 import "./ComponentController.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 
+/**
+The smart contract implements functions for policy operations, including creation, update, cancellation, and retrieval.
+It also provides functions for claim creation, confirmation, decline, closure, and payout creation.
+Additionally, it includes functions to process payouts, retrieve metadata and application information, and get the number of claims and payouts associated with a policy.
+The contract inherits from the `IPolicy` interface and the `CoreController` contract.
+
+1. State Variables:
+- `metadata`: A mapping that stores metadata associated with policy flows.
+- `applications`: A mapping that stores insurance applications associated with policy flows.
+- `policies`: A mapping that stores policies associated with policy flows.
+- `claims`: A nested mapping that stores claims associated with policies.
+- `payouts`: A nested mapping that stores payouts associated with policies.
+- `payoutCount`: A mapping that stores the count of payouts for each policy flow.
+- `_assigendProcessIds`: A counter variable for assigning unique process IDs.
+- `_component`: A reference to the `ComponentController` contract.
+
+2. Functions:
+- `_afterInitialize()`: An internal function that sets the `_component` variable during contract initialization.
+- `createPolicyFlow()`: Creates a new policy flow with the given owner, product ID, and additional data.
+- `createApplication()`: Creates a new insurance application for a policy flow with the specified process ID, premium amount, sum insured amount, and additional data.
+- `collectPremium()`: Collects premium for a policy by adding the specified amount to the paid premium amount.
+- `revokeApplication()`: Revokes an application for a policy flow.
+- `underwriteApplication()`: Changes the state of an application to "Underwritten".
+- `declineApplication()`: Declines an application for a policy flow.
+- `createPolicy()`: Creates a new policy for a given application process ID.
+- `adjustPremiumSumInsured()`: Adjusts the premium and sum insured amount of an insurance policy application.
+- `expirePolicy()`: Expires a policy with the given process ID.
+- `closeExpiredPolicy()`: Closes a policy that has expired and has no open claims.
+- `createClaim()`: Creates a new claim for a given policy. It checks the authorization of the caller, ensures the policy is active, validates the claim amount, and creates the claim. It emits a `LogClaimCreated` event.
+- `confirmClaim()`: Confirms a claim for a policy, updating the claim state to Confirmed and setting the confirmed amount. It is called by the Policy contract and validates the policy, open claims, claim amount, and updates the claim and policy state. It emits a `LogClaimConfirmed` event.
+- `declineClaim()`: Allows the Policy contract to decline a claim. It validates the policy, open claims, and claim state, updates the claim state to Declined, and emits a `LogClaimDeclined` event.
+- `closeClaim()`: Closes a claim for a given policy. It validates the policy, open claims, claim state, and unpaid payouts. If the claim is fully paid, it changes the claim state to Closed and emits a `LogClaimClosed` event.
+- `createPayout()`: Creates a new payout for a confirmed claim in a policy. It validates the policy, claim, payout amount, and creates the payout. It emits a `LogPayoutCreated` event.
+- `processPayout()`: Processes a payout for a policy and claim. It validates the policy, open claims, payout state, updates the payout state, and updates the claim state and policy state if the claim is fully paid. It emits a `LogPayoutProcessed` event and potentially a `LogClaimClosed` event.
+- `getMetadata()`: Returns the metadata for a given process ID. It retrieves the metadata and ensures it exists.
+- `getApplication()`: Returns the application associated with a provided process ID. It retrieves the application and ensures it exists.
+- `getNumberOfClaims()`: Returns the number of claims associated with a given process ID by calling the `getPolicy` function.
+- `getNumberOfPayouts()`: Returns the number of payouts for a given process ID.
+
+Overall, these functions provide functionality for creating, managing, and processing claims and payouts within the insurance policy contract.
+ */
+
 contract PolicyController is 
     IPolicy, 
     CoreController

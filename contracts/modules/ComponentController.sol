@@ -9,6 +9,41 @@ import "@etherisc/gif-interface/contracts/components/IRiskpool.sol";
 import "@etherisc/gif-interface/contracts/modules/IComponentEvents.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
+/**
+The smart contract provides functionality to manage and control components in a system.
+The contract defines several mappings and sets to store information about components, such as their addresses, IDs, states, and types.
+It also includes modifiers to restrict access to certain functions based on the caller's role.
+
+Functions:
+- `propose()`: Allows the owner service of a component to propose a new component to the system. It verifies that the component and its name do not already exist and emits an event indicating the successful proposal.
+- `_persistComponent()`: Persists a new component into the system by assigning it an ID and updating the necessary mappings and sets.
+- `exists()`: Checks if a component with the given ID exists in the system.
+- `approve()`: Approves a component with the given ID, changing its state to "Active" and emitting an event. If the component is a product, it sets the policy flow in the `_policyFlowByProductId` mapping.
+- `decline()`: Changes the state of a component with the given ID to "Declined" and emits an event. It also calls the `declineCallback` function of the component.
+- `suspend()`: Suspends a component with the given ID by changing its state to "Suspended" and emitting an event. It also calls the `suspendCallback` function of the component.
+- `resume()`: Resumes a component with the given ID by changing its state to "Active" and emitting an event. It also calls the `resumeCallback` function of the component.
+- `pause()`: Pauses a component with the given ID by changing its state to "Paused" and emitting an event. It also calls the `pauseCallback` function of the component.
+- `unpause()`: Unpauses a component with the given ID by changing its state to "Active" and emitting an event. It also calls the `unpauseCallback` function of the component.
+- `archiveFromComponentOwner()`: Archives a component with the given ID by changing its state to "Archived" and emitting an event. It also calls the `archiveCallback` function of the component.
+- `archiveFromInstanceOperator()`: Archives a component instance with the given ID by changing its state to "Archived" and emitting an event. It also calls the `archiveCallback` function of the component.
+- `getComponent()`: Retrieves the component with the given ID.
+- `getComponentId()`: Retrieves the ID of a registered component given its address.
+- `getComponentType()`: Retrieves the component type of a given component ID.
+- `getComponentState()`: Retrieves the state of the component with the given ID.
+- `getOracleId()`: Retrieves the oracle ID at the specified index.
+- `getRiskpoolId()`: Retrieves the risk pool ID at the specified index.
+- `getProductId()`: Retrieves the product ID at the specified index.
+- `getRequiredRole()`: Retrieves the required role for a given component type.
+- `components()`: Returns the number of components currently stored in the contract.
+- `products()`: Returns the number of products in the `_products` set.
+- `oracles()`: Returns the number of oracles registered in the `_oracles` set.
+- `riskpools()`: Returns the number of risk pools in the set.
+
+The contract also includes various modifiers (`onlyComponentOwnerService` and `onlyInstanceOperatorService`) to ensure that only authorized callers can access certain functions.
+
+The contract imports several Solidity files from external dependencies and uses the `EnumerableSet` library from the OpenZeppelin library for set operations.
+ */
+
 contract ComponentController is
     IComponentEvents,
     CoreController 

@@ -9,6 +9,41 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
+/**
+The smart contract implements the `IRegistry` interface and inherits from the `CoreController` contract.
+The contract provides functionality for registering, deregistering, and accessing contracts within different releases. It maintains mappings and sets to store contract names and addresses in different releases.
+
+- `MAX_CONTRACTS`: A constant variable set to 100, representing the maximum number of contracts allowed in a release.
+- `release`: A bytes32 variable representing the current release identifier.
+- `startBlock`: An unsigned integer storing the block number at which the contract was deployed.
+- `_contracts`: A nested mapping that stores contract addresses based on the release and contract name.
+- `_contractsInRelease`: A mapping that keeps track of the number of contracts in each release.
+- `_contractNames`: A private EnumerableSet that stores the names of contracts in a specific release.
+
+Functions:
+- `initializeRegistry()`: Initializes the registry with an initial release and sets the deployment block for reading logs.
+- `ensureSender()`: Verifies if the provided sender address matches the address of the contract with the given contract name in the current release.
+- `getRelease()`: Returns the current release identifier.
+- `getContract()`: Returns the address of a contract by its name in the current release.
+- `register()`: Registers a contract with a given name and address in the current release.
+- `deregister()`: Deregisters a contract from the current release.
+- `getContractInRelease()`: Returns the address of a specific contract within a given release.
+- `registerInRelease()`: Registers a contract in a specific release.
+- `deregisterInRelease()`: Deregisters a contract name from a specific release.
+- `prepareRelease()`: Prepares a new release by copying all contracts from the current release to the new one.
+- `contracts()`: Returns the number of contracts in the current release.
+- `contractName()`: Returns the name of the contract at the specified index in the contractNames set.
+
+Internal functions:
+- `_getContractInRelease()`: Returns the address of a contract in a specific release.
+- `_registerInRelease()`: Registers a contract in a release.
+- `_deregisterInRelease()`: Deregisters a contract in a specific release.
+
+The contract emits various events such as `LogContractRegistered` and `LogContractDeregistered` to notify when contracts are registered or deregistered.
+
+Overall, the `RegistryController` contract provides a mechanism to manage and track contracts within different releases, allowing for controlled registration and deregistration of contracts.
+ */
+
 
 contract RegistryController is
     IRegistry,
