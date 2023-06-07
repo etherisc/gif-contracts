@@ -10,30 +10,30 @@ import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
 import "./PoolController.sol";
 
 /**
-The smart contract is used to manage bundles, which are collections of policies.
-
-- The contract imports other Solidity contracts such as `PolicyController.sol`, `CoreController.sol`, and `BundleToken.sol`.
-- The contract implements the `IBundle` interface and extends the `CoreController` contract.
-- It defines several mappings to store information about bundles, active policies, locked capital per policy, and the number of unburt bundles for each risk pool.
-- There is a private variable `_bundleCount` to keep track of the number of bundles created.
-- The contract includes modifiers to restrict access to certain functions, such as `onlyRiskpoolService` and `onlyFundableBundle`.
-
-Functions: 
-- `_afterInitialize()`: Internal function that initializes references to other contracts after contract deployment.
-- `create()`: Allows the RiskpoolService contract to create a new bundle and mint a corresponding NFT token.
-- `fund()`: Enables the RiskpoolService contract to add funds to a bundle's capital and balance.
-- `defund()`: Allows the RiskpoolService contract to withdraw funds from a bundle.
-- `lock()`: Locks a bundle of assets by changing its state to "Locked."
-- `unlock()`: Unlocks a bundle, changing its state back to "Active."
-- `close()`: Closes a bundle of policies.
-- `burn()`: Burns a bundle, changing its state to "Burned."
-- `collateralizePolicy()`: Collateralizes a policy by locking a specific amount of capital in the corresponding bundle.
-- `processPremium()`: Processes the premium payment for a given bundle and updates its balance.
-- `processPayout()`: Processes a payout for a policy from a bundle.
-- `releasePolicy()`: Releases a policy and updates the bundle's capital.
-
-The contract includes various modifiers and event emitters to enforce access control and emit relevant events.
-Overall, the `BundleController` contract provides functionality to manage bundles and their associated policies, including creating, funding, locking, unlocking, closing, burning, collateralizing, and releasing policies within a bundle.
+ * @dev The smart contract is used to manage bundles, which are collections of policies.
+ * 
+ * - The contract imports other Solidity contracts such as `PolicyController.sol`, `CoreController.sol`, and `BundleToken.sol`.
+ * - The contract implements the `IBundle` interface and extends the `CoreController` contract.
+ * - It defines several mappings to store information about bundles, active policies, locked capital per policy, and the number of unburt bundles for each risk pool.
+ * - There is a private variable `_bundleCount` to keep track of the number of bundles created.
+ * - The contract includes modifiers to restrict access to certain functions, such as `onlyRiskpoolService` and `onlyFundableBundle`.
+ * 
+ * Functions: 
+ * - `_afterInitialize()`: Internal function that initializes references to other contracts after contract deployment.
+ * - `create()`: Allows the RiskpoolService contract to create a new bundle and mint a corresponding NFT token.
+ * - `fund()`: Enables the RiskpoolService contract to add funds to a bundle's capital and balance.
+ * - `defund()`: Allows the RiskpoolService contract to withdraw funds from a bundle.
+ * - `lock()`: Locks a bundle of assets by changing its state to "Locked."
+ * - `unlock()`: Unlocks a bundle, changing its state back to "Active."
+ * - `close()`: Closes a bundle of policies.
+ * - `burn()`: Burns a bundle, changing its state to "Burned."
+ * - `collateralizePolicy()`: Collateralizes a policy by locking a specific amount of capital in the corresponding bundle.
+ * - `processPremium()`: Processes the premium payment for a given bundle and updates its balance.
+ * - `processPayout()`: Processes a payout for a policy from a bundle.
+ * - `releasePolicy()`: Releases a policy and updates the bundle's capital.
+ * 
+ * The contract includes various modifiers and event emitters to enforce access control and emit relevant events.
+ * Overall, the `BundleController` contract provides functionality to manage bundles and their associated policies, including creating, funding, locking, unlocking, closing, burning, collateralizing, and releasing policies within a bundle.
  */
 
 

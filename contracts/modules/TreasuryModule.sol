@@ -18,36 +18,36 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
-The smart contract implements the ITreasury interface and inherits from the CoreController and Pausable contracts.
-The contract imports several other contracts and interfaces, including ComponentController.sol, PolicyController.sol, BundleController.sol, PoolController.sol, CoreController.sol, TransferHelper.sol, and various interfaces from the "etherisc/gif-interface" and "openzeppelin/contracts" libraries.
-
-The contract defines several state variables, including:
-- FRACTION_FULL_UNIT: a constant representing the full unit value (10^18).
-- FRACTIONAL_FEE_MAX: a constant representing the maximum fractional fee value (25%).
-- event LogTransferHelperInputValidation1Failed: an event that logs a failed input validation.
-- event LogTransferHelperInputValidation2Failed: an event that logs a failed input validation.
-- event LogTransferHelperCallFailed: an event that logs a failed external call.
-- _instanceWalletAddress: a private variable representing the address of the instance wallet.
-- _riskpoolWallet: a mapping of riskpool IDs to wallet addresses.
-- _fees: a mapping of component IDs to FeeSpecification structs.
-- _componentToken: a mapping of product IDs/riskpool IDs to ERC20 token addresses.
-- _bundle: an instance of the BundleController contract.
-- _component: an instance of the ComponentController contract.
-- _policy: an instance of the PolicyController contract.
-- _pool: an instance of the PoolController contract.
-
-The contract includes several modifiers that enforce certain conditions on function execution, such as the instanceWalletDefined modifier, which requires the instance wallet address to be defined;
-the riskpoolWalletDefinedForProcess modifier, which requires the riskpool wallet address to be defined for a given process ID;
-the riskpoolWalletDefinedForBundle modifier, which requires the riskpool wallet address to be defined for a given bundle ID;
-the whenNotSuspended modifier, which requires the contract to not be paused; and the onlyRiskpoolService modifier, which restricts access to the RiskpoolService contract.
-
-The contract contains various functions for managing the treasury, such as setting the product token address, setting the instance wallet address, setting the riskpool wallet address, creating fee specifications, and setting premium and capital fees for components.
-There are also functions for suspending and resuming the treasury contract.
-
-The contract includes a function to calculate the fee amount and net amount for a given component ID and amount.
-It also includes functions to process premium payments for policies, either for the remaining premium amount or for a specific amount.
-
-Overall, the TreasuryModule contract provides functionality for managing fees, processing premium payments, and interacting with other controllers and contracts in the system.
+ * @dev The smart contract implements the ITreasury interface and inherits from the CoreController and Pausable contracts.
+ * The contract imports several other contracts and interfaces, including ComponentController.sol, PolicyController.sol, BundleController.sol, PoolController.sol, CoreController.sol, TransferHelper.sol, and various interfaces from the "etherisc/gif-interface" and "openzeppelin/contracts" libraries.
+ * 
+ * The contract defines several state variables, including:
+ * - FRACTION_FULL_UNIT: a constant representing the full unit value (10^18).
+ * - FRACTIONAL_FEE_MAX: a constant representing the maximum fractional fee value (25%).
+ * - event LogTransferHelperInputValidation1Failed: an event that logs a failed input validation.
+ * - event LogTransferHelperInputValidation2Failed: an event that logs a failed input validation.
+ * - event LogTransferHelperCallFailed: an event that logs a failed external call.
+ * - _instanceWalletAddress: a private variable representing the address of the instance wallet.
+ * - _riskpoolWallet: a mapping of riskpool IDs to wallet addresses.
+ * - _fees: a mapping of component IDs to FeeSpecification structs.
+ * - _componentToken: a mapping of product IDs/riskpool IDs to ERC20 token addresses.
+ * - _bundle: an instance of the BundleController contract.
+ * - _component: an instance of the ComponentController contract.
+ * - _policy: an instance of the PolicyController contract.
+ * - _pool: an instance of the PoolController contract.
+ * 
+ * The contract includes several modifiers that enforce certain conditions on function execution, such as the instanceWalletDefined modifier, which requires the instance wallet address to be defined;
+ * the riskpoolWalletDefinedForProcess modifier, which requires the riskpool wallet address to be defined for a given process ID;
+ * the riskpoolWalletDefinedForBundle modifier, which requires the riskpool wallet address to be defined for a given bundle ID;
+ * the whenNotSuspended modifier, which requires the contract to not be paused; and the onlyRiskpoolService modifier, which restricts access to the RiskpoolService contract.
+ * 
+ * The contract contains various functions for managing the treasury, such as setting the product token address, setting the instance wallet address, setting the riskpool wallet address, creating fee specifications, and setting premium and capital fees for components.
+ * There are also functions for suspending and resuming the treasury contract.
+ * 
+ * The contract includes a function to calculate the fee amount and net amount for a given component ID and amount.
+ * It also includes functions to process premium payments for policies, either for the remaining premium amount or for a specific amount.
+ * 
+ * Overall, the TreasuryModule contract provides functionality for managing fees, processing premium payments, and interacting with other controllers and contracts in the system.
  */
 
 contract TreasuryModule is 

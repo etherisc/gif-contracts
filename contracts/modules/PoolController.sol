@@ -14,30 +14,30 @@ import "@etherisc/gif-interface/contracts/components/IRiskpool.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 /**
-The smart contract manages riskpools, their registration, funding, defunding, collateralization, and other related operations.
-
-- The contract implements the IPool interface and extends the CoreController contract.
-- It imports other contracts such as ComponentController, PolicyController, BundleController, and CoreController.
-- It uses the EnumerableSet library from OpenZeppelin for managing sets of bundle IDs.
-- The contract defines constants for full collateralization level, collateralization level cap, and default maximum number of active bundles.
-- It maintains mappings to store riskpool information, riskpool IDs for products, maximum number of active bundles for riskpools, and active bundle IDs for riskpools.
-- The contract has a private array to store riskpool IDs.
-- It has references to other contracts: ComponentController, PolicyController, and BundleController.
-- The contract defines modifiers for access control to specific functions.
-
-Functions:
-- `_afterInitialize()`: Called after contract initialization to set addresses of other contracts.
-- `registerRiskpool()`: Allows the registration of a new riskpool with the specified parameters. It emits an event upon successful registration.
-- `setRiskpoolForProduct()`: Sets the riskpool ID for a given product ID.
-- `fund()`: Adds funds to a specific riskpool.
-- `defund()`: Allows the Riskpool service to defund a riskpool by a specified amount.
-- `underwrite()`: Collateralizes a policy application by calculating the required collateral amount and asking the responsible riskpool to secure the application. It emits events related to collateralization process success or failure.
-- `calculateCollateral()`: Calculates the required collateral amount for a given riskpool and sum insured amount.
-- `processPremium()`: Processes the premium payment for a policy by calling the corresponding function in the riskpool contract.
-- `processPayout()`: Processes a payout for a policy in the Pool. It verifies the availability of sufficient capital, locked capital, and balance in the riskpool before processing the payout.
-- `release()`: Releases a policy's collateral from the riskpool.
-
-Overall, the PoolController contract provides functionality to manage riskpools, register riskpools, collateralize policies, process premium payments, process payouts, and release collaterals. It acts as an intermediary between the PolicyController, ComponentController, and BundleController contracts to coordinate these operations.
+ * @dev The smart contract manages riskpools, their registration, funding, defunding, collateralization, and other related operations.
+ * 
+ * - The contract implements the IPool interface and extends the CoreController contract.
+ * - It imports other contracts such as ComponentController, PolicyController, BundleController, and CoreController.
+ * - It uses the EnumerableSet library from OpenZeppelin for managing sets of bundle IDs.
+ * - The contract defines constants for full collateralization level, collateralization level cap, and default maximum number of active bundles.
+ * - It maintains mappings to store riskpool information, riskpool IDs for products, maximum number of active bundles for riskpools, and active bundle IDs for riskpools.
+ * - The contract has a private array to store riskpool IDs.
+ * - It has references to other contracts: ComponentController, PolicyController, and BundleController.
+ * - The contract defines modifiers for access control to specific functions.
+ * 
+ * Functions:
+ * - `_afterInitialize()`: Called after contract initialization to set addresses of other contracts.
+ * - `registerRiskpool()`: Allows the registration of a new riskpool with the specified parameters. It emits an event upon successful registration.
+ * - `setRiskpoolForProduct()`: Sets the riskpool ID for a given product ID.
+ * - `fund()`: Adds funds to a specific riskpool.
+ * - `defund()`: Allows the Riskpool service to defund a riskpool by a specified amount.
+ * - `underwrite()`: Collateralizes a policy application by calculating the required collateral amount and asking the responsible riskpool to secure the application. It emits events related to collateralization process success or failure.
+ * - `calculateCollateral()`: Calculates the required collateral amount for a given riskpool and sum insured amount.
+ * - `processPremium()`: Processes the premium payment for a policy by calling the corresponding function in the riskpool contract.
+ * - `processPayout()`: Processes a payout for a policy in the Pool. It verifies the availability of sufficient capital, locked capital, and balance in the riskpool before processing the payout.
+ * - `release()`: Releases a policy's collateral from the riskpool.
+ * 
+ * Overall, the PoolController contract provides functionality to manage riskpools, register riskpools, collateralize policies, process premium payments, process payouts, and release collaterals. It acts as an intermediary between the PolicyController, ComponentController, and BundleController contracts to coordinate these operations.
  */
 
 contract PoolController is
