@@ -5,6 +5,7 @@ __pycache__
 build/
 artifacts/
 reports/
+cache/
 dump_sources/
 node_modules
 tmp/
