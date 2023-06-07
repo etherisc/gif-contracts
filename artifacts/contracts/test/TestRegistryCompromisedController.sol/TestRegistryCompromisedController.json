@@ -1,0 +1,93 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "TestRegistryCompromisedController",
+  "sourceName": "contracts/test/TestRegistryCompromisedController.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "POLICY",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "QUERY",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "contracts",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "contractName",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getContract",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "moduleAddress",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "compromisedPolicyModuleAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "originalQueryModuleAddress",
+          "type": "address"
+        }
+      ],
+      "name": "upgradeToV2",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50610223806100206000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c80632bc0d7fb1461005c5780634f6fc0b1146100eb578063dadbccee1461010d578063e16c7d981461011d578063ec56a3731461015e575b600080fd5b6100e961006a3660046101a3565b600060208190527ff51ccb208f64c7678632570548cd6ba9ff8006466ec703412c917b708a19c9e080546001600160a01b039485166001600160a01b03199182161790915564517565727960d81b9091527f4bbcc452808ec518cf1b5b4bb97d91d9d8d47960bbf45a7adab13b29ddca37538054929093169116179055565b005b6100fa64517565727960d81b81565b6040519081526020015b60405180910390f35b6100fa65506f6c69637960d01b81565b61014661012b3660046101d5565b6000908152602081905260409020546001600160a01b031690565b6040516001600160a01b039091168152602001610104565b61014661016c3660046101d5565b6000602081905290815260409020546001600160a01b031681565b80356001600160a01b038116811461019e57600080fd5b919050565b600080604083850312156101b5578182fd5b6101be83610187565b91506101cc60208401610187565b90509250929050565b6000602082840312156101e6578081fd5b503591905056fea26469706673582212200a56ef5fcc359265f1d34843e958bb8fae6aa679c1a712a74bb7703e4ce8270864736f6c63430008020033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100575760003560e01c80632bc0d7fb1461005c5780634f6fc0b1146100eb578063dadbccee1461010d578063e16c7d981461011d578063ec56a3731461015e575b600080fd5b6100e961006a3660046101a3565b600060208190527ff51ccb208f64c7678632570548cd6ba9ff8006466ec703412c917b708a19c9e080546001600160a01b039485166001600160a01b03199182161790915564517565727960d81b9091527f4bbcc452808ec518cf1b5b4bb97d91d9d8d47960bbf45a7adab13b29ddca37538054929093169116179055565b005b6100fa64517565727960d81b81565b6040519081526020015b60405180910390f35b6100fa65506f6c69637960d01b81565b61014661012b3660046101d5565b6000908152602081905260409020546001600160a01b031690565b6040516001600160a01b039091168152602001610104565b61014661016c3660046101d5565b6000602081905290815260409020546001600160a01b031681565b80356001600160a01b038116811461019e57600080fd5b919050565b600080604083850312156101b5578182fd5b6101be83610187565b91506101cc60208401610187565b90509250929050565b6000602082840312156101e6578081fd5b503591905056fea26469706673582212200a56ef5fcc359265f1d34843e958bb8fae6aa679c1a712a74bb7703e4ce8270864736f6c63430008020033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
