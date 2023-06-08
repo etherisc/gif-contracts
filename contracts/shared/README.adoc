@@ -1,0 +1,14 @@
+= Shared
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/shared
+
+== Contracts
+
+{{CoreController}}
+
+{{CoreProxy}}
+
+{{TransferHelper}}
+
+{{WithRegistry}}

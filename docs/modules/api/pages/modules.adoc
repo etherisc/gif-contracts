@@ -243,6 +243,41 @@ NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/
 import "@etherisc/gif-contracts/contracts/modules/AccessController.sol";
 ```
 
+The provided smart contract is called "AccessController" and is written in Solidity. It implements the "IAccess" interface and inherits from the "CoreController" contract and the "AccessControlEnumerable" contract. The contract provides functionalities for access control and role management.
+
+Roles:
+The contract defines three role identifiers as bytes32 constants:
+1. PRODUCT_OWNER_ROLE: Represents the role of a product owner.
+2. ORACLE_PROVIDER_ROLE: Represents the role of an oracle provider.
+3. RISKPOOL_KEEPER_ROLE: Represents the role of a risk pool keeper.
+
+State Variables:
+- `validRole`: A mapping that stores the validity of each role. It maps a role identifier (bytes32) to a boolean value indicating whether the role is valid.
+- `_defaultAdminSet`: A boolean flag indicating whether the default admin role has been set.
+
+Functions:
+- `_afterInitialize()`: Internal function called after contract initialization, which adds the product owner, oracle provider, and risk pool keeper roles. It calls the `_populateValidRoles()` function.
+- `_getName()`: Internal pure function that returns the name of the contract as a bytes32 value.
+- `setDefaultAdminRole(address defaultAdmin)`: Sets the default admin role for the Access Control List (ACL) by granting the DEFAULT_ADMIN_ROLE to the specified address. It can only be called once, and emits a `RoleGranted` event.
+- `grantRole(bytes32 role, address principal)`: Grants a specific role to a principal (address). The caller must be an instance operator. It checks the validity of the role and calls the `grantRole()` function from the `AccessControl` contract.
+- `revokeRole(bytes32 role, address principal)`: Revokes a specific role from a principal. The caller must be an instance operator. It calls the `revokeRole()` function from the `AccessControl` contract.
+- `renounceRole(bytes32 role, address principal)`: Removes a principal from a specific role in the access control list (ACL) of the contract. It calls the `renounceRole()` function from the `AccessControl` contract.
+- `addRole(bytes32 role)`: Adds a new role to the Access Control List. The caller must be an instance operator. It checks if the role is already valid and adds it to the `validRole` mapping.
+- `invalidateRole(bytes32 role)`: Invalidates a role by marking it as not valid. The caller must be an instance operator. It checks if the role is valid and updates the `validRole` mapping.
+- `hasRole(bytes32 role, address principal)`: Checks if a given principal has a specific role. It returns a boolean value indicating whether the principal has the specified role.
+- `getDefaultAdminRole()`: Returns the bytes32 value of the DEFAULT_ADMIN_ROLE.
+- `getProductOwnerRole()`: Returns the bytes32 value of the PRODUCT_OWNER_ROLE.
+- `getOracleProviderRole()`: Returns the bytes32 value of the ORACLE_PROVIDER_ROLE.
+- `getRiskpoolKeeperRole()`: Returns the bytes32 value of the RISKPOOL_KEEPER_ROLE.
+- `_populateValidRoles()`: Internal function that populates the `validRole` mapping with the roles considered valid for the contract. It sets the validity of the predefined roles to true.
+
+Modifiers:
+- `onlyInstanceOperator`: A modifier that restricts access to functions to only instance operators.
+
+Overall, the contract provides a flexible access control mechanism by defining roles and 
+allowing the assignment, revocation, and validation of roles by instance operators. 
+It also sets a default admin role and manages the validity of roles through the `validRole` mapping.
+
 [.contract-index]
 .Functions
 --
@@ -347,79 +382,53 @@ import "@etherisc/gif-contracts/contracts/modules/AccessController.sol";
 [[AccessController-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
-This function is called after contract initialization and adds the product owner, oracle provider, and riskpool keeper roles.
-
 [.contract-item]
 [[AccessController-_getName--]]
 ==== `[.contract-item-name]#++_getName++#++() → bytes32++` [.item-kind]#internal#
-
-Returns the name of the contract.
 
 [.contract-item]
 [[AccessController-setDefaultAdminRole-address-]]
 ==== `[.contract-item-name]#++setDefaultAdminRole++#++(address defaultAdmin)++` [.item-kind]#external#
 
-Sets the default admin role for the Access Control List (ACL).
-
 [.contract-item]
 [[AccessController-grantRole-bytes32-address-]]
 ==== `[.contract-item-name]#++grantRole++#++(bytes32 role, address principal)++` [.item-kind]#public#
-
-Grants a role to a principal.
 
 [.contract-item]
 [[AccessController-revokeRole-bytes32-address-]]
 ==== `[.contract-item-name]#++revokeRole++#++(bytes32 role, address principal)++` [.item-kind]#public#
 
-Revokes the specified role from the specified principal.
-
 [.contract-item]
 [[AccessController-renounceRole-bytes32-address-]]
 ==== `[.contract-item-name]#++renounceRole++#++(bytes32 role, address principal)++` [.item-kind]#public#
-
-Removes the specified `principal` from the `role` in the access control list (ACL) of the contract.
 
 [.contract-item]
 [[AccessController-addRole-bytes32-]]
 ==== `[.contract-item-name]#++addRole++#++(bytes32 role)++` [.item-kind]#public#
 
-Adds a new role to the Access Control List.
-
 [.contract-item]
 [[AccessController-invalidateRole-bytes32-]]
 ==== `[.contract-item-name]#++invalidateRole++#++(bytes32 role)++` [.item-kind]#public#
-
-Invalidates a role.
 
 [.contract-item]
 [[AccessController-hasRole-bytes32-address-]]
 ==== `[.contract-item-name]#++hasRole++#++(bytes32 role, address principal) → bool++` [.item-kind]#public#
 
-Checks if a given principal has a specific role.
-
 [.contract-item]
 [[AccessController-getDefaultAdminRole--]]
 ==== `[.contract-item-name]#++getDefaultAdminRole++#++() → bytes32++` [.item-kind]#public#
-
-Returns the default admin role.
 
 [.contract-item]
 [[AccessController-getProductOwnerRole--]]
 ==== `[.contract-item-name]#++getProductOwnerRole++#++() → bytes32++` [.item-kind]#public#
 
-Returns the bytes32 value of the PRODUCT_OWNER_ROLE.
-
 [.contract-item]
 [[AccessController-getOracleProviderRole--]]
 ==== `[.contract-item-name]#++getOracleProviderRole++#++() → bytes32++` [.item-kind]#public#
 
-Returns the bytes32 identifier of the Oracle Provider role.
-
 [.contract-item]
 [[AccessController-getRiskpoolKeeperRole--]]
 ==== `[.contract-item-name]#++getRiskpoolKeeperRole++#++() → bytes32++` [.item-kind]#public#
-
-Returns the bytes32 value of the RISKPOOL_KEEPER_ROLE.
 
 :onlyRiskpoolService: pass:normal[xref:#BundleController-onlyRiskpoolService--[`++onlyRiskpoolService++`]]
 :onlyFundableBundle: pass:normal[xref:#BundleController-onlyFundableBundle-uint256-[`++onlyFundableBundle++`]]
@@ -458,6 +467,31 @@ Returns the bytes32 value of the RISKPOOL_KEEPER_ROLE.
 ```solidity
 import "@etherisc/gif-contracts/contracts/modules/BundleController.sol";
 ```
+
+The smart contract is used to manage bundles, which are collections of policies.
+
+- The contract imports other Solidity contracts such as `PolicyController.sol`, `CoreController.sol`, and `BundleToken.sol`.
+- The contract implements the `IBundle` interface and extends the `CoreController` contract.
+- It defines several mappings to store information about bundles, active policies, locked capital per policy, and the number of unburt bundles for each risk pool.
+- There is a private variable `_bundleCount` to keep track of the number of bundles created.
+- The contract includes modifiers to restrict access to certain functions, such as `onlyRiskpoolService` and `onlyFundableBundle`.
+
+Functions: 
+- `_afterInitialize()`: Internal function that initializes references to other contracts after contract deployment.
+- `create()`: Allows the RiskpoolService contract to create a new bundle and mint a corresponding NFT token.
+- `fund()`: Enables the RiskpoolService contract to add funds to a bundle's capital and balance.
+- `defund()`: Allows the RiskpoolService contract to withdraw funds from a bundle.
+- `lock()`: Locks a bundle of assets by changing its state to "Locked."
+- `unlock()`: Unlocks a bundle, changing its state back to "Active."
+- `close()`: Closes a bundle of policies.
+- `burn()`: Burns a bundle, changing its state to "Burned."
+- `collateralizePolicy()`: Collateralizes a policy by locking a specific amount of capital in the corresponding bundle.
+- `processPremium()`: Processes the premium payment for a given bundle and updates its balance.
+- `processPayout()`: Processes a payout for a policy from a bundle.
+- `releasePolicy()`: Releases a policy and updates the bundle's capital.
+
+The contract includes various modifiers and event emitters to enforce access control and emit relevant events.
+Overall, the `BundleController` contract provides functionality to manage bundles and their associated policies, including creating, funding, locking, unlocking, closing, burning, collateralizing, and releasing policies within a bundle.
 
 [.contract-index]
 .Modifiers
@@ -546,157 +580,105 @@ import "@etherisc/gif-contracts/contracts/modules/BundleController.sol";
 [[BundleController-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
-Performs internal operations after the contract initialization.
-
 [.contract-item]
 [[BundleController-create-address-uint256-bytes-uint256-]]
 ==== `[.contract-item-name]#++create++#++(address owner_, uint256 riskpoolId_, bytes filter_, uint256 amount_) → uint256 bundleId++` [.item-kind]#external#
-
-Creates a new bundle and mints a corresponding NFT token. Only callable by the RiskpoolService contract.
 
 [.contract-item]
 [[BundleController-fund-uint256-uint256-]]
 ==== `[.contract-item-name]#++fund++#++(uint256 bundleId, uint256 amount)++` [.item-kind]#external#
 
-Adds funds to a bundle's capital and balance.
-
 [.contract-item]
 [[BundleController-defund-uint256-uint256-]]
 ==== `[.contract-item-name]#++defund++#++(uint256 bundleId, uint256 amount)++` [.item-kind]#external#
-
-Allows the Riskpool service to withdraw `amount` from the `bundleId` Bundle.
 
 [.contract-item]
 [[BundleController-lock-uint256-]]
 ==== `[.contract-item-name]#++lock++#++(uint256 bundleId)++` [.item-kind]#external#
 
-Locks a bundle of assets.
-
 [.contract-item]
 [[BundleController-unlock-uint256-]]
 ==== `[.contract-item-name]#++unlock++#++(uint256 bundleId)++` [.item-kind]#external#
-
-Unlocks a bundle, changing its state to active.
 
 [.contract-item]
 [[BundleController-close-uint256-]]
 ==== `[.contract-item-name]#++close++#++(uint256 bundleId)++` [.item-kind]#external#
 
-Closes a bundle of policies.
-
 [.contract-item]
 [[BundleController-burn-uint256-]]
 ==== `[.contract-item-name]#++burn++#++(uint256 bundleId)++` [.item-kind]#external#
-
-Burns a bundle and changes its state to Burned.
 
 [.contract-item]
 [[BundleController-collateralizePolicy-uint256-bytes32-uint256-]]
 ==== `[.contract-item-name]#++collateralizePolicy++#++(uint256 bundleId, bytes32 processId, uint256 amount)++` [.item-kind]#external#
 
-Collateralizes a policy by locking a specific amount of capital in the corresponding bundle.
-
 [.contract-item]
 [[BundleController-processPremium-uint256-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPremium++#++(uint256 bundleId, bytes32 processId, uint256 amount)++` [.item-kind]#external#
-
-Process the premium payment for a given bundle and update its balance.
 
 [.contract-item]
 [[BundleController-processPayout-uint256-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPayout++#++(uint256 bundleId, bytes32 processId, uint256 amount)++` [.item-kind]#external#
 
-Processes a payout for a policy from a bundle.
-
 [.contract-item]
 [[BundleController-releasePolicy-uint256-bytes32-]]
 ==== `[.contract-item-name]#++releasePolicy++#++(uint256 bundleId, bytes32 processId) → uint256 remainingCollateralAmount++` [.item-kind]#external#
-
-Release a policy and update the bundle capital.
 
 [.contract-item]
 [[BundleController-getOwner-uint256-]]
 ==== `[.contract-item-name]#++getOwner++#++(uint256 bundleId) → address++` [.item-kind]#public#
 
-Returns the address of the owner of the token associated with the given bundle ID.
-
 [.contract-item]
 [[BundleController-getState-uint256-]]
 ==== `[.contract-item-name]#++getState++#++(uint256 bundleId) → enum IBundle.BundleState++` [.item-kind]#public#
-
-Returns the state of the bundle with the given ID.
 
 [.contract-item]
 [[BundleController-getFilter-uint256-]]
 ==== `[.contract-item-name]#++getFilter++#++(uint256 bundleId) → bytes++` [.item-kind]#public#
 
-Returns the filter of a given bundle.
-
 [.contract-item]
 [[BundleController-getCapacity-uint256-]]
 ==== `[.contract-item-name]#++getCapacity++#++(uint256 bundleId) → uint256++` [.item-kind]#public#
-
-Returns the available capacity of a bundle.
 
 [.contract-item]
 [[BundleController-getTotalValueLocked-uint256-]]
 ==== `[.contract-item-name]#++getTotalValueLocked++#++(uint256 bundleId) → uint256++` [.item-kind]#public#
 
-Returns the total value locked in a particular bundle.
-
 [.contract-item]
 [[BundleController-getBalance-uint256-]]
 ==== `[.contract-item-name]#++getBalance++#++(uint256 bundleId) → uint256++` [.item-kind]#public#
-
-Returns the balance of a specific bundle.
 
 [.contract-item]
 [[BundleController-getToken--]]
 ==== `[.contract-item-name]#++getToken++#++() → contract BundleToken++` [.item-kind]#external#
 
-Returns the BundleToken contract instance.
-
 [.contract-item]
 [[BundleController-getBundle-uint256-]]
 ==== `[.contract-item-name]#++getBundle++#++(uint256 bundleId) → struct IBundle.Bundle++` [.item-kind]#public#
-
-Returns the bundle with the specified bundle ID.
 
 [.contract-item]
 [[BundleController-bundles--]]
 ==== `[.contract-item-name]#++bundles++#++() → uint256++` [.item-kind]#public#
 
-Returns the number of bundles created.
-
 [.contract-item]
 [[BundleController-unburntBundles-uint256-]]
 ==== `[.contract-item-name]#++unburntBundles++#++(uint256 riskpoolId) → uint256++` [.item-kind]#external#
-
-Returns the number of unburnt bundles for a given riskpool ID.
 
 [.contract-item]
 [[BundleController-_getPoolController--]]
 ==== `[.contract-item-name]#++_getPoolController++#++() → contract PoolController _poolController++` [.item-kind]#internal#
 
-Returns the pool controller contract instance.
-
 [.contract-item]
 [[BundleController-_changeState-uint256-enum-IBundle-BundleState-]]
 ==== `[.contract-item-name]#++_changeState++#++(uint256 bundleId, enum IBundle.BundleState newState)++` [.item-kind]#internal#
-
-Changes the state of a bundle.
 
 [.contract-item]
 [[BundleController-_setState-uint256-enum-IBundle-BundleState-]]
 ==== `[.contract-item-name]#++_setState++#++(uint256 bundleId, enum IBundle.BundleState newState)++` [.item-kind]#internal#
 
-Sets the state and updated timestamp of a given bundle.
-
 [.contract-item]
 [[BundleController-_checkStateTransition-enum-IBundle-BundleState-enum-IBundle-BundleState-]]
 ==== `[.contract-item-name]#++_checkStateTransition++#++(enum IBundle.BundleState oldState, enum IBundle.BundleState newState)++` [.item-kind]#internal#
-
-Checks if a state transition is valid.
 
 :onlyComponentOwnerService: pass:normal[xref:#ComponentController-onlyComponentOwnerService--[`++onlyComponentOwnerService++`]]
 :onlyInstanceOperatorService: pass:normal[xref:#ComponentController-onlyInstanceOperatorService--[`++onlyInstanceOperatorService++`]]
@@ -738,6 +720,39 @@ Checks if a state transition is valid.
 ```solidity
 import "@etherisc/gif-contracts/contracts/modules/ComponentController.sol";
 ```
+
+The smart contract provides functionality to manage and control components in a system.
+The contract defines several mappings and sets to store information about components, such as their addresses, IDs, states, and types.
+It also includes modifiers to restrict access to certain functions based on the caller's role.
+
+Functions:
+- `propose()`: Allows the owner service of a component to propose a new component to the system. It verifies that the component and its name do not already exist and emits an event indicating the successful proposal.
+- `_persistComponent()`: Persists a new component into the system by assigning it an ID and updating the necessary mappings and sets.
+- `exists()`: Checks if a component with the given ID exists in the system.
+- `approve()`: Approves a component with the given ID, changing its state to "Active" and emitting an event. If the component is a product, it sets the policy flow in the `_policyFlowByProductId` mapping.
+- `decline()`: Changes the state of a component with the given ID to "Declined" and emits an event. It also calls the `declineCallback` function of the component.
+- `suspend()`: Suspends a component with the given ID by changing its state to "Suspended" and emitting an event. It also calls the `suspendCallback` function of the component.
+- `resume()`: Resumes a component with the given ID by changing its state to "Active" and emitting an event. It also calls the `resumeCallback` function of the component.
+- `pause()`: Pauses a component with the given ID by changing its state to "Paused" and emitting an event. It also calls the `pauseCallback` function of the component.
+- `unpause()`: Unpauses a component with the given ID by changing its state to "Active" and emitting an event. It also calls the `unpauseCallback` function of the component.
+- `archiveFromComponentOwner()`: Archives a component with the given ID by changing its state to "Archived" and emitting an event. It also calls the `archiveCallback` function of the component.
+- `archiveFromInstanceOperator()`: Archives a component instance with the given ID by changing its state to "Archived" and emitting an event. It also calls the `archiveCallback` function of the component.
+- `getComponent()`: Retrieves the component with the given ID.
+- `getComponentId()`: Retrieves the ID of a registered component given its address.
+- `getComponentType()`: Retrieves the component type of a given component ID.
+- `getComponentState()`: Retrieves the state of the component with the given ID.
+- `getOracleId()`: Retrieves the oracle ID at the specified index.
+- `getRiskpoolId()`: Retrieves the risk pool ID at the specified index.
+- `getProductId()`: Retrieves the product ID at the specified index.
+- `getRequiredRole()`: Retrieves the required role for a given component type.
+- `components()`: Returns the number of components currently stored in the contract.
+- `products()`: Returns the number of products in the `_products` set.
+- `oracles()`: Returns the number of oracles registered in the `_oracles` set.
+- `riskpools()`: Returns the number of risk pools in the set.
+
+The contract also includes various modifiers (`onlyComponentOwnerService` and `onlyInstanceOperatorService`) to ensure that only authorized callers can access certain functions.
+
+The contract imports several Solidity files from external dependencies and uses the `EnumerableSet` library from the OpenZeppelin library for set operations.
 
 [.contract-index]
 .Modifiers
@@ -832,186 +847,117 @@ import "@etherisc/gif-contracts/contracts/modules/ComponentController.sol";
 [[ComponentController-propose-contract-IComponent-]]
 ==== `[.contract-item-name]#++propose++#++(contract IComponent component)++` [.item-kind]#external#
 
-Proposes a new component to the system.
-
 [.contract-item]
 [[ComponentController-_persistComponent-contract-IComponent-]]
 ==== `[.contract-item-name]#++_persistComponent++#++(contract IComponent component) → uint256 id++` [.item-kind]#internal#
-
-Persists a new component into the system.
 
 [.contract-item]
 [[ComponentController-exists-uint256-]]
 ==== `[.contract-item-name]#++exists++#++(uint256 id) → bool++` [.item-kind]#public#
 
-Checks if a component with the given ID exists.
-
 [.contract-item]
 [[ComponentController-approve-uint256-]]
 ==== `[.contract-item-name]#++approve++#++(uint256 id)++` [.item-kind]#external#
-
-Approves a component with the given id.
 
 [.contract-item]
 [[ComponentController-decline-uint256-]]
 ==== `[.contract-item-name]#++decline++#++(uint256 id)++` [.item-kind]#external#
 
-Changes the state of a component with the given ID to "Declined" and emits a LogComponentDeclined event.
-     Calls the declineCallback function of the component with the given ID.
-
 [.contract-item]
 [[ComponentController-suspend-uint256-]]
 ==== `[.contract-item-name]#++suspend++#++(uint256 id)++` [.item-kind]#external#
-
-Suspends a component with the given ID.
 
 [.contract-item]
 [[ComponentController-resume-uint256-]]
 ==== `[.contract-item-name]#++resume++#++(uint256 id)++` [.item-kind]#external#
 
-Resumes a component by changing its state to Active and emitting an event.
-     It also calls the resumeCallback() function of the component to inform it about the resuming.
-
 [.contract-item]
 [[ComponentController-pause-uint256-]]
 ==== `[.contract-item-name]#++pause++#++(uint256 id)++` [.item-kind]#external#
-
-Pauses the component with the given ID.
 
 [.contract-item]
 [[ComponentController-unpause-uint256-]]
 ==== `[.contract-item-name]#++unpause++#++(uint256 id)++` [.item-kind]#external#
 
-Unpauses a component with the given id.
-
 [.contract-item]
 [[ComponentController-archiveFromComponentOwner-uint256-]]
 ==== `[.contract-item-name]#++archiveFromComponentOwner++#++(uint256 id)++` [.item-kind]#external#
-
-Archives a component with the given ID, changing its state to "Archived" and emitting a LogComponentArchived event.
-     Also calls the archiveCallback function of the component with the given ID, informing it about the archiving.
 
 [.contract-item]
 [[ComponentController-archiveFromInstanceOperator-uint256-]]
 ==== `[.contract-item-name]#++archiveFromInstanceOperator++#++(uint256 id)++` [.item-kind]#external#
 
-Archives a component instance with the given ID.
-
 [.contract-item]
 [[ComponentController-getComponent-uint256-]]
 ==== `[.contract-item-name]#++getComponent++#++(uint256 id) → contract IComponent component++` [.item-kind]#public#
-
-Returns the component with the given ID.
 
 [.contract-item]
 [[ComponentController-getComponentId-address-]]
 ==== `[.contract-item-name]#++getComponentId++#++(address componentAddress) → uint256 id++` [.item-kind]#public#
 
-Returns the ID of a registered component given its address.
-
 [.contract-item]
 [[ComponentController-getComponentType-uint256-]]
 ==== `[.contract-item-name]#++getComponentType++#++(uint256 id) → enum IComponent.ComponentType componentType++` [.item-kind]#public#
-
-Returns the component type of a given component ID.
 
 [.contract-item]
 [[ComponentController-getComponentState-uint256-]]
 ==== `[.contract-item-name]#++getComponentState++#++(uint256 id) → enum IComponent.ComponentState componentState++` [.item-kind]#public#
 
-Returns the state of the component with the given ID.
-
 [.contract-item]
 [[ComponentController-getOracleId-uint256-]]
 ==== `[.contract-item-name]#++getOracleId++#++(uint256 idx) → uint256 oracleId++` [.item-kind]#public#
-
-Returns the oracle ID at the given index.
 
 [.contract-item]
 [[ComponentController-getRiskpoolId-uint256-]]
 ==== `[.contract-item-name]#++getRiskpoolId++#++(uint256 idx) → uint256 riskpoolId++` [.item-kind]#public#
 
-Returns the riskpool ID at the specified index.
-
 [.contract-item]
 [[ComponentController-getProductId-uint256-]]
 ==== `[.contract-item-name]#++getProductId++#++(uint256 idx) → uint256 productId++` [.item-kind]#public#
-
-Returns the product ID at the given index in the _products set.
 
 [.contract-item]
 [[ComponentController-getRequiredRole-enum-IComponent-ComponentType-]]
 ==== `[.contract-item-name]#++getRequiredRole++#++(enum IComponent.ComponentType componentType) → bytes32++` [.item-kind]#external#
 
-Returns the required role for a given component type.
-
 [.contract-item]
 [[ComponentController-components--]]
 ==== `[.contract-item-name]#++components++#++() → uint256 count++` [.item-kind]#public#
-
-Returns the number of components currently stored in the contract.
 
 [.contract-item]
 [[ComponentController-products--]]
 ==== `[.contract-item-name]#++products++#++() → uint256 count++` [.item-kind]#public#
 
-Returns the number of products in the set '_products'.
-
 [.contract-item]
 [[ComponentController-oracles--]]
 ==== `[.contract-item-name]#++oracles++#++() → uint256 count++` [.item-kind]#public#
-
-Returns the number of oracles registered in the _oracles set.
 
 [.contract-item]
 [[ComponentController-riskpools--]]
 ==== `[.contract-item-name]#++riskpools++#++() → uint256 count++` [.item-kind]#public#
 
-Returns the number of risk pools in the EnumerableSet.
-
 [.contract-item]
 [[ComponentController-isProduct-uint256-]]
 ==== `[.contract-item-name]#++isProduct++#++(uint256 id) → bool++` [.item-kind]#public#
-
-Check if a product exists in the set of products.
 
 [.contract-item]
 [[ComponentController-isOracle-uint256-]]
 ==== `[.contract-item-name]#++isOracle++#++(uint256 id) → bool++` [.item-kind]#public#
 
-Checks if an oracle with a given ID exists.
-
 [.contract-item]
 [[ComponentController-isRiskpool-uint256-]]
 ==== `[.contract-item-name]#++isRiskpool++#++(uint256 id) → bool++` [.item-kind]#public#
-
-Checks if a given ID is a riskpool.
 
 [.contract-item]
 [[ComponentController-getPolicyFlow-uint256-]]
 ==== `[.contract-item-name]#++getPolicyFlow++#++(uint256 productId) → address _policyFlow++` [.item-kind]#public#
 
-Returns the address of the policy flow for a given product ID.
-
 [.contract-item]
 [[ComponentController-_changeState-uint256-enum-IComponent-ComponentState-]]
 ==== `[.contract-item-name]#++_changeState++#++(uint256 componentId, enum IComponent.ComponentState newState)++` [.item-kind]#internal#
 
-Changes the state of a component.
-
 [.contract-item]
 [[ComponentController-_checkStateTransition-enum-IComponent-ComponentState-enum-IComponent-ComponentState-]]
 ==== `[.contract-item-name]#++_checkStateTransition++#++(enum IComponent.ComponentState oldState, enum IComponent.ComponentState newState)++` [.item-kind]#internal#
-
-Checks if the state transition is valid.
-Throws an error if the newState is the same as the oldState.
-Throws an error if the transition from Created state is not to Proposed state.
-Throws an error if the transition from Proposed state is not to Active or Declined state.
-Throws an error if the transition from Declined state is attempted.
-Throws an error if the transition from Active state is not to Paused or Suspended state.
-Throws an error if the transition from Paused state is not to Active or Archived state.
-Throws an error if the transition from Suspended state is not to Active or Archived state.
-Throws an error if the initial state is not handled.
 
 :_afterInitialize: pass:normal[xref:#LicenseController-_afterInitialize--[`++_afterInitialize++`]]
 :getAuthorizationStatus: pass:normal[xref:#LicenseController-getAuthorizationStatus-address-[`++getAuthorizationStatus++`]]
@@ -1026,6 +972,21 @@ Throws an error if the initial state is not handled.
 ```solidity
 import "@etherisc/gif-contracts/contracts/modules/LicenseController.sol";
 ```
+
+The smart contract serves as a controller contract for managing licenses related to products in an insurance ecosystem.
+The contract implements the `ILicense` interface and extends the `CoreController` contract.
+
+The contract imports two other contracts: `ComponentController.sol` and `CoreController.sol`, which are expected to be located in specific file paths.
+It also imports several interfaces from the "etherisc/gif-interface" library, including `IComponent.sol`, `IProduct.sol`, and `ILicense.sol`.
+The contract includes a private variable `_component` of type `ComponentController`, which is used to interact with the `ComponentController` contract.
+
+Functions:
+- `_afterInitialize()`: Called after the contract is initialized. This function sets the `_component` variable to the address of the `ComponentController` contract.
+- `getAuthorizationStatus(address productAddress)`: Takes a product address as input and returns the authorization status of the product. It retrieves the product's ID using the `_component.getComponentId(productAddress)` function, checks if the product is authorized by calling the internal `_isValidCall(productId)` function, and retrieves the associated policy flow address using the `_component.getPolicyFlow(productId)` function.
+- `_isValidCall(uint256 productId)`: Checks if a product with the given ID is currently active. It does this by calling `_component.getComponentState(productId)` and comparing the returned value to `IComponent.ComponentState.Active`.
+- `_getProduct(uint256 id)`: Retrieves the product associated with the given ID. It checks if the ID corresponds to a valid product using `_component.isProduct(id)` and then retrieves the product using `_component.getComponent(id)`.
+
+Overall, the `LicenseController` contract serves as a controller for managing licenses and provides functions to check the authorization status and activity of products within an insurance ecosystem.
 
 [.contract-index]
 .Functions
@@ -1070,25 +1031,17 @@ import "@etherisc/gif-contracts/contracts/modules/LicenseController.sol";
 [[LicenseController-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
-This function is called after the contract is initialized and sets the `_component` variable to the address of the `ComponentController` contract.
-
 [.contract-item]
 [[LicenseController-getAuthorizationStatus-address-]]
 ==== `[.contract-item-name]#++getAuthorizationStatus++#++(address productAddress) → uint256 productId, bool isAuthorized, address policyFlow++` [.item-kind]#public#
-
-Returns the authorization status of a given product address.
 
 [.contract-item]
 [[LicenseController-_isValidCall-uint256-]]
 ==== `[.contract-item-name]#++_isValidCall++#++(uint256 productId) → bool++` [.item-kind]#internal#
 
-Checks if a product is currently active.
-
 [.contract-item]
 [[LicenseController-_getProduct-uint256-]]
 ==== `[.contract-item-name]#++_getProduct++#++(uint256 id) → contract IProduct product++` [.item-kind]#internal#
-
-Returns the product associated with the given ID.
 
 :metadata: pass:normal[xref:#PolicyController-metadata-mapping-bytes32----struct-IPolicy-Metadata-[`++metadata++`]]
 :applications: pass:normal[xref:#PolicyController-applications-mapping-bytes32----struct-IPolicy-Application-[`++applications++`]]
@@ -1130,6 +1083,46 @@ Returns the product associated with the given ID.
 ```solidity
 import "@etherisc/gif-contracts/contracts/modules/PolicyController.sol";
 ```
+
+The smart contract implements functions for policy operations, including creation, update, cancellation, and retrieval.
+It also provides functions for claim creation, confirmation, decline, closure, and payout creation.
+Additionally, it includes functions to process payouts, retrieve metadata and application information, and get the number of claims and payouts associated with a policy.
+The contract inherits from the `IPolicy` interface and the `CoreController` contract.
+
+1. State Variables:
+- `metadata`: A mapping that stores metadata associated with policy flows.
+- `applications`: A mapping that stores insurance applications associated with policy flows.
+- `policies`: A mapping that stores policies associated with policy flows.
+- `claims`: A nested mapping that stores claims associated with policies.
+- `payouts`: A nested mapping that stores payouts associated with policies.
+- `payoutCount`: A mapping that stores the count of payouts for each policy flow.
+- `_assigendProcessIds`: A counter variable for assigning unique process IDs.
+- `_component`: A reference to the `ComponentController` contract.
+
+2. Functions:
+- `_afterInitialize()`: An internal function that sets the `_component` variable during contract initialization.
+- `createPolicyFlow()`: Creates a new policy flow with the given owner, product ID, and additional data.
+- `createApplication()`: Creates a new insurance application for a policy flow with the specified process ID, premium amount, sum insured amount, and additional data.
+- `collectPremium()`: Collects premium for a policy by adding the specified amount to the paid premium amount.
+- `revokeApplication()`: Revokes an application for a policy flow.
+- `underwriteApplication()`: Changes the state of an application to "Underwritten".
+- `declineApplication()`: Declines an application for a policy flow.
+- `createPolicy()`: Creates a new policy for a given application process ID.
+- `adjustPremiumSumInsured()`: Adjusts the premium and sum insured amount of an insurance policy application.
+- `expirePolicy()`: Expires a policy with the given process ID.
+- `closeExpiredPolicy()`: Closes a policy that has expired and has no open claims.
+- `createClaim()`: Creates a new claim for a given policy. It checks the authorization of the caller, ensures the policy is active, validates the claim amount, and creates the claim. It emits a `LogClaimCreated` event.
+- `confirmClaim()`: Confirms a claim for a policy, updating the claim state to Confirmed and setting the confirmed amount. It is called by the Policy contract and validates the policy, open claims, claim amount, and updates the claim and policy state. It emits a `LogClaimConfirmed` event.
+- `declineClaim()`: Allows the Policy contract to decline a claim. It validates the policy, open claims, and claim state, updates the claim state to Declined, and emits a `LogClaimDeclined` event.
+- `closeClaim()`: Closes a claim for a given policy. It validates the policy, open claims, claim state, and unpaid payouts. If the claim is fully paid, it changes the claim state to Closed and emits a `LogClaimClosed` event.
+- `createPayout()`: Creates a new payout for a confirmed claim in a policy. It validates the policy, claim, payout amount, and creates the payout. It emits a `LogPayoutCreated` event.
+- `processPayout()`: Processes a payout for a policy and claim. It validates the policy, open claims, payout state, updates the payout state, and updates the claim state and policy state if the claim is fully paid. It emits a `LogPayoutProcessed` event and potentially a `LogClaimClosed` event.
+- `getMetadata()`: Returns the metadata for a given process ID. It retrieves the metadata and ensures it exists.
+- `getApplication()`: Returns the application associated with a provided process ID. It retrieves the application and ensures it exists.
+- `getNumberOfClaims()`: Returns the number of claims associated with a given process ID by calling the `getPolicy` function.
+- `getNumberOfPayouts()`: Returns the number of payouts for a given process ID.
+
+Overall, these functions provide functionality for creating, managing, and processing claims and payouts within the insurance policy contract.
 
 [.contract-index]
 .Functions
@@ -1214,151 +1207,101 @@ import "@etherisc/gif-contracts/contracts/modules/PolicyController.sol";
 [[PolicyController-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
-Internal function that sets the _component variable to the address of the ComponentController contract.
-
 [.contract-item]
 [[PolicyController-createPolicyFlow-address-uint256-bytes-]]
 ==== `[.contract-item-name]#++createPolicyFlow++#++(address owner, uint256 productId, bytes data) → bytes32 processId++` [.item-kind]#external#
-
-Creates a new policy flow for a given owner and product.
 
 [.contract-item]
 [[PolicyController-createApplication-bytes32-uint256-uint256-bytes-]]
 ==== `[.contract-item-name]#++createApplication++#++(bytes32 processId, uint256 premiumAmount, uint256 sumInsuredAmount, bytes data)++` [.item-kind]#external#
 
-Creates a new insurance application for a given process ID.
-
 [.contract-item]
 [[PolicyController-collectPremium-bytes32-uint256-]]
 ==== `[.contract-item-name]#++collectPremium++#++(bytes32 processId, uint256 amount)++` [.item-kind]#external#
-
-Collects premium for a policy.
 
 [.contract-item]
 [[PolicyController-revokeApplication-bytes32-]]
 ==== `[.contract-item-name]#++revokeApplication++#++(bytes32 processId)++` [.item-kind]#external#
 
-Revokes an application with the given process ID.
-
 [.contract-item]
 [[PolicyController-underwriteApplication-bytes32-]]
 ==== `[.contract-item-name]#++underwriteApplication++#++(bytes32 processId)++` [.item-kind]#external#
-
-Changes the state of an application to underwritten.
 
 [.contract-item]
 [[PolicyController-declineApplication-bytes32-]]
 ==== `[.contract-item-name]#++declineApplication++#++(bytes32 processId)++` [.item-kind]#external#
 
-Declines an application for a policy flow.
-
 [.contract-item]
 [[PolicyController-createPolicy-bytes32-]]
 ==== `[.contract-item-name]#++createPolicy++#++(bytes32 processId)++` [.item-kind]#external#
-
-Creates a new policy for a given application process ID.
 
 [.contract-item]
 [[PolicyController-adjustPremiumSumInsured-bytes32-uint256-uint256-]]
 ==== `[.contract-item-name]#++adjustPremiumSumInsured++#++(bytes32 processId, uint256 expectedPremiumAmount, uint256 sumInsuredAmount)++` [.item-kind]#external#
 
-This function adjusts the premium and sum insured amount of an insurance policy application.
-
 [.contract-item]
 [[PolicyController-expirePolicy-bytes32-]]
 ==== `[.contract-item-name]#++expirePolicy++#++(bytes32 processId)++` [.item-kind]#external#
-
-This function expires a policy with the given process ID.
 
 [.contract-item]
 [[PolicyController-closePolicy-bytes32-]]
 ==== `[.contract-item-name]#++closePolicy++#++(bytes32 processId)++` [.item-kind]#external#
 
-Closes a policy that has expired and has no open claims.
-
 [.contract-item]
 [[PolicyController-createClaim-bytes32-uint256-bytes-]]
 ==== `[.contract-item-name]#++createClaim++#++(bytes32 processId, uint256 claimAmount, bytes data) → uint256 claimId++` [.item-kind]#external#
-
-Creates a new claim for a given policy.
 
 [.contract-item]
 [[PolicyController-confirmClaim-bytes32-uint256-uint256-]]
 ==== `[.contract-item-name]#++confirmClaim++#++(bytes32 processId, uint256 claimId, uint256 confirmedAmount)++` [.item-kind]#external#
 
-Confirms a claim for a policy, updating the claim state to Confirmed and setting the confirmed amount.
-
 [.contract-item]
 [[PolicyController-declineClaim-bytes32-uint256-]]
 ==== `[.contract-item-name]#++declineClaim++#++(bytes32 processId, uint256 claimId)++` [.item-kind]#external#
-
-This function allows the Policy contract to decline a claim.
 
 [.contract-item]
 [[PolicyController-closeClaim-bytes32-uint256-]]
 ==== `[.contract-item-name]#++closeClaim++#++(bytes32 processId, uint256 claimId)++` [.item-kind]#external#
 
-Closes a claim for a given policy.
-
 [.contract-item]
 [[PolicyController-createPayout-bytes32-uint256-uint256-bytes-]]
 ==== `[.contract-item-name]#++createPayout++#++(bytes32 processId, uint256 claimId, uint256 payoutAmount, bytes data) → uint256 payoutId++` [.item-kind]#external#
-
-Creates a new payout for a confirmed claim in a policy.
 
 [.contract-item]
 [[PolicyController-processPayout-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPayout++#++(bytes32 processId, uint256 payoutId)++` [.item-kind]#external#
 
-Processes a payout for a policy and claim.
-
 [.contract-item]
 [[PolicyController-getMetadata-bytes32-]]
 ==== `[.contract-item-name]#++getMetadata++#++(bytes32 processId) → struct IPolicy.Metadata _metadata++` [.item-kind]#public#
-
-Returns the metadata for the given process ID.
 
 [.contract-item]
 [[PolicyController-getApplication-bytes32-]]
 ==== `[.contract-item-name]#++getApplication++#++(bytes32 processId) → struct IPolicy.Application application++` [.item-kind]#public#
 
-Returns the application associated with the provided process ID.
-
 [.contract-item]
 [[PolicyController-getNumberOfClaims-bytes32-]]
 ==== `[.contract-item-name]#++getNumberOfClaims++#++(bytes32 processId) → uint256 numberOfClaims++` [.item-kind]#external#
-
-Returns the number of claims associated with a given process ID.
 
 [.contract-item]
 [[PolicyController-getNumberOfPayouts-bytes32-]]
 ==== `[.contract-item-name]#++getNumberOfPayouts++#++(bytes32 processId) → uint256 numberOfPayouts++` [.item-kind]#external#
 
-Returns the number of payouts for a given process ID.
-
 [.contract-item]
 [[PolicyController-getPolicy-bytes32-]]
 ==== `[.contract-item-name]#++getPolicy++#++(bytes32 processId) → struct IPolicy.Policy policy++` [.item-kind]#public#
-
-Returns the policy associated with the given process ID.
 
 [.contract-item]
 [[PolicyController-getClaim-bytes32-uint256-]]
 ==== `[.contract-item-name]#++getClaim++#++(bytes32 processId, uint256 claimId) → struct IPolicy.Claim claim++` [.item-kind]#public#
 
-Returns the claim with the given ID for the specified process.
-
 [.contract-item]
 [[PolicyController-getPayout-bytes32-uint256-]]
 ==== `[.contract-item-name]#++getPayout++#++(bytes32 processId, uint256 payoutId) → struct IPolicy.Payout payout++` [.item-kind]#public#
 
-Retrieves a specific payout from a process.
-
 [.contract-item]
 [[PolicyController-processIds--]]
 ==== `[.contract-item-name]#++processIds++#++() → uint256++` [.item-kind]#external#
-
-Returns the number of process IDs that have been assigned.
 
 :FULL_COLLATERALIZATION_LEVEL: pass:normal[xref:#PoolController-FULL_COLLATERALIZATION_LEVEL-uint256[`++FULL_COLLATERALIZATION_LEVEL++`]]
 :COLLATERALIZATION_LEVEL_CAP: pass:normal[xref:#PoolController-COLLATERALIZATION_LEVEL_CAP-uint256[`++COLLATERALIZATION_LEVEL_CAP++`]]
@@ -1398,6 +1341,31 @@ Returns the number of process IDs that have been assigned.
 ```solidity
 import "@etherisc/gif-contracts/contracts/modules/PoolController.sol";
 ```
+
+The smart contract manages riskpools, their registration, funding, defunding, collateralization, and other related operations.
+
+- The contract implements the IPool interface and extends the CoreController contract.
+- It imports other contracts such as ComponentController, PolicyController, BundleController, and CoreController.
+- It uses the EnumerableSet library from OpenZeppelin for managing sets of bundle IDs.
+- The contract defines constants for full collateralization level, collateralization level cap, and default maximum number of active bundles.
+- It maintains mappings to store riskpool information, riskpool IDs for products, maximum number of active bundles for riskpools, and active bundle IDs for riskpools.
+- The contract has a private array to store riskpool IDs.
+- It has references to other contracts: ComponentController, PolicyController, and BundleController.
+- The contract defines modifiers for access control to specific functions.
+
+Functions:
+- `_afterInitialize()`: Called after contract initialization to set addresses of other contracts.
+- `registerRiskpool()`: Allows the registration of a new riskpool with the specified parameters. It emits an event upon successful registration.
+- `setRiskpoolForProduct()`: Sets the riskpool ID for a given product ID.
+- `fund()`: Adds funds to a specific riskpool.
+- `defund()`: Allows the Riskpool service to defund a riskpool by a specified amount.
+- `underwrite()`: Collateralizes a policy application by calculating the required collateral amount and asking the responsible riskpool to secure the application. It emits events related to collateralization process success or failure.
+- `calculateCollateral()`: Calculates the required collateral amount for a given riskpool and sum insured amount.
+- `processPremium()`: Processes the premium payment for a policy by calling the corresponding function in the riskpool contract.
+- `processPayout()`: Processes a payout for a policy in the Pool. It verifies the availability of sufficient capital, locked capital, and balance in the riskpool before processing the payout.
+- `release()`: Releases a policy's collateral from the riskpool.
+
+Overall, the PoolController contract provides functionality to manage riskpools, register riskpools, collateralize policies, process premium payments, process payouts, and release collaterals. It acts as an intermediary between the PolicyController, ComponentController, and BundleController contracts to coordinate these operations.
 
 [.contract-index]
 .Modifiers
@@ -1490,133 +1458,89 @@ import "@etherisc/gif-contracts/contracts/modules/PoolController.sol";
 [[PoolController-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
-This function is called after the contract is initialized and sets the addresses of the ComponentController, PolicyController, and BundleController contracts.
-
 [.contract-item]
 [[PoolController-registerRiskpool-uint256-address-address-uint256-uint256-]]
 ==== `[.contract-item-name]#++registerRiskpool++#++(uint256 riskpoolId, address wallet, address erc20Token, uint256 collateralizationLevel, uint256 sumOfSumInsuredCap)++` [.item-kind]#external#
-
-Registers a new riskpool with the given parameters.
 
 [.contract-item]
 [[PoolController-setRiskpoolForProduct-uint256-uint256-]]
 ==== `[.contract-item-name]#++setRiskpoolForProduct++#++(uint256 productId, uint256 riskpoolId)++` [.item-kind]#external#
 
-Sets the riskpool ID for a given product ID.
-
 [.contract-item]
 [[PoolController-fund-uint256-uint256-]]
 ==== `[.contract-item-name]#++fund++#++(uint256 riskpoolId, uint256 amount)++` [.item-kind]#external#
-
-Adds funds to a specific riskpool.
 
 [.contract-item]
 [[PoolController-defund-uint256-uint256-]]
 ==== `[.contract-item-name]#++defund++#++(uint256 riskpoolId, uint256 amount)++` [.item-kind]#external#
 
-Allows the Riskpool service to defund the specified Riskpool by the given amount.
-
 [.contract-item]
 [[PoolController-underwrite-bytes32-]]
 ==== `[.contract-item-name]#++underwrite++#++(bytes32 processId) → bool success++` [.item-kind]#external#
-
-Underwrites a policy application by calculating the required collateral amount and asking the responsible riskpool to secure the application.
 
 [.contract-item]
 [[PoolController-calculateCollateral-uint256-uint256-]]
 ==== `[.contract-item-name]#++calculateCollateral++#++(uint256 riskpoolId, uint256 sumInsuredAmount) → uint256 collateralAmount++` [.item-kind]#public#
 
-Calculates the required collateral amount for a given riskpool and sum insured amount.
-
 [.contract-item]
 [[PoolController-processPremium-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPremium++#++(bytes32 processId, uint256 amount)++` [.item-kind]#external#
-
-Processes the premium payment for a policy.
 
 [.contract-item]
 [[PoolController-processPayout-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPayout++#++(bytes32 processId, uint256 amount)++` [.item-kind]#external#
 
-Process a payout for a policy flow in the Pool.
-
 [.contract-item]
 [[PoolController-release-bytes32-]]
 ==== `[.contract-item-name]#++release++#++(bytes32 processId)++` [.item-kind]#external#
-
-Releases a policy's collateral from the riskpool.
 
 [.contract-item]
 [[PoolController-setMaximumNumberOfActiveBundles-uint256-uint256-]]
 ==== `[.contract-item-name]#++setMaximumNumberOfActiveBundles++#++(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)++` [.item-kind]#external#
 
-Sets the maximum number of active bundles for a given riskpool ID.
-
 [.contract-item]
 [[PoolController-getMaximumNumberOfActiveBundles-uint256-]]
 ==== `[.contract-item-name]#++getMaximumNumberOfActiveBundles++#++(uint256 riskpoolId) → uint256 maximumNumberOfActiveBundles++` [.item-kind]#public#
-
-Returns the maximum number of active bundles for a given riskpool ID.
 
 [.contract-item]
 [[PoolController-riskpools--]]
 ==== `[.contract-item-name]#++riskpools++#++() → uint256 idx++` [.item-kind]#external#
 
-Returns the number of risk pools created.
-
 [.contract-item]
 [[PoolController-getRiskpool-uint256-]]
 ==== `[.contract-item-name]#++getRiskpool++#++(uint256 riskpoolId) → struct IPool.Pool riskPool++` [.item-kind]#public#
-
-Returns the risk pool data for a given risk pool ID.
 
 [.contract-item]
 [[PoolController-getRiskPoolForProduct-uint256-]]
 ==== `[.contract-item-name]#++getRiskPoolForProduct++#++(uint256 productId) → uint256 riskpoolId++` [.item-kind]#external#
 
-Returns the risk pool ID associated with the given product ID.
-
 [.contract-item]
 [[PoolController-activeBundles-uint256-]]
 ==== `[.contract-item-name]#++activeBundles++#++(uint256 riskpoolId) → uint256 numberOfActiveBundles++` [.item-kind]#external#
-
-Returns the number of active bundles for a given risk pool ID.
 
 [.contract-item]
 [[PoolController-getActiveBundleId-uint256-uint256-]]
 ==== `[.contract-item-name]#++getActiveBundleId++#++(uint256 riskpoolId, uint256 bundleIdx) → uint256 bundleId++` [.item-kind]#external#
 
-Returns the active bundle ID at the specified index for the given risk pool ID.
-
 [.contract-item]
 [[PoolController-addBundleIdToActiveSet-uint256-uint256-]]
 ==== `[.contract-item-name]#++addBundleIdToActiveSet++#++(uint256 riskpoolId, uint256 bundleId)++` [.item-kind]#external#
-
-Adds a bundle ID to the active set for a specific riskpool ID.
 
 [.contract-item]
 [[PoolController-removeBundleIdFromActiveSet-uint256-uint256-]]
 ==== `[.contract-item-name]#++removeBundleIdFromActiveSet++#++(uint256 riskpoolId, uint256 bundleId)++` [.item-kind]#external#
 
-Removes a bundle ID from the active set for a given risk pool ID.
-
 [.contract-item]
 [[PoolController-getFullCollateralizationLevel--]]
 ==== `[.contract-item-name]#++getFullCollateralizationLevel++#++() → uint256++` [.item-kind]#external#
-
-Returns the full collateralization level of the contract.
 
 [.contract-item]
 [[PoolController-_getRiskpoolComponent-struct-IPolicy-Metadata-]]
 ==== `[.contract-item-name]#++_getRiskpoolComponent++#++(struct IPolicy.Metadata metadata) → contract IRiskpool riskpool++` [.item-kind]#internal#
 
-Returns the Riskpool contract instance associated with the given policy metadata.
-
 [.contract-item]
 [[PoolController-_getRiskpoolForId-uint256-]]
 ==== `[.contract-item-name]#++_getRiskpoolForId++#++(uint256 riskpoolId) → contract IRiskpool riskpool++` [.item-kind]#internal#
-
-Returns the Riskpool contract instance for a given riskpoolId.
 
 :onlyOracleService: pass:normal[xref:#QueryModule-onlyOracleService--[`++onlyOracleService++`]]
 :onlyResponsibleOracle: pass:normal[xref:#QueryModule-onlyResponsibleOracle-uint256-address-[`++onlyResponsibleOracle++`]]
@@ -1636,6 +1560,30 @@ Returns the Riskpool contract instance for a given riskpoolId.
 ```solidity
 import "@etherisc/gif-contracts/contracts/modules/QueryModule.sol";
 ```
+
+The smart contract implements the "IQuery" interface and extends the "CoreController" contract.
+The contract imports several external contracts from the "etherisc/gif-interface" repository, including "IComponent.sol", "IOracle.sol", "IQuery.sol", and "IInstanceService.sol".
+It also imports two local contracts, "ComponentController.sol" and "CoreController.sol".
+
+The contract defines a private variable `_component` of type "ComponentController" and an array `_oracleRequests` of type "OracleRequest[]".
+
+The contract includes two modifiers:
+1. `onlyOracleService`: It requires that the caller must be the contract with the address specified by the "OracleService" contract address stored in the CoreController.
+2. `onlyResponsibleOracle`: It checks if the oracle specified by the `responder` address is responsible for the given `requestId`.
+
+The contract provides the following functions:
+- `_afterInitialize()`: Sets the `_component` variable to the address of the "ComponentController" contract. It is called after contract initialization and only during the initialization phase.
+- `request()`: Allows the creation of a new oracle request with the specified parameters. It requires the caller to have the "Query" policy flow. The function validates the callback contract address to ensure it corresponds to a product. It creates a new oracle request in the `_oracleRequests` array, initializes its fields, and calls the `request()` function on the responsible oracle. It emits a `LogOracleRequested` event.
+- `respond()`: Enables an oracle to respond to a specific oracle request. The caller must be the contract specified by the "OracleService" address. The function verifies that the responding oracle is responsible for the given request and then calls the callback method on the callback contract. It emits a `LogOracleResponded` event.
+- `cancel()`: Cancels an oracle request with the given `requestId`. The caller must have the "Query" policy flow. It removes the request from the `_oracleRequests` array and emits a `LogOracleCanceled` event.
+- `getProcessId()`: Returns the process ID associated with a given `requestId`.
+- `getOracleRequestCount()`: Returns the number of oracle requests made.
+- `_getOracle()`: Retrieves the Oracle component with the specified ID. It checks if the component is an Oracle component and if it is in an active state. If the checks pass, it returns the Oracle component.
+
+The contract emits the following events:
+1. `LogOracleRequested`: Indicates the creation of a new oracle request and includes the process ID, request ID, and responsible oracle ID.
+2. `LogOracleResponded`: Indicates the response to an oracle request and includes the process ID, request ID, responder address, and success status.
+3. `LogOracleCanceled`: Indicates the cancellation of an oracle request and includes the request ID.
 
 [.contract-index]
 .Modifiers
@@ -1701,43 +1649,29 @@ import "@etherisc/gif-contracts/contracts/modules/QueryModule.sol";
 [[QueryModule-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
-Internal function that sets the `_component` variable to the `ComponentController` contract address.
-
 [.contract-item]
 [[QueryModule-request-bytes32-bytes-string-address-uint256-]]
 ==== `[.contract-item-name]#++request++#++(bytes32 processId, bytes input, string callbackMethodName, address callbackContractAddress, uint256 responsibleOracleId) → uint256 requestId++` [.item-kind]#external#
-
-Creates a new oracle request for a given process with the specified input data and callback information.
 
 [.contract-item]
 [[QueryModule-respond-uint256-address-bytes-]]
 ==== `[.contract-item-name]#++respond++#++(uint256 requestId, address responder, bytes data)++` [.item-kind]#external#
 
-Responds to an oracle request with the given requestId, responder address, and data.
-
 [.contract-item]
 [[QueryModule-cancel-uint256-]]
 ==== `[.contract-item-name]#++cancel++#++(uint256 requestId)++` [.item-kind]#external#
-
-Cancels an oracle request.
 
 [.contract-item]
 [[QueryModule-getProcessId-uint256-]]
 ==== `[.contract-item-name]#++getProcessId++#++(uint256 requestId) → bytes32 processId++` [.item-kind]#external#
 
-Returns the process ID associated with a given request ID.
-
 [.contract-item]
 [[QueryModule-getOracleRequestCount--]]
 ==== `[.contract-item-name]#++getOracleRequestCount++#++() → uint256 _count++` [.item-kind]#public#
 
-Returns the number of oracle requests made.
-
 [.contract-item]
 [[QueryModule-_getOracle-uint256-]]
 ==== `[.contract-item-name]#++_getOracle++#++(uint256 id) → contract IOracle oracle++` [.item-kind]#internal#
-
-Returns the Oracle component with the specified ID.
 
 :MAX_CONTRACTS: pass:normal[xref:#RegistryController-MAX_CONTRACTS-uint256[`++MAX_CONTRACTS++`]]
 :release: pass:normal[xref:#RegistryController-release-bytes32[`++release++`]]
@@ -1768,6 +1702,39 @@ Returns the Oracle component with the specified ID.
 ```solidity
 import "@etherisc/gif-contracts/contracts/modules/RegistryController.sol";
 ```
+
+The smart contract implements the `IRegistry` interface and inherits from the `CoreController` contract.
+The contract provides functionality for registering, deregistering, and accessing contracts within different releases. It maintains mappings and sets to store contract names and addresses in different releases.
+
+- `MAX_CONTRACTS`: A constant variable set to 100, representing the maximum number of contracts allowed in a release.
+- `release`: A bytes32 variable representing the current release identifier.
+- `startBlock`: An unsigned integer storing the block number at which the contract was deployed.
+- `_contracts`: A nested mapping that stores contract addresses based on the release and contract name.
+- `_contractsInRelease`: A mapping that keeps track of the number of contracts in each release.
+- `_contractNames`: A private EnumerableSet that stores the names of contracts in a specific release.
+
+Functions:
+- `initializeRegistry()`: Initializes the registry with an initial release and sets the deployment block for reading logs.
+- `ensureSender()`: Verifies if the provided sender address matches the address of the contract with the given contract name in the current release.
+- `getRelease()`: Returns the current release identifier.
+- `getContract()`: Returns the address of a contract by its name in the current release.
+- `register()`: Registers a contract with a given name and address in the current release.
+- `deregister()`: Deregisters a contract from the current release.
+- `getContractInRelease()`: Returns the address of a specific contract within a given release.
+- `registerInRelease()`: Registers a contract in a specific release.
+- `deregisterInRelease()`: Deregisters a contract name from a specific release.
+- `prepareRelease()`: Prepares a new release by copying all contracts from the current release to the new one.
+- `contracts()`: Returns the number of contracts in the current release.
+- `contractName()`: Returns the name of the contract at the specified index in the contractNames set.
+
+Internal functions:
+- `_getContractInRelease()`: Returns the address of a contract in a specific release.
+- `_registerInRelease()`: Registers a contract in a release.
+- `_deregisterInRelease()`: Deregisters a contract in a specific release.
+
+The contract emits various events such as `LogContractRegistered` and `LogContractDeregistered` to notify when contracts are registered or deregistered.
+
+Overall, the `RegistryController` contract provides a mechanism to manage and track contracts within different releases, allowing for controlled registration and deregistration of contracts.
 
 [.contract-index]
 .Functions
@@ -1827,91 +1794,81 @@ import "@etherisc/gif-contracts/contracts/modules/RegistryController.sol";
 [[RegistryController-initializeRegistry-bytes32-]]
 ==== `[.contract-item-name]#++initializeRegistry++#++(bytes32 _initialRelease)++` [.item-kind]#public#
 
-Initializes the GIF registry with an initial release and sets the deployment block for reading logs.
-
 [.contract-item]
 [[RegistryController-ensureSender-address-bytes32-]]
 ==== `[.contract-item-name]#++ensureSender++#++(address sender, bytes32 _contractName) → bool _senderMatches++` [.item-kind]#external#
-
-Verifies if the provided 'sender' address matches the address of the contract with the given '_contractName' in the current release.
 
 [.contract-item]
 [[RegistryController-getRelease--]]
 ==== `[.contract-item-name]#++getRelease++#++() → bytes32 _release++` [.item-kind]#external#
 
-Returns the current release identifier.
+get current release
 
 [.contract-item]
 [[RegistryController-getContract-bytes32-]]
 ==== `[.contract-item-name]#++getContract++#++(bytes32 _contractName) → address _addr++` [.item-kind]#public#
 
-Returns the address of a contract by its name.
+Get contract's address in the current release
 
 [.contract-item]
 [[RegistryController-register-bytes32-address-]]
 ==== `[.contract-item-name]#++register++#++(bytes32 _contractName, address _contractAddress)++` [.item-kind]#external#
 
-Registers a contract with a given name and address.
+Register contract in the current release
 
 [.contract-item]
 [[RegistryController-deregister-bytes32-]]
 ==== `[.contract-item-name]#++deregister++#++(bytes32 _contractName)++` [.item-kind]#external#
 
-Deregisters a contract from the current release.
+Deregister contract in the current release
 
 [.contract-item]
 [[RegistryController-getContractInRelease-bytes32-bytes32-]]
 ==== `[.contract-item-name]#++getContractInRelease++#++(bytes32 _release, bytes32 _contractName) → address _addr++` [.item-kind]#external#
 
-Returns the address of a specific contract within a given release.
+Get contract's address in certain release
 
 [.contract-item]
 [[RegistryController-registerInRelease-bytes32-bytes32-address-]]
 ==== `[.contract-item-name]#++registerInRelease++#++(bytes32 _release, bytes32 _contractName, address _contractAddress)++` [.item-kind]#external#
 
-Registers a contract in a specific release.
+Register contract in certain release
 
 [.contract-item]
 [[RegistryController-deregisterInRelease-bytes32-bytes32-]]
 ==== `[.contract-item-name]#++deregisterInRelease++#++(bytes32 _release, bytes32 _contractName)++` [.item-kind]#external#
 
-Deregisters a contract name from a specific release.
-
 [.contract-item]
 [[RegistryController-prepareRelease-bytes32-]]
 ==== `[.contract-item-name]#++prepareRelease++#++(bytes32 _newRelease)++` [.item-kind]#external#
 
-Prepares a new release by copying all contracts from the current release to the new one.
+Create new release, copy contracts from previous release
 
 [.contract-item]
 [[RegistryController-contracts--]]
 ==== `[.contract-item-name]#++contracts++#++() → uint256 _numberOfContracts++` [.item-kind]#external#
 
-Returns the number of contracts in the current release.
-
 [.contract-item]
 [[RegistryController-contractName-uint256-]]
 ==== `[.contract-item-name]#++contractName++#++(uint256 idx) → bytes32 _contractName++` [.item-kind]#external#
-
-Returns the name of the contract at the specified index in the contractNames set.
 
 [.contract-item]
 [[RegistryController-_getContractInRelease-bytes32-bytes32-]]
 ==== `[.contract-item-name]#++_getContractInRelease++#++(bytes32 _release, bytes32 _contractName) → address _addr++` [.item-kind]#internal#
 
-Returns the address of a contract in a specific release.
+Get contract's address in certain release
 
 [.contract-item]
 [[RegistryController-_registerInRelease-bytes32-bool-bytes32-address-]]
 ==== `[.contract-item-name]#++_registerInRelease++#++(bytes32 _release, bool isNewRelease, bytes32 _contractName, address _contractAddress)++` [.item-kind]#internal#
 
-Registers a contract in a release.
+Register contract in certain release
 
 [.contract-item]
 [[RegistryController-_deregisterInRelease-bytes32-bytes32-]]
 ==== `[.contract-item-name]#++_deregisterInRelease++#++(bytes32 _release, bytes32 _contractName)++` [.item-kind]#internal#
 
-Internal function to deregister a contract in a specific release.
+Deregister contract in certain release
 
 :FRACTION_FULL_UNIT: pass:normal[xref:#TreasuryModule-FRACTION_FULL_UNIT-uint256[`++FRACTION_FULL_UNIT++`]]
 :FRACTIONAL_FEE_MAX: pass:normal[xref:#TreasuryModule-FRACTIONAL_FEE_MAX-uint256[`++FRACTIONAL_FEE_MAX++`]]
@@ -1955,6 +1912,37 @@ Internal function to deregister a contract in a specific release.
 ```solidity
 import "@etherisc/gif-contracts/contracts/modules/TreasuryModule.sol";
 ```
+
+The smart contract implements the ITreasury interface and inherits from the CoreController and Pausable contracts.
+The contract imports several other contracts and interfaces, including ComponentController.sol, PolicyController.sol, BundleController.sol, PoolController.sol, CoreController.sol, TransferHelper.sol, and various interfaces from the "etherisc/gif-interface" and "openzeppelin/contracts" libraries.
+
+The contract defines several state variables, including:
+- FRACTION_FULL_UNIT: a constant representing the full unit value (10^18).
+- FRACTIONAL_FEE_MAX: a constant representing the maximum fractional fee value (25%).
+- event LogTransferHelperInputValidation1Failed: an event that logs a failed input validation.
+- event LogTransferHelperInputValidation2Failed: an event that logs a failed input validation.
+- event LogTransferHelperCallFailed: an event that logs a failed external call.
+- _instanceWalletAddress: a private variable representing the address of the instance wallet.
+- _riskpoolWallet: a mapping of riskpool IDs to wallet addresses.
+- _fees: a mapping of component IDs to FeeSpecification structs.
+- _componentToken: a mapping of product IDs/riskpool IDs to ERC20 token addresses.
+- _bundle: an instance of the BundleController contract.
+- _component: an instance of the ComponentController contract.
+- _policy: an instance of the PolicyController contract.
+- _pool: an instance of the PoolController contract.
+
+The contract includes several modifiers that enforce certain conditions on function execution, such as the instanceWalletDefined modifier, which requires the instance wallet address to be defined;
+the riskpoolWalletDefinedForProcess modifier, which requires the riskpool wallet address to be defined for a given process ID;
+the riskpoolWalletDefinedForBundle modifier, which requires the riskpool wallet address to be defined for a given bundle ID;
+the whenNotSuspended modifier, which requires the contract to not be paused; and the onlyRiskpoolService modifier, which restricts access to the RiskpoolService contract.
+
+The contract contains various functions for managing the treasury, such as setting the product token address, setting the instance wallet address, setting the riskpool wallet address, creating fee specifications, and setting premium and capital fees for components.
+There are also functions for suspending and resuming the treasury contract.
+
+The contract includes a function to calculate the fee amount and net amount for a given component ID and amount.
+It also includes functions to process premium payments for policies, either for the remaining premium amount or for a specific amount.
+
+Overall, the TreasuryModule contract provides functionality for managing fees, processing premium payments, and interacting with other controllers and contracts in the system.
 
 [.contract-index]
 .Modifiers
@@ -2080,140 +2068,93 @@ import "@etherisc/gif-contracts/contracts/modules/TreasuryModule.sol";
 [[TreasuryModule-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
-Sets the addresses of the BundleController, ComponentController, PolicyController, and PoolController contracts.
-
 [.contract-item]
 [[TreasuryModule-suspend--]]
 ==== `[.contract-item-name]#++suspend++#++()++` [.item-kind]#external#
-
-Suspends the treasury contract, preventing any further transfers or withdrawals.
-     Can only be called by the instance operator.
 
 [.contract-item]
 [[TreasuryModule-resume--]]
 ==== `[.contract-item-name]#++resume++#++()++` [.item-kind]#external#
 
-Resumes the treasury contract after it has been paused.
-
 [.contract-item]
 [[TreasuryModule-setProductToken-uint256-address-]]
 ==== `[.contract-item-name]#++setProductToken++#++(uint256 productId, address erc20Address)++` [.item-kind]#external#
-
-Sets the ERC20 token address for a given product ID and its associated risk pool.
 
 [.contract-item]
 [[TreasuryModule-setInstanceWallet-address-]]
 ==== `[.contract-item-name]#++setInstanceWallet++#++(address instanceWalletAddress)++` [.item-kind]#external#
 
-Sets the address of the instance wallet.
-
 [.contract-item]
 [[TreasuryModule-setRiskpoolWallet-uint256-address-]]
 ==== `[.contract-item-name]#++setRiskpoolWallet++#++(uint256 riskpoolId, address riskpoolWalletAddress)++` [.item-kind]#external#
-
-Sets the wallet address for a specific riskpool.
 
 [.contract-item]
 [[TreasuryModule-createFeeSpecification-uint256-uint256-uint256-bytes-]]
 ==== `[.contract-item-name]#++createFeeSpecification++#++(uint256 componentId, uint256 fixedFee, uint256 fractionalFee, bytes feeCalculationData) → struct ITreasury.FeeSpecification++` [.item-kind]#external#
 
-Creates a fee specification for a given component.
-
 [.contract-item]
 [[TreasuryModule-setPremiumFees-struct-ITreasury-FeeSpecification-]]
 ==== `[.contract-item-name]#++setPremiumFees++#++(struct ITreasury.FeeSpecification feeSpec)++` [.item-kind]#external#
-
-Sets the premium fees for a specific component.
 
 [.contract-item]
 [[TreasuryModule-setCapitalFees-struct-ITreasury-FeeSpecification-]]
 ==== `[.contract-item-name]#++setCapitalFees++#++(struct ITreasury.FeeSpecification feeSpec)++` [.item-kind]#external#
 
-Sets the fee specification for a given component, which includes the fixed and fractional fees.
-
 [.contract-item]
 [[TreasuryModule-calculateFee-uint256-uint256-]]
 ==== `[.contract-item-name]#++calculateFee++#++(uint256 componentId, uint256 amount) → uint256 feeAmount, uint256 netAmount++` [.item-kind]#public#
-
-Calculates the fee amount and net amount for a given component ID and amount.
 
 [.contract-item]
 [[TreasuryModule-processPremium-bytes32-]]
 ==== `[.contract-item-name]#++processPremium++#++(bytes32 processId) → bool success, uint256 feeAmount, uint256 netPremiumAmount++` [.item-kind]#external#
 
-Processes the premium for a given policy process ID.
-
 [.contract-item]
 [[TreasuryModule-processPremium-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPremium++#++(bytes32 processId, uint256 amount) → bool success, uint256 feeAmount, uint256 netAmount++` [.item-kind]#public#
-
-Processes a premium payment for a policy.
 
 [.contract-item]
 [[TreasuryModule-processPayout-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPayout++#++(bytes32 processId, uint256 payoutId) → uint256 feeAmount, uint256 netPayoutAmount++` [.item-kind]#external#
 
-Processes a payout for a specific process and payout ID.
-
 [.contract-item]
 [[TreasuryModule-processCapital-uint256-uint256-]]
 ==== `[.contract-item-name]#++processCapital++#++(uint256 bundleId, uint256 capitalAmount) → uint256 feeAmount, uint256 netCapitalAmount++` [.item-kind]#external#
-
-Processes capital for a given bundle ID and calculates fees. Transfers fees to the instance wallet and net capital to the riskpool wallet.
 
 [.contract-item]
 [[TreasuryModule-processWithdrawal-uint256-uint256-]]
 ==== `[.contract-item-name]#++processWithdrawal++#++(uint256 bundleId, uint256 amount) → uint256 feeAmount, uint256 netAmount++` [.item-kind]#external#
 
-Processes a withdrawal of a specified amount from a bundle, transferring the funds to the bundle owner's wallet.
-
 [.contract-item]
 [[TreasuryModule-getComponentToken-uint256-]]
 ==== `[.contract-item-name]#++getComponentToken++#++(uint256 componentId) → contract IERC20 token++` [.item-kind]#public#
-
-Returns the ERC20 token address associated with the given component ID.
 
 [.contract-item]
 [[TreasuryModule-getFeeSpecification-uint256-]]
 ==== `[.contract-item-name]#++getFeeSpecification++#++(uint256 componentId) → struct ITreasury.FeeSpecification++` [.item-kind]#public#
 
-Returns the fee specification of a given component.
-
 [.contract-item]
 [[TreasuryModule-getFractionFullUnit--]]
 ==== `[.contract-item-name]#++getFractionFullUnit++#++() → uint256++` [.item-kind]#public#
-
-Returns the value of the constant FRACTION_FULL_UNIT.
 
 [.contract-item]
 [[TreasuryModule-getInstanceWallet--]]
 ==== `[.contract-item-name]#++getInstanceWallet++#++() → address++` [.item-kind]#public#
 
-Returns the address of the instance wallet.
-
 [.contract-item]
 [[TreasuryModule-getRiskpoolWallet-uint256-]]
 ==== `[.contract-item-name]#++getRiskpoolWallet++#++(uint256 riskpoolId) → address++` [.item-kind]#public#
-
-Returns the wallet address of the specified risk pool.
 
 [.contract-item]
 [[TreasuryModule-_calculatePremiumFee-struct-ITreasury-FeeSpecification-bytes32-]]
 ==== `[.contract-item-name]#++_calculatePremiumFee++#++(struct ITreasury.FeeSpecification feeSpec, bytes32 processId) → struct IPolicy.Application application, uint256 feeAmount++` [.item-kind]#internal#
 
-Calculates the premium fee for a given fee specification and process ID.
-
 [.contract-item]
 [[TreasuryModule-_calculateFee-struct-ITreasury-FeeSpecification-uint256-]]
 ==== `[.contract-item-name]#++_calculateFee++#++(struct ITreasury.FeeSpecification feeSpec, uint256 amount) → uint256 feeAmount++` [.item-kind]#internal#
 
-Calculates the fee amount based on the given fee specification and the transaction amount.
-
 [.contract-item]
 [[TreasuryModule-_getRiskpoolWallet-bytes32-]]
 ==== `[.contract-item-name]#++_getRiskpoolWallet++#++(bytes32 processId) → uint256 riskpoolId, address riskpoolWalletAddress++` [.item-kind]#internal#
-
-Returns the riskpool ID and wallet address for a given process ID.
 
 [.contract-item]
 [[TreasuryModule-LogTransferHelperInputValidation1Failed-bool-address-address-]]

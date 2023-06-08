@@ -1,13 +1,11 @@
-// Minimum Hardhat config for solidity-docgen to work
+const fs = require('fs');
+const path = require('path');
 
 require('solidity-docgen');
 
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
 module.exports = {
     solidity: {
-        version: "0.8.2",
+        version: '0.8.2',
         settings: {
             optimizer: {
                 enabled: true,
@@ -17,3 +15,4 @@ module.exports = {
     },
     docgen: require('./docs/config'),
 };
+
