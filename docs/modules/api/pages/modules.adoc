@@ -246,16 +246,19 @@ import "@etherisc/gif-contracts/contracts/modules/AccessController.sol";
 The provided smart contract is called "AccessController" and is written in Solidity. It implements the "IAccess" interface and inherits from the "CoreController" contract and the "AccessControlEnumerable" contract. The contract provides functionalities for access control and role management.
 
 Roles:
+
 The contract defines three role identifiers as bytes32 constants:
 1. PRODUCT_OWNER_ROLE: Represents the role of a product owner.
 2. ORACLE_PROVIDER_ROLE: Represents the role of an oracle provider.
 3. RISKPOOL_KEEPER_ROLE: Represents the role of a risk pool keeper.
 
 State Variables:
+
 - `validRole`: A mapping that stores the validity of each role. It maps a role identifier (bytes32) to a boolean value indicating whether the role is valid.
 - `_defaultAdminSet`: A boolean flag indicating whether the default admin role has been set.
 
 Functions:
+
 - `_afterInitialize()`: Internal function called after contract initialization, which adds the product owner, oracle provider, and risk pool keeper roles. It calls the `_populateValidRoles()` function.
 - `_getName()`: Internal pure function that returns the name of the contract as a bytes32 value.
 - `setDefaultAdminRole(address defaultAdmin)`: Sets the default admin role for the Access Control List (ACL) by granting the DEFAULT_ADMIN_ROLE to the specified address. It can only be called once, and emits a `RoleGranted` event.
@@ -272,10 +275,11 @@ Functions:
 - `_populateValidRoles()`: Internal function that populates the `validRole` mapping with the roles considered valid for the contract. It sets the validity of the predefined roles to true.
 
 Modifiers:
+
 - `onlyInstanceOperator`: A modifier that restricts access to functions to only instance operators.
 
-Overall, the contract provides a flexible access control mechanism by defining roles and 
-allowing the assignment, revocation, and validation of roles by instance operators. 
+Overall, the contract provides a flexible access control mechanism by defining roles and
+allowing the assignment, revocation, and validation of roles by instance operators.
 It also sets a default admin role and manages the validity of roles through the `validRole` mapping.
 
 [.contract-index]
@@ -476,7 +480,8 @@ The smart contract is used to manage bundles, which are collections of policies.
 - There is a private variable `_bundleCount` to keep track of the number of bundles created.
 - The contract includes modifiers to restrict access to certain functions, such as `onlyRiskpoolService` and `onlyFundableBundle`.
 
-Functions: 
+Functions:
+
 - `_afterInitialize()`: Internal function that initializes references to other contracts after contract deployment.
 - `create()`: Allows the RiskpoolService contract to create a new bundle and mint a corresponding NFT token.
 - `fund()`: Enables the RiskpoolService contract to add funds to a bundle's capital and balance.
@@ -726,6 +731,7 @@ The contract defines several mappings and sets to store information about compon
 It also includes modifiers to restrict access to certain functions based on the caller's role.
 
 Functions:
+
 - `propose()`: Allows the owner service of a component to propose a new component to the system. It verifies that the component and its name do not already exist and emits an event indicating the successful proposal.
 - `_persistComponent()`: Persists a new component into the system by assigning it an ID and updating the necessary mappings and sets.
 - `exists()`: Checks if a component with the given ID exists in the system.
@@ -981,6 +987,7 @@ It also imports several interfaces from the "etherisc/gif-interface" library, in
 The contract includes a private variable `_component` of type `ComponentController`, which is used to interact with the `ComponentController` contract.
 
 Functions:
+
 - `_afterInitialize()`: Called after the contract is initialized. This function sets the `_component` variable to the address of the `ComponentController` contract.
 - `getAuthorizationStatus(address productAddress)`: Takes a product address as input and returns the authorization status of the product. It retrieves the product's ID using the `_component.getComponentId(productAddress)` function, checks if the product is authorized by calling the internal `_isValidCall(productId)` function, and retrieves the associated policy flow address using the `_component.getPolicyFlow(productId)` function.
 - `_isValidCall(uint256 productId)`: Checks if a product with the given ID is currently active. It does this by calling `_component.getComponentState(productId)` and comparing the returned value to `IComponent.ComponentState.Active`.
@@ -1090,6 +1097,7 @@ Additionally, it includes functions to process payouts, retrieve metadata and ap
 The contract inherits from the `IPolicy` interface and the `CoreController` contract.
 
 1. State Variables:
+
 - `metadata`: A mapping that stores metadata associated with policy flows.
 - `applications`: A mapping that stores insurance applications associated with policy flows.
 - `policies`: A mapping that stores policies associated with policy flows.
@@ -1100,6 +1108,7 @@ The contract inherits from the `IPolicy` interface and the `CoreController` cont
 - `_component`: A reference to the `ComponentController` contract.
 
 2. Functions:
+
 - `_afterInitialize()`: An internal function that sets the `_component` variable during contract initialization.
 - `createPolicyFlow()`: Creates a new policy flow with the given owner, product ID, and additional data.
 - `createApplication()`: Creates a new insurance application for a policy flow with the specified process ID, premium amount, sum insured amount, and additional data.
@@ -1354,6 +1363,7 @@ The smart contract manages riskpools, their registration, funding, defunding, co
 - The contract defines modifiers for access control to specific functions.
 
 Functions:
+
 - `_afterInitialize()`: Called after contract initialization to set addresses of other contracts.
 - `registerRiskpool()`: Allows the registration of a new riskpool with the specified parameters. It emits an event upon successful registration.
 - `setRiskpoolForProduct()`: Sets the riskpool ID for a given product ID.
@@ -1568,10 +1578,12 @@ It also imports two local contracts, "ComponentController.sol" and "CoreControll
 The contract defines a private variable `_component` of type "ComponentController" and an array `_oracleRequests` of type "OracleRequest[]".
 
 The contract includes two modifiers:
+
 1. `onlyOracleService`: It requires that the caller must be the contract with the address specified by the "OracleService" contract address stored in the CoreController.
 2. `onlyResponsibleOracle`: It checks if the oracle specified by the `responder` address is responsible for the given `requestId`.
 
 The contract provides the following functions:
+
 - `_afterInitialize()`: Sets the `_component` variable to the address of the "ComponentController" contract. It is called after contract initialization and only during the initialization phase.
 - `request()`: Allows the creation of a new oracle request with the specified parameters. It requires the caller to have the "Query" policy flow. The function validates the callback contract address to ensure it corresponds to a product. It creates a new oracle request in the `_oracleRequests` array, initializes its fields, and calls the `request()` function on the responsible oracle. It emits a `LogOracleRequested` event.
 - `respond()`: Enables an oracle to respond to a specific oracle request. The caller must be the contract specified by the "OracleService" address. The function verifies that the responding oracle is responsible for the given request and then calls the callback method on the callback contract. It emits a `LogOracleResponded` event.
@@ -1581,6 +1593,7 @@ The contract provides the following functions:
 - `_getOracle()`: Retrieves the Oracle component with the specified ID. It checks if the component is an Oracle component and if it is in an active state. If the checks pass, it returns the Oracle component.
 
 The contract emits the following events:
+
 1. `LogOracleRequested`: Indicates the creation of a new oracle request and includes the process ID, request ID, and responsible oracle ID.
 2. `LogOracleResponded`: Indicates the response to an oracle request and includes the process ID, request ID, responder address, and success status.
 3. `LogOracleCanceled`: Indicates the cancellation of an oracle request and includes the request ID.
@@ -1714,6 +1727,7 @@ The contract provides functionality for registering, deregistering, and accessin
 - `_contractNames`: A private EnumerableSet that stores the names of contracts in a specific release.
 
 Functions:
+
 - `initializeRegistry()`: Initializes the registry with an initial release and sets the deployment block for reading logs.
 - `ensureSender()`: Verifies if the provided sender address matches the address of the contract with the given contract name in the current release.
 - `getRelease()`: Returns the current release identifier.
@@ -1728,6 +1742,7 @@ Functions:
 - `contractName()`: Returns the name of the contract at the specified index in the contractNames set.
 
 Internal functions:
+
 - `_getContractInRelease()`: Returns the address of a contract in a specific release.
 - `_registerInRelease()`: Registers a contract in a release.
 - `_deregisterInRelease()`: Deregisters a contract in a specific release.
@@ -1917,6 +1932,7 @@ The smart contract implements the ITreasury interface and inherits from the Core
 The contract imports several other contracts and interfaces, including ComponentController.sol, PolicyController.sol, BundleController.sol, PoolController.sol, CoreController.sol, TransferHelper.sol, and various interfaces from the "etherisc/gif-interface" and "openzeppelin/contracts" libraries.
 
 The contract defines several state variables, including:
+
 - FRACTION_FULL_UNIT: a constant representing the full unit value (10^18).
 - FRACTIONAL_FEE_MAX: a constant representing the maximum fractional fee value (25%).
 - event LogTransferHelperInputValidation1Failed: an event that logs a failed input validation.
