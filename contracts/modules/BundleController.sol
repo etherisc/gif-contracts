@@ -11,14 +11,15 @@ import "./PoolController.sol";
 
 /**
  * @dev The smart contract is used to manage bundles, which are collections of policies.
- * 
+ *
  * - The contract imports other Solidity contracts such as `PolicyController.sol`, `CoreController.sol`, and `BundleToken.sol`.
  * - The contract implements the `IBundle` interface and extends the `CoreController` contract.
  * - It defines several mappings to store information about bundles, active policies, locked capital per policy, and the number of unburt bundles for each risk pool.
  * - There is a private variable `_bundleCount` to keep track of the number of bundles created.
  * - The contract includes modifiers to restrict access to certain functions, such as `onlyRiskpoolService` and `onlyFundableBundle`.
- * 
- * Functions: 
+ *
+ * Functions:
+ *
  * - `_afterInitialize()`: Internal function that initializes references to other contracts after contract deployment.
  * - `create()`: Allows the RiskpoolService contract to create a new bundle and mint a corresponding NFT token.
  * - `fund()`: Enables the RiskpoolService contract to add funds to a bundle's capital and balance.
@@ -31,25 +32,22 @@ import "./PoolController.sol";
  * - `processPremium()`: Processes the premium payment for a given bundle and updates its balance.
  * - `processPayout()`: Processes a payout for a policy from a bundle.
  * - `releasePolicy()`: Releases a policy and updates the bundle's capital.
- * 
+ *
  * The contract includes various modifiers and event emitters to enforce access control and emit relevant events.
  * Overall, the `BundleController` contract provides functionality to manage bundles and their associated policies, including creating, funding, locking, unlocking, closing, burning, collateralizing, and releasing policies within a bundle.
  */
 
-
-contract BundleController is 
-    IBundle,
-    CoreController
-{
-
+contract BundleController is IBundle, CoreController {
     PolicyController private _policy;
-    BundleToken private _token; 
+    BundleToken private _token;
 
     mapping(uint256 /* bundleId */ => Bundle /* Bundle */) private _bundles;
-    mapping(uint256 /* bundleId */ => uint256 /* activePolicyCount */) private _activePolicies;
-    mapping(uint256 /* bundleId */ => mapping(bytes32 /* processId */ => uint256 /* lockedCapitalAmount */)) private _valueLockedPerPolicy;
-    mapping(uint256 /* riskpoolId */ => uint256 /* numberOfUnburntBundles */) private _unburntBundlesForRiskpoolId;
-    
+    mapping(uint256 /* bundleId */ => uint256 /* activePolicyCount */)
+        private _activePolicies;
+    mapping(uint256 /* bundleId */ => mapping(bytes32 /* processId */ => uint256 /* lockedCapitalAmount */))
+        private _valueLockedPerPolicy;
+    mapping(uint256 /* riskpoolId */ => uint256 /* numberOfUnburntBundles */)
+        private _unburntBundlesForRiskpoolId;
 
     uint256 private _bundleCount;
 
@@ -65,8 +63,9 @@ contract BundleController is
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-002:BUNDLE_DOES_NOT_EXIST");
         require(
-            bundle.state != IBundle.BundleState.Burned 
-            && bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-003:BUNDLE_BURNED_OR_CLOSED"
+            bundle.state != IBundle.BundleState.Burned &&
+                bundle.state != IBundle.BundleState.Closed,
+            "ERROR:BUC-003:BUNDLE_BURNED_OR_CLOSED"
         );
         _;
     }
@@ -76,11 +75,12 @@ contract BundleController is
         _token = BundleToken(_getContractAddress("BundleToken"));
     }
 
-    function create(address owner_, uint riskpoolId_, bytes calldata filter_, uint256 amount_) 
-        external override
-        onlyRiskpoolService
-        returns(uint256 bundleId)
-    {   
+    function create(
+        address owner_,
+        uint riskpoolId_,
+        bytes calldata filter_,
+        uint256 amount_
+    ) external override onlyRiskpoolService returns (uint256 bundleId) {
         // will start with bundleId 1.
         // this helps in maps where a bundleId equals a non-existing entry
         bundleId = _bundleCount + 1;
@@ -104,77 +104,91 @@ contract BundleController is
         _bundleCount++;
         _unburntBundlesForRiskpoolId[riskpoolId_]++;
 
-        emit LogBundleCreated(bundle.id, riskpoolId_, owner_, bundle.state, bundle.capital);
+        emit LogBundleCreated(
+            bundle.id,
+            riskpoolId_,
+            owner_,
+            bundle.state,
+            bundle.capital
+        );
     }
 
-
-    function fund(uint256 bundleId, uint256 amount)
-        external override 
-        onlyRiskpoolService
-    {
+    function fund(
+        uint256 bundleId,
+        uint256 amount
+    ) external override onlyRiskpoolService {
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-011:BUNDLE_DOES_NOT_EXIST");
-        require(bundle.state != IBundle.BundleState.Closed, "ERROR:BUC-012:BUNDLE_CLOSED");
+        require(
+            bundle.state != IBundle.BundleState.Closed,
+            "ERROR:BUC-012:BUNDLE_CLOSED"
+        );
 
         bundle.capital += amount;
         bundle.balance += amount;
         bundle.updatedAt = block.timestamp;
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
-        emit LogBundleCapitalProvided(bundleId, _msgSender(), amount, capacityAmount);
+        emit LogBundleCapitalProvided(
+            bundleId,
+            _msgSender(),
+            amount,
+            capacityAmount
+        );
     }
 
-
-    function defund(uint256 bundleId, uint256 amount) 
-        external override 
-        onlyRiskpoolService
-    {
+    function defund(
+        uint256 bundleId,
+        uint256 amount
+    ) external override onlyRiskpoolService {
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-013:BUNDLE_DOES_NOT_EXIST");
         require(
-            bundle.capital >= bundle.lockedCapital + amount
-            || (bundle.lockedCapital == 0 && bundle.balance >= amount),
+            bundle.capital >= bundle.lockedCapital + amount ||
+                (bundle.lockedCapital == 0 && bundle.balance >= amount),
             "ERROR:BUC-014:CAPACITY_OR_BALANCE_TOO_LOW"
         );
 
-        if (bundle.capital >= amount) { bundle.capital -= amount; } 
-        else                          { bundle.capital = 0; }
+        if (bundle.capital >= amount) {
+            bundle.capital -= amount;
+        } else {
+            bundle.capital = 0;
+        }
 
         bundle.balance -= amount;
         bundle.updatedAt = block.timestamp;
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
-        emit LogBundleCapitalWithdrawn(bundleId, _msgSender(), amount, capacityAmount);
+        emit LogBundleCapitalWithdrawn(
+            bundleId,
+            _msgSender(),
+            amount,
+            capacityAmount
+        );
     }
 
-    function lock(uint256 bundleId)
-        external override
-        onlyRiskpoolService
-    {
+    function lock(uint256 bundleId) external override onlyRiskpoolService {
         _changeState(bundleId, BundleState.Locked);
     }
 
-    function unlock(uint256 bundleId)
-        external override
-        onlyRiskpoolService
-    {
+    function unlock(uint256 bundleId) external override onlyRiskpoolService {
         _changeState(bundleId, BundleState.Active);
     }
 
-    function close(uint256 bundleId)
-        external override
-        onlyRiskpoolService
-    {
-        require(_activePolicies[bundleId] == 0, "ERROR:BUC-015:BUNDLE_WITH_ACTIVE_POLICIES");
+    function close(uint256 bundleId) external override onlyRiskpoolService {
+        require(
+            _activePolicies[bundleId] == 0,
+            "ERROR:BUC-015:BUNDLE_WITH_ACTIVE_POLICIES"
+        );
         _changeState(bundleId, BundleState.Closed);
     }
 
-    function burn(uint256 bundleId)    
-        external override
-        onlyRiskpoolService
-    {
+    function burn(uint256 bundleId) external override onlyRiskpoolService {
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.state == BundleState.Closed, "ERROR:BUC-016:BUNDLE_NOT_CLOSED");
+        require(
+            bundle.state == BundleState.Closed,
+            "ERROR:BUC-016:BUNDLE_NOT_CLOSED"
+        );
         require(bundle.balance == 0, "ERROR:BUC-017:BUNDLE_HAS_BALANCE");
 
         // burn corresponding nft -> as a result bundle looses its owner
@@ -184,19 +198,33 @@ contract BundleController is
         _changeState(bundleId, BundleState.Burned);
     }
 
-    function collateralizePolicy(uint256 bundleId, bytes32 processId, uint256 amount)
-        external override 
-        onlyRiskpoolService
-    {
+    function collateralizePolicy(
+        uint256 bundleId,
+        bytes32 processId,
+        uint256 amount
+    ) external override onlyRiskpoolService {
         IPolicy.Metadata memory metadata = _policy.getMetadata(processId);
         Bundle storage bundle = _bundles[bundleId];
-        require(bundle.riskpoolId == _getPoolController().getRiskPoolForProduct(metadata.productId), "ERROR:BUC-019:BUNDLE_NOT_IN_RISKPOOL");
+        require(
+            bundle.riskpoolId ==
+                _getPoolController().getRiskPoolForProduct(metadata.productId),
+            "ERROR:BUC-019:BUNDLE_NOT_IN_RISKPOOL"
+        );
         require(bundle.createdAt > 0, "ERROR:BUC-020:BUNDLE_DOES_NOT_EXIST");
-        require(bundle.state == IBundle.BundleState.Active, "ERROR:BUC-021:BUNDLE_NOT_ACTIVE");        
-        require(bundle.capital >= bundle.lockedCapital + amount, "ERROR:BUC-022:CAPACITY_TOO_LOW");
+        require(
+            bundle.state == IBundle.BundleState.Active,
+            "ERROR:BUC-021:BUNDLE_NOT_ACTIVE"
+        );
+        require(
+            bundle.capital >= bundle.lockedCapital + amount,
+            "ERROR:BUC-022:CAPACITY_TOO_LOW"
+        );
 
         // might need to be added in a future relase
-        require(_valueLockedPerPolicy[bundleId][processId] == 0, "ERROR:BUC-023:INCREMENTAL_COLLATERALIZATION_NOT_IMPLEMENTED");
+        require(
+            _valueLockedPerPolicy[bundleId][processId] == 0,
+            "ERROR:BUC-023:INCREMENTAL_COLLATERALIZATION_NOT_IMPLEMENTED"
+        );
 
         bundle.lockedCapital += amount;
         bundle.updatedAt = block.timestamp;
@@ -205,15 +233,19 @@ contract BundleController is
         _valueLockedPerPolicy[bundleId][processId] = amount;
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
-        emit LogBundlePolicyCollateralized(bundleId, processId, amount, capacityAmount);
+        emit LogBundlePolicyCollateralized(
+            bundleId,
+            processId,
+            amount,
+            capacityAmount
+        );
     }
 
-
-    function processPremium(uint256 bundleId, bytes32 processId, uint256 amount)
-        external override
-        onlyRiskpoolService
-        onlyFundableBundle(bundleId)
-    {
+    function processPremium(
+        uint256 bundleId,
+        bytes32 processId,
+        uint256 amount
+    ) external override onlyRiskpoolService onlyFundableBundle(bundleId) {
         IPolicy.Policy memory policy = _policy.getPolicy(processId);
         require(
             policy.state != IPolicy.PolicyState.Closed,
@@ -222,16 +254,16 @@ contract BundleController is
 
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-031:BUNDLE_DOES_NOT_EXIST");
-        
+
         bundle.balance += amount;
         bundle.updatedAt = block.timestamp; // solhint-disable-line
     }
 
-
-    function processPayout(uint256 bundleId, bytes32 processId, uint256 amount) 
-        external override 
-        onlyRiskpoolService
-    {
+    function processPayout(
+        uint256 bundleId,
+        bytes32 processId,
+        uint256 amount
+    ) external override onlyRiskpoolService {
         IPolicy.Policy memory policy = _policy.getPolicy(processId);
         require(
             policy.state != IPolicy.PolicyState.Closed,
@@ -239,18 +271,28 @@ contract BundleController is
         );
 
         // check there are policies and there is sufficient locked capital for policy
-        require(_activePolicies[bundleId] > 0, "ERROR:BUC-041:NO_ACTIVE_POLICIES_FOR_BUNDLE");
-        require(_valueLockedPerPolicy[bundleId][processId] >= amount, "ERROR:BUC-042:COLLATERAL_INSUFFICIENT_FOR_POLICY");
+        require(
+            _activePolicies[bundleId] > 0,
+            "ERROR:BUC-041:NO_ACTIVE_POLICIES_FOR_BUNDLE"
+        );
+        require(
+            _valueLockedPerPolicy[bundleId][processId] >= amount,
+            "ERROR:BUC-042:COLLATERAL_INSUFFICIENT_FOR_POLICY"
+        );
 
         // make sure bundle exists and is not yet closed
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-043:BUNDLE_DOES_NOT_EXIST");
         require(
-            bundle.state == IBundle.BundleState.Active
-            || bundle.state == IBundle.BundleState.Locked, 
-            "ERROR:BUC-044:BUNDLE_STATE_INVALID");
+            bundle.state == IBundle.BundleState.Active ||
+                bundle.state == IBundle.BundleState.Locked,
+            "ERROR:BUC-044:BUNDLE_STATE_INVALID"
+        );
         require(bundle.capital >= amount, "ERROR:BUC-045:CAPITAL_TOO_LOW");
-        require(bundle.lockedCapital >= amount, "ERROR:BUC-046:LOCKED_CAPITAL_TOO_LOW");
+        require(
+            bundle.lockedCapital >= amount,
+            "ERROR:BUC-046:LOCKED_CAPITAL_TOO_LOW"
+        );
         require(bundle.balance >= amount, "ERROR:BUC-047:BALANCE_TOO_LOW");
 
         _valueLockedPerPolicy[bundleId][processId] -= amount;
@@ -262,11 +304,14 @@ contract BundleController is
         emit LogBundlePayoutProcessed(bundleId, processId, amount);
     }
 
-
-    function releasePolicy(uint256 bundleId, bytes32 processId) 
-        external override 
+    function releasePolicy(
+        uint256 bundleId,
+        bytes32 processId
+    )
+        external
+        override
         onlyRiskpoolService
-        returns(uint256 remainingCollateralAmount)
+        returns (uint256 remainingCollateralAmount)
     {
         IPolicy.Policy memory policy = _policy.getPolicy(processId);
         require(
@@ -277,9 +322,14 @@ contract BundleController is
         // make sure bundle exists and is not yet closed
         Bundle storage bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-051:BUNDLE_DOES_NOT_EXIST");
-        require(_activePolicies[bundleId] > 0, "ERROR:BUC-052:NO_ACTIVE_POLICIES_FOR_BUNDLE");
+        require(
+            _activePolicies[bundleId] > 0,
+            "ERROR:BUC-052:NO_ACTIVE_POLICIES_FOR_BUNDLE"
+        );
 
-        uint256 lockedForPolicyAmount = _valueLockedPerPolicy[bundleId][processId];
+        uint256 lockedForPolicyAmount = _valueLockedPerPolicy[bundleId][
+            processId
+        ];
         // this should never ever fail ...
         require(
             bundle.lockedCapital >= lockedForPolicyAmount,
@@ -295,54 +345,67 @@ contract BundleController is
         bundle.updatedAt = block.timestamp; // solhint-disable-line
 
         uint256 capacityAmount = bundle.capital - bundle.lockedCapital;
-        emit LogBundlePolicyReleased(bundleId, processId, lockedForPolicyAmount, capacityAmount);
+        emit LogBundlePolicyReleased(
+            bundleId,
+            processId,
+            lockedForPolicyAmount,
+            capacityAmount
+        );
     }
 
-    function getOwner(uint256 bundleId) public view returns(address) { 
+    function getOwner(uint256 bundleId) public view returns (address) {
         uint256 tokenId = getBundle(bundleId).tokenId;
-        return _token.ownerOf(tokenId); 
+        return _token.ownerOf(tokenId);
     }
 
-    function getState(uint256 bundleId) public view returns(BundleState) {
-        return getBundle(bundleId).state;   
+    function getState(uint256 bundleId) public view returns (BundleState) {
+        return getBundle(bundleId).state;
     }
 
-    function getFilter(uint256 bundleId) public view returns(bytes memory) {
+    function getFilter(uint256 bundleId) public view returns (bytes memory) {
         return getBundle(bundleId).filter;
-    }   
+    }
 
-    function getCapacity(uint256 bundleId) public view returns(uint256) {
+    function getCapacity(uint256 bundleId) public view returns (uint256) {
         Bundle memory bundle = getBundle(bundleId);
         return bundle.capital - bundle.lockedCapital;
     }
 
-    function getTotalValueLocked(uint256 bundleId) public view returns(uint256) {
-        return getBundle(bundleId).lockedCapital;   
+    function getTotalValueLocked(
+        uint256 bundleId
+    ) public view returns (uint256) {
+        return getBundle(bundleId).lockedCapital;
     }
 
-    function getBalance(uint256 bundleId) public view returns(uint256) {
-        return getBundle(bundleId).balance;   
+    function getBalance(uint256 bundleId) public view returns (uint256) {
+        return getBundle(bundleId).balance;
     }
 
-    function getToken() external view returns(BundleToken) {
+    function getToken() external view returns (BundleToken) {
         return _token;
     }
 
-    function getBundle(uint256 bundleId) public view returns(Bundle memory) {
+    function getBundle(uint256 bundleId) public view returns (Bundle memory) {
         Bundle memory bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-060:BUNDLE_DOES_NOT_EXIST");
         return bundle;
     }
 
-    function bundles() public view returns(uint256) {
+    function bundles() public view returns (uint256) {
         return _bundleCount;
     }
 
-    function unburntBundles(uint256 riskpoolId) external view returns(uint256) {
+    function unburntBundles(
+        uint256 riskpoolId
+    ) external view returns (uint256) {
         return _unburntBundlesForRiskpoolId[riskpoolId];
     }
 
-    function _getPoolController() internal view returns (PoolController _poolController) {
+    function _getPoolController()
+        internal
+        view
+        returns (PoolController _poolController)
+    {
         _poolController = PoolController(_getContractAddress("Pool"));
     }
 
@@ -361,23 +424,25 @@ contract BundleController is
         _bundles[bundleId].updatedAt = block.timestamp;
     }
 
-    function _checkStateTransition(BundleState oldState, BundleState newState) 
-        internal 
-        pure 
-    {
+    function _checkStateTransition(
+        BundleState oldState,
+        BundleState newState
+    ) internal pure {
         if (oldState == BundleState.Active) {
             require(
-                newState == BundleState.Locked || newState == BundleState.Closed, 
+                newState == BundleState.Locked ||
+                    newState == BundleState.Closed,
                 "ERROR:BUC-070:ACTIVE_INVALID_TRANSITION"
             );
         } else if (oldState == BundleState.Locked) {
             require(
-                newState == BundleState.Active || newState == BundleState.Closed, 
+                newState == BundleState.Active ||
+                    newState == BundleState.Closed,
                 "ERROR:BUC-071:LOCKED_INVALID_TRANSITION"
             );
         } else if (oldState == BundleState.Closed) {
             require(
-                newState == BundleState.Burned, 
+                newState == BundleState.Burned,
                 "ERROR:BUC-072:CLOSED_INVALID_TRANSITION"
             );
         } else if (oldState == BundleState.Burned) {
