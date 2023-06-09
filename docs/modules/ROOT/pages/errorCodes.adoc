@@ -10,1271 +10,1280 @@ Test
 
 === Test
 
+[.hljs-theme-light.nopadding]
+
 Test
 
-==== `[.contract-item-name]#+++ERROR:ACL-001:ADMIN_ROLE_ALREADY_SET+++ `
+--
+
+
+[.contract-item]
+==== `[.contract-item-name]#++ERRORACL-001ADMIN_ROLE_ALREADY_SET++ `#
 Contract: modules/AccessController.sol
 
 Thrown if you try to set the admin role twice.
 
-==== `[.contract-item-name]#+++ERROR:ACL-002:ROLE_UNKNOWN_OR_INVALID+++ `
+[.contract-item]
+==== `[.contract-item-name]#+++ERROR:ACL-002:ROLE_UNKNOWN_OR_INVALID+++ `#
 Contract:  modules/AccessController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:ACL-003:ROLE_EXISTING_AND_VALID+++ `
+==== `[.contract-item-name]#+++ERROR:ACL-003:ROLE_EXISTING_AND_VALID+++ `#
 Contract:  modules/AccessController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:ACL-004:ROLE_UNKNOWN_OR_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:ACL-004:ROLE_UNKNOWN_OR_INVALID+++ `#
 Contract:  modules/AccessController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:ACM-001:NOT_INSTANCE_OPERATOR+++ `
+==== `[.contract-item-name]#+++ERROR:ACM-001:NOT_INSTANCE_OPERATOR+++ `#
 Contract:  shared/WithRegistry.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:ACM-004:NOT_ORACLE_SERVICE+++ `
+==== `[.contract-item-name]#+++ERROR:ACM-004:NOT_ORACLE_SERVICE+++ `#
 Contract:  shared/WithRegistry.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:ACM-005:NOT_ORACLE_OWNER+++ `
+==== `[.contract-item-name]#+++ERROR:ACM-005:NOT_ORACLE_OWNER+++ `#
 Contract:  shared/WithRegistry.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:ACM-006:NOT_PRODUCT_OWNER+++ `
+==== `[.contract-item-name]#+++ERROR:ACM-006:NOT_PRODUCT_OWNER+++ `#
 Contract:  shared/WithRegistry.sol
 
 Thrown if
 
 
-==== `[.contract-item-name]#+++ERROR:BOC-074:INITIAL_STATE_NOT_HANDLED+++ `
+==== `[.contract-item-name]#+++ERROR:BOC-074:INITIAL_STATE_NOT_HANDLED+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BTK-001:NOT_INITIALIZED+++ `
+==== `[.contract-item-name]#+++ERROR:BTK-001:NOT_INITIALIZED+++ `#
 Contract:  tokens/BundleToken.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BTK-002:NOT_BUNDLE_MODULE+++ `
+==== `[.contract-item-name]#+++ERROR:BTK-002:NOT_BUNDLE_MODULE+++ `#
 Contract:  tokens/BundleToken.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BTK-003:BUNDLE_MODULE_ALREADY_DEFINED+++ `
+==== `[.contract-item-name]#+++ERROR:BTK-003:BUNDLE_MODULE_ALREADY_DEFINED+++ `#
 Contract:  tokens/BundleToken.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BTK-004:INVALID_BUNDLE_MODULE_ADDRESS+++ `
+==== `[.contract-item-name]#+++ERROR:BTK-004:INVALID_BUNDLE_MODULE_ADDRESS+++ `#
 Contract:  tokens/BundleToken.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BTK-005:TOKEN_ID_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:BTK-005:TOKEN_ID_INVALID+++ `#
 Contract:  tokens/BundleToken.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-001:NOT_RISKPOOL_SERVICE+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-001:NOT_RISKPOOL_SERVICE+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-002:BUNDLE_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-002:BUNDLE_DOES_NOT_EXIST+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-003:BUNDLE_BURNED_OR_CLOSED+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-003:BUNDLE_BURNED_OR_CLOSED+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-010:BUNDLE_ALREADY_EXISTS+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-010:BUNDLE_ALREADY_EXISTS+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-011:BUNDLE_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-011:BUNDLE_DOES_NOT_EXIST+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-012:BUNDLE_CLOSED+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-012:BUNDLE_CLOSED+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-013:BUNDLE_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-013:BUNDLE_DOES_NOT_EXIST+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-014:CAPACITY_OR_BALANCE_TOO_LOW+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-014:CAPACITY_OR_BALANCE_TOO_LOW+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-015:BUNDLE_WITH_ACTIVE_POLICIES+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-015:BUNDLE_WITH_ACTIVE_POLICIES+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-016:BUNDLE_NOT_CLOSED+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-016:BUNDLE_NOT_CLOSED+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-017:BUNDLE_HAS_BALANCE+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-017:BUNDLE_HAS_BALANCE+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-019:BUNDLE_NOT_IN_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-019:BUNDLE_NOT_IN_RISKPOOL+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-020:BUNDLE_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-020:BUNDLE_DOES_NOT_EXIST+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-021:BUNDLE_NOT_ACTIVE+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-021:BUNDLE_NOT_ACTIVE+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-022:CAPACITY_TOO_LOW+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-022:CAPACITY_TOO_LOW+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-023:INCREMENTAL_COLLATERALIZATION_NOT_IMPLEMENTED+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-023:INCREMENTAL_COLLATERALIZATION_NOT_IMPLEMENTED+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-031:BUNDLE_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-031:BUNDLE_DOES_NOT_EXIST+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-041:NO_ACTIVE_POLICIES_FOR_BUNDLE+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-041:NO_ACTIVE_POLICIES_FOR_BUNDLE+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-042:COLLATERAL_INSUFFICIENT_FOR_POLICY+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-042:COLLATERAL_INSUFFICIENT_FOR_POLICY+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-043:BUNDLE_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-043:BUNDLE_DOES_NOT_EXIST+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-044:BUNDLE_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-044:BUNDLE_STATE_INVALID+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-045:CAPITAL_TOO_LOW+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-045:CAPITAL_TOO_LOW+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-046:LOCKED_CAPITAL_TOO_LOW+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-046:LOCKED_CAPITAL_TOO_LOW+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-047:BALANCE_TOO_LOW+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-047:BALANCE_TOO_LOW+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-051:BUNDLE_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-051:BUNDLE_DOES_NOT_EXIST+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-052:NO_ACTIVE_POLICIES_FOR_BUNDLE+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-052:NO_ACTIVE_POLICIES_FOR_BUNDLE+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-060:BUNDLE_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-060:BUNDLE_DOES_NOT_EXIST+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if you ... and bundle doesn't exist
 
-==== `[.contract-item-name]#+++ERROR:BUC-070:ACTIVE_INVALID_TRANSITION+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-070:ACTIVE_INVALID_TRANSITION+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-071:LOCKED_INVALID_TRANSITION+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-071:LOCKED_INVALID_TRANSITION+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-072:CLOSED_INVALID_TRANSITION+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-072:CLOSED_INVALID_TRANSITION+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:BUC-073:BURNED_IS_FINAL_STATE+++ `
+==== `[.contract-item-name]#+++ERROR:BUC-073:BURNED_IS_FINAL_STATE+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-001:NOT_COMPONENT_OWNER_SERVICE+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-001:NOT_COMPONENT_OWNER_SERVICE+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-002:NOT_INSTANCE_OPERATOR_SERVICE+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-002:NOT_INSTANCE_OPERATOR_SERVICE+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-003:COMPONENT_ALREADY_EXISTS+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-003:COMPONENT_ALREADY_EXISTS+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-004:COMPONENT_NAME_ALREADY_EXISTS+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-004:COMPONENT_NAME_ALREADY_EXISTS+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-005:INVALID_COMPONENT_ID+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-005:INVALID_COMPONENT_ID+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-006:COMPONENT_ADDRESS_ZERO+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-006:COMPONENT_ADDRESS_ZERO+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-007:COMPONENT_UNKNOWN+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-007:COMPONENT_UNKNOWN+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-008:INVALID_COMPONENT_ID+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-008:INVALID_COMPONENT_ID+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-010:COMPONENT_TYPE_UNKNOWN+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-010:COMPONENT_TYPE_UNKNOWN+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-011:UNKNOWN_PRODUCT_ID+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-011:UNKNOWN_PRODUCT_ID+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-020:SOURCE_AND_TARGET_STATE_IDENTICAL+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-020:SOURCE_AND_TARGET_STATE_IDENTICAL+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-021:CREATED_INVALID_TRANSITION+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-021:CREATED_INVALID_TRANSITION+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-023:DECLINED_IS_FINAL_STATE+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-023:DECLINED_IS_FINAL_STATE+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-024:ACTIVE_INVALID_TRANSITION+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-024:ACTIVE_INVALID_TRANSITION+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-025:PAUSED_INVALID_TRANSITION+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-025:PAUSED_INVALID_TRANSITION+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-026:SUSPENDED_INVALID_TRANSITION+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-026:SUSPENDED_INVALID_TRANSITION+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-027:INITIAL_STATE_NOT_HANDLED+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-027:INITIAL_STATE_NOT_HANDLED+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CCR-22:PROPOSED_INVALID_TRANSITION+++ `
+==== `[.contract-item-name]#+++ERROR:CCR-22:PROPOSED_INVALID_TRANSITION+++ `#
 Contract:  modules/ComponentController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:COS-001:NOT_OWNER+++ `
+==== `[.contract-item-name]#+++ERROR:COS-001:NOT_OWNER+++ `#
 Contract:  services/ComponentOwnerService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:COS-002:REQUIRED_ROLE_MISSING+++ `
+==== `[.contract-item-name]#+++ERROR:COS-002:REQUIRED_ROLE_MISSING+++ `#
 Contract:  services/ComponentOwnerService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:COS-003:COMPONENT_ID_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:COS-003:COMPONENT_ID_INVALID+++ `#
 Contract:  services/ComponentOwnerService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:COS-004:NOT_OWNER+++ `
+==== `[.contract-item-name]#+++ERROR:COS-004:NOT_OWNER+++ `#
 Contract:  services/ComponentOwnerService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:COS-005:REQUIRED_ROLE_MISSING+++ `
+==== `[.contract-item-name]#+++ERROR:COS-005:REQUIRED_ROLE_MISSING+++ `#
 Contract:  services/ComponentOwnerService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:COS-006:IMPLEMENATION_MISSING+++ `
+==== `[.contract-item-name]#+++ERROR:COS-006:IMPLEMENATION_MISSING+++ `#
 Contract:  services/ComponentOwnerService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:COS-007:IMPLEMENATION_MISSING+++ `
+==== `[.contract-item-name]#+++ERROR:COS-007:IMPLEMENATION_MISSING+++ `#
 Contract:  services/ComponentOwnerService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CRC-001:NOT_INSTANCE_OPERATOR+++ `
+==== `[.contract-item-name]#+++ERROR:CRC-001:NOT_INSTANCE_OPERATOR+++ `#
 Contract:  shared/CoreController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CRC-001:NOT_ORACLE_SERVICE+++ `
+==== `[.contract-item-name]#+++ERROR:CRC-001:NOT_ORACLE_SERVICE+++ `#
 Contract:  modules/QueryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CRC-002:NOT_ON_STORAGE+++ `
+==== `[.contract-item-name]#+++ERROR:CRC-002:NOT_ON_STORAGE+++ `#
 Contract:  shared/CoreController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CRC-003:NOT_PRODUCT_SERVICE+++ `
+==== `[.contract-item-name]#+++ERROR:CRC-003:NOT_PRODUCT_SERVICE+++ `#
 Contract:  shared/CoreController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CRC-004:CONTRACT_NOT_REGISTERED+++ `
+==== `[.contract-item-name]#+++ERROR:CRC-004:CONTRACT_NOT_REGISTERED+++ `#
 Contract:  shared/CoreController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:CRP-001:NOT_ADMIN+++ `
+==== `[.contract-item-name]#+++ERROR:CRP-001:NOT_ADMIN+++ `#
 Contract:  shared/CoreProxy.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:IOS-001:NOT_INSTANCE_OPERATOR+++ `
+==== `[.contract-item-name]#+++ERROR:IOS-001:NOT_INSTANCE_OPERATOR+++ `#
 Contract:  services/InstanceOperatorService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:IOS-010:IMPLEMENATION_MISSING+++ `
+==== `[.contract-item-name]#+++ERROR:IOS-010:IMPLEMENATION_MISSING+++ `#
 Contract:  services/InstanceOperatorService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:IOS-011:IMPLEMENATION_MISSING+++ `
+==== `[.contract-item-name]#+++ERROR:IOS-011:IMPLEMENATION_MISSING+++ `#
 Contract:  services/InstanceOperatorService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:IS-001:IMPLEMENATION_MISSING+++ `
+==== `[.contract-item-name]#+++ERROR:IS-001:IMPLEMENATION_MISSING+++ `#
 Contract:  services/InstanceService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:IS-002:IMPLEMENATION_MISSING+++ `
+==== `[.contract-item-name]#+++ERROR:IS-002:IMPLEMENATION_MISSING+++ `#
 Contract:  services/InstanceService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:LIC-001:COMPONENT_NOT_PRODUCT+++ `
+==== `[.contract-item-name]#+++ERROR:LIC-001:COMPONENT_NOT_PRODUCT+++ `#
 Contract:  modules/LicenseController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:PFD-001:POLICY_NOT_ACTIVE+++ `
+==== `[.contract-item-name]#+++ERROR:PFD-001:POLICY_NOT_ACTIVE+++ `#
 Contract:  flows/PolicyDefaultFlow.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:PFD-002:POLICY_NOT_EXPIRED+++ `
+==== `[.contract-item-name]#+++ERROR:PFD-002:POLICY_NOT_EXPIRED+++ `#
 Contract:  flows/PolicyDefaultFlow.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:PFD-003:POLICY_CLOSED+++ `
+==== `[.contract-item-name]#+++ERROR:PFD-003:POLICY_CLOSED+++ `#
 Contract:  flows/PolicyDefaultFlow.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:PFD-004:PROCESSID_PRODUCT_MISMATCH+++ `
+==== `[.contract-item-name]#+++ERROR:PFD-004:PROCESSID_PRODUCT_MISMATCH+++ `#
 Contract:  flows/PolicyDefaultFlow.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:PFD-005:REQUESTID_PRODUCT_MISMATCH+++ `
+==== `[.contract-item-name]#+++ERROR:PFD-005:REQUESTID_PRODUCT_MISMATCH+++ `#
 Contract:  flows/PolicyDefaultFlow.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-004:METADATA_ALREADY_EXISTS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-004:METADATA_ALREADY_EXISTS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-010:METADATA_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-010:METADATA_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-011:APPLICATION_ALREADY_EXISTS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-011:APPLICATION_ALREADY_EXISTS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-012:PREMIUM_AMOUNT_ZERO+++ `
+==== `[.contract-item-name]#+++ERROR:POC-012:PREMIUM_AMOUNT_ZERO+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-013:SUM_INSURED_AMOUNT_TOO_SMALL+++ `
+==== `[.contract-item-name]#+++ERROR:POC-013:SUM_INSURED_AMOUNT_TOO_SMALL+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-014:METADATA_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-014:METADATA_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-015:APPLICATION_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-015:APPLICATION_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-016:APPLICATION_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-016:APPLICATION_STATE_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-017:APPLICATION_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-017:APPLICATION_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-018:APPLICATION_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-018:APPLICATION_STATE_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-019:METADATA_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-019:METADATA_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-020:APPLICATION_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-020:APPLICATION_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-021:APPLICATION_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-021:APPLICATION_STATE_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-022:APPLICATION_ACCESS_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-022:APPLICATION_ACCESS_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-023:POLICY_ALREADY_EXISTS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-023:POLICY_ALREADY_EXISTS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-024:APPLICATION_ACCESS_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-024:APPLICATION_ACCESS_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-025:APPLICATION_PREMIUM_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-025:APPLICATION_PREMIUM_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-026:APPLICATION_SUM_INSURED_INCREASE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-026:APPLICATION_SUM_INSURED_INCREASE_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-027:POLICY_ACCESS_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-027:POLICY_ACCESS_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-028:POLICY_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-028:POLICY_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-029:APPLICATION_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-029:APPLICATION_STATE_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-030:METADATA_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-030:METADATA_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-031:POLICY_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-031:POLICY_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-032:POLICY_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-032:POLICY_STATE_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-033:POLICY_HAS_OPEN_CLAIMS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-033:POLICY_HAS_OPEN_CLAIMS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-040:POLICY_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-040:POLICY_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-041:POLICY_NOT_ACTIVE+++ `
+==== `[.contract-item-name]#+++ERROR:POC-041:POLICY_NOT_ACTIVE+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-042:CLAIM_AMOUNT_EXCEEDS_MAX_PAYOUT+++ `
+==== `[.contract-item-name]#+++ERROR:POC-042:CLAIM_AMOUNT_EXCEEDS_MAX_PAYOUT+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-043:CLAIM_ALREADY_EXISTS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-043:CLAIM_ALREADY_EXISTS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-050:POLICY_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-050:POLICY_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-051:POLICY_WITHOUT_OPEN_CLAIMS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-051:POLICY_WITHOUT_OPEN_CLAIMS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-052:PAYOUT_MAX_AMOUNT_EXCEEDED+++ `
+==== `[.contract-item-name]#+++ERROR:POC-052:PAYOUT_MAX_AMOUNT_EXCEEDED+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-053:CLAIM_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-053:CLAIM_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-054:CLAIM_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-054:CLAIM_STATE_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-060:POLICY_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-060:POLICY_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-061:POLICY_WITHOUT_OPEN_CLAIMS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-061:POLICY_WITHOUT_OPEN_CLAIMS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-062:CLAIM_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-062:CLAIM_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-063:CLAIM_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-063:CLAIM_STATE_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-070:POLICY_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-070:POLICY_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-071:POLICY_WITHOUT_OPEN_CLAIMS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-071:POLICY_WITHOUT_OPEN_CLAIMS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-072:CLAIM_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-072:CLAIM_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-073:CLAIM_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-073:CLAIM_STATE_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-074:CLAIM_WITH_UNPAID_PAYOUTS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-074:CLAIM_WITH_UNPAID_PAYOUTS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-080:POLICY_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-080:POLICY_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-081:CLAIM_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-081:CLAIM_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-082:CLAIM_NOT_CONFIRMED+++ `
+==== `[.contract-item-name]#+++ERROR:POC-082:CLAIM_NOT_CONFIRMED+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-083:PAYOUT_AMOUNT_ZERO_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POC-083:PAYOUT_AMOUNT_ZERO_INVALID+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-084:PAYOUT_AMOUNT_TOO_BIG+++ `
+==== `[.contract-item-name]#+++ERROR:POC-084:PAYOUT_AMOUNT_TOO_BIG+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-085:PAYOUT_ALREADY_EXISTS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-085:PAYOUT_ALREADY_EXISTS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-090:POLICY_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-090:POLICY_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-091:POLICY_WITHOUT_OPEN_CLAIMS+++ `
+==== `[.contract-item-name]#+++ERROR:POC-091:POLICY_WITHOUT_OPEN_CLAIMS+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-092:PAYOUT_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-092:PAYOUT_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-093:PAYOUT_ALREADY_PAIDOUT+++ `
+==== `[.contract-item-name]#+++ERROR:POC-093:PAYOUT_ALREADY_PAIDOUT+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-100:METADATA_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-100:METADATA_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-101:APPLICATION_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-101:APPLICATION_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-102:POLICY_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-102:POLICY_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-103:CLAIM_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-103:CLAIM_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-104:PAYOUT_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-104:PAYOUT_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-110:POLICY_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POC-110:POLICY_DOES_NOT_EXIST+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POC-111:AMOUNT_TOO_BIG+++ `
+==== `[.contract-item-name]#+++ERROR:POC-111:AMOUNT_TOO_BIG+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-001:INVALID_OWNER+++ `
+==== `[.contract-item-name]#+++ERROR:POL-001:INVALID_OWNER+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-001:NOT_INSTANCE_OPERATOR+++ `
+==== `[.contract-item-name]#+++ERROR:POL-001:NOT_INSTANCE_OPERATOR+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-002:INVALID_PRODUCT+++ `
+==== `[.contract-item-name]#+++ERROR:POL-002:INVALID_PRODUCT+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-002:NOT_RISKPOOL_SERVICE+++ `
+==== `[.contract-item-name]#+++ERROR:POL-002:NOT_RISKPOOL_SERVICE+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-003:PRODUCT_NOT_ACTIVE+++ `
+==== `[.contract-item-name]#+++ERROR:POL-003:PRODUCT_NOT_ACTIVE+++ `#
 Contract:  modules/PolicyController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-003:RISKPOOL_NOT_ACTIVE+++ `
+==== `[.contract-item-name]#+++ERROR:POL-003:RISKPOOL_NOT_ACTIVE+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-004:RISKPOOL_NOT_ACTIVE+++ `
+==== `[.contract-item-name]#+++ERROR:POL-004:RISKPOOL_NOT_ACTIVE+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-005:RISKPOOL_ALREADY_REGISTERED+++ `
+==== `[.contract-item-name]#+++ERROR:POL-005:RISKPOOL_ALREADY_REGISTERED+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-006:WALLET_ADDRESS_ZERO+++ `
+==== `[.contract-item-name]#+++ERROR:POL-006:WALLET_ADDRESS_ZERO+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-007:ERC20_ADDRESS_ZERO+++ `
+==== `[.contract-item-name]#+++ERROR:POL-007:ERC20_ADDRESS_ZERO+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-008:COLLATERALIZATION_+++ `
+==== `[.contract-item-name]#+++ERROR:POL-008:COLLATERALIZATION_+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-009:SUM_OF_SUM_INSURED_CAP_ZERO+++ `
+==== `[.contract-item-name]#+++ERROR:POL-009:SUM_OF_SUM_INSURED_CAP_ZERO+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-010:NOT_PRODUCT+++ `
+==== `[.contract-item-name]#+++ERROR:POL-010:NOT_PRODUCT+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-011:NOT_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:POL-011:NOT_RISKPOOL+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-012:RISKPOOL_ALREADY_SET+++ `
+==== `[.contract-item-name]#+++ERROR:POL-012:RISKPOOL_ALREADY_SET+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-020:APPLICATION_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POL-020:APPLICATION_STATE_INVALID+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-022:RISKPOOL_SUM_INSURED_CAP_EXCEEDED+++ `
+==== `[.contract-item-name]#+++ERROR:POL-022:RISKPOOL_SUM_INSURED_CAP_EXCEEDED+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-025:POLICY_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POL-025:POLICY_STATE_INVALID+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-026:RISKPOOL_ID_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POL-026:RISKPOOL_ID_INVALID+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-027:CAPITAL_TOO_LOW+++ `
+==== `[.contract-item-name]#+++ERROR:POL-027:CAPITAL_TOO_LOW+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-028:LOCKED_CAPITAL_TOO_LOW+++ `
+==== `[.contract-item-name]#+++ERROR:POL-028:LOCKED_CAPITAL_TOO_LOW+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-029:BALANCE_TOO_LOW+++ `
+==== `[.contract-item-name]#+++ERROR:POL-029:BALANCE_TOO_LOW+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-030:POLICY_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POL-030:POLICY_STATE_INVALID+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-032:MAX_NUMBER_OF_ACTIVE_BUNDLES_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POL-032:MAX_NUMBER_OF_ACTIVE_BUNDLES_INVALID+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-040:POLICY_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POL-040:POLICY_STATE_INVALID+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-040:RISKPOOL_NOT_REGISTERED+++ `
+==== `[.contract-item-name]#+++ERROR:POL-040:RISKPOOL_NOT_REGISTERED+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-041:BUNDLE_IDX_TOO_LARGE+++ `
+==== `[.contract-item-name]#+++ERROR:POL-041:BUNDLE_IDX_TOO_LARGE+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-042:BUNDLE_ID_ALREADY_IN_SET+++ `
+==== `[.contract-item-name]#+++ERROR:POL-042:BUNDLE_ID_ALREADY_IN_SET+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-043:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED+++ `
+==== `[.contract-item-name]#+++ERROR:POL-043:MAXIMUM_NUMBER_OF_ACTIVE_BUNDLES_REACHED+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-044:BUNDLE_ID_NOT_IN_SET+++ `
+==== `[.contract-item-name]#+++ERROR:POL-044:BUNDLE_ID_NOT_IN_SET+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-045:RISKPOOL_DOES_NOT_EXIST+++ `
+==== `[.contract-item-name]#+++ERROR:POL-045:RISKPOOL_DOES_NOT_EXIST+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-046:COMPONENT_NOT_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:POL-046:COMPONENT_NOT_RISKPOOL+++ `#
 Contract:  modules/PoolController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:POL-050:POLICY_STATE_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:POL-050:POLICY_STATE_INVALID+++ `#
 Contract:  modules/BundleController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:PRS-001:NOT_AUTHORIZED+++ `
+==== `[.contract-item-name]#+++ERROR:PRS-001:NOT_AUTHORIZED+++ `#
 Contract:  services/ProductService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:PRS-002:POLICY_FLOW_NOT_RESOLVED+++ `
+==== `[.contract-item-name]#+++ERROR:PRS-002:POLICY_FLOW_NOT_RESOLVED+++ `#
 Contract:  services/ProductService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:QUC-002:REQUEST_ID_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:QUC-002:REQUEST_ID_INVALID+++ `#
 Contract:  modules/QueryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:QUC-003:ORACLE_NOT_RESPONSIBLE+++ `
+==== `[.contract-item-name]#+++ERROR:QUC-003:ORACLE_NOT_RESPONSIBLE+++ `#
 Contract:  modules/QueryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:QUC-010:CALLBACK_ADDRESS_IS_NOT_PRODUCT+++ `
+==== `[.contract-item-name]#+++ERROR:QUC-010:CALLBACK_ADDRESS_IS_NOT_PRODUCT+++ `#
 Contract:  modules/QueryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:QUC-020:PRODUCT_CALLBACK_UNSUCCESSFUL+++ `
+==== `[.contract-item-name]#+++ERROR:QUC-020:PRODUCT_CALLBACK_UNSUCCESSFUL+++ `#
 Contract:  modules/QueryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:QUC-030:REQUEST_ID_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:QUC-030:REQUEST_ID_INVALID+++ `#
 Contract:  modules/QueryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:QUC-040:REQUEST_ID_INVALID+++ `
+==== `[.contract-item-name]#+++ERROR:QUC-040:REQUEST_ID_INVALID+++ `#
 Contract:  modules/QueryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:QUC-041:COMPONENT_NOT_ORACLE+++ `
+==== `[.contract-item-name]#+++ERROR:QUC-041:COMPONENT_NOT_ORACLE+++ `#
 Contract:  modules/QueryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:QUC-042:ORACLE_NOT_ACTIVE+++ `
+==== `[.contract-item-name]#+++ERROR:QUC-042:ORACLE_NOT_ACTIVE+++ `#
 Contract:  modules/QueryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-001:EMPTY_RELEASE+++ `
+==== `[.contract-item-name]#+++ERROR:REC-001:EMPTY_RELEASE+++ `#
 Contract:  modules/RegistryController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-002:NEW_RELEASE_NOT_EMPTY+++ `
+==== `[.contract-item-name]#+++ERROR:REC-002:NEW_RELEASE_NOT_EMPTY+++ `#
 Contract:  modules/RegistryController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-010:MAX_CONTRACTS_LIMIT+++ `
+==== `[.contract-item-name]#+++ERROR:REC-010:MAX_CONTRACTS_LIMIT+++ `#
 Contract:  modules/RegistryController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-011:RELEASE_UNKNOWN+++ `
+==== `[.contract-item-name]#+++ERROR:REC-011:RELEASE_UNKNOWN+++ `#
 Contract:  modules/RegistryController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-012:CONTRACT_NAME_EMPTY+++ `
+==== `[.contract-item-name]#+++ERROR:REC-012:CONTRACT_NAME_EMPTY+++ `#
 Contract:  modules/RegistryController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-013:CONTRACT_NAME_EXISTS+++ `
+==== `[.contract-item-name]#+++ERROR:REC-013:CONTRACT_NAME_EXISTS+++ `#
 Contract:  modules/RegistryController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-014:CONTRACT_ADDRESS_ZERO+++ `
+==== `[.contract-item-name]#+++ERROR:REC-014:CONTRACT_ADDRESS_ZERO+++ `#
 Contract:  modules/RegistryController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-015:CONTRACT_NUMBER_MISMATCH+++ `
+==== `[.contract-item-name]#+++ERROR:REC-015:CONTRACT_NUMBER_MISMATCH+++ `#
 Contract:  modules/RegistryController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-020:CONTRACT_UNKNOWN+++ `
+==== `[.contract-item-name]#+++ERROR:REC-020:CONTRACT_UNKNOWN+++ `#
 Contract:  modules/RegistryController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-021:CONTRACT_NUMBER_MISMATCH+++ `
+==== `[.contract-item-name]#+++ERROR:REC-021:CONTRACT_NUMBER_MISMATCH+++ `#
 Contract:  modules/RegistryController.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:REC-102:UPGRADE_ONCE_OMLY+++ `
+==== `[.contract-item-name]#+++ERROR:REC-102:UPGRADE_ONCE_OMLY+++ `#
 Contract:  test/TestRegistryControllerUpdated.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-001:SENDER_NOT_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-001:SENDER_NOT_RISKPOOL+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-002:RISKPOOL_NOT_PROPOSED+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-002:RISKPOOL_NOT_PROPOSED+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-003:SENDER_NOT_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-003:SENDER_NOT_RISKPOOL+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-004:RISKPOOL_NOT_ACTIVE+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-004:RISKPOOL_NOT_ACTIVE+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-005:SENDER_NOT_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-005:SENDER_NOT_RISKPOOL+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-006:BUNDLE_RISKPOOL_MISMATCH+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-006:BUNDLE_RISKPOOL_MISMATCH+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-007:RISKPOOL_NOT_ACTIVE+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-007:RISKPOOL_NOT_ACTIVE+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-008:SENDER_NOT_OWNING_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-008:SENDER_NOT_OWNING_RISKPOOL+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-009:RISKPOOL_NOT_ACTIVE+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-009:RISKPOOL_NOT_ACTIVE+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-010:BUNDLE_CLOSED_OR_BURNED+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-010:BUNDLE_CLOSED_OR_BURNED+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-011:BUNDLE_BURNED+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-011:BUNDLE_BURNED+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-013:UNEXPECTED_FEE_SUBTRACTION+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-013:UNEXPECTED_FEE_SUBTRACTION+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:RPS-020:BUNDLE_NOT_CLOSED+++ `
+==== `[.contract-item-name]#+++ERROR:RPS-020:BUNDLE_NOT_CLOSED+++ `#
 Contract:  services/RiskpoolService.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TCP-1:INVALID_POLICY_OR_HOLDER+++ `
+==== `[.contract-item-name]#+++ERROR:TCP-1:INVALID_POLICY_OR_HOLDER+++ `#
 Contract:  test/TestCompromisedProduct.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TI-2:TOKEN_ADDRESS_ZERO+++ `
+==== `[.contract-item-name]#+++ERROR:TI-2:TOKEN_ADDRESS_ZERO+++ `#
 Contract:  test/TestProduct.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-001:INSTANCE_WALLET_UNDEFINED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-001:INSTANCE_WALLET_UNDEFINED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-002:RISKPOOL_WALLET_UNDEFINED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-002:RISKPOOL_WALLET_UNDEFINED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-003:RISKPOOL_WALLET_UNDEFINED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-003:RISKPOOL_WALLET_UNDEFINED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-004:TREASURY_SUSPENDED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-004:TREASURY_SUSPENDED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-005:NOT_RISKPOOL_SERVICE+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-005:NOT_RISKPOOL_SERVICE+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-010:TOKEN_ADDRESS_ZERO+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-010:TOKEN_ADDRESS_ZERO+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-011:NOT_PRODUCT+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-011:NOT_PRODUCT+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-012:PRODUCT_TOKEN_ALREADY_SET+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-012:PRODUCT_TOKEN_ALREADY_SET+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-013:PRODUCT_TOKEN_ADDRESS_NOT_MATCHING+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-013:PRODUCT_TOKEN_ADDRESS_NOT_MATCHING+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-014:RISKPOOL_TOKEN_ADDRESS_NOT_MACHING+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-014:RISKPOOL_TOKEN_ADDRESS_NOT_MACHING+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-015:WALLET_ADDRESS_ZERO+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-015:WALLET_ADDRESS_ZERO+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-016:NOT_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-016:NOT_RISKPOOL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-017:WALLET_ADDRESS_ZERO+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-017:WALLET_ADDRESS_ZERO+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-020:ID_NOT_PRODUCT_OR_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-020:ID_NOT_PRODUCT_OR_RISKPOOL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-021:FRACIONAL_FEE_TOO_BIG+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-021:FRACIONAL_FEE_TOO_BIG+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-022:NOT_PRODUCT+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-022:NOT_PRODUCT+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-023:NOT_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-023:NOT_RISKPOOL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-024:FEE_SPEC_UNDEFINED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-024:FEE_SPEC_UNDEFINED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-030:AMOUNT_TOO_BIG+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-030:AMOUNT_TOO_BIG+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-031:FEE_TRANSFER_FAILED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-031:FEE_TRANSFER_FAILED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-032:PREMIUM_TRANSFER_FAILED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-032:PREMIUM_TRANSFER_FAILED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-042:RISKPOOL_WALLET_BALANCE_TOO_SMALL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-042:RISKPOOL_WALLET_BALANCE_TOO_SMALL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-043:PAYOUT_ALLOWANCE_TOO_SMALL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-043:PAYOUT_ALLOWANCE_TOO_SMALL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-044:PAYOUT_TRANSFER_FAILED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-044:PAYOUT_TRANSFER_FAILED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-050:FEE_SPEC_UNDEFINED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-050:FEE_SPEC_UNDEFINED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-052:BALANCE_TOO_SMALL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-052:BALANCE_TOO_SMALL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-053:CAPITAL_TRANSFER_ALLOWANCE_TOO_SMALL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-053:CAPITAL_TRANSFER_ALLOWANCE_TOO_SMALL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-054:FEE_TRANSFER_FAILED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-054:FEE_TRANSFER_FAILED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-055:CAPITAL_TRANSFER_FAILED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-055:CAPITAL_TRANSFER_FAILED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-060:CAPACITY_OR_BALANCE_SMALLER_THAN_WITHDRAWAL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-060:CAPACITY_OR_BALANCE_SMALLER_THAN_WITHDRAWAL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-061:RISKPOOL_WALLET_BALANCE_TOO_SMALL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-061:RISKPOOL_WALLET_BALANCE_TOO_SMALL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-062:WITHDRAWAL_ALLOWANCE_TOO_SMALL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-062:WITHDRAWAL_ALLOWANCE_TOO_SMALL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-063:WITHDRAWAL_TRANSFER_FAILED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-063:WITHDRAWAL_TRANSFER_FAILED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-070:NOT_PRODUCT_OR_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-070:NOT_PRODUCT_OR_RISKPOOL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-090:FEE_CALCULATION_DATA_NOT_SUPPORTED+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-090:FEE_CALCULATION_DATA_NOT_SUPPORTED+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-091:FEE_TOO_BIG+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-091:FEE_TOO_BIG+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
 
-==== `[.contract-item-name]#+++ERROR:TRS-092:PRODUCT_WITHOUT_RISKPOOL+++ `
+==== `[.contract-item-name]#+++ERROR:TRS-092:PRODUCT_WITHOUT_RISKPOOL+++ `#
 Contract:  modules/TreasuryModule.sol
 
 Thrown if
-Contract: =====
+Contract: 
+
+--
