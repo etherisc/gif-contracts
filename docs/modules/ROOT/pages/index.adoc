@@ -52,6 +52,11 @@ to learn about creating a new project and compiling your contracts.
 
 To keep your system secure, you should **always** use the installed code as-is, and neither copy-paste it from online sources, nor modify it yourself. The library is designed so that only the contracts and functions you use are deployed, so you don't need to worry about it needlessly increasing gas costs.
 
+== Error Codes
+
+Each error has a 7-letter identifier of the form `XXX-\###`. The first three letters indicate the component where the error occurred, and the last three letters indicate the error number within that component.
+A list of the error codes with explanations / conditions is available in the xref:errors.adoc[Errors] section.
+
 [[next-steps]]
 == Learn More
 
