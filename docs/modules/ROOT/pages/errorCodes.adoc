@@ -18,7 +18,7 @@ Test
 
 
 [.contract-item]
-==== `[.contract-item-name]#++ERRORACL-001ADMIN_ROLE_ALREADY_SET++ `###
+==== `[.contract-item-name]#++ERROR:ACL-001:ADMIN_ROLE_ALREADY_SET++ `#x#x#
 Contract: modules/AccessController.sol
 
 Thrown if you try to set the admin role twice.
