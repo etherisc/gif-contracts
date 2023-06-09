@@ -2,6 +2,10 @@
 // [[AccessController-addRole-bytes32-]]
 // ==== `[.contract-item-name]#++addRole++#++(bytes32 role)++` [.item-kind]#public#
 //
+= Error Codes
+== Error Codes
+=== Error Codes
+[.hljs-theme-light.nopadding]
 
 
 ==== `[.contract-item-name]#+++ERROR:ACL-001:ADMIN_ROLE_ALREADY_SET+++ `
