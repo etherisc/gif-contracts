@@ -3,10 +3,14 @@
 // ==== `[.contract-item-name]#++addRole++#++(bytes32 role)++` [.item-kind]#public#
 //
 = Error Codes
-== Error Codes
-=== Error Codes
-[.hljs-theme-light.nopadding]
 
+== Error Codes
+
+Test
+
+=== Test
+
+Test
 
 ==== `[.contract-item-name]#+++ERROR:ACL-001:ADMIN_ROLE_ALREADY_SET+++ `
 Contract: modules/AccessController.sol
