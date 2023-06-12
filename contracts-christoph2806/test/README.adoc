@@ -1,0 +1,24 @@
+= Test
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/test
+
+== Contracts
+
+{{TestCoin}}
+
+{{TestCoinAlternativeImplementation}}
+
+{{TestCompromisedProduct}}
+
+{{TestOracle}}
+
+{{TestProduct}}
+
+{{TestRegistryCompromisedController}}
+
+{{TestRegistryControllerUpdated}}
+
+{{TestRiskpool}}
+
+{{TestTransferFrom}}
