@@ -15,6 +15,22 @@ library TransferHelper {
     event LogTransferHelperInputValidation2Failed(uint256 balance, uint256 allowance);
     event LogTransferHelperCallFailed(bool callSuccess, uint256 returnDataLength, bytes returnData);
 
+    /**
+     * @dev Executes a transferFrom function call on an ERC20 token contract, after performing input validation.
+     * @param token The ERC20 token contract to transfer from.
+     * @param from The address to transfer tokens from.
+     * @param to The address to transfer tokens to.
+     * @param value The amount of tokens to transfer.
+     * @return success A boolean indicating whether the transfer was successful or not.
+     *
+     * Emits a LogTransferHelperInputValidation1Failed event if the input validation step 1 fails.
+     * Emits a LogTransferHelperInputValidation2Failed event if the input validation step 2 fails.
+     * Emits a LogTransferHelperCallFailed event if the low-level call to transferFrom fails.
+     * @notice This function emits 3 events: 
+     * - LogTransferHelperInputValidation1Failed
+     * - LogTransferHelperInputValidation2Failed
+     * - LogTransferHelperCallFailed
+     */
     function unifiedTransferFrom(
         IERC20 token,
         address from,

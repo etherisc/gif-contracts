@@ -1,8 +1,0 @@
-= Flows
-
-[.readme-notice]
-NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/flows
-
-== Contracts
-
-{{PolicyDefaultFlow}}

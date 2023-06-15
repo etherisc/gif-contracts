@@ -35,10 +35,17 @@ contract ComponentOwnerService is
         _;
     }
 
+    /**
+     * @dev This function is called after the contract is initialized and can only be called once. It sets the component controller contract address.
+     */
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
     }
 
+    /**
+     * @dev Propose a new component to be added to the system.
+     * @param component The component to be proposed.
+     */
     function propose(IComponent component) 
         external override
         onlyOwnerWithRoleFromComponent(component) 
@@ -46,6 +53,12 @@ contract ComponentOwnerService is
         _component.propose(component);
     }
 
+    /**
+     * @dev Stake function allows the owner to stake a specific id.
+     *
+     * @param id The id of the stake.
+     *
+     */
     function stake(uint256 id) 
         external override 
         onlyOwnerWithRole(id) 
@@ -53,6 +66,10 @@ contract ComponentOwnerService is
         revert("ERROR:COS-006:IMPLEMENATION_MISSING");
     }
 
+    /**
+     * @dev Allows the owner to withdraw a specific asset by its ID.
+     * @param id The ID of the asset to be withdrawn.
+     */
     function withdraw(uint256 id) 
         external override
         onlyOwnerWithRole(id) 
@@ -61,6 +78,10 @@ contract ComponentOwnerService is
     }
         
 
+    /**
+     * @dev Pauses a specific component with the given ID.
+     * @param id The ID of the component to be paused.
+     */
     function pause(uint256 id) 
         external override
         onlyOwnerWithRole(id) 
@@ -68,6 +89,10 @@ contract ComponentOwnerService is
         _component.pause(id);
     }
 
+    /**
+     * @dev Unpauses a component with the specified ID.
+     * @param id The ID of the component to unpause.
+     */
     function unpause(uint256 id) 
         external override 
         onlyOwnerWithRole(id) 
@@ -75,6 +100,10 @@ contract ComponentOwnerService is
         _component.unpause(id);
     }
 
+    /**
+     * @dev Archives a component with the given ID from the component owner's inventory.
+     * @param id The ID of the component to be archived.
+     */
     function archive(uint256 id) 
         external override 
         onlyOwnerWithRole(id) 

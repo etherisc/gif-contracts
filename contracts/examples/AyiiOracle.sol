@@ -27,6 +27,15 @@ contract AyiiOracle is
         uint256 aaay
     );
 
+    /**
+     * @dev Constructor function for the ChainlinkOracle contract.
+     * @param _name The name of the oracle contract.
+     * @param _registry The address of the oracle registry contract.
+     * @param _chainLinkToken The address of the Chainlink token contract.
+     * @param _chainLinkOperator The address of the Chainlink oracle operator.
+     * @param _jobId The ID of the Chainlink job to be used.
+     * @param _payment The payment amount to be sent to the Chainlink oracle operator.
+     */
     constructor(
         bytes32 _name,
         address _registry,
@@ -44,6 +53,13 @@ contract AyiiOracle is
             _payment);
     }
 
+    /**
+     * @dev Update request details for Chainlink oracle job.
+     * @param _chainLinkToken The address of the Chainlink token contract.
+     * @param _chainLinkOperator The address of the Chainlink oracle operator.
+     * @param _jobId The job ID for the Chainlink oracle job.
+     * @param _payment The payment amount for the Chainlink oracle job.
+     */
     function updateRequestDetails(
         address _chainLinkToken,
         address _chainLinkOperator,
@@ -60,6 +76,14 @@ contract AyiiOracle is
         payment = _payment;
     }
 
+    /**
+     * @dev Sends a Chainlink request to retrieve data for a specific GIF request.
+     * @param gifRequestId The ID of the GIF request.
+     * @param input The encoded input data containing the project ID, UAI ID, and crop ID.
+     *             The input must be in the following format: abi.encode([bytes32 projectId, bytes32 uaiId, bytes32 cropId]).
+     * @notice This function emits 1 events: 
+     * - LogAyiiRequest
+     */
     function request(uint256 gifRequestId, bytes calldata input)
         external override
         onlyQuery
@@ -86,6 +110,16 @@ contract AyiiOracle is
         emit LogAyiiRequest(gifRequestId, chainlinkRequestId);
     }
 
+    /**
+     * @dev This function is used to fulfill a Chainlink request for the given parameters.
+     * @param chainlinkRequestId The ID of the Chainlink request to fulfill.
+     * @param projectId The ID of the project.
+     * @param uaiId The ID of the UAI.
+     * @param cropId The ID of the crop.
+     * @param aaay The amount of AAAY.
+     * @notice This function emits 1 events: 
+     * - LogAyiiFulfill
+     */
     function fulfill(
         bytes32 chainlinkRequestId, 
         bytes32 projectId, 
@@ -103,6 +137,10 @@ contract AyiiOracle is
         emit LogAyiiFulfill(gifRequest, chainlinkRequestId, projectId, uaiId, cropId, aaay);
     }
 
+    /**
+     * @dev Cancels a Chainlink request.
+     * @param requestId The ID of the request to cancel.
+     */
     function cancel(uint256 requestId)
         external override
         onlyOwner
@@ -112,6 +150,15 @@ contract AyiiOracle is
     }
 
     // only used for testing of chainlink operator
+    /**
+     * @dev Encodes the parameters required for a Chainlink request fulfillment.
+     * @param chainlinkRequestId The ID of the Chainlink request.
+     * @param projectId The ID of the project.
+     * @param uaiId The ID of the UAI.
+     * @param cropId The ID of the crop.
+     * @param aaay The value of aaay.
+     * @return parameterData The encoded parameter data.
+     */
     function encodeFulfillParameters(
         bytes32 chainlinkRequestId, 
         bytes32 projectId, 
@@ -132,18 +179,34 @@ contract AyiiOracle is
         );
     }
 
+    /**
+     * @dev Returns the Chainlink Job ID associated with this contract.
+     * @return chainlinkJobId The Chainlink Job ID as a bytes32 variable.
+     */
     function getChainlinkJobId() external view returns(bytes32 chainlinkJobId) {
         return jobId;
     }
 
+    /**
+     * @dev Returns the payment amount for a Chainlink oracle request.
+     * @return paymentAmount The payment amount in uint256.
+     */
     function getChainlinkPayment() external view returns(uint256 paymentAmount) {
         return payment;
     }
 
+    /**
+     * @dev Returns the address of the Chainlink token.
+     * @return linkTokenAddress The address of the Chainlink token.
+     */
     function getChainlinkToken() external view returns(address linkTokenAddress) {
         return chainlinkTokenAddress();
     }
 
+    /**
+     * @dev Returns the address of the Chainlink operator.
+     * @return operator The address of the Chainlink operator.
+     */
     function getChainlinkOperator() external view returns(address operator) {
         return chainlinkOracleAddress();
     }

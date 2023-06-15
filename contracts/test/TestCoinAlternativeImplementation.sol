@@ -10,6 +10,9 @@ contract TestCoinAlternativeImplementation is ERC20 {
 
     uint256 public constant INITIAL_SUPPLY = 10**24;
 
+    /**
+     * @dev Constructor function that creates a new ERC20 token with the given name and symbol, and mints the initial supply to the sender.
+     */
     constructor()
         ERC20(NAME, SYMBOL)
     {
@@ -21,6 +24,19 @@ contract TestCoinAlternativeImplementation is ERC20 {
 
     // inspired by ZRX transfer implementation
     // see https://soliditydeveloper.com/safe-erc20
+    /**
+     * @dev Transfer tokens from one address to another.
+     * @param _from The address from which to transfer the tokens.
+     * @param _to The address to which to transfer the tokens.
+     * @param _value The amount of tokens to transfer.
+     * @return A boolean value indicating whether the transfer was successful or not.
+     *
+     * Requirements:
+     * - The sender must have a balance of at least `_value`.
+     * - The sender must have allowance for `_spender`'s tokens of at least `_value`.
+     * - The balance of `_to` must not be less than the sum of the balance and `_value`.
+     * - Neither `_from` nor `_to` can be the zero address.
+     */
     function transferFrom(address _from, address _to, uint _value)
         public virtual override returns (bool) 
     {

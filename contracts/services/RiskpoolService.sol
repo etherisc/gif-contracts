@@ -85,6 +85,11 @@ contract RiskpoolService is
     }
 
 
+    /**
+     * @dev Sets the addresses of the BundleController, ComponentController, PoolController, and TreasuryModule contracts.
+     *
+     *
+     */
     function _afterInitialize() 
         internal override 
         onlyInitializing 
@@ -96,6 +101,13 @@ contract RiskpoolService is
     }
 
 
+    /**
+     * @dev Registers a new risk pool with the given parameters.
+     * @param wallet The address of the wallet that will hold the collateral for the risk pool.
+     * @param erc20Token The address of the ERC20 token that will be used as collateral.
+     * @param collateralizationLevel The percentage of collateral required for the risk pool.
+     * @param sumOfSumInsuredCap The maximum sum of all insured amounts for the risk pool.
+     */
     function registerRiskpool(
         address wallet,
         address erc20Token,
@@ -115,6 +127,13 @@ contract RiskpoolService is
         );
     }
 
+    /**
+     * @dev Creates a new bundle with the given parameters and adds it to the active set of the riskpool.
+     * @param owner The address of the owner of the bundle.
+     * @param filter The filter applied to the bundle.
+     * @param initialCapital The initial capital of the bundle.
+     * @return bundleId The ID of the newly created bundle.
+     */
     function createBundle(
         address owner, 
         bytes calldata filter, 
@@ -136,6 +155,12 @@ contract RiskpoolService is
     }
 
 
+    /**
+     * @dev This function allows a user to fund a bundle with a specified amount.
+     * @param bundleId The ID of the bundle to be funded.
+     * @param amount The amount of tokens to be funded.
+     * @return netAmount The net amount of tokens that were funded after deducting fees.
+     */
     function fundBundle(uint256 bundleId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)
@@ -156,6 +181,12 @@ contract RiskpoolService is
     }
 
 
+    /**
+     * @dev Defunds a bundle by withdrawing a specified amount of tokens from it.
+     * @param bundleId The ID of the bundle to be defunded.
+     * @param amount The amount of tokens to be withdrawn from the bundle.
+     * @return netAmount The net amount of tokens withdrawn from the bundle after deducting any fees.
+     */
     function defundBundle(uint256 bundleId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)
@@ -176,6 +207,10 @@ contract RiskpoolService is
     }
 
 
+    /**
+     * @dev Locks a bundle, preventing it from being traded or redeemed.
+     * @param bundleId The ID of the bundle to be locked.
+     */
     function lockBundle(uint256 bundleId)
         external override
         onlyOwningRiskpool(bundleId, true)
@@ -186,6 +221,10 @@ contract RiskpoolService is
     }
 
 
+    /**
+     * @dev Unlocks a bundle for trading by adding its ID to the active set of a risk pool and unlocking the bundle.
+     * @param bundleId The ID of the bundle to be unlocked.
+     */
     function unlockBundle(uint256 bundleId)
         external override
         onlyOwningRiskpool(bundleId, true)  
@@ -196,6 +235,10 @@ contract RiskpoolService is
     }
 
 
+    /**
+     * @dev Closes a bundle and removes it from the active set of the owning riskpool.
+     * @param bundleId The ID of the bundle to be closed.
+     */
     function closeBundle(uint256 bundleId)
         external override
         onlyOwningRiskpool(bundleId, true)  
@@ -209,6 +252,10 @@ contract RiskpoolService is
         _bundle.close(bundleId);
     }
 
+    /**
+     * @dev Burns a closed bundle, withdrawing its remaining balance and defunding it from the riskpool and the pool.
+     * @param bundleId The ID of the bundle to burn.
+     */
     function burnBundle(uint256 bundleId)
         external override
         onlyOwningRiskpool(bundleId, true)  
@@ -226,6 +273,12 @@ contract RiskpoolService is
         _bundle.burn(bundleId);
     }
     
+    /**
+     * @dev Collateralizes a policy by locking a specified amount of collateral for a given bundle and process ID.
+     * @param bundleId The ID of the bundle to which the policy belongs.
+     * @param processId The ID of the process associated with the policy.
+     * @param collateralAmount The amount of collateral to be locked for the policy.
+     */
     function collateralizePolicy(uint256 bundleId, bytes32 processId, uint256 collateralAmount) 
         external override
         onlyOwningRiskpool(bundleId, true)  
@@ -233,6 +286,12 @@ contract RiskpoolService is
         _bundle.collateralizePolicy(bundleId, processId, collateralAmount);
     }
 
+    /**
+     * @dev Processes a premium payment for a specific bundle.
+     * @param bundleId The ID of the bundle for which the premium is being paid.
+     * @param processId The ID of the premium payment process.
+     * @param amount The amount of the premium payment in wei.
+     */
     function processPremium(uint256 bundleId, bytes32 processId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)
@@ -240,6 +299,12 @@ contract RiskpoolService is
         _bundle.processPremium(bundleId, processId, amount);
     }
 
+    /**
+     * @dev Processes a payout for a specific bundle.
+     * @param bundleId The ID of the bundle for which to process the payout.
+     * @param processId The ID of the payout process.
+     * @param amount The amount to be paid out.
+     */
     function processPayout(uint256 bundleId, bytes32 processId, uint256 amount)
         external override
         onlyOwningRiskpool(bundleId, true)  
@@ -247,6 +312,12 @@ contract RiskpoolService is
         _bundle.processPayout(bundleId, processId, amount);
     }
 
+    /**
+     * @dev Releases a policy for a given bundle and process ID.
+     * @param bundleId The ID of the bundle containing the policy to be released.
+     * @param processId The ID of the process associated with the policy to be released.
+     * @return collateralAmount The amount of collateral released for the policy.
+     */
     function releasePolicy(uint256 bundleId, bytes32 processId)
         external override
         onlyOwningRiskpool(bundleId, false)  
@@ -255,6 +326,11 @@ contract RiskpoolService is
         collateralAmount = _bundle.releasePolicy(bundleId, processId);
     }
 
+    /**
+     * @dev Sets the maximum number of active bundles for a given riskpool.
+     * @param riskpoolId The ID of the riskpool.
+     * @param maxNumberOfActiveBundles The maximum number of active bundles to be set.
+     */
     function setMaximumNumberOfActiveBundles(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)
         external override
         onlyOwningRiskpoolId(riskpoolId, true)

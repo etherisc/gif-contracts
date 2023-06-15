@@ -28,6 +28,15 @@ contract TestProduct is
     event LogTestProductFundingReceived(address sender, uint256 amount);
     event LogTestOracleCallbackReceived(uint256 requestId, bytes32 policyId, bytes response);
 
+    /**
+     * @dev Constructor function for creating a new instance of the Product contract.
+     * @param productName The name of the product.
+     * @param tokenAddress The address of the token used for the product.
+     * @param capitalOwner The address of the capital owner.
+     * @param oracleId The ID of the oracle used for the product.
+     * @param riskpoolId The ID of the riskpool used for the product.
+     * @param registryAddress The address of the registry contract.
+     */
     constructor(
         bytes32 productName,
         address tokenAddress,
@@ -44,6 +53,14 @@ contract TestProduct is
         _testRiskpoolId = riskpoolId;
     }
 
+    /**
+     * @dev Allows a policy holder to apply for a new insurance policy by submitting an application with the specified premium, sum insured, metadata and application data.
+     * @param premium The amount of premium to be paid by the policy holder.
+     * @param sumInsured The sum insured for the new policy.
+     * @param metaData Additional metadata associated with the application.
+     * @param applicationData Additional application data.
+     * @return processId The unique identifier of the new policy application process.
+     */
     function applyForPolicy(
         uint256 premium, 
         uint256 sumInsured,
@@ -71,6 +88,15 @@ contract TestProduct is
         }
     }
 
+    /**
+     * @dev Creates a new insurance application and underwrites it if possible.
+     * @param policyHolder The address of the policy holder.
+     * @param premium The amount of premium paid by the policy holder.
+     * @param sumInsured The amount of coverage requested by the policy holder.
+     * @param metaData Additional metadata associated with the application.
+     * @param applicationData The application data submitted by the policy holder.
+     * @return processId The identifier of the new insurance application.
+     */
     function applyForPolicy(
         address payable policyHolder,
         uint256 premium, 
@@ -98,6 +124,14 @@ contract TestProduct is
     }
 
 
+    /**
+     * @dev Creates a new insurance application.
+     * @param premium The amount of premium to be paid for the insurance policy.
+     * @param sumInsured The amount of coverage for the insurance policy.
+     * @param metaData Metadata to be associated with the application.
+     * @param applicationData Additional data related to the application.
+     * @return processId The unique identifier for the new application process.
+     */
     function newAppliation(
         uint256 premium, 
         uint256 sumInsured,
@@ -121,14 +155,26 @@ contract TestProduct is
     }
 
 
+    /**
+     * @dev Revokes a process identified by its processId. Only the policy holder can revoke a process.
+     * @param processId The unique identifier of the process to be revoked.
+     */
     function revoke(bytes32 processId) external onlyPolicyHolder(processId) { 
         _revoke(processId);
     }
 
+    /**
+     * @dev Declines a specific process by its ID.
+     * @param processId The ID of the process to be declined.
+     */
     function decline(bytes32 processId) external onlyOwner { 
         _decline(processId);
     }
 
+    /**
+     * @dev Underwrites a policy for a given process ID.
+     * @param processId The ID of the process to underwrite a policy for. 
+     */
     function underwrite(bytes32 processId) external onlyOwner { 
         bool success = _underwrite(processId);
         if (success) {
@@ -136,6 +182,13 @@ contract TestProduct is
         }
     }
 
+    /**
+     * @dev Collects the premium for a specific policy.
+     * @param policyId The ID of the policy for which the premium will be collected.
+     * @return success A boolean indicating whether the premium collection was successful.
+     * @return fee The amount of fee collected by the insurer.
+     * @return netPremium The net amount of premium collected by the insurer after deducting the fee.
+     */
     function collectPremium(bytes32 policyId) 
         external onlyOwner
         returns(bool success, uint256 fee, uint256 netPremium)
@@ -143,6 +196,14 @@ contract TestProduct is
         (success, fee, netPremium) = _collectPremium(policyId);
     }
 
+    /**
+     * @dev Collects the premium for a specific policy.
+     * @param policyId The unique identifier of the policy.
+     * @param amount The amount of the premium to be collected.
+     * @return success A boolean indicating whether the premium collection was successful.
+     * @return fee The fee charged for collecting the premium.
+     * @return netPremium The net amount of premium collected after deducting the fee.
+     */
     function collectPremium(bytes32 policyId, uint256 amount) 
         external onlyOwner
         returns(bool success, uint256 fee, uint256 netPremium)
@@ -150,6 +211,12 @@ contract TestProduct is
         (success, fee, netPremium) = _collectPremium(policyId, amount);
     }
 
+    /**
+     * @dev Adjusts the premium and sum insured amounts for a given process ID.
+     * @param processId The ID of the process to adjust.
+     * @param expectedPremiumAmount The expected premium amount for the process.
+     * @param sumInsuredAmount The sum insured amount for the process.
+     */
     function adjustPremiumSumInsured(
         bytes32 processId,
         uint256 expectedPremiumAmount,
@@ -160,14 +227,32 @@ contract TestProduct is
         _adjustPremiumSumInsured(processId, expectedPremiumAmount, sumInsuredAmount);
     }
 
+    /**
+     * @dev Expire a policy by its ID.
+     * @param policyId The ID of the policy to expire.
+     */
     function expire(bytes32 policyId) external onlyOwner {
         _expire(policyId);
     }
 
+    /**
+     * @dev Closes a policy with the given ID.
+     * @param policyId The ID of the policy to be closed.
+     */
     function close(bytes32 policyId) external onlyOwner {
         _close(policyId);
     }
 
+    /**
+     * @dev Allows a policy holder to submit a claim for a specific policy.
+     * @param policyId The ID of the policy for which the claim is being submitted.
+     * @param claimAmount The amount of the claim being submitted.
+     * @return claimId The ID of the submitted claim.
+     *
+     * Increases the claims counter and creates a new claim application.
+     * The oracle business logic will use the claims counter value to determine if the claim is linked to a loss event or not.
+     * The function also requests a response to the greeting via oracle call.
+     */
     function submitClaim(bytes32 policyId, uint256 claimAmount) 
         external
         onlyPolicyHolder(policyId)
@@ -194,6 +279,12 @@ contract TestProduct is
         );
     }
 
+    /**
+     * @dev Allows a policy holder to submit a claim without the need for an oracle.
+     * @param policyId The ID of the policy for which the claim is being submitted.
+     * @param claimAmount The amount being claimed by the policy holder.
+     * @return claimId The ID of the claim created.
+     */
     function submitClaimNoOracle(bytes32 policyId, uint256 claimAmount) 
         external
         onlyPolicyHolder(policyId)
@@ -210,6 +301,15 @@ contract TestProduct is
         _policyIdToClaimId[policyId] = claimId;
     }
     
+    /**
+     * @dev Submits a claim for a specific policy with a deferred response from the oracle.
+     * Increases the claims counter and creates a new claim application.
+     * Then, requests a response from the oracle via an external call with encoded query data.
+     * @param policyId The ID of the policy the claim is being made against.
+     * @param claimAmount The amount of the claim being made.
+     * @return claimId The ID of the newly created claim.
+     * @return requestId The ID of the oracle request made to retrieve the response.
+     */
     function submitClaimWithDeferredResponse(bytes32 policyId, uint256 claimAmount) 
         external
         onlyPolicyHolder(policyId)
@@ -236,6 +336,12 @@ contract TestProduct is
         );
     }
 
+    /**
+     * @dev Confirms the amount to be paid out for a specific claim.
+     * @param policyId The ID of the policy the claim belongs to.
+     * @param claimId The ID of the claim to be confirmed.
+     * @param confirmedAmount The amount to be paid out for the claim.
+     */
     function confirmClaim(
         bytes32 policyId, 
         uint256 claimId, 
@@ -247,6 +353,11 @@ contract TestProduct is
         _confirmClaim(policyId, claimId, confirmedAmount);
     }
 
+    /**
+     * @dev Allows the owner of the contract to decline a claim.
+     * @param policyId The ID of the policy related to the claim.
+     * @param claimId The ID of the claim to be declined.
+     */
     function declineClaim(
         bytes32 policyId, 
         uint256 claimId
@@ -257,6 +368,11 @@ contract TestProduct is
         _declineClaim(policyId, claimId);
     }
 
+    /**
+     * @dev Closes a specific claim for a given policy.
+     * @param policyId The ID of the policy the claim belongs to.
+     * @param claimId The ID of the claim to be closed.
+     */
     function closeClaim(
         bytes32 policyId, 
         uint256 claimId
@@ -267,6 +383,13 @@ contract TestProduct is
         _closeClaim(policyId, claimId);
     }
 
+    /**
+     * @dev Creates a new payout for a specific policy and claim.
+     * @param policyId The ID of the policy associated with the payout.
+     * @param claimId The ID of the claim associated with the payout.
+     * @param payoutAmount The amount of the payout to be created.
+     * @return payoutId The ID of the newly created payout.
+     */
     function createPayout(
         bytes32 policyId, 
         uint256 claimId, 
@@ -285,6 +408,13 @@ contract TestProduct is
         _processPayout(policyId, payoutId);
     }
 
+    /**
+     * @dev Creates a new payout for a claim under a policy.
+     * @param policyId The ID of the policy.
+     * @param claimId The ID of the claim.
+     * @param payoutAmount The amount to be paid out for the claim.
+     * @return payoutId The ID of the newly created payout.
+     */
     function newPayout(
         bytes32 policyId, 
         uint256 claimId, 
@@ -301,6 +431,11 @@ contract TestProduct is
             abi.encode(0));
     }
 
+    /**
+     * @dev Processes a payout for a specific policy.
+     * @param policyId The ID of the policy to process the payout for.
+     * @param payoutId The ID of the payout to process.
+     */
     function processPayout(
         bytes32 policyId, 
         uint256 payoutId
@@ -311,6 +446,22 @@ contract TestProduct is
         _processPayout(policyId, payoutId);
     }
 
+    /**
+     * @dev This function is called by the oracle to provide the response data for a specified policy ID and request ID.
+     * @param requestId The ID of the request made by the oracle.
+     * @param policyId The ID of the policy associated with the oracle request.
+     * @param responseData The response data provided by the oracle.
+     *
+     * Emits a LogTestOracleCallbackReceived event with the provided request ID, policy ID, and response data.
+     *
+     * Decodes the response data to obtain the isLossEvent boolean value and the claim ID associated with the policy ID.
+     *
+     * If the event is a loss event, retrieves the policy and claim information, confirms the claim, creates a payout record, and processes the payout.
+     *
+     * If the event is not a loss event, declines the claim.
+     * @notice This function emits 1 events: 
+     * - LogTestOracleCallbackReceived
+     */
     function oracleCallback(
         uint256 requestId, 
         bytes32 policyId, 
@@ -354,9 +505,31 @@ contract TestProduct is
         }
     }
 
+    /**
+     * @dev Returns the claim ID associated with a given policy ID.
+     * @param policyId The policy ID for which the claim ID is requested.
+     * @return The claim ID associated with the given policy ID.
+     */
     function getClaimId(bytes32 policyId) external view returns (uint256) { return _policyIdToClaimId[policyId]; }
+    /**
+     * @dev Returns the payout ID associated with a given policy ID.
+     * @param policyId The ID of the policy.
+     * @return The payout ID associated with the given policy ID.
+     */
     function getPayoutId(bytes32 policyId) external view returns (uint256) { return _policyIdToPayoutId[policyId]; }
+    /**
+     * @dev Returns the number of applications that have been submitted.
+     * @return The number of applications as a uint256 value.
+     */
     function applications() external view returns (uint256) { return _applications.length; }
+    /**
+     * @dev Returns the number of policies in the _policies array.
+     * @return The length of the _policies array.
+     */
     function policies() external view returns (uint256) { return _policies.length; }
+    /**
+     * @dev Returns the number of claims made by users.
+     * @return _claims The total number of claims made by users.
+     */
     function claims() external view returns (uint256) { return _claims; }
 }

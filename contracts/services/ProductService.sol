@@ -15,8 +15,15 @@ contract ProductService is
     bytes32 public constant NAME = "ProductService";
 
     // solhint-disable-next-line no-empty-blocks
+    /**
+     * @dev Constructor function that initializes the contract with a registry address.
+     * @param _registry The address of the registry contract.
+     */
     constructor(address _registry) WithRegistry(_registry) {}
 
+    /**
+     * @dev Fallback function that ensures the caller is a registered product and authorized to execute the delegated policy flow.
+     */
     fallback() external {
         // getAuthorizationStatus enforces msg.sender to be a registered product
         (,bool isAuthorized, address policyFlow) = _license().getAuthorizationStatus(_msgSender());
@@ -34,6 +41,10 @@ contract ProductService is
      * This function does not return to its internal call site, it will return directly to the external caller.
      * This function is a 1:1 copy of _delegate from
      * https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.6/contracts/proxy/Proxy.sol
+     */
+    /**
+     * @dev Delegates the current call to `implementation`.
+     * @param implementation Address of the contract to delegatecall.
      */
     function _delegate(address implementation) internal {
         assembly {
@@ -60,6 +71,11 @@ contract ProductService is
         }
     }
 
+    /**
+     * @dev Returns the instance of the License contract.
+     *
+     * @return license An instance of the ILicense interface representing the License contract.
+     */
     function _license() internal view returns (ILicense) {
         return ILicense(registry.getContract("License"));
     }
