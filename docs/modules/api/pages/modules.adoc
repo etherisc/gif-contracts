@@ -443,6 +443,15 @@ Returns the bytes32 identifier of the Oracle Provider role.
 
 Returns the bytes32 value of the RISKPOOL_KEEPER_ROLE.
 
+The "AccessController" smart contract is a Solidity implementation that provides access control and role management functionalities. 
+It inherits from other contracts and implements the "IAccess" interface. 
+It defines three role identifiers: PRODUCT_OWNER_ROLE, ORACLE_PROVIDER_ROLE, and RISKPOOL_KEEPER_ROLE. 
+The contract has state variables to store role validity and a flag to indicate if the default admin role is set. 
+It includes functions to grant, revoke, and renounce roles, as well as add and invalidate roles. 
+t also has functions to check role membership and retrieve role identifiers. 
+The contract ensures that only instance operators can access certain functions. 
+Overall, it offers a flexible access control mechanism for managing roles and permissions.
+
 :onlyRiskpoolService: pass:normal[xref:#BundleController-onlyRiskpoolService--[`++onlyRiskpoolService++`]]
 :onlyFundableBundle: pass:normal[xref:#BundleController-onlyFundableBundle-uint256-[`++onlyFundableBundle++`]]
 :_afterInitialize: pass:normal[xref:#BundleController-_afterInitialize--[`++_afterInitialize++`]]
@@ -730,6 +739,13 @@ Sets the state and updated timestamp of a given bundle.
 ==== `[.contract-item-name]#++_checkStateTransition++#++(enum IBundle.BundleState oldState, enum IBundle.BundleState newState)++` [.item-kind]#internal#
 
 Checks if a state transition is valid.
+
+The "BundleController" smart contract is designed to manage bundles, which are collections of policies. 
+It imports other Solidity contracts, implements the "IBundle" interface, and extends the "CoreController" contract. 
+The contract includes mappings to store information about bundles, active policies, locked capital, and unburt bundles. 
+It has functions to create bundles, fund and defund them, lock and unlock assets, close and burn bundles, and collateralize and release policies. 
+The contract includes modifiers and event emitters for access control and important events. 
+Overall, it provides comprehensive functionality for managing bundles and their associated policies.
 
 :onlyComponentOwnerService: pass:normal[xref:#ComponentController-onlyComponentOwnerService--[`++onlyComponentOwnerService++`]]
 :onlyInstanceOperatorService: pass:normal[xref:#ComponentController-onlyInstanceOperatorService--[`++onlyInstanceOperatorService++`]]
@@ -1054,6 +1070,13 @@ Throws an error if the transition from Paused state is not to Active or Archived
 Throws an error if the transition from Suspended state is not to Active or Archived state.
 Throws an error if the initial state is not handled.
 
+The "Component Controller" smart contract provides functionality to manage and control components within a system. 
+It includes mappings and sets to store information about components, such as addresses, IDs, states, and types. 
+The contract allows component owners to propose new components, and the contract owner can approve, decline, suspend, resume, pause, unpause, or archive components. 
+Functions are available to retrieve component information, such as ID, type, state, and required role. 
+The contract includes modifiers to restrict access to authorized callers, and it utilizes external dependencies and libraries for set operations. 
+Overall, the contract enables efficient management and control of components in a system.
+
 :_afterInitialize: pass:normal[xref:#LicenseController-_afterInitialize--[`++_afterInitialize++`]]
 :getAuthorizationStatus: pass:normal[xref:#LicenseController-getAuthorizationStatus-address-[`++getAuthorizationStatus++`]]
 :_isValidCall: pass:normal[xref:#LicenseController-_isValidCall-uint256-[`++_isValidCall++`]]
@@ -1139,6 +1162,12 @@ Checks if a product is currently active.
 ==== `[.contract-item-name]#++_getProduct++#++(uint256 id) → contract IProduct product++` [.item-kind]#internal#
 
 Returns the product associated with the given ID.
+
+The "LicenseController" smart contract serves as a controller for managing licenses in an insurance ecosystem. 
+It implements the ILicense interface and extends the CoreController contract. 
+The contract interacts with the ComponentController contract to retrieve information about products and their authorization status. 
+Functions are available to check the authorization status of a product, validate if a product is active, and retrieve product information. 
+The contract plays a crucial role in managing licenses within the insurance ecosystem.
 
 :metadata: pass:normal[xref:#PolicyController-metadata-mapping-bytes32----struct-IPolicy-Metadata-[`++metadata++`]]
 :applications: pass:normal[xref:#PolicyController-applications-mapping-bytes32----struct-IPolicy-Application-[`++applications++`]]
@@ -1428,6 +1457,13 @@ Retrieves a specific payout from a process.
 
 Returns the number of process IDs that have been assigned.
 
+The "PolicyController" smart contract implements functions for policy operations, such as creation, update, cancellation, and retrieval. 
+It also handles claim creation, confirmation, decline, closure, and payout creation. 
+The contract includes mappings to store policies, claims, payouts, and metadata associated with policy flows. 
+It inherits from the IPolicy interface and the CoreController contract. 
+The functions validate inputs, update states, and emit events to manage the lifecycle of policies, claims, and payouts. 
+The contract provides comprehensive functionality for managing insurance policies and associated operations.
+
 :FULL_COLLATERALIZATION_LEVEL: pass:normal[xref:#PoolController-FULL_COLLATERALIZATION_LEVEL-uint256[`++FULL_COLLATERALIZATION_LEVEL++`]]
 :COLLATERALIZATION_LEVEL_CAP: pass:normal[xref:#PoolController-COLLATERALIZATION_LEVEL_CAP-uint256[`++COLLATERALIZATION_LEVEL_CAP++`]]
 :DEFAULT_MAX_NUMBER_OF_ACTIVE_BUNDLES: pass:normal[xref:#PoolController-DEFAULT_MAX_NUMBER_OF_ACTIVE_BUNDLES-uint256[`++DEFAULT_MAX_NUMBER_OF_ACTIVE_BUNDLES++`]]
@@ -1699,6 +1735,12 @@ Returns the Riskpool contract instance associated with the given policy metadata
 
 Returns the Riskpool contract instance for a given riskpoolId.
 
+The "PoolController" smart contract manages riskpools and their operations, including registration, funding, defunding, collateralization, and more. 
+It interacts with other contracts such as ComponentController, PolicyController, and BundleController. 
+The contract maintains mappings to store riskpool information and handles functions for funding, defunding, underwriting, calculating collateral, processing premiums and payouts, and releasing collateral. 
+It ensures access control through modifiers and emits events to track the success or failure of operations. 
+The PoolController contract acts as a central component for coordinating riskpool-related operations within the ecosystem.
+
 :onlyOracleService: pass:normal[xref:#QueryModule-onlyOracleService--[`++onlyOracleService++`]]
 :onlyResponsibleOracle: pass:normal[xref:#QueryModule-onlyResponsibleOracle-uint256-address-[`++onlyResponsibleOracle++`]]
 :_afterInitialize: pass:normal[xref:#QueryModule-_afterInitialize--[`++_afterInitialize++`]]
@@ -1836,6 +1878,12 @@ Returns the number of oracle requests made.
 ==== `[.contract-item-name]#++_getOracle++#++(uint256 id) → contract IOracle oracle++` [.item-kind]#internal#
 
 Returns the Oracle component with the specified ID.
+
+The "QueryModule" smart contract implements the IQuery interface and extends the CoreController contract. 
+It interacts with external contracts such as IComponent.sol, IOracle.sol, IQuery.sol, and IInstanceService.sol. 
+The contract allows the creation of oracle requests, enables oracles to respond to requests, cancels requests, and provides functions to retrieve information about requests and oracles. 
+It ensures access control through modifiers and emits events to track the creation, response, and cancellation of oracle requests.
+The QueryModule contract acts as a module for managing oracle queries within the ecosystem.
 
 :MAX_CONTRACTS: pass:normal[xref:#RegistryController-MAX_CONTRACTS-uint256[`++MAX_CONTRACTS++`]]
 :release: pass:normal[xref:#RegistryController-release-bytes32[`++release++`]]
@@ -2024,6 +2072,13 @@ Registers a contract in a release.
 ==== `[.contract-item-name]#++_deregisterInRelease++#++(bytes32 _release, bytes32 _contractName)++` [.item-kind]#internal#
 
 Internal function to deregister a contract in a specific release.
+
+The "RegistryController" smart contract implements the IRegistry interface and inherits from the CoreController contract. 
+It facilitates the registration, deregistration, and access of contracts within different releases. 
+The contract maintains mappings and sets to store contract names and addresses in various releases. 
+It provides functions to register and deregister contracts, retrieve contract addresses, and manage releases. 
+The contract ensures sender verification and emits events to track contract registration and deregistration. 
+The RegistryController contract serves as a centralized registry for managing contracts in different releases within the ecosystem.
 
 :FRACTION_FULL_UNIT: pass:normal[xref:#TreasuryModule-FRACTION_FULL_UNIT-uint256[`++FRACTION_FULL_UNIT++`]]
 :FRACTIONAL_FEE_MAX: pass:normal[xref:#TreasuryModule-FRACTIONAL_FEE_MAX-uint256[`++FRACTIONAL_FEE_MAX++`]]
@@ -2370,4 +2425,12 @@ Returns the riskpool ID and wallet address for a given process ID.
 [.contract-item]
 [[TreasuryModule-LogTransferHelperCallFailed-bool-uint256-bytes-]]
 ==== `[.contract-item-name]#++LogTransferHelperCallFailed++#++(bool callSuccess, uint256 returnDataLength, bytes returnData)++` [.item-kind]#event#
+
+The "TreasuryModule" smart contract implements the ITreasury interface and inherits from the CoreController and Pausable contracts. 
+It imports various contracts and interfaces to handle treasury operations. 
+The contract defines state variables, including constants, wallet addresses, fee specifications, and instances of other contracts. 
+It includes modifiers to enforce conditions for function execution. 
+The contract provides functions to set token and wallet addresses, create fee specifications, process premium payments, and manage suspension/resumption. 
+It also calculates fee amounts and net amounts. 
+The TreasuryModule contract serves as a central component for managing fees and treasury operations, interacting with other controllers and contracts within the system.
 
