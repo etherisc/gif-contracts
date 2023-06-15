@@ -92,21 +92,31 @@ import "@etherisc/gif-contracts/contracts/shared/CoreController.sol";
 [[CoreController-constructor--]]
 ==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
 
+Constructor function that disables initializers.
+
 [.contract-item]
 [[CoreController-initialize-address-]]
 ==== `[.contract-item-name]#++initialize++#++(address registry)++` [.item-kind]#public#
+
+Initializes the contract with the provided registry address.
 
 [.contract-item]
 [[CoreController-_getName--]]
 ==== `[.contract-item-name]#++_getName++#++() → bytes32++` [.item-kind]#internal#
 
+Returns the name of the contract.
+
 [.contract-item]
 [[CoreController-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
+This function is called after the contract is initialized and can be used to perform additional setup.
+
 [.contract-item]
 [[CoreController-_getContractAddress-bytes32-]]
 ==== `[.contract-item-name]#++_getContractAddress++#++(bytes32 contractName) → address contractAddress++` [.item-kind]#internal#
+
+Returns the address of a registered contract by its name.
 
 :onlyAdmin: pass:normal[xref:#CoreProxy-onlyAdmin--[`++onlyAdmin++`]]
 :constructor: pass:normal[xref:#CoreProxy-constructor-address-bytes-[`++constructor++`]]
@@ -193,13 +203,19 @@ import "@etherisc/gif-contracts/contracts/shared/CoreProxy.sol";
 [[CoreProxy-constructor-address-bytes-]]
 ==== `[.contract-item-name]#++constructor++#++(address _controller, bytes encoded_initializer)++` [.item-kind]#public#
 
+Constructor function that creates a new instance of the contract.
+
 [.contract-item]
 [[CoreProxy-implementation--]]
 ==== `[.contract-item-name]#++implementation++#++() → address++` [.item-kind]#external#
 
+Returns the address of the current implementation contract.
+
 [.contract-item]
 [[CoreProxy-upgradeToAndCall-address-bytes-]]
 ==== `[.contract-item-name]#++upgradeToAndCall++#++(address newImplementation, bytes data)++` [.item-kind]#external#
+
+Upgrades the contract to a new implementation and forwards a function call to it.
 
 :LogTransferHelperInputValidation1Failed: pass:normal[xref:#TransferHelper-LogTransferHelperInputValidation1Failed-bool-address-address-[`++LogTransferHelperInputValidation1Failed++`]]
 :LogTransferHelperInputValidation2Failed: pass:normal[xref:#TransferHelper-LogTransferHelperInputValidation2Failed-uint256-uint256-[`++LogTransferHelperInputValidation2Failed++`]]
@@ -234,6 +250,8 @@ import "@etherisc/gif-contracts/contracts/shared/TransferHelper.sol";
 [.contract-item]
 [[TransferHelper-unifiedTransferFrom-contract-IERC20-address-address-uint256-]]
 ==== `[.contract-item-name]#++unifiedTransferFrom++#++(contract IERC20 token, address from, address to, uint256 value) → bool success++` [.item-kind]#internal#
+
+Executes a transferFrom function call on an ERC20 token contract, after performing input validation.
 
 [.contract-item]
 [[TransferHelper-LogTransferHelperInputValidation1Failed-bool-address-address-]]
@@ -305,15 +323,23 @@ import "@etherisc/gif-contracts/contracts/shared/WithRegistry.sol";
 [[WithRegistry-constructor-address-]]
 ==== `[.contract-item-name]#++constructor++#++(address _registry)++` [.item-kind]#public#
 
+Constructor function that sets the address of the registry contract.
+
 [.contract-item]
 [[WithRegistry-getContractFromRegistry-bytes32-]]
 ==== `[.contract-item-name]#++getContractFromRegistry++#++(bytes32 _contractName) → address _addr++` [.item-kind]#public#
+
+Returns the address of a contract registered in the registry by its name.
 
 [.contract-item]
 [[WithRegistry-getContractInReleaseFromRegistry-bytes32-bytes32-]]
 ==== `[.contract-item-name]#++getContractInReleaseFromRegistry++#++(bytes32 _release, bytes32 _contractName) → address _addr++` [.item-kind]#internal#
 
+Returns the address of a contract with a given name in a specific release of the registry.
+
 [.contract-item]
 [[WithRegistry-getReleaseFromRegistry--]]
 ==== `[.contract-item-name]#++getReleaseFromRegistry++#++() → bytes32 _release++` [.item-kind]#internal#
+
+Returns the current release identifier from the registry.
 

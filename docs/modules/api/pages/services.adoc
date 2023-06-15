@@ -220,29 +220,43 @@ import "@etherisc/gif-contracts/contracts/services/ComponentOwnerService.sol";
 [[ComponentOwnerService-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
+This function is called after the contract is initialized and can only be called once. It sets the component controller contract address.
+
 [.contract-item]
 [[ComponentOwnerService-propose-contract-IComponent-]]
 ==== `[.contract-item-name]#++propose++#++(contract IComponent component)++` [.item-kind]#external#
+
+Propose a new component to be added to the system.
 
 [.contract-item]
 [[ComponentOwnerService-stake-uint256-]]
 ==== `[.contract-item-name]#++stake++#++(uint256 id)++` [.item-kind]#external#
 
+Stake function allows the owner to stake a specific id.
+
 [.contract-item]
 [[ComponentOwnerService-withdraw-uint256-]]
 ==== `[.contract-item-name]#++withdraw++#++(uint256 id)++` [.item-kind]#external#
+
+Allows the owner to withdraw a specific asset by its ID.
 
 [.contract-item]
 [[ComponentOwnerService-pause-uint256-]]
 ==== `[.contract-item-name]#++pause++#++(uint256 id)++` [.item-kind]#external#
 
+Pauses a specific component with the given ID.
+
 [.contract-item]
 [[ComponentOwnerService-unpause-uint256-]]
 ==== `[.contract-item-name]#++unpause++#++(uint256 id)++` [.item-kind]#external#
 
+Unpauses a component with the specified ID.
+
 [.contract-item]
 [[ComponentOwnerService-archive-uint256-]]
 ==== `[.contract-item-name]#++archive++#++(uint256 id)++` [.item-kind]#external#
+
+Archives a component with the given ID from the component owner's inventory.
 
 :onlyInstanceOperatorAddress: pass:normal[xref:#InstanceOperatorService-onlyInstanceOperatorAddress--[`++onlyInstanceOperatorAddress++`]]
 :_afterInitialize: pass:normal[xref:#InstanceOperatorService-_afterInitialize--[`++_afterInitialize++`]]
@@ -366,101 +380,155 @@ import "@etherisc/gif-contracts/contracts/services/InstanceOperatorService.sol";
 [[InstanceOperatorService-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
+Performs the necessary setup after contract initialization.
+     - Sets the component, pool, and treasury contracts.
+     - Transfers ownership to the message sender.
+     - Links the bundle module to the bundle token.
+     - Sets the default admin role.
+
 [.contract-item]
 [[InstanceOperatorService-prepareRelease-bytes32-]]
 ==== `[.contract-item-name]#++prepareRelease++#++(bytes32 _newRelease)++` [.item-kind]#external#
+
+Prepares a new release by calling the prepareRelease function from the Registry contract.
 
 [.contract-item]
 [[InstanceOperatorService-register-bytes32-address-]]
 ==== `[.contract-item-name]#++register++#++(bytes32 _contractName, address _contractAddress)++` [.item-kind]#external#
 
+Registers a contract in the registry.
+
 [.contract-item]
 [[InstanceOperatorService-deregister-bytes32-]]
 ==== `[.contract-item-name]#++deregister++#++(bytes32 _contractName)++` [.item-kind]#external#
+
+Deregisters a contract from the registry.
 
 [.contract-item]
 [[InstanceOperatorService-registerInRelease-bytes32-bytes32-address-]]
 ==== `[.contract-item-name]#++registerInRelease++#++(bytes32 _release, bytes32 _contractName, address _contractAddress)++` [.item-kind]#external#
 
+Registers a contract in a specific release.
+
 [.contract-item]
 [[InstanceOperatorService-deregisterInRelease-bytes32-bytes32-]]
 ==== `[.contract-item-name]#++deregisterInRelease++#++(bytes32 _release, bytes32 _contractName)++` [.item-kind]#external#
+
+Deregisters a contract from a specific release in the registry.
 
 [.contract-item]
 [[InstanceOperatorService-createRole-bytes32-]]
 ==== `[.contract-item-name]#++createRole++#++(bytes32 _role)++` [.item-kind]#external#
 
+Adds a new role to the access control contract.
+
 [.contract-item]
 [[InstanceOperatorService-invalidateRole-bytes32-]]
 ==== `[.contract-item-name]#++invalidateRole++#++(bytes32 _role)++` [.item-kind]#external#
+
+Invalidates a role.
 
 [.contract-item]
 [[InstanceOperatorService-grantRole-bytes32-address-]]
 ==== `[.contract-item-name]#++grantRole++#++(bytes32 role, address principal)++` [.item-kind]#external#
 
+Grants a role to a principal.
+
 [.contract-item]
 [[InstanceOperatorService-revokeRole-bytes32-address-]]
 ==== `[.contract-item-name]#++revokeRole++#++(bytes32 role, address principal)++` [.item-kind]#external#
+
+Revokes a role from a principal.
 
 [.contract-item]
 [[InstanceOperatorService-approve-uint256-]]
 ==== `[.contract-item-name]#++approve++#++(uint256 id)++` [.item-kind]#external#
 
+Approves a component with the given ID and sets its corresponding riskpool ID in the pool contract.
+
 [.contract-item]
 [[InstanceOperatorService-decline-uint256-]]
 ==== `[.contract-item-name]#++decline++#++(uint256 id)++` [.item-kind]#external#
+
+Declines a component with the specified ID.
 
 [.contract-item]
 [[InstanceOperatorService-suspend-uint256-]]
 ==== `[.contract-item-name]#++suspend++#++(uint256 id)++` [.item-kind]#external#
 
+Suspends the component with the given ID.
+
 [.contract-item]
 [[InstanceOperatorService-resume-uint256-]]
 ==== `[.contract-item-name]#++resume++#++(uint256 id)++` [.item-kind]#external#
+
+Resumes the execution of a paused component instance.
 
 [.contract-item]
 [[InstanceOperatorService-archive-uint256-]]
 ==== `[.contract-item-name]#++archive++#++(uint256 id)++` [.item-kind]#external#
 
+Archives a component with the given ID from the instance operator's address.
+
 [.contract-item]
 [[InstanceOperatorService-setDefaultStaking-uint16-bytes-]]
 ==== `[.contract-item-name]#++setDefaultStaking++#++(uint16 componentType, bytes data)++` [.item-kind]#external#
+
+Sets the default staking for a specific component type.
 
 [.contract-item]
 [[InstanceOperatorService-adjustStakingRequirements-uint256-bytes-]]
 ==== `[.contract-item-name]#++adjustStakingRequirements++#++(uint256 id, bytes data)++` [.item-kind]#external#
 
+Adjusts the staking requirements for a specific instance operator by providing the operator ID and the new staking requirements.
+
 [.contract-item]
 [[InstanceOperatorService-suspendTreasury--]]
 ==== `[.contract-item-name]#++suspendTreasury++#++()++` [.item-kind]#external#
+
+Suspends the treasury functionality.
 
 [.contract-item]
 [[InstanceOperatorService-resumeTreasury--]]
 ==== `[.contract-item-name]#++resumeTreasury++#++()++` [.item-kind]#external#
 
+Resumes the treasury contract.
+
 [.contract-item]
 [[InstanceOperatorService-setInstanceWallet-address-]]
 ==== `[.contract-item-name]#++setInstanceWallet++#++(address walletAddress)++` [.item-kind]#external#
+
+Sets the wallet address of the instance operator.
 
 [.contract-item]
 [[InstanceOperatorService-setRiskpoolWallet-uint256-address-]]
 ==== `[.contract-item-name]#++setRiskpoolWallet++#++(uint256 riskpoolId, address riskpoolWalletAddress)++` [.item-kind]#external#
 
+Sets the wallet address for a specific risk pool.
+
 [.contract-item]
 [[InstanceOperatorService-setProductToken-uint256-address-]]
 ==== `[.contract-item-name]#++setProductToken++#++(uint256 productId, address erc20Address)++` [.item-kind]#external#
+
+Sets the ERC20 token address for a given product ID.
 
 [.contract-item]
 [[InstanceOperatorService-createFeeSpecification-uint256-uint256-uint256-bytes-]]
 ==== `[.contract-item-name]#++createFeeSpecification++#++(uint256 componentId, uint256 fixedFee, uint256 fractionalFee, bytes feeCalculationData) → struct ITreasury.FeeSpecification++` [.item-kind]#external#
 
+Returns a FeeSpecification object created with the given parameters.
+
 [.contract-item]
 [[InstanceOperatorService-setPremiumFees-struct-ITreasury-FeeSpecification-]]
 ==== `[.contract-item-name]#++setPremiumFees++#++(struct ITreasury.FeeSpecification feeSpec)++` [.item-kind]#external#
 
+Sets the premium fees for the treasury.
+
 [.contract-item]
 [[InstanceOperatorService-setCapitalFees-struct-ITreasury-FeeSpecification-]]
 ==== `[.contract-item-name]#++setCapitalFees++#++(struct ITreasury.FeeSpecification feeSpec)++` [.item-kind]#external#
+
+Sets the fee specification for capital fees in the treasury contract.
 
 :BUNDLE_NAME: pass:normal[xref:#InstanceService-BUNDLE_NAME-bytes32[`++BUNDLE_NAME++`]]
 :COMPONENT_NAME: pass:normal[xref:#InstanceService-COMPONENT_NAME-bytes32[`++COMPONENT_NAME++`]]
@@ -639,229 +707,345 @@ import "@etherisc/gif-contracts/contracts/services/InstanceService.sol";
 [[InstanceService-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
+Internal function that is called after initialization is complete. It sets the bundle, component, policy, pool, and treasury controllers by retrieving their contract addresses. It also sets the chain names.
+
 [.contract-item]
 [[InstanceService-_setChainNames--]]
 ==== `[.contract-item-name]#++_setChainNames++#++()++` [.item-kind]#internal#
+
+Sets the names for several blockchain networks by assigning them to their respective chain IDs.
+
+Sets the names for the Ethereum Mainnet/ETH, Goerli/ETH, Ganache, Gnosis/xDai, Sokol/SPOA, Polygon Mainnet/MATIC, Mumbai/MATIC, Avalanche C-Chain/AVAX and Avalanche Fuji Testnet/AVAX blockchain networks by assigning them to their respective chain IDs.
 
 [.contract-item]
 [[InstanceService-getChainId--]]
 ==== `[.contract-item-name]#++getChainId++#++() → uint256 chainId++` [.item-kind]#public#
 
+Returns the chain ID of the current blockchain.
+
 [.contract-item]
 [[InstanceService-getChainName--]]
 ==== `[.contract-item-name]#++getChainName++#++() → string chainName++` [.item-kind]#public#
+
+Returns the name of the chain based on its ID.
 
 [.contract-item]
 [[InstanceService-getInstanceId--]]
 ==== `[.contract-item-name]#++getInstanceId++#++() → bytes32 instanceId++` [.item-kind]#public#
 
+Returns the instance ID of the contract, which is a hash of the chain ID and the registry address.
+
 [.contract-item]
 [[InstanceService-getInstanceOperator--]]
 ==== `[.contract-item-name]#++getInstanceOperator++#++() → address++` [.item-kind]#external#
+
+Returns the address of the current instance operator.
 
 [.contract-item]
 [[InstanceService-getComponentOwnerService--]]
 ==== `[.contract-item-name]#++getComponentOwnerService++#++() → contract IComponentOwnerService service++` [.item-kind]#external#
 
+Returns the address of the Component Owner Service contract.
+
 [.contract-item]
 [[InstanceService-getInstanceOperatorService--]]
 ==== `[.contract-item-name]#++getInstanceOperatorService++#++() → contract IInstanceOperatorService service++` [.item-kind]#external#
+
+Returns the instance operator service contract address.
 
 [.contract-item]
 [[InstanceService-getOracleService--]]
 ==== `[.contract-item-name]#++getOracleService++#++() → contract IOracleService service++` [.item-kind]#external#
 
+Returns the Oracle Service contract instance.
+
 [.contract-item]
 [[InstanceService-getProductService--]]
 ==== `[.contract-item-name]#++getProductService++#++() → contract IProductService service++` [.item-kind]#external#
+
+Returns the address of the Product Service contract.
 
 [.contract-item]
 [[InstanceService-getRiskpoolService--]]
 ==== `[.contract-item-name]#++getRiskpoolService++#++() → contract IRiskpoolService service++` [.item-kind]#external#
 
+Returns the IRiskpoolService contract instance.
+
 [.contract-item]
 [[InstanceService-getRegistry--]]
 ==== `[.contract-item-name]#++getRegistry++#++() → contract IRegistry service++` [.item-kind]#external#
+
+Returns the current instance of the IRegistry contract.
 
 [.contract-item]
 [[InstanceService-contracts--]]
 ==== `[.contract-item-name]#++contracts++#++() → uint256 numberOfContracts++` [.item-kind]#external#
 
+Returns the number of contracts registered in the registry.
+
 [.contract-item]
 [[InstanceService-contractName-uint256-]]
 ==== `[.contract-item-name]#++contractName++#++(uint256 idx) → bytes32 name++` [.item-kind]#external#
+
+Returns the name of the contract at the specified index in the registry.
 
 [.contract-item]
 [[InstanceService-getDefaultAdminRole--]]
 ==== `[.contract-item-name]#++getDefaultAdminRole++#++() → bytes32++` [.item-kind]#external#
 
+Returns the default admin role for the AccessControl contract.
+
 [.contract-item]
 [[InstanceService-getProductOwnerRole--]]
 ==== `[.contract-item-name]#++getProductOwnerRole++#++() → bytes32++` [.item-kind]#external#
+
+Returns the role identifier of the product owner role.
 
 [.contract-item]
 [[InstanceService-getOracleProviderRole--]]
 ==== `[.contract-item-name]#++getOracleProviderRole++#++() → bytes32++` [.item-kind]#external#
 
+Returns the role identifier for the oracle provider role.
+
 [.contract-item]
 [[InstanceService-getRiskpoolKeeperRole--]]
 ==== `[.contract-item-name]#++getRiskpoolKeeperRole++#++() → bytes32++` [.item-kind]#external#
+
+Returns the role identifier for the Riskpool Keeper role.
 
 [.contract-item]
 [[InstanceService-hasRole-bytes32-address-]]
 ==== `[.contract-item-name]#++hasRole++#++(bytes32 role, address principal) → bool++` [.item-kind]#external#
 
+Checks if an address has a specific role.
+
 [.contract-item]
 [[InstanceService-products--]]
 ==== `[.contract-item-name]#++products++#++() → uint256++` [.item-kind]#external#
+
+Returns the number of products in the component contract.
 
 [.contract-item]
 [[InstanceService-oracles--]]
 ==== `[.contract-item-name]#++oracles++#++() → uint256++` [.item-kind]#external#
 
+Returns the number of oracles registered in the component.
+
 [.contract-item]
 [[InstanceService-riskpools--]]
 ==== `[.contract-item-name]#++riskpools++#++() → uint256++` [.item-kind]#external#
+
+Returns the number of risk pools in the component.
 
 [.contract-item]
 [[InstanceService-getComponentId-address-]]
 ==== `[.contract-item-name]#++getComponentId++#++(address componentAddress) → uint256 componentId++` [.item-kind]#external#
 
+Returns the component ID of a given component address.
+
 [.contract-item]
 [[InstanceService-getComponentType-uint256-]]
 ==== `[.contract-item-name]#++getComponentType++#++(uint256 componentId) → enum IComponent.ComponentType componentType++` [.item-kind]#external#
+
+Returns the type of a component given its ID.
 
 [.contract-item]
 [[InstanceService-getComponentState-uint256-]]
 ==== `[.contract-item-name]#++getComponentState++#++(uint256 componentId) → enum IComponent.ComponentState componentState++` [.item-kind]#external#
 
+Returns the current state of a specific component.
+
 [.contract-item]
 [[InstanceService-getComponent-uint256-]]
 ==== `[.contract-item-name]#++getComponent++#++(uint256 id) → contract IComponent++` [.item-kind]#external#
+
+Returns the component with the specified ID.
 
 [.contract-item]
 [[InstanceService-getOracleId-uint256-]]
 ==== `[.contract-item-name]#++getOracleId++#++(uint256 idx) → uint256 oracleId++` [.item-kind]#public#
 
+Returns the oracle ID at the specified index.
+
 [.contract-item]
 [[InstanceService-getRiskpoolId-uint256-]]
 ==== `[.contract-item-name]#++getRiskpoolId++#++(uint256 idx) → uint256 riskpoolId++` [.item-kind]#public#
+
+Returns the riskpool ID for the given index.
 
 [.contract-item]
 [[InstanceService-getProductId-uint256-]]
 ==== `[.contract-item-name]#++getProductId++#++(uint256 idx) → uint256 productId++` [.item-kind]#public#
 
+Returns the product ID of the component at the given index.
+
 [.contract-item]
 [[InstanceService-getStakingRequirements-uint256-]]
 ==== `[.contract-item-name]#++getStakingRequirements++#++(uint256 id) → bytes data++` [.item-kind]#external#
+
+Returns the staking requirements for a specific ID.
 
 [.contract-item]
 [[InstanceService-getStakedAssets-uint256-]]
 ==== `[.contract-item-name]#++getStakedAssets++#++(uint256 id) → bytes data++` [.item-kind]#external#
 
+Returns the staked assets for a given ID.
+
 [.contract-item]
 [[InstanceService-processIds--]]
 ==== `[.contract-item-name]#++processIds++#++() → uint256 numberOfProcessIds++` [.item-kind]#external#
+
+Returns the number of process IDs in the policy contract.
 
 [.contract-item]
 [[InstanceService-getMetadata-bytes32-]]
 ==== `[.contract-item-name]#++getMetadata++#++(bytes32 bpKey) → struct IPolicy.Metadata metadata++` [.item-kind]#external#
 
+Returns the metadata associated with a given business process key.
+
 [.contract-item]
 [[InstanceService-getApplication-bytes32-]]
 ==== `[.contract-item-name]#++getApplication++#++(bytes32 processId) → struct IPolicy.Application application++` [.item-kind]#external#
+
+Returns the application data associated with the given process ID.
 
 [.contract-item]
 [[InstanceService-getPolicy-bytes32-]]
 ==== `[.contract-item-name]#++getPolicy++#++(bytes32 processId) → struct IPolicy.Policy policy++` [.item-kind]#external#
 
+Returns the policy associated with the given process ID.
+
 [.contract-item]
 [[InstanceService-claims-bytes32-]]
 ==== `[.contract-item-name]#++claims++#++(bytes32 processId) → uint256 numberOfClaims++` [.item-kind]#external#
+
+Returns the number of claims associated with a given process ID.
 
 [.contract-item]
 [[InstanceService-payouts-bytes32-]]
 ==== `[.contract-item-name]#++payouts++#++(bytes32 processId) → uint256 numberOfPayouts++` [.item-kind]#external#
 
+Returns the number of payouts for a given processId.
+
 [.contract-item]
 [[InstanceService-getClaim-bytes32-uint256-]]
 ==== `[.contract-item-name]#++getClaim++#++(bytes32 processId, uint256 claimId) → struct IPolicy.Claim claim++` [.item-kind]#external#
+
+Returns the claim with the given claimId for the specified processId.
 
 [.contract-item]
 [[InstanceService-getPayout-bytes32-uint256-]]
 ==== `[.contract-item-name]#++getPayout++#++(bytes32 processId, uint256 payoutId) → struct IPolicy.Payout payout++` [.item-kind]#external#
 
+Returns the information of a specific payout.
+
 [.contract-item]
 [[InstanceService-getRiskpool-uint256-]]
 ==== `[.contract-item-name]#++getRiskpool++#++(uint256 riskpoolId) → struct IPool.Pool riskPool++` [.item-kind]#external#
+
+Returns the risk pool with the given ID.
 
 [.contract-item]
 [[InstanceService-getFullCollateralizationLevel--]]
 ==== `[.contract-item-name]#++getFullCollateralizationLevel++#++() → uint256++` [.item-kind]#external#
 
+Returns the full collateralization level of the pool.
+
 [.contract-item]
 [[InstanceService-getCapital-uint256-]]
 ==== `[.contract-item-name]#++getCapital++#++(uint256 riskpoolId) → uint256 capitalAmount++` [.item-kind]#external#
+
+Returns the capital amount of a given risk pool.
 
 [.contract-item]
 [[InstanceService-getTotalValueLocked-uint256-]]
 ==== `[.contract-item-name]#++getTotalValueLocked++#++(uint256 riskpoolId) → uint256 totalValueLockedAmount++` [.item-kind]#external#
 
+Returns the total value locked in a specific risk pool.
+
 [.contract-item]
 [[InstanceService-getCapacity-uint256-]]
 ==== `[.contract-item-name]#++getCapacity++#++(uint256 riskpoolId) → uint256 capacityAmount++` [.item-kind]#external#
+
+Returns the available capacity of a risk pool.
 
 [.contract-item]
 [[InstanceService-getBalance-uint256-]]
 ==== `[.contract-item-name]#++getBalance++#++(uint256 riskpoolId) → uint256 balanceAmount++` [.item-kind]#external#
 
+Returns the balance amount of a specific risk pool.
+
 [.contract-item]
 [[InstanceService-activeBundles-uint256-]]
 ==== `[.contract-item-name]#++activeBundles++#++(uint256 riskpoolId) → uint256 numberOfActiveBundles++` [.item-kind]#external#
+
+Returns the number of active bundles for a given risk pool.
 
 [.contract-item]
 [[InstanceService-getActiveBundleId-uint256-uint256-]]
 ==== `[.contract-item-name]#++getActiveBundleId++#++(uint256 riskpoolId, uint256 bundleIdx) → uint256 bundleId++` [.item-kind]#external#
 
+Returns the active bundle ID for a given risk pool and bundle index.
+
 [.contract-item]
 [[InstanceService-getMaximumNumberOfActiveBundles-uint256-]]
 ==== `[.contract-item-name]#++getMaximumNumberOfActiveBundles++#++(uint256 riskpoolId) → uint256 maximumNumberOfActiveBundles++` [.item-kind]#external#
+
+Returns the maximum number of active bundles for a given risk pool ID.
 
 [.contract-item]
 [[InstanceService-getBundleToken--]]
 ==== `[.contract-item-name]#++getBundleToken++#++() → contract IBundleToken token++` [.item-kind]#external#
 
+Returns the bundle token contract address.
+
 [.contract-item]
 [[InstanceService-getBundle-uint256-]]
 ==== `[.contract-item-name]#++getBundle++#++(uint256 bundleId) → struct IBundle.Bundle bundle++` [.item-kind]#external#
+
+Returns the bundle with the given ID.
 
 [.contract-item]
 [[InstanceService-bundles--]]
 ==== `[.contract-item-name]#++bundles++#++() → uint256++` [.item-kind]#external#
 
+Returns the number of bundles in the `_bundle` contract.
+
 [.contract-item]
 [[InstanceService-unburntBundles-uint256-]]
 ==== `[.contract-item-name]#++unburntBundles++#++(uint256 riskpoolId) → uint256 numberOfUnburntBundles++` [.item-kind]#external#
+
+Returns the number of unburnt bundles for a given risk pool ID.
 
 [.contract-item]
 [[InstanceService-getTreasuryAddress--]]
 ==== `[.contract-item-name]#++getTreasuryAddress++#++() → address++` [.item-kind]#external#
 
+Returns the address of the treasury contract.
+
 [.contract-item]
 [[InstanceService-getInstanceWallet--]]
 ==== `[.contract-item-name]#++getInstanceWallet++#++() → address++` [.item-kind]#external#
+
+Returns the address of the instance wallet associated with the treasury.
 
 [.contract-item]
 [[InstanceService-getRiskpoolWallet-uint256-]]
 ==== `[.contract-item-name]#++getRiskpoolWallet++#++(uint256 riskpoolId) → address++` [.item-kind]#external#
 
+Returns the wallet address of the specified riskpool.
+
 [.contract-item]
 [[InstanceService-getComponentToken-uint256-]]
 ==== `[.contract-item-name]#++getComponentToken++#++(uint256 componentId) → contract IERC20++` [.item-kind]#external#
 
+Returns the IERC20 token associated with the given component ID.
+
 [.contract-item]
 [[InstanceService-getFeeFractionFullUnit--]]
 ==== `[.contract-item-name]#++getFeeFractionFullUnit++#++() → uint256++` [.item-kind]#external#
+
+Returns the fraction of the treasury fee expressed in full units.
 
 :_afterInitialize: pass:normal[xref:#OracleService-_afterInitialize--[`++_afterInitialize++`]]
 :respond: pass:normal[xref:#OracleService-respond-uint256-bytes-[`++respond++`]]
@@ -916,9 +1100,13 @@ import "@etherisc/gif-contracts/contracts/services/OracleService.sol";
 [[OracleService-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
+Sets the `_query` variable to an instance of the `IQuery` contract.
+
 [.contract-item]
 [[OracleService-respond-uint256-bytes-]]
 ==== `[.contract-item-name]#++respond++#++(uint256 _requestId, bytes _data)++` [.item-kind]#external#
+
+Allows a registered oracle to respond to a data request.
 
 :NAME: pass:normal[xref:#ProductService-NAME-bytes32[`++NAME++`]]
 :constructor: pass:normal[xref:#ProductService-constructor-address-[`++constructor++`]]
@@ -955,9 +1143,13 @@ import "@etherisc/gif-contracts/contracts/services/ProductService.sol";
 [[ProductService-constructor-address-]]
 ==== `[.contract-item-name]#++constructor++#++(address _registry)++` [.item-kind]#public#
 
+Constructor function that initializes the contract with a registry address.
+
 [.contract-item]
 [[ProductService-fallback--]]
 ==== `[.contract-item-name]#++fallback++#++()++` [.item-kind]#external#
+
+Fallback function that ensures the caller is a registered product and authorized to execute the delegated policy flow.
 
 [.contract-item]
 [[ProductService-_delegate-address-]]
@@ -965,13 +1157,11 @@ import "@etherisc/gif-contracts/contracts/services/ProductService.sol";
 
 Delegates the current call to `implementation`.
 
-This function does not return to its internal call site, it will return directly to the external caller.
-This function is a 1:1 copy of _delegate from
-https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v4.6/contracts/proxy/Proxy.sol
-
 [.contract-item]
 [[ProductService-_license--]]
 ==== `[.contract-item-name]#++_license++#++() → contract ILicense++` [.item-kind]#internal#
+
+Returns the instance of the License contract.
 
 :RISKPOOL_NAME: pass:normal[xref:#RiskpoolService-RISKPOOL_NAME-bytes32[`++RISKPOOL_NAME++`]]
 :onlyProposedRiskpool: pass:normal[xref:#RiskpoolService-onlyProposedRiskpool--[`++onlyProposedRiskpool++`]]
@@ -1080,55 +1270,83 @@ import "@etherisc/gif-contracts/contracts/services/RiskpoolService.sol";
 [[RiskpoolService-_afterInitialize--]]
 ==== `[.contract-item-name]#++_afterInitialize++#++()++` [.item-kind]#internal#
 
+Sets the addresses of the BundleController, ComponentController, PoolController, and TreasuryModule contracts.
+
 [.contract-item]
 [[RiskpoolService-registerRiskpool-address-address-uint256-uint256-]]
 ==== `[.contract-item-name]#++registerRiskpool++#++(address wallet, address erc20Token, uint256 collateralizationLevel, uint256 sumOfSumInsuredCap)++` [.item-kind]#external#
+
+Registers a new risk pool with the given parameters.
 
 [.contract-item]
 [[RiskpoolService-createBundle-address-bytes-uint256-]]
 ==== `[.contract-item-name]#++createBundle++#++(address owner, bytes filter, uint256 initialCapital) → uint256 bundleId++` [.item-kind]#external#
 
+Creates a new bundle with the given parameters and adds it to the active set of the riskpool.
+
 [.contract-item]
 [[RiskpoolService-fundBundle-uint256-uint256-]]
 ==== `[.contract-item-name]#++fundBundle++#++(uint256 bundleId, uint256 amount) → uint256 netAmount++` [.item-kind]#external#
+
+This function allows a user to fund a bundle with a specified amount.
 
 [.contract-item]
 [[RiskpoolService-defundBundle-uint256-uint256-]]
 ==== `[.contract-item-name]#++defundBundle++#++(uint256 bundleId, uint256 amount) → uint256 netAmount++` [.item-kind]#external#
 
+Defunds a bundle by withdrawing a specified amount of tokens from it.
+
 [.contract-item]
 [[RiskpoolService-lockBundle-uint256-]]
 ==== `[.contract-item-name]#++lockBundle++#++(uint256 bundleId)++` [.item-kind]#external#
+
+Locks a bundle, preventing it from being traded or redeemed.
 
 [.contract-item]
 [[RiskpoolService-unlockBundle-uint256-]]
 ==== `[.contract-item-name]#++unlockBundle++#++(uint256 bundleId)++` [.item-kind]#external#
 
+Unlocks a bundle for trading by adding its ID to the active set of a risk pool and unlocking the bundle.
+
 [.contract-item]
 [[RiskpoolService-closeBundle-uint256-]]
 ==== `[.contract-item-name]#++closeBundle++#++(uint256 bundleId)++` [.item-kind]#external#
+
+Closes a bundle and removes it from the active set of the owning riskpool.
 
 [.contract-item]
 [[RiskpoolService-burnBundle-uint256-]]
 ==== `[.contract-item-name]#++burnBundle++#++(uint256 bundleId)++` [.item-kind]#external#
 
+Burns a closed bundle, withdrawing its remaining balance and defunding it from the riskpool and the pool.
+
 [.contract-item]
 [[RiskpoolService-collateralizePolicy-uint256-bytes32-uint256-]]
 ==== `[.contract-item-name]#++collateralizePolicy++#++(uint256 bundleId, bytes32 processId, uint256 collateralAmount)++` [.item-kind]#external#
+
+Collateralizes a policy by locking a specified amount of collateral for a given bundle and process ID.
 
 [.contract-item]
 [[RiskpoolService-processPremium-uint256-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPremium++#++(uint256 bundleId, bytes32 processId, uint256 amount)++` [.item-kind]#external#
 
+Processes a premium payment for a specific bundle.
+
 [.contract-item]
 [[RiskpoolService-processPayout-uint256-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPayout++#++(uint256 bundleId, bytes32 processId, uint256 amount)++` [.item-kind]#external#
+
+Processes a payout for a specific bundle.
 
 [.contract-item]
 [[RiskpoolService-releasePolicy-uint256-bytes32-]]
 ==== `[.contract-item-name]#++releasePolicy++#++(uint256 bundleId, bytes32 processId) → uint256 collateralAmount++` [.item-kind]#external#
 
+Releases a policy for a given bundle and process ID.
+
 [.contract-item]
 [[RiskpoolService-setMaximumNumberOfActiveBundles-uint256-uint256-]]
 ==== `[.contract-item-name]#++setMaximumNumberOfActiveBundles++#++(uint256 riskpoolId, uint256 maxNumberOfActiveBundles)++` [.item-kind]#external#
+
+Sets the maximum number of active bundles for a given riskpool.
 

@@ -172,6 +172,8 @@ import "@etherisc/gif-contracts/contracts/test/TestCoin.sol";
 [[TestCoin-constructor--]]
 ==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
 
+Constructor function that initializes the ERC20 token with a given name, symbol, and initial supply.
+
 :NAME: pass:normal[xref:#TestCoinAlternativeImplementation-NAME-string[`++NAME++`]]
 :SYMBOL: pass:normal[xref:#TestCoinAlternativeImplementation-SYMBOL-string[`++SYMBOL++`]]
 :INITIAL_SUPPLY: pass:normal[xref:#TestCoinAlternativeImplementation-INITIAL_SUPPLY-uint256[`++INITIAL_SUPPLY++`]]
@@ -242,9 +244,13 @@ import "@etherisc/gif-contracts/contracts/test/TestCoinAlternativeImplementation
 [[TestCoinAlternativeImplementation-constructor--]]
 ==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
 
+Constructor function that creates a new ERC20 token with the given name and symbol, and mints the initial supply to the sender.
+
 [.contract-item]
 [[TestCoinAlternativeImplementation-transferFrom-address-address-uint256-]]
 ==== `[.contract-item-name]#++transferFrom++#++(address _from, address _to, uint256 _value) → bool++` [.item-kind]#public#
+
+Transfer tokens from one address to another.
 
 :FAKE_STATE: pass:normal[xref:#TestCompromisedProduct-FAKE_STATE-enum-IComponent-ComponentState[`++FAKE_STATE++`]]
 :POLICY_FLOW: pass:normal[xref:#TestCompromisedProduct-POLICY_FLOW-bytes32[`++POLICY_FLOW++`]]
@@ -372,117 +378,177 @@ import "@etherisc/gif-contracts/contracts/test/TestCompromisedProduct.sol";
 [[TestCompromisedProduct-constructor-bytes32-address-uint256-uint256-address-]]
 ==== `[.contract-item-name]#++constructor++#++(bytes32 fakeProductName, address tokenAddress, uint256 fakeComponentId, uint256 fakeRiskpoolId, address registryAddress)++` [.item-kind]#public#
 
+Constructor function to initialize the component with the given parameters.
+
 [.contract-item]
 [[TestCompromisedProduct-applyForPolicy-uint256-uint256-bytes-bytes-]]
 ==== `[.contract-item-name]#++applyForPolicy++#++(uint256 premium, uint256 sumInsured, bytes metaData, bytes applicationData) → bytes32 processId++` [.item-kind]#external#
+
+Allows a policy holder to apply for a new policy by submitting an application with the specified premium, sum insured, metaData, and applicationData.
 
 [.contract-item]
 [[TestCompromisedProduct-collectPremium-bytes32-]]
 ==== `[.contract-item-name]#++collectPremium++#++(bytes32 policyId)++` [.item-kind]#external#
 
+Collects the premium for a given policy.
+
 [.contract-item]
 [[TestCompromisedProduct-submitClaim-bytes32-uint256-]]
 ==== `[.contract-item-name]#++submitClaim++#++(bytes32 policyId, uint256 claimAmount)++` [.item-kind]#external#
+
+Allows a policy holder to submit a claim for the specified policy.
 
 [.contract-item]
 [[TestCompromisedProduct-getToken--]]
 ==== `[.contract-item-name]#++getToken++#++() → address token++` [.item-kind]#external#
 
+Returns the address of the token used by this contract.
+
 [.contract-item]
 [[TestCompromisedProduct-getPolicyFlow--]]
 ==== `[.contract-item-name]#++getPolicyFlow++#++() → address policyFlow++` [.item-kind]#external#
+
+Returns the address of the policy flow contract.
 
 [.contract-item]
 [[TestCompromisedProduct-getRiskpoolId--]]
 ==== `[.contract-item-name]#++getRiskpoolId++#++() → uint256 riskpoolId++` [.item-kind]#external#
 
+Returns the ID of the risk pool.
+
 [.contract-item]
 [[TestCompromisedProduct-getApplicationDataStructure--]]
 ==== `[.contract-item-name]#++getApplicationDataStructure++#++() → string dataStructure++` [.item-kind]#external#
+
+Returns the data structure of the application.
 
 [.contract-item]
 [[TestCompromisedProduct-getClaimDataStructure--]]
 ==== `[.contract-item-name]#++getClaimDataStructure++#++() → string dataStructure++` [.item-kind]#external#
 
+Returns the data structure of the claim data.
+
 [.contract-item]
 [[TestCompromisedProduct-getPayoutDataStructure--]]
 ==== `[.contract-item-name]#++getPayoutDataStructure++#++() → string dataStructure++` [.item-kind]#external#
+
+Returns the data structure of the payout information.
 
 [.contract-item]
 [[TestCompromisedProduct-riskPoolCapacityCallback-uint256-]]
 ==== `[.contract-item-name]#++riskPoolCapacityCallback++#++(uint256 capacity)++` [.item-kind]#external#
 
+Callback function to update the risk pool's capacity.
+
 [.contract-item]
 [[TestCompromisedProduct-setId-uint256-]]
 ==== `[.contract-item-name]#++setId++#++(uint256 id)++` [.item-kind]#external#
+
+Sets the ID of the contract.
 
 [.contract-item]
 [[TestCompromisedProduct-getName--]]
 ==== `[.contract-item-name]#++getName++#++() → bytes32++` [.item-kind]#external#
 
+Returns the name of the component.
+
 [.contract-item]
 [[TestCompromisedProduct-getId--]]
 ==== `[.contract-item-name]#++getId++#++() → uint256++` [.item-kind]#external#
+
+Returns the ID of the component.
 
 [.contract-item]
 [[TestCompromisedProduct-getType--]]
 ==== `[.contract-item-name]#++getType++#++() → enum IComponent.ComponentType++` [.item-kind]#external#
 
+Returns the ComponentType of the product.
+
 [.contract-item]
 [[TestCompromisedProduct-getState--]]
 ==== `[.contract-item-name]#++getState++#++() → enum IComponent.ComponentState++` [.item-kind]#external#
+
+Returns the current state of the component.
 
 [.contract-item]
 [[TestCompromisedProduct-getOwner--]]
 ==== `[.contract-item-name]#++getOwner++#++() → address++` [.item-kind]#external#
 
+Returns the address of the contract owner.
+
 [.contract-item]
 [[TestCompromisedProduct-getRegistry--]]
 ==== `[.contract-item-name]#++getRegistry++#++() → contract IRegistry++` [.item-kind]#external#
+
+Returns the current registry contract instance.
 
 [.contract-item]
 [[TestCompromisedProduct-isProduct--]]
 ==== `[.contract-item-name]#++isProduct++#++() → bool++` [.item-kind]#public#
 
+Checks if the contract is a product.
+
 [.contract-item]
 [[TestCompromisedProduct-isOracle--]]
 ==== `[.contract-item-name]#++isOracle++#++() → bool++` [.item-kind]#public#
+
+Returns a boolean value indicating whether the contract is an oracle.
 
 [.contract-item]
 [[TestCompromisedProduct-isRiskpool--]]
 ==== `[.contract-item-name]#++isRiskpool++#++() → bool++` [.item-kind]#public#
 
+Check if the contract is a risk pool.
+
 [.contract-item]
 [[TestCompromisedProduct-proposalCallback--]]
 ==== `[.contract-item-name]#++proposalCallback++#++()++` [.item-kind]#external#
+
+This function is a callback function for proposals.
+
+Returns: None
 
 [.contract-item]
 [[TestCompromisedProduct-approvalCallback--]]
 ==== `[.contract-item-name]#++approvalCallback++#++()++` [.item-kind]#external#
 
+This function is a callback function that is called after an approval has been made.
+
 [.contract-item]
 [[TestCompromisedProduct-declineCallback--]]
 ==== `[.contract-item-name]#++declineCallback++#++()++` [.item-kind]#external#
+
+This function is called when a user declines a transaction in the dApp.
 
 [.contract-item]
 [[TestCompromisedProduct-suspendCallback--]]
 ==== `[.contract-item-name]#++suspendCallback++#++()++` [.item-kind]#external#
 
+Suspends the callback function.
+
 [.contract-item]
 [[TestCompromisedProduct-resumeCallback--]]
 ==== `[.contract-item-name]#++resumeCallback++#++()++` [.item-kind]#external#
+
+This function is a callback function that is triggered when a paused contract is resumed.
 
 [.contract-item]
 [[TestCompromisedProduct-pauseCallback--]]
 ==== `[.contract-item-name]#++pauseCallback++#++()++` [.item-kind]#external#
 
+Callback function that is called when the contract is paused. This function does not take any parameters.
+
 [.contract-item]
 [[TestCompromisedProduct-unpauseCallback--]]
 ==== `[.contract-item-name]#++unpauseCallback++#++()++` [.item-kind]#external#
 
+This function is called by the owner of the contract to unpause the contract after it has been paused.
+
 [.contract-item]
 [[TestCompromisedProduct-archiveCallback--]]
 ==== `[.contract-item-name]#++archiveCallback++#++()++` [.item-kind]#external#
+
+This function is a callback function that is executed when a contract is archived.
 
 :constructor: pass:normal[xref:#TestOracle-constructor-bytes32-address-[`++constructor++`]]
 :request: pass:normal[xref:#TestOracle-request-uint256-bytes-[`++request++`]]
@@ -607,21 +673,31 @@ import "@etherisc/gif-contracts/contracts/test/TestOracle.sol";
 [[TestOracle-constructor-bytes32-address-]]
 ==== `[.contract-item-name]#++constructor++#++(bytes32 oracleName, address registry)++` [.item-kind]#public#
 
+Constructor function for creating an Oracle contract.
+
 [.contract-item]
 [[TestOracle-request-uint256-bytes-]]
 ==== `[.contract-item-name]#++request++#++(uint256 requestId, bytes input)++` [.item-kind]#external#
+
+Requests data from the oracle contract.
 
 [.contract-item]
 [[TestOracle-cancel-uint256-]]
 ==== `[.contract-item-name]#++cancel++#++(uint256 requestId)++` [.item-kind]#external#
 
+Cancels a Chainlink request.
+
 [.contract-item]
 [[TestOracle-respond-uint256-bool-]]
 ==== `[.contract-item-name]#++respond++#++(uint256 requestId, bool isLossEvent)++` [.item-kind]#public#
 
+Responds to an oracle request with a boolean value indicating whether a loss event occurred.
+
 [.contract-item]
 [[TestOracle-_oracleCalculation-uint256-]]
 ==== `[.contract-item-name]#++_oracleCalculation++#++(uint256 counter) → bool isLossEvent++` [.item-kind]#internal#
+
+Performs an oracle calculation to determine if a loss event occurred.
 
 :POLICY_FLOW: pass:normal[xref:#TestProduct-POLICY_FLOW-bytes32[`++POLICY_FLOW++`]]
 :ORACLE_CALLBACK_METHOD_NAME: pass:normal[xref:#TestProduct-ORACLE_CALLBACK_METHOD_NAME-string[`++ORACLE_CALLBACK_METHOD_NAME++`]]
@@ -824,109 +900,165 @@ import "@etherisc/gif-contracts/contracts/test/TestProduct.sol";
 [[TestProduct-constructor-bytes32-address-address-uint256-uint256-address-]]
 ==== `[.contract-item-name]#++constructor++#++(bytes32 productName, address tokenAddress, address capitalOwner, uint256 oracleId, uint256 riskpoolId, address registryAddress)++` [.item-kind]#public#
 
+Constructor function for creating a new instance of the Product contract.
+
 [.contract-item]
 [[TestProduct-applyForPolicy-uint256-uint256-bytes-bytes-]]
 ==== `[.contract-item-name]#++applyForPolicy++#++(uint256 premium, uint256 sumInsured, bytes metaData, bytes applicationData) → bytes32 processId++` [.item-kind]#external#
+
+Allows a policy holder to apply for a new insurance policy by submitting an application with the specified premium, sum insured, metadata and application data.
 
 [.contract-item]
 [[TestProduct-applyForPolicy-address-payable-uint256-uint256-bytes-bytes-]]
 ==== `[.contract-item-name]#++applyForPolicy++#++(address payable policyHolder, uint256 premium, uint256 sumInsured, bytes metaData, bytes applicationData) → bytes32 processId++` [.item-kind]#external#
 
+Creates a new insurance application and underwrites it if possible.
+
 [.contract-item]
 [[TestProduct-newAppliation-uint256-uint256-bytes-bytes-]]
 ==== `[.contract-item-name]#++newAppliation++#++(uint256 premium, uint256 sumInsured, bytes metaData, bytes applicationData) → bytes32 processId++` [.item-kind]#external#
+
+Creates a new insurance application.
 
 [.contract-item]
 [[TestProduct-revoke-bytes32-]]
 ==== `[.contract-item-name]#++revoke++#++(bytes32 processId)++` [.item-kind]#external#
 
+Revokes a process identified by its processId. Only the policy holder can revoke a process.
+
 [.contract-item]
 [[TestProduct-decline-bytes32-]]
 ==== `[.contract-item-name]#++decline++#++(bytes32 processId)++` [.item-kind]#external#
+
+Declines a specific process by its ID.
 
 [.contract-item]
 [[TestProduct-underwrite-bytes32-]]
 ==== `[.contract-item-name]#++underwrite++#++(bytes32 processId)++` [.item-kind]#external#
 
+Underwrites a policy for a given process ID.
+
 [.contract-item]
 [[TestProduct-collectPremium-bytes32-]]
 ==== `[.contract-item-name]#++collectPremium++#++(bytes32 policyId) → bool success, uint256 fee, uint256 netPremium++` [.item-kind]#external#
+
+Collects the premium for a specific policy.
 
 [.contract-item]
 [[TestProduct-collectPremium-bytes32-uint256-]]
 ==== `[.contract-item-name]#++collectPremium++#++(bytes32 policyId, uint256 amount) → bool success, uint256 fee, uint256 netPremium++` [.item-kind]#external#
 
+Collects the premium for a specific policy.
+
 [.contract-item]
 [[TestProduct-adjustPremiumSumInsured-bytes32-uint256-uint256-]]
 ==== `[.contract-item-name]#++adjustPremiumSumInsured++#++(bytes32 processId, uint256 expectedPremiumAmount, uint256 sumInsuredAmount)++` [.item-kind]#external#
+
+Adjusts the premium and sum insured amounts for a given process ID.
 
 [.contract-item]
 [[TestProduct-expire-bytes32-]]
 ==== `[.contract-item-name]#++expire++#++(bytes32 policyId)++` [.item-kind]#external#
 
+Expire a policy by its ID.
+
 [.contract-item]
 [[TestProduct-close-bytes32-]]
 ==== `[.contract-item-name]#++close++#++(bytes32 policyId)++` [.item-kind]#external#
+
+Closes a policy with the given ID.
 
 [.contract-item]
 [[TestProduct-submitClaim-bytes32-uint256-]]
 ==== `[.contract-item-name]#++submitClaim++#++(bytes32 policyId, uint256 claimAmount) → uint256 claimId++` [.item-kind]#external#
 
+Allows a policy holder to submit a claim for a specific policy.
+
 [.contract-item]
 [[TestProduct-submitClaimNoOracle-bytes32-uint256-]]
 ==== `[.contract-item-name]#++submitClaimNoOracle++#++(bytes32 policyId, uint256 claimAmount) → uint256 claimId++` [.item-kind]#external#
+
+Allows a policy holder to submit a claim without the need for an oracle.
 
 [.contract-item]
 [[TestProduct-submitClaimWithDeferredResponse-bytes32-uint256-]]
 ==== `[.contract-item-name]#++submitClaimWithDeferredResponse++#++(bytes32 policyId, uint256 claimAmount) → uint256 claimId, uint256 requestId++` [.item-kind]#external#
 
+Submits a claim for a specific policy with a deferred response from the oracle.
+Increases the claims counter and creates a new claim application.
+Then, requests a response from the oracle via an external call with encoded query data.
+
 [.contract-item]
 [[TestProduct-confirmClaim-bytes32-uint256-uint256-]]
 ==== `[.contract-item-name]#++confirmClaim++#++(bytes32 policyId, uint256 claimId, uint256 confirmedAmount)++` [.item-kind]#external#
+
+Confirms the amount to be paid out for a specific claim.
 
 [.contract-item]
 [[TestProduct-declineClaim-bytes32-uint256-]]
 ==== `[.contract-item-name]#++declineClaim++#++(bytes32 policyId, uint256 claimId)++` [.item-kind]#external#
 
+Allows the owner of the contract to decline a claim.
+
 [.contract-item]
 [[TestProduct-closeClaim-bytes32-uint256-]]
 ==== `[.contract-item-name]#++closeClaim++#++(bytes32 policyId, uint256 claimId)++` [.item-kind]#external#
+
+Closes a specific claim for a given policy.
 
 [.contract-item]
 [[TestProduct-createPayout-bytes32-uint256-uint256-]]
 ==== `[.contract-item-name]#++createPayout++#++(bytes32 policyId, uint256 claimId, uint256 payoutAmount) → uint256 payoutId++` [.item-kind]#external#
 
+Creates a new payout for a specific policy and claim.
+
 [.contract-item]
 [[TestProduct-newPayout-bytes32-uint256-uint256-]]
 ==== `[.contract-item-name]#++newPayout++#++(bytes32 policyId, uint256 claimId, uint256 payoutAmount) → uint256 payoutId++` [.item-kind]#external#
+
+Creates a new payout for a claim under a policy.
 
 [.contract-item]
 [[TestProduct-processPayout-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPayout++#++(bytes32 policyId, uint256 payoutId)++` [.item-kind]#external#
 
+Processes a payout for a specific policy.
+
 [.contract-item]
 [[TestProduct-oracleCallback-uint256-bytes32-bytes-]]
 ==== `[.contract-item-name]#++oracleCallback++#++(uint256 requestId, bytes32 policyId, bytes responseData)++` [.item-kind]#external#
+
+This function is called by the oracle to provide the response data for a specified policy ID and request ID.
 
 [.contract-item]
 [[TestProduct-getClaimId-bytes32-]]
 ==== `[.contract-item-name]#++getClaimId++#++(bytes32 policyId) → uint256++` [.item-kind]#external#
 
+Returns the claim ID associated with a given policy ID.
+
 [.contract-item]
 [[TestProduct-getPayoutId-bytes32-]]
 ==== `[.contract-item-name]#++getPayoutId++#++(bytes32 policyId) → uint256++` [.item-kind]#external#
+
+Returns the payout ID associated with a given policy ID.
 
 [.contract-item]
 [[TestProduct-applications--]]
 ==== `[.contract-item-name]#++applications++#++() → uint256++` [.item-kind]#external#
 
+Returns the number of applications that have been submitted.
+
 [.contract-item]
 [[TestProduct-policies--]]
 ==== `[.contract-item-name]#++policies++#++() → uint256++` [.item-kind]#external#
 
+Returns the number of policies in the _policies array.
+
 [.contract-item]
 [[TestProduct-claims--]]
 ==== `[.contract-item-name]#++claims++#++() → uint256++` [.item-kind]#external#
+
+Returns the number of claims made by users.
 
 [.contract-item]
 [[TestProduct-LogTestProductFundingReceived-address-uint256-]]
@@ -963,9 +1095,13 @@ import "@etherisc/gif-contracts/contracts/test/TestRegistryCompromisedController
 [[TestRegistryCompromisedController-getContract-bytes32-]]
 ==== `[.contract-item-name]#++getContract++#++(bytes32 contractName) → address moduleAddress++` [.item-kind]#external#
 
+Returns the address of a registered contract.
+
 [.contract-item]
 [[TestRegistryCompromisedController-upgradeToV2-address-address-]]
 ==== `[.contract-item-name]#++upgradeToV2++#++(address compromisedPolicyModuleAddress, address originalQueryModuleAddress)++` [.item-kind]#public#
+
+Upgrades the Policy Manager contract to version 2.
 
 :message: pass:normal[xref:#TestRegistryControllerUpdated-message-string[`++message++`]]
 :upgradeV2: pass:normal[xref:#TestRegistryControllerUpdated-upgradeV2-bool[`++upgradeV2++`]]
@@ -1049,13 +1185,19 @@ import "@etherisc/gif-contracts/contracts/test/TestRegistryControllerUpdated.sol
 [[TestRegistryControllerUpdated-setMessage-string-]]
 ==== `[.contract-item-name]#++setMessage++#++(string _message)++` [.item-kind]#public#
 
+Sets the message variable to a given string.
+
 [.contract-item]
 [[TestRegistryControllerUpdated-getMessage--]]
 ==== `[.contract-item-name]#++getMessage++#++() → string++` [.item-kind]#public#
 
+Returns the current message stored in the contract.
+
 [.contract-item]
 [[TestRegistryControllerUpdated-upgradeToV2-string-]]
 ==== `[.contract-item-name]#++upgradeToV2++#++(string _message)++` [.item-kind]#public#
+
+Upgrades the contract to version 2.
 
 :SUM_OF_SUM_INSURED_CAP: pass:normal[xref:#TestRiskpool-SUM_OF_SUM_INSURED_CAP-uint256[`++SUM_OF_SUM_INSURED_CAP++`]]
 :constructor: pass:normal[xref:#TestRiskpool-constructor-bytes32-uint256-address-address-address-[`++constructor++`]]
@@ -1219,9 +1361,13 @@ import "@etherisc/gif-contracts/contracts/test/TestRiskpool.sol";
 [[TestRiskpool-constructor-bytes32-uint256-address-address-address-]]
 ==== `[.contract-item-name]#++constructor++#++(bytes32 name, uint256 collateralization, address erc20Token, address wallet, address registry)++` [.item-kind]#public#
 
+Constructor function for the Riskpool contract.
+
 [.contract-item]
 [[TestRiskpool-bundleMatchesApplication-struct-IBundle-Bundle-struct-IPolicy-Application-]]
 ==== `[.contract-item-name]#++bundleMatchesApplication++#++(struct IBundle.Bundle bundle, struct IPolicy.Application application) → bool isMatching++` [.item-kind]#public#
+
+This function checks if a given bundle matches a given application.
 
 :LogTransferHelperInputValidation1Failed: pass:normal[xref:#TestTransferFrom-LogTransferHelperInputValidation1Failed-bool-address-address-[`++LogTransferHelperInputValidation1Failed++`]]
 :LogTransferHelperInputValidation2Failed: pass:normal[xref:#TestTransferFrom-LogTransferHelperInputValidation2Failed-uint256-uint256-[`++LogTransferHelperInputValidation2Failed++`]]
@@ -1256,6 +1402,8 @@ import "@etherisc/gif-contracts/contracts/test/TestTransferFrom.sol";
 [.contract-item]
 [[TestTransferFrom-unifiedTransferFrom-contract-IERC20-address-address-uint256-]]
 ==== `[.contract-item-name]#++unifiedTransferFrom++#++(contract IERC20 token, address from, address to, uint256 amount) → bool++` [.item-kind]#external#
+
+Transfers tokens from a specified address to another specified address using the TransferHelper library.
 
 [.contract-item]
 [[TestTransferFrom-LogTransferHelperInputValidation1Failed-bool-address-address-]]

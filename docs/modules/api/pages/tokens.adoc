@@ -155,37 +155,55 @@ import "@etherisc/gif-contracts/contracts/tokens/BundleToken.sol";
 [[BundleToken-constructor--]]
 ==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
 
+Constructor function for the ERC721 token contract. It sets the name and symbol of the token and initializes the Ownable contract.
+
 [.contract-item]
 [[BundleToken-setBundleModule-address-]]
 ==== `[.contract-item-name]#++setBundleModule++#++(address bundleModule)++` [.item-kind]#external#
+
+Sets the bundle module address.
 
 [.contract-item]
 [[BundleToken-mint-uint256-address-]]
 ==== `[.contract-item-name]#++mint++#++(uint256 bundleId, address to) → uint256 tokenId++` [.item-kind]#external#
 
+Mints a new bundle token and assigns ownership to the specified address.
+
 [.contract-item]
 [[BundleToken-burn-uint256-]]
 ==== `[.contract-item-name]#++burn++#++(uint256 tokenId)++` [.item-kind]#external#
+
+Burns a bundle token.
 
 [.contract-item]
 [[BundleToken-burned-uint256-]]
 ==== `[.contract-item-name]#++burned++#++(uint256 tokenId) → bool isBurned++` [.item-kind]#external#
 
+Checks if a token has been burned.
+
 [.contract-item]
 [[BundleToken-getBundleId-uint256-]]
 ==== `[.contract-item-name]#++getBundleId++#++(uint256 tokenId) → uint256++` [.item-kind]#external#
+
+Returns the bundle ID associated with a given token ID.
 
 [.contract-item]
 [[BundleToken-getBundleModuleAddress--]]
 ==== `[.contract-item-name]#++getBundleModuleAddress++#++() → address++` [.item-kind]#external#
 
+Returns the address of the bundle module.
+
 [.contract-item]
 [[BundleToken-exists-uint256-]]
 ==== `[.contract-item-name]#++exists++#++(uint256 tokenId) → bool++` [.item-kind]#external#
 
+Checks if a given token ID exists.
+
 [.contract-item]
 [[BundleToken-totalSupply--]]
 ==== `[.contract-item-name]#++totalSupply++#++() → uint256 tokenCount++` [.item-kind]#external#
+
+Returns the total number of tokens in circulation.
 
 :NAME: pass:normal[xref:#RiskpoolToken-NAME-string[`++NAME++`]]
 :SYMBOL: pass:normal[xref:#RiskpoolToken-SYMBOL-string[`++SYMBOL++`]]
@@ -254,4 +272,6 @@ import "@etherisc/gif-contracts/contracts/tokens/RiskpoolToken.sol";
 [.contract-item]
 [[RiskpoolToken-constructor--]]
 ==== `[.contract-item-name]#++constructor++#++()++` [.item-kind]#public#
+
+Constructor function that sets the name and symbol of the ERC20 token.
 

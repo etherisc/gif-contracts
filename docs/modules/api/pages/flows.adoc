@@ -151,99 +151,149 @@ import "@etherisc/gif-contracts/contracts/flows/PolicyDefaultFlow.sol";
 [[PolicyDefaultFlow-constructor-address-]]
 ==== `[.contract-item-name]#++constructor++#++(address _registry)++` [.item-kind]#public#
 
+Constructor function that initializes the contract with a given registry address.
+
 [.contract-item]
 [[PolicyDefaultFlow-newApplication-address-uint256-uint256-bytes-bytes-]]
 ==== `[.contract-item-name]#++newApplication++#++(address owner, uint256 premiumAmount, uint256 sumInsuredAmount, bytes metaData, bytes applicationData) → bytes32 processId++` [.item-kind]#external#
+
+Creates a new insurance application and returns the process ID.
 
 [.contract-item]
 [[PolicyDefaultFlow-revoke-bytes32-]]
 ==== `[.contract-item-name]#++revoke++#++(bytes32 processId)++` [.item-kind]#external#
 
+Revokes an application for a specific processId.
+
 [.contract-item]
 [[PolicyDefaultFlow-underwrite-bytes32-]]
 ==== `[.contract-item-name]#++underwrite++#++(bytes32 processId) → bool success++` [.item-kind]#external#
+
+Attempts to get the collateral to secure the policy.
 
 [.contract-item]
 [[PolicyDefaultFlow-collectPremium-bytes32-uint256-]]
 ==== `[.contract-item-name]#++collectPremium++#++(bytes32 processId, uint256 amount) → bool success, uint256 feeAmount, uint256 netPremiumAmount++` [.item-kind]#public#
 
+Collects the premium for a given policy and updates the book keeping of the policy and the risk pool.
+
 [.contract-item]
 [[PolicyDefaultFlow-adjustPremiumSumInsured-bytes32-uint256-uint256-]]
 ==== `[.contract-item-name]#++adjustPremiumSumInsured++#++(bytes32 processId, uint256 expectedPremiumAmount, uint256 sumInsuredAmount)++` [.item-kind]#external#
+
+Adjusts the premium and sum insured amounts of a policy.
 
 [.contract-item]
 [[PolicyDefaultFlow-decline-bytes32-]]
 ==== `[.contract-item-name]#++decline++#++(bytes32 processId)++` [.item-kind]#external#
 
+Allows the responsible product to decline an application for a policy.
+
 [.contract-item]
 [[PolicyDefaultFlow-expire-bytes32-]]
 ==== `[.contract-item-name]#++expire++#++(bytes32 processId)++` [.item-kind]#external#
+
+Expire the policy identified by the given process ID.
 
 [.contract-item]
 [[PolicyDefaultFlow-close-bytes32-]]
 ==== `[.contract-item-name]#++close++#++(bytes32 processId)++` [.item-kind]#external#
 
+Closes a policy and releases the corresponding funds from the pool.
+
 [.contract-item]
 [[PolicyDefaultFlow-newClaim-bytes32-uint256-bytes-]]
 ==== `[.contract-item-name]#++newClaim++#++(bytes32 processId, uint256 claimAmount, bytes data) → uint256 claimId++` [.item-kind]#external#
+
+Creates a new claim for a given process ID, claim amount and data.
 
 [.contract-item]
 [[PolicyDefaultFlow-confirmClaim-bytes32-uint256-uint256-]]
 ==== `[.contract-item-name]#++confirmClaim++#++(bytes32 processId, uint256 claimId, uint256 confirmedAmount)++` [.item-kind]#external#
 
+Confirms a claim for a specific process and claim ID, updating the confirmed amount.
+
 [.contract-item]
 [[PolicyDefaultFlow-declineClaim-bytes32-uint256-]]
 ==== `[.contract-item-name]#++declineClaim++#++(bytes32 processId, uint256 claimId)++` [.item-kind]#external#
+
+Allows the responsible product to decline a claim.
 
 [.contract-item]
 [[PolicyDefaultFlow-closeClaim-bytes32-uint256-]]
 ==== `[.contract-item-name]#++closeClaim++#++(bytes32 processId, uint256 claimId)++` [.item-kind]#external#
 
+Closes a claim for a specific process and claim ID.
+
 [.contract-item]
 [[PolicyDefaultFlow-newPayout-bytes32-uint256-uint256-bytes-]]
 ==== `[.contract-item-name]#++newPayout++#++(bytes32 processId, uint256 claimId, uint256 amount, bytes data) → uint256 payoutId++` [.item-kind]#external#
+
+Creates a new payout for a specific claim.
 
 [.contract-item]
 [[PolicyDefaultFlow-processPayout-bytes32-uint256-]]
 ==== `[.contract-item-name]#++processPayout++#++(bytes32 processId, uint256 payoutId) → bool success, uint256 feeAmount, uint256 netPayoutAmount++` [.item-kind]#external#
 
+Processes a payout for a specific process and payout ID.
+
 [.contract-item]
 [[PolicyDefaultFlow-request-bytes32-bytes-string-address-uint256-]]
 ==== `[.contract-item-name]#++request++#++(bytes32 processId, bytes _input, string _callbackMethodName, address _callbackContractAddress, uint256 _responsibleOracleId) → uint256 _requestId++` [.item-kind]#external#
+
+Sends a request to the query contract to initiate a new process.
 
 [.contract-item]
 [[PolicyDefaultFlow-cancelRequest-uint256-]]
 ==== `[.contract-item-name]#++cancelRequest++#++(uint256 requestId)++` [.item-kind]#external#
 
+Cancels a request with the given requestId.
+
 [.contract-item]
 [[PolicyDefaultFlow-getApplicationData-bytes32-]]
 ==== `[.contract-item-name]#++getApplicationData++#++(bytes32 processId) → bytes++` [.item-kind]#external#
+
+Returns the application data associated with the given process ID.
 
 [.contract-item]
 [[PolicyDefaultFlow-getClaimData-bytes32-uint256-]]
 ==== `[.contract-item-name]#++getClaimData++#++(bytes32 processId, uint256 claimId) → bytes++` [.item-kind]#external#
 
+Returns the claim data of a specific claim for a given process ID.
+
 [.contract-item]
 [[PolicyDefaultFlow-getPayoutData-bytes32-uint256-]]
 ==== `[.contract-item-name]#++getPayoutData++#++(bytes32 processId, uint256 payoutId) → bytes++` [.item-kind]#external#
+
+Returns the payout data for a given process and payout ID.
 
 [.contract-item]
 [[PolicyDefaultFlow-getComponentContract--]]
 ==== `[.contract-item-name]#++getComponentContract++#++() → contract ComponentController++` [.item-kind]#internal#
 
+Returns the ComponentController contract instance.
+
 [.contract-item]
 [[PolicyDefaultFlow-getPoolContract--]]
 ==== `[.contract-item-name]#++getPoolContract++#++() → contract PoolController++` [.item-kind]#internal#
+
+Returns the PoolController contract instance from the registry.
 
 [.contract-item]
 [[PolicyDefaultFlow-getPolicyContract--]]
 ==== `[.contract-item-name]#++getPolicyContract++#++() → contract PolicyController++` [.item-kind]#internal#
 
+Returns the PolicyController contract instance from the registry.
+
 [.contract-item]
 [[PolicyDefaultFlow-getQueryContract--]]
 ==== `[.contract-item-name]#++getQueryContract++#++() → contract QueryModule++` [.item-kind]#internal#
 
+Returns the QueryModule contract instance from the registry.
+
 [.contract-item]
 [[PolicyDefaultFlow-getTreasuryContract--]]
 ==== `[.contract-item-name]#++getTreasuryContract++#++() → contract TreasuryModule++` [.item-kind]#internal#
+
+Retrieves the TreasuryModule contract instance.
 
