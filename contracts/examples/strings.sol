@@ -45,6 +45,12 @@ library strings {
         uint _ptr;
     }
 
+    /**
+     * @dev Copies a specified number of bytes from one memory address to another.
+     * @param dest The destination memory address to copy to.
+     * @param src The source memory address to copy from.
+     * @param len_ The number of bytes to copy.
+     */
     function memcpy(uint dest, uint src, uint len_) private pure {
         // Copy word-length chunks while possible
         for(; len_ >= 32; len_ -= 32) {
@@ -71,6 +77,11 @@ library strings {
      * @dev Returns the length of a null-terminated bytes32 string.
      * @param self The value to find the length of.
      * @return The length of the string, from 0 to 32.
+     */
+    /**
+     * @dev Calculates the length of a bytes32 variable.
+     * @param self The bytes32 variable to calculate the length of.
+     * @return ret The length of the bytes32 variable.
      */
     function len(bytes32 self) internal pure returns (uint) {
         uint ret;
@@ -99,6 +110,14 @@ library strings {
     }
 
     // merge of toSliceB32 and toString of strings library
+    /**
+     * @dev Converts a bytes32 value to a string.
+     * @param self The bytes32 value to be converted.
+     * @return ret The resulting string value.
+     *
+     * Converts a bytes32 value to a string by creating a slice of the bytes32 value and then copying it to a new string.
+     * The resulting string is then returned as the output of the function.
+     */
     function toB32String(bytes32 self) internal pure returns (string memory) {
         slice memory slc;
         assembly {

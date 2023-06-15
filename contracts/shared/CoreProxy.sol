@@ -17,16 +17,32 @@ contract CoreProxy is
         _;
     }
 
+    /**
+     * @dev Constructor function that creates a new instance of the contract.
+     * @param _controller The address of the controller contract.
+     * @param encoded_initializer The encoded initializer data.
+     */
     constructor(address _controller, bytes memory encoded_initializer) 
         ERC1967Proxy(_controller, encoded_initializer) 
     {
         _changeAdmin(msg.sender);
     }
 
+    /**
+     * @dev Returns the address of the current implementation contract.
+     * @return implementation The address of the current implementation contract.
+     */
     function implementation() external view returns (address) {
         return _implementation();
     }
 
+    /**
+     * @dev Upgrades the contract to a new implementation and forwards a function call to it.
+     * @param newImplementation The address of the new implementation contract.
+     * @param data The data payload to be forwarded to the new implementation.
+     * @notice This function emits 1 events: 
+     * - LogCoreContractUpgraded
+     */
     function upgradeToAndCall(address newImplementation, bytes calldata data) 
         external
         payable

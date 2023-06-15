@@ -45,10 +45,21 @@ contract WithRegistry {
         _;
     }
 
+    /**
+     * @dev Constructor function that sets the address of the registry contract.
+     * @param _registry The address of the registry contract.
+     */
     constructor(address _registry) {
         registry = IRegistry(_registry);
     }
 
+    /**
+     * @dev Returns the address of a contract registered in the registry by its name.
+     *
+     * @param _contractName The name of the contract to retrieve.
+     *
+     * @return _addr The address of the contract.
+     */
     function getContractFromRegistry(bytes32 _contractName)
         public
         // override
@@ -58,6 +69,12 @@ contract WithRegistry {
         _addr = registry.getContract(_contractName);
     }
 
+    /**
+     * @dev Returns the address of a contract with a given name in a specific release of the registry.
+     * @param _release The release version of the registry where the contract is stored.
+     * @param _contractName The name of the contract to retrieve.
+     * @return _addr The address of the contract in the given release.
+     */
     function getContractInReleaseFromRegistry(bytes32 _release, bytes32 _contractName)
         internal
         view
@@ -66,6 +83,10 @@ contract WithRegistry {
         _addr = registry.getContractInRelease(_release, _contractName);
     }
 
+    /**
+     * @dev Returns the current release identifier from the registry.
+     * @return _release The release identifier as a bytes32 value.
+     */
     function getReleaseFromRegistry() internal view returns (bytes32 _release) {
         _release = registry.getRelease();
     }

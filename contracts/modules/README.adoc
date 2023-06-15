@@ -1,0 +1,86 @@
+= Modules
+
+[.readme-notice]
+NOTE: This document is better viewed at https://docs.etherisc.com/contracts/api/modules
+
+== Contracts
+
+{{AccessController}}
+The "AccessController" smart contract is a Solidity implementation that provides access control and role management functionalities. 
+It inherits from other contracts and implements the "IAccess" interface. 
+It defines three role identifiers: PRODUCT_OWNER_ROLE, ORACLE_PROVIDER_ROLE, and RISKPOOL_KEEPER_ROLE. 
+The contract has state variables to store role validity and a flag to indicate if the default admin role is set. 
+It includes functions to grant, revoke, and renounce roles, as well as add and invalidate roles. 
+t also has functions to check role membership and retrieve role identifiers. 
+The contract ensures that only instance operators can access certain functions. 
+Overall, it offers a flexible access control mechanism for managing roles and permissions.
+
+
+{{BundleController}}
+The "BundleController" smart contract is designed to manage bundles, which are collections of policies. 
+It imports other Solidity contracts, implements the "IBundle" interface, and extends the "CoreController" contract. 
+The contract includes mappings to store information about bundles, active policies, locked capital, and unburt bundles. 
+It has functions to create bundles, fund and defund them, lock and unlock assets, close and burn bundles, and collateralize and release policies. 
+The contract includes modifiers and event emitters for access control and important events. 
+Overall, it provides comprehensive functionality for managing bundles and their associated policies.
+
+
+{{ComponentController}}
+The "Component Controller" smart contract provides functionality to manage and control components within a system. 
+It includes mappings and sets to store information about components, such as addresses, IDs, states, and types. 
+The contract allows component owners to propose new components, and the contract owner can approve, decline, suspend, resume, pause, unpause, or archive components. 
+Functions are available to retrieve component information, such as ID, type, state, and required role. 
+The contract includes modifiers to restrict access to authorized callers, and it utilizes external dependencies and libraries for set operations. 
+Overall, the contract enables efficient management and control of components in a system.
+
+
+{{LicenseController}}
+The "LicenseController" smart contract serves as a controller for managing licenses in an insurance ecosystem. 
+It implements the ILicense interface and extends the CoreController contract. 
+The contract interacts with the ComponentController contract to retrieve information about products and their authorization status. 
+Functions are available to check the authorization status of a product, validate if a product is active, and retrieve product information. 
+The contract plays a crucial role in managing licenses within the insurance ecosystem.
+
+
+{{PolicyController}}
+The "PolicyController" smart contract implements functions for policy operations, such as creation, update, cancellation, and retrieval. 
+It also handles claim creation, confirmation, decline, closure, and payout creation. 
+The contract includes mappings to store policies, claims, payouts, and metadata associated with policy flows. 
+It inherits from the IPolicy interface and the CoreController contract. 
+The functions validate inputs, update states, and emit events to manage the lifecycle of policies, claims, and payouts. 
+The contract provides comprehensive functionality for managing insurance policies and associated operations.
+
+
+{{PoolController}}
+The "PoolController" smart contract manages riskpools and their operations, including registration, funding, defunding, collateralization, and more. 
+It interacts with other contracts such as ComponentController, PolicyController, and BundleController. 
+The contract maintains mappings to store riskpool information and handles functions for funding, defunding, underwriting, calculating collateral, processing premiums and payouts, and releasing collateral. 
+It ensures access control through modifiers and emits events to track the success or failure of operations. 
+The PoolController contract acts as a central component for coordinating riskpool-related operations within the ecosystem.
+
+
+{{QueryModule}}
+The "QueryModule" smart contract implements the IQuery interface and extends the CoreController contract. 
+It interacts with external contracts such as IComponent.sol, IOracle.sol, IQuery.sol, and IInstanceService.sol. 
+The contract allows the creation of oracle requests, enables oracles to respond to requests, cancels requests, and provides functions to retrieve information about requests and oracles. 
+It ensures access control through modifiers and emits events to track the creation, response, and cancellation of oracle requests.
+The QueryModule contract acts as a module for managing oracle queries within the ecosystem.
+
+
+{{RegistryController}}
+The "RegistryController" smart contract implements the IRegistry interface and inherits from the CoreController contract. 
+It facilitates the registration, deregistration, and access of contracts within different releases. 
+The contract maintains mappings and sets to store contract names and addresses in various releases. 
+It provides functions to register and deregister contracts, retrieve contract addresses, and manage releases. 
+The contract ensures sender verification and emits events to track contract registration and deregistration. 
+The RegistryController contract serves as a centralized registry for managing contracts in different releases within the ecosystem.
+
+{{TreasuryModule}}
+The "TreasuryModule" smart contract implements the ITreasury interface and inherits from the CoreController and Pausable contracts. 
+It imports various contracts and interfaces to handle treasury operations. 
+The contract defines state variables, including constants, wallet addresses, fee specifications, and instances of other contracts. 
+It includes modifiers to enforce conditions for function execution. 
+The contract provides functions to set token and wallet addresses, create fee specifications, process premium payments, and manage suspension/resumption. 
+It also calculates fee amounts and net amounts. 
+The TreasuryModule contract serves as a central component for managing fees and treasury operations, interacting with other controllers and contracts within the system.
+

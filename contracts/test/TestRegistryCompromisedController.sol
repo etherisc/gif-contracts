@@ -8,6 +8,11 @@ contract TestRegistryCompromisedController {
 
     mapping(bytes32 => address) public contracts;
 
+    /**
+     * @dev Returns the address of a registered contract.
+     * @param contractName The name of the contract to retrieve.
+     * @return moduleAddress The address of the requested contract.
+     */
     function getContract(bytes32 contractName)
         external
         view
@@ -16,6 +21,11 @@ contract TestRegistryCompromisedController {
         moduleAddress = contracts[contractName];
     }
 
+    /**
+     * @dev Upgrades the Policy Manager contract to version 2.
+     * @param compromisedPolicyModuleAddress The new address of the compromised policy module.
+     * @param originalQueryModuleAddress The new address of the original query module.
+     */
     function upgradeToV2(
         address compromisedPolicyModuleAddress, 
         address originalQueryModuleAddress

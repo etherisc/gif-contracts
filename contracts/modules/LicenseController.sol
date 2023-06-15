@@ -8,6 +8,18 @@ import "@etherisc/gif-interface/contracts/components/IComponent.sol";
 import "@etherisc/gif-interface/contracts/components/IProduct.sol";
 import "@etherisc/gif-interface/contracts/modules/ILicense.sol";
 
+/**
+ * @dev The smart contract serves as a controller contract for managing licenses related to products in an insurance ecosystem.
+ * The contract implements the `ILicense` interface and extends the `CoreController` contract.
+ *
+ * The contract imports two other contracts: `ComponentController.sol` and `CoreController.sol`, which are expected to be located in specific file paths.
+ * It also imports several interfaces from the "etherisc/gif-interface" library, including `IComponent.sol`, `IProduct.sol`, and `ILicense.sol`.
+ * The contract includes a private variable `_component` of type `ComponentController`, which is used to interact with the `ComponentController` contract.
+ *
+ * Overall, the `LicenseController` contract serves as a controller for managing licenses and provides functions to check the authorization status and activity of products within an insurance ecosystem.
+ */
+
+
 
 contract LicenseController is
     ILicense, 
@@ -16,11 +28,22 @@ contract LicenseController is
 
     ComponentController private _component;
 
+    /**
+     * @dev This function is called after the contract is initialized and sets the `_component` variable to the address of the `ComponentController` contract.
+     *
+     */
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
     }
 
     // ensures that calling component (productAddress) is a product
+    /**
+     * @dev Returns the authorization status of a given product address.
+     * @param productAddress The address of the product to check authorization status for.
+     * @return productId The ID of the product.
+     * @return isAuthorized A boolean indicating whether the product is authorized or not.
+     * @return policyFlow The address of the policy flow associated with the product.
+     */
     function getAuthorizationStatus(address productAddress)
         public override
         view
@@ -31,10 +54,20 @@ contract LicenseController is
         policyFlow = _component.getPolicyFlow(productId);
     }
 
+    /**
+     * @dev Checks if a product is currently active.
+     * @param productId The ID of the product to check.
+     * @return A boolean indicating if the product is active or not.
+     */
     function _isValidCall(uint256 productId) internal view returns (bool) {
         return _component.getComponentState(productId) == IComponent.ComponentState.Active;
     }
 
+    /**
+     * @dev Returns the product associated with the given ID.
+     * @param id The ID of the product to retrieve.
+     * @return product The product associated with the given ID.
+     */
     function _getProduct(uint256 id) internal view returns (IProduct product) {
         require(_component.isProduct(id), "ERROR:LIC-001:COMPONENT_NOT_PRODUCT");
         IComponent cmp = _component.getComponent(id);

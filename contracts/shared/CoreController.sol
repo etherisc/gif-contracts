@@ -14,6 +14,9 @@ contract CoreController is
     IRegistry internal _registry;
     IAccess internal _access;
 
+    /**
+     * @dev Constructor function that disables initializers.
+     */
     constructor () {
         _disableInitializers();
     }
@@ -40,6 +43,10 @@ contract CoreController is
         _;
     }
 
+    /**
+     * @dev Initializes the contract with the provided registry address.
+     * @param registry The address of the registry contract.
+     */
     function initialize(address registry) public initializer {
         _registry = IRegistry(registry);
         if (_getName() != "Access") { _access = IAccess(_getContractAddress("Access")); }
@@ -47,10 +54,23 @@ contract CoreController is
         _afterInitialize();
     }
 
+    /**
+     * @dev Returns the name of the contract.
+     * @return name The name of the contract as a bytes32 value.
+     */
     function _getName() internal virtual pure returns(bytes32) { return ""; }
 
+    /**
+     * @dev This function is called after the contract is initialized and can be used to perform additional setup.
+     * @notice This function should only be called internally by the contract during initialization.
+     */
     function _afterInitialize() internal virtual onlyInitializing {}
 
+    /**
+     * @dev Returns the address of a registered contract by its name.
+     * @param contractName The name of the contract to retrieve.
+     * @return contractAddress The address of the requested contract.
+     */
     function _getContractAddress(bytes32 contractName) internal view returns (address contractAddress) { 
         contractAddress = _registry.getContract(contractName);
         require(

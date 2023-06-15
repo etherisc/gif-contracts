@@ -5,6 +5,27 @@ import "../shared/CoreController.sol";
 import "./ComponentController.sol";
 import "@etherisc/gif-interface/contracts/modules/IPolicy.sol";
 
+/**
+ * @dev The smart contract implements functions for policy operations, including creation, update, cancellation, and retrieval.
+ * It also provides functions for claim creation, confirmation, decline, closure, and payout creation.
+ * Additionally, it includes functions to process payouts, retrieve metadata and application information, and get the number of claims and payouts associated with a policy.
+ * The contract inherits from the `IPolicy` interface and the `CoreController` contract.
+ *
+ * State Variables:
+ *
+ * - `metadata`: A mapping that stores metadata associated with policy flows.
+ * - `applications`: A mapping that stores insurance applications associated with policy flows.
+ * - `policies`: A mapping that stores policies associated with policy flows.
+ * - `claims`: A nested mapping that stores claims associated with policies.
+ * - `payouts`: A nested mapping that stores payouts associated with policies.
+ * - `payoutCount`: A mapping that stores the count of payouts for each policy flow.
+ * - `_assigendProcessIds`: A counter variable for assigning unique process IDs.
+ * - `_component`: A reference to the `ComponentController` contract.
+ *
+ * Overall, these functions provide functionality for creating, managing, and processing claims and payouts within the insurance policy contract.
+ */
+
+
 contract PolicyController is 
     IPolicy, 
     CoreController
@@ -32,11 +53,24 @@ contract PolicyController is
 
     ComponentController private _component;
 
+    /**
+     * @dev Internal function that sets the _component variable to the address of the ComponentController contract.
+     *
+     */
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
     }
 
     /* Metadata */
+    /**
+     * @dev Creates a new policy flow for a given owner and product.
+     * @param owner The address of the owner of the policy flow.
+     * @param productId The ID of the product associated with the policy flow.
+     * @param data Additional data associated with the policy flow.
+     * @return processId The ID of the newly created policy flow.
+     * @notice This function emits 1 events: 
+     * - LogMetadataCreated
+     */
     function createPolicyFlow(
         address owner,
         uint256 productId,
@@ -66,6 +100,25 @@ contract PolicyController is
     }
 
     /* Application */
+    /**
+     * @dev Creates a new insurance application for a given process ID.
+     * @param processId The unique process ID associated with the insurance application.
+     * @param premiumAmount The amount of premium to be paid for the insurance.
+     * @param sumInsuredAmount The amount of coverage provided by the insurance.
+     * @param data Additional data associated with the insurance application.
+     *
+     * Emits a LogApplicationCreated event with the process ID, premium amount, and sum insured amount.
+     *
+     * Requirements:
+     * - The metadata for the process ID must exist.
+     * - An application for the process ID must not already exist.
+     * - The premium amount must be greater than zero.
+     * - The sum insured amount must be greater than the premium amount.
+     * - Only the PolicyFlow contract can call this function.
+     * @notice This function emits 2 events: 
+     * - LogApplicationCreated
+     * - LogMetadataStateChanged
+     */
     function createApplication(
         bytes32 processId, 
         uint256 premiumAmount,
@@ -98,6 +151,19 @@ contract PolicyController is
         emit LogApplicationCreated(processId, premiumAmount, sumInsuredAmount);
     }
 
+    /**
+     * @dev Collects premium for a policy.
+     * @param processId The unique identifier of the policy.
+     * @param amount The amount of premium to be collected.
+     *
+     * Requirements:
+     * - The policy must exist.
+     * - The amount to be collected must not exceed the expected premium amount.
+     *
+     * Emits a {LogPremiumCollected} event.
+     * @notice This function emits 1 events: 
+     * - LogPremiumCollected
+     */
     function collectPremium(bytes32 processId, uint256 amount) 
         external override
     {
@@ -111,6 +177,13 @@ contract PolicyController is
         emit LogPremiumCollected(processId, amount);
     }
     
+    /**
+     * @dev Revokes an application with the given process ID.
+     * @param processId The process ID of the application to be revoked.
+     * @notice This function emits 2 events: 
+     * - LogApplicationRevoked
+     * - LogMetadataStateChanged
+     */
     function revokeApplication(bytes32 processId)
         external override
         onlyPolicyFlow("Policy")
@@ -132,6 +205,14 @@ contract PolicyController is
         emit LogApplicationRevoked(processId);
     }
 
+    /**
+     * @dev Changes the state of an application to underwritten.
+     * @param processId The unique ID of the application process.
+     *
+     * Emits a LogApplicationUnderwritten event.
+     * @notice This function emits 1 events: 
+     * - LogApplicationUnderwritten
+     */
     function underwriteApplication(bytes32 processId)
         external override
         onlyPolicyFlow("Policy")
@@ -146,6 +227,27 @@ contract PolicyController is
         emit LogApplicationUnderwritten(processId);
     }
 
+    /**
+     * @dev Declines an application for a policy flow.
+     * @param processId The unique identifier of the policy flow process.
+     *
+     *
+     * Emits a LogMetadataStateChanged event with the updated metadata state.
+     * Emits a LogApplicationDeclined event with the declined application's process ID.
+     *
+     * Requirements:
+     * - The function can only be called by a "Policy" policy flow.
+     * - The metadata for the given process ID must exist.
+     * - The application for the given process ID must exist and be in the "Applied" state.
+     *
+     * Effects:
+     * - Updates the state of the application to "Declined".
+     * - Updates the state of the metadata to "Finished".
+     * - Updates the updatedAt timestamps for both the application and metadata.
+     * @notice This function emits 2 events: 
+     * - LogApplicationDeclined
+     * - LogMetadataStateChanged
+     */
     function declineApplication(bytes32 processId)
         external override
         onlyPolicyFlow("Policy")
@@ -168,6 +270,20 @@ contract PolicyController is
     }
 
     /* Policy */
+    /**
+     * @dev Creates a new policy for a given application process ID.
+     * @param processId The ID of the application process.
+     *
+     *
+     * Emits a `LogPolicyCreated` event.
+     *
+     * Requirements:
+     * - The caller must have the 'Policy' role.
+     * - The application must exist and be in the 'Underwritten' state.
+     * - The policy must not already exist for the given process ID.
+     * @notice This function emits 1 events: 
+     * - LogPolicyCreated
+     */
     function createPolicy(bytes32 processId) 
         external override 
         onlyPolicyFlow("Policy")
@@ -187,6 +303,17 @@ contract PolicyController is
         emit LogPolicyCreated(processId);
     }
 
+    /**
+     * @dev This function adjusts the premium and sum insured amount of an insurance policy application.
+     * @param processId The unique identifier of the insurance policy application.
+     * @param expectedPremiumAmount The expected premium amount for the insurance policy.
+     * @param sumInsuredAmount The sum insured amount for the insurance policy.
+     *
+     * @notice This function emits 3 events: 
+     * - LogApplicationPremiumAdjusted
+     * - LogPolicyPremiumAdjusted
+     * - LogApplicationSumInsuredAdjusted
+     */
     function adjustPremiumSumInsured(
         bytes32 processId, 
         uint256 expectedPremiumAmount,
@@ -237,6 +364,14 @@ contract PolicyController is
         }
     }
 
+    /**
+     * @dev This function expires a policy with the given process ID.
+     *
+     * @param processId The process ID of the policy to be expired.
+     *
+     * @notice This function emits 1 events: 
+     * - LogPolicyExpired
+     */
     function expirePolicy(bytes32 processId)
         external override
         onlyPolicyFlow("Policy")
@@ -251,6 +386,23 @@ contract PolicyController is
         emit LogPolicyExpired(processId);
     }
 
+    /**
+     * @dev Closes a policy that has expired and has no open claims.
+     * @param processId The unique identifier of the policy.
+     *
+     *
+     * Emits a LogMetadataStateChanged event with the updated metadata state.
+     * Emits a LogPolicyClosed event with the unique identifier of the closed policy.
+     *
+     * Requirements:
+     * - The metadata for the given processId must exist.
+     * - The policy for the given processId must exist.
+     * - The state of the policy must be 'Expired'.
+     * - The policy must have no open claims.
+     * @notice This function emits 2 events: 
+     * - LogMetadataStateChanged
+     * - LogPolicyClosed
+     */
     function closePolicy(bytes32 processId)
         external override
         onlyPolicyFlow("Policy")
@@ -274,6 +426,25 @@ contract PolicyController is
     }
 
     /* Claim */
+    /**
+     * @dev Creates a new claim for a given policy.
+     * @param processId The ID of the policy.
+     * @param claimAmount The amount of the claim.
+     * @param data Additional data related to the claim.
+     * @return claimId The ID of the newly created claim.
+     *
+     * Emits a LogClaimCreated event.
+     *
+     * Requirements:
+     * - The caller must be authorized to create claims for the policy.
+     * - The policy must exist and be in an active state.
+     * - The sum of the payout amount and the claim amount must not exceed the maximum payout amount.
+     * - The claim must not already exist.
+     *
+     * Note: The function allows claims with amount 0 to be created, which can be useful for parametric insurance.
+     * @notice This function emits 1 events: 
+     * - LogClaimCreated
+     */
     function createClaim(
         bytes32 processId, 
         uint256 claimAmount,
@@ -307,6 +478,24 @@ contract PolicyController is
         emit LogClaimCreated(processId, claimId, claimAmount);
     }
 
+    /**
+     * @dev Confirms a claim for a policy, updating the claim state to Confirmed and setting the confirmed amount.
+     * @param processId The ID of the policy the claim belongs to.
+     * @param claimId The ID of the claim to confirm.
+     * @param confirmedAmount The amount to confirm for the claim.
+     *
+     * Requirements:
+     * - Only the Policy contract can call this function.
+     * - The policy must exist.
+     * - The policy must have at least one open claim.
+     * - The sum of the policy's payout amount and the confirmed amount must not exceed the policy's maximum payout amount.
+     * - The claim must exist.
+     * - The claim state must be Applied.
+     *
+     * Emits a LogClaimConfirmed event with the process ID, claim ID, and confirmed amount.
+     * @notice This function emits 1 events: 
+     * - LogClaimConfirmed
+     */
     function confirmClaim(
         bytes32 processId,
         uint256 claimId,
@@ -335,6 +524,15 @@ contract PolicyController is
         emit LogClaimConfirmed(processId, claimId, confirmedAmount);
     }
 
+    /**
+     * @dev This function allows the Policy contract to decline a claim.
+     * @param processId The ID of the process to which the policy belongs.
+     * @param claimId The ID of the claim to be declined.
+     *
+     * Emits a LogClaimDeclined event.
+     * @notice This function emits 1 events: 
+     * - LogClaimDeclined
+     */
     function declineClaim(bytes32 processId, uint256 claimId)
         external override
         onlyPolicyFlow("Policy") 
@@ -355,6 +553,14 @@ contract PolicyController is
         emit LogClaimDeclined(processId, claimId);
     }
 
+    /**
+     * @dev Closes a claim for a given policy.
+     * @param processId The ID of the policy process.
+     * @param claimId The ID of the claim to be closed.
+     *
+     * @notice This function emits 1 events: 
+     * - LogClaimClosed
+     */
     function closeClaim(bytes32 processId, uint256 claimId)
         external override
         onlyPolicyFlow("Policy") 
@@ -386,6 +592,26 @@ contract PolicyController is
     }
 
     /* Payout */
+    /**
+     * @dev Creates a new payout for a confirmed claim in a policy.
+     * @param processId The ID of the policy.
+     * @param claimId The ID of the claim associated with the payout.
+     * @param payoutAmount The amount of the payout.
+     * @param data Additional data related to the payout.
+     * @return payoutId The ID of the newly created payout.
+     *
+     * Emits a LogPayoutCreated event with the processId, claimId, payoutId, and payoutAmount.
+     *
+     * Requirements:
+     * - The caller must have the onlyPolicyFlow modifier with "Policy" as the argument.
+     * - The policy with the given processId must exist.
+     * - The claim with the given claimId must exist and be in the Confirmed state.
+     * - The payoutAmount must be greater than zero.
+     * - The sum of the paidAmount of the claim and the payoutAmount must not exceed the claimAmount of the claim.
+     * - A payout with the given processId and payoutId must not already exist.
+     * @notice This function emits 1 events: 
+     * - LogPayoutCreated
+     */
     function createPayout(
         bytes32 processId,
         uint256 claimId,
@@ -425,6 +651,33 @@ contract PolicyController is
         emit LogPayoutCreated(processId, claimId, payoutId, payoutAmount);
     }
 
+    /**
+     * @dev Processes a payout for a policy and claim.
+     * @param processId The ID of the policy to process the payout for.
+     * @param payoutId The ID of the payout to process.
+     *
+     * Emits a LogPayoutProcessed event.
+     * If the claim is fully paid, emits a LogClaimClosed event.
+     *
+     * Requirements:
+     * - The caller must have the onlyPolicyFlow modifier with the "Policy" role.
+     * - The policy with the given processId must exist.
+     * - The policy with the given processId must have at least one open claim.
+     * - The payout with the given payoutId must exist.
+     * - The payout with the given payoutId must be in the Expected state.
+     *
+     * Effects:
+     * - Changes the state of the payout to PaidOut.
+     * - Updates the updatedAt timestamp of the payout.
+     * - Increases the paidAmount of the claim associated with the payout.
+     * - Updates the updatedAt timestamp of the claim.
+     * - If the claim is fully paid, changes the state of the claim to Closed.
+     * - Decreases the openClaimsCount of the policy associated with the claim.
+     * - Updates the updatedAt timestamp of the policy.
+     * @notice This function emits 2 events: 
+     * - LogClaimClosed
+     * - LogPayoutProcessed
+     */
     function processPayout(
         bytes32 processId,
         uint256 payoutId
@@ -460,6 +713,14 @@ contract PolicyController is
         }
     }
 
+    /**
+     * @dev Returns the metadata for the given process ID.
+     * @param processId The ID of the process to retrieve metadata for.
+     * @return _metadata The metadata information for the given process ID.
+     *
+     * Requirements:
+     * - The metadata for the given process ID must exist.
+     */
     function getMetadata(bytes32 processId)
         public
         view
@@ -469,6 +730,11 @@ contract PolicyController is
         require(_metadata.createdAt > 0,  "ERROR:POC-100:METADATA_DOES_NOT_EXIST");
     }
 
+    /**
+     * @dev Returns the application associated with the provided process ID.
+     * @param processId The ID of the process for which to retrieve the application.
+     * @return application The application associated with the provided process ID.
+     */
     function getApplication(bytes32 processId)
         public
         view
@@ -478,14 +744,29 @@ contract PolicyController is
         require(application.createdAt > 0, "ERROR:POC-101:APPLICATION_DOES_NOT_EXIST");        
     }
 
+    /**
+     * @dev Returns the number of claims associated with a given process ID.
+     * @param processId The ID of the process for which to retrieve the number of claims.
+     * @return numberOfClaims The number of claims associated with the given process ID.
+     */
     function getNumberOfClaims(bytes32 processId) external view returns(uint256 numberOfClaims) {
         numberOfClaims = getPolicy(processId).claimsCount;
     }
     
+    /**
+     * @dev Returns the number of payouts for a given process ID.
+     * @param processId The ID of the process.
+     * @return numberOfPayouts The number of payouts for the given process ID.
+     */
     function getNumberOfPayouts(bytes32 processId) external view returns(uint256 numberOfPayouts) {
         numberOfPayouts = payoutCount[processId];
     }
 
+    /**
+     * @dev Returns the policy associated with the given process ID.
+     * @param processId The ID of the process for which to retrieve the policy.
+     * @return policy The policy object associated with the given process ID.
+     */
     function getPolicy(bytes32 processId)
         public
         view
@@ -495,6 +776,14 @@ contract PolicyController is
         require(policy.createdAt > 0, "ERROR:POC-102:POLICY_DOES_NOT_EXIST");        
     }
 
+    /**
+     * @dev Returns the claim with the given ID for the specified process.
+     * @param processId The ID of the process.
+     * @param claimId The ID of the claim.
+     * @return claim The claim object with the given ID.
+     * @notice This function can only be called in read-only mode.
+     * @notice Throws an error if the claim with the given ID does not exist.
+     */
     function getClaim(bytes32 processId, uint256 claimId)
         public
         view
@@ -504,6 +793,13 @@ contract PolicyController is
         require(claim.createdAt > 0, "ERROR:POC-103:CLAIM_DOES_NOT_EXIST");        
     }
 
+    /**
+     * @dev Retrieves a specific payout from a process.
+     * @param processId The ID of the process.
+     * @param payoutId The ID of the payout to retrieve.
+     * @return payout The payout object with the specified ID.
+     * @notice Throws an error if the payout does not exist.
+     */
     function getPayout(bytes32 processId, uint256 payoutId)
         public
         view
@@ -513,10 +809,18 @@ contract PolicyController is
         require(payout.createdAt > 0, "ERROR:POC-104:PAYOUT_DOES_NOT_EXIST");        
     }
 
+    /**
+     * @dev Returns the number of process IDs that have been assigned.
+     * @return _assigendProcessIds The number of process IDs that have been assigned.
+     */
     function processIds() external view returns (uint256) {
         return _assigendProcessIds;
     }
 
+    /**
+     * @dev Generates a unique process ID for the next process.
+     * @return processId The generated process ID.
+     */
     function _generateNextProcessId() private returns(bytes32 processId) {
         _assigendProcessIds++;
 

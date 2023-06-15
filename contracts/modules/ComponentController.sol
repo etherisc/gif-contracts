@@ -9,6 +9,18 @@ import "@etherisc/gif-interface/contracts/components/IRiskpool.sol";
 import "@etherisc/gif-interface/contracts/modules/IComponentEvents.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
+/**
+ * @dev The smart contract provides functionality to manage and control components in a system.
+ * The contract defines several mappings and sets to store information about components, such as their addresses, IDs, states, and types.
+ * It also includes modifiers to restrict access to certain functions based on the caller's role.
+ *
+ * The contract also includes various modifiers (`onlyComponentOwnerService` and `onlyInstanceOperatorService`) to ensure that only authorized callers can access certain functions.
+ *
+ * The contract imports several Solidity files from external dependencies and uses the `EnumerableSet` library from the OpenZeppelin library for set operations.
+ */
+
+
+
 contract ComponentController is
     IComponentEvents,
     CoreController 
@@ -42,6 +54,20 @@ contract ComponentController is
         _;
     }
 
+    /**
+     * @dev Proposes a new component to the system.
+     * @param component The component to be proposed.
+     *
+     * Emits a LogComponentProposed event with the name, type, address and id of the proposed component.
+     * Calls the proposalCallback function of the proposed component to inform it about the successful proposal.
+     *
+     * Requirements:
+     * - The caller must be the owner service of the component.
+     * - The component must not already exist in the system.
+     * - The component name must not already exist in the system.
+     * @notice This function emits 1 events: 
+     * - LogComponentProposed
+     */
     function propose(IComponent component) 
         external
         onlyComponentOwnerService 
@@ -64,6 +90,17 @@ contract ComponentController is
         component.proposalCallback();
     }
 
+    /**
+     * @dev Persists a new component into the system.
+     * @param component The component to be persisted.
+     * @return id The id of the newly persisted component.
+     *
+     * - Fetches the next component id.
+     * - Updates component state to Proposed.
+     * - Sets the id of the component.
+     * - Updates controller book keeping with the new component id.
+     * - Updates type specific book keeping.
+     */
     function _persistComponent(IComponent component) 
         internal
         returns(uint256 id)
@@ -87,11 +124,25 @@ contract ComponentController is
         else if (component.isRiskpool()) { EnumerableSet.add(_riskpools, id); }
     }
 
+    /**
+     * @dev Checks if a component with the given ID exists.
+     * @param id The ID of the component to check.
+     * @return True if a component with the given ID exists, false otherwise.
+     */
     function exists(uint256 id) public view returns(bool) {
         IComponent component = _componentById[id];
         return (address(component) != address(0));
     }
 
+    /**
+     * @dev Approves a component with the given id.
+     * @param id The id of the component to be approved.
+     *
+     * Emits a LogComponentApproved event and informs the component about the successful approval by calling the approvalCallback function.
+     * If the component is a product, sets the policy flow in the _policyFlowByProductId mapping.
+     * @notice This function emits 1 events: 
+     * - LogComponentApproved
+     */
     function approve(uint256 id) 
         external
         onlyInstanceOperatorService 
@@ -109,6 +160,14 @@ contract ComponentController is
         component.approvalCallback();
     }
 
+    /**
+     * @dev Changes the state of a component with the given ID to "Declined" and emits a LogComponentDeclined event.
+     *      Calls the declineCallback function of the component with the given ID.
+     *
+     * @param id The ID of the component to decline.
+     * @notice This function emits 1 events: 
+     * - LogComponentDeclined
+     */
     function decline(uint256 id) 
         external
         onlyInstanceOperatorService 
@@ -121,6 +180,14 @@ contract ComponentController is
         component.declineCallback();
     }
 
+    /**
+     * @dev Suspends a component with the given ID.
+     *
+     * @param id The ID of the component to suspend.
+     *
+     * @notice This function emits 1 events: 
+     * - LogComponentSuspended
+     */
     function suspend(uint256 id) 
         external 
         onlyInstanceOperatorService 
@@ -133,6 +200,14 @@ contract ComponentController is
         component.suspendCallback();
     }
 
+    /**
+     * @dev Resumes a component by changing its state to Active and emitting an event.
+     *      It also calls the resumeCallback() function of the component to inform it about the resuming.
+     *
+     * @param id The ID of the component to be resumed.
+     * @notice This function emits 1 events: 
+     * - LogComponentResumed
+     */
     function resume(uint256 id) 
         external 
         onlyInstanceOperatorService 
@@ -145,6 +220,12 @@ contract ComponentController is
         component.resumeCallback();
     }
 
+    /**
+     * @dev Pauses the component with the given ID.
+     * @param id The ID of the component to be paused.
+     * @notice This function emits 1 events: 
+     * - LogComponentPaused
+     */
     function pause(uint256 id) 
         external 
         onlyComponentOwnerService 
@@ -157,6 +238,14 @@ contract ComponentController is
         component.pauseCallback();
     }
 
+    /**
+     * @dev Unpauses a component with the given id.
+     *
+     * @param id The id of the component to unpause.
+     *
+     * @notice This function emits 1 events: 
+     * - LogComponentUnpaused
+     */
     function unpause(uint256 id) 
         external 
         onlyComponentOwnerService 
@@ -169,6 +258,14 @@ contract ComponentController is
         component.unpauseCallback();
     }
 
+    /**
+     * @dev Archives a component with the given ID, changing its state to "Archived" and emitting a LogComponentArchived event.
+     *      Also calls the archiveCallback function of the component with the given ID, informing it about the archiving.
+     *
+     * @param id The ID of the component to be archived.
+     * @notice This function emits 1 events: 
+     * - LogComponentArchived
+     */
     function archiveFromComponentOwner(uint256 id) 
         external 
         onlyComponentOwnerService 
@@ -181,6 +278,13 @@ contract ComponentController is
         component.archiveCallback();
     }
 
+    /**
+     * @dev Archives a component instance with the given ID.
+     * @param id The ID of the component instance to be archived.
+     *
+     * @notice This function emits 1 events: 
+     * - LogComponentArchived
+     */
     function archiveFromInstanceOperator(uint256 id) 
         external 
         onlyInstanceOperatorService 
@@ -193,11 +297,21 @@ contract ComponentController is
         component.archiveCallback();
     }
 
+    /**
+     * @dev Returns the component with the given ID.
+     * @param id The ID of the component to retrieve.
+     * @return component The component with the given ID.
+     */
     function getComponent(uint256 id) public view returns (IComponent component) {
         component = _componentById[id];
         require(address(component) != address(0), "ERROR:CCR-005:INVALID_COMPONENT_ID");
     }
 
+    /**
+     * @dev Returns the ID of a registered component given its address.
+     * @param componentAddress The address of the component.
+     * @return id The ID of the component.
+     */
     function getComponentId(address componentAddress) public view returns (uint256 id) {
         require(componentAddress != address(0), "ERROR:CCR-006:COMPONENT_ADDRESS_ZERO");
         id = _componentIdByAddress[componentAddress];
@@ -205,6 +319,12 @@ contract ComponentController is
         require(id > 0, "ERROR:CCR-007:COMPONENT_UNKNOWN");
     }
 
+    /**
+     * @dev Returns the component type of a given component ID.
+     * @param id The ID of the component.
+     * @return componentType The type of the component (Product, Oracle or Riskpool).
+     * @notice If the component ID is not found, reverts with an error message.
+     */
     function getComponentType(uint256 id) public view returns (IComponent.ComponentType componentType) {
         if (EnumerableSet.contains(_products, id)) {
             return IComponent.ComponentType.Product;
@@ -217,22 +337,51 @@ contract ComponentController is
         }
     }
 
+    /**
+     * @dev Returns the state of the component with the given ID.
+     * @param id The ID of the component.
+     * @return componentState The state of the component.
+     */
     function getComponentState(uint256 id) public view returns (IComponent.ComponentState componentState) {
         return _componentState[id];
     }
 
+    /**
+     * @dev Returns the oracle ID at the given index.
+     * @param idx The index of the oracle ID to retrieve.
+     * @return oracleId The oracle ID at the given index.
+     */
     function getOracleId(uint256 idx) public view returns (uint256 oracleId) {
         return EnumerableSet.at(_oracles, idx);
     }
 
+    /**
+     * @dev Returns the riskpool ID at the specified index.
+     * @param idx The index of the riskpool ID to retrieve.
+     * @return riskpoolId The ID of the riskpool at the specified index.
+     */
     function getRiskpoolId(uint256 idx) public view returns (uint256 riskpoolId) {
         return EnumerableSet.at(_riskpools, idx);
     }
 
+    /**
+     * @dev Returns the product ID at the given index in the _products set.
+     * @param idx The index of the product ID to retrieve.
+     * @return productId The product ID at the given index.
+     */
     function getProductId(uint256 idx) public view returns (uint256 productId) {
         return EnumerableSet.at(_products, idx);
     }
 
+    /**
+     * @dev Returns the required role for a given component type.
+     * @param componentType The type of component for which to retrieve the required role.
+     * @return The required role as a bytes32 value.
+     *
+     * Requirements:
+     * - The component type must be a valid value from the IComponent.ComponentType enum.
+     * - If the component type is not recognized, the function reverts with an error message.
+     */
     function getRequiredRole(IComponent.ComponentType componentType) external view returns (bytes32) {
         if (componentType == IComponent.ComponentType.Product) { return _access.getProductOwnerRole(); }
         else if (componentType == IComponent.ComponentType.Oracle) { return _access.getOracleProviderRole(); }
@@ -240,22 +389,67 @@ contract ComponentController is
         else { revert("ERROR:CCR-010:COMPONENT_TYPE_UNKNOWN"); }
     }
 
+    /**
+     * @dev Returns the number of components currently stored in the contract.
+     * @return count The number of components stored.
+     */
     function components() public view returns (uint256 count) { return _componentCount; }
+    /**
+     * @dev Returns the number of products in the set '_products'.
+     * @return count The number of products in the set '_products'.
+     */
     function products() public view returns (uint256 count) { return EnumerableSet.length(_products); }
+    /**
+     * @dev Returns the number of oracles registered in the _oracles set.
+     * @return count The number of oracles registered in the _oracles set.
+     */
     function oracles() public view returns (uint256 count) { return EnumerableSet.length(_oracles); }
+    /**
+     * @dev Returns the number of risk pools in the EnumerableSet.
+     * @return count The number of risk pools in the EnumerableSet.
+     */
     function riskpools() public view returns (uint256 count) { return EnumerableSet.length(_riskpools); }
 
+    /**
+     * @dev Check if a product exists in the set of products.
+     * @param id The ID of the product to check.
+     * @return Returns true if the product exists in the set, false otherwise.
+     */
     function isProduct(uint256 id) public view returns (bool) { return EnumerableSet.contains(_products, id); }
 
+    /**
+     * @dev Checks if an oracle with a given ID exists.
+     * @param id The ID of the oracle to check.
+     * @return A boolean indicating whether the oracle exists or not.
+     */
     function isOracle(uint256 id) public view returns (bool) { return EnumerableSet.contains(_oracles, id); }
 
+    /**
+     * @dev Checks if a given ID is a riskpool.
+     * @param id The ID to check.
+     * @return A boolean value indicating if the given ID is a riskpool.
+     */
     function isRiskpool(uint256 id) public view returns (bool) { return EnumerableSet.contains(_riskpools, id); }
 
+    /**
+     * @dev Returns the address of the policy flow for a given product ID.
+     * @param productId The ID of the product to retrieve the policy flow for.
+     * @return _policyFlow The address of the policy flow for the given product ID.
+     */
     function getPolicyFlow(uint256 productId) public view returns (address _policyFlow) {
         require(isProduct(productId), "ERROR:CCR-011:UNKNOWN_PRODUCT_ID");
         _policyFlow = _policyFlowByProductId[productId];
     }
 
+    /**
+     * @dev Changes the state of a component.
+     * @param componentId The ID of the component to change the state of.
+     * @param newState The new state to set for the component.
+     *
+     * Emits a LogComponentStateChanged event upon successful state change.
+     * @notice This function emits 1 events: 
+     * - LogComponentStateChanged
+     */
     function _changeState(uint256 componentId, IComponent.ComponentState newState) internal {
         IComponent.ComponentState oldState = _componentState[componentId];
 
@@ -266,6 +460,21 @@ contract ComponentController is
         emit LogComponentStateChanged(componentId, oldState, newState);
     }
 
+    /**
+     * @dev Checks if the state transition is valid.
+     * @param oldState The current state of the component.
+     * @param newState The state to which the component will transition.
+     *
+     *
+     * @dev Throws an error if the newState is the same as the oldState.
+     * @dev Throws an error if the transition from Created state is not to Proposed state.
+     * @dev Throws an error if the transition from Proposed state is not to Active or Declined state.
+     * @dev Throws an error if the transition from Declined state is attempted.
+     * @dev Throws an error if the transition from Active state is not to Paused or Suspended state.
+     * @dev Throws an error if the transition from Paused state is not to Active or Archived state.
+     * @dev Throws an error if the transition from Suspended state is not to Active or Archived state.
+     * @dev Throws an error if the initial state is not handled.
+     */
     function _checkStateTransition(
         IComponent.ComponentState oldState, 
         IComponent.ComponentState newState

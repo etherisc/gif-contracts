@@ -9,7 +9,18 @@ import "@etherisc/gif-interface/contracts/components/IProduct.sol";
 import "@etherisc/gif-interface/contracts/modules/IBundle.sol";
 import "./PoolController.sol";
 
-
+/**
+ * @dev The smart contract is used to manage bundles, which are collections of policies.
+ *
+ * - The contract imports other Solidity contracts such as `PolicyController.sol`, `CoreController.sol`, and `BundleToken.sol`.
+ * - The contract implements the `IBundle` interface and extends the `CoreController` contract.
+ * - It defines several mappings to store information about bundles, active policies, locked capital per policy, and the number of unburt bundles for each risk pool.
+ * - There is a private variable `_bundleCount` to keep track of the number of bundles created.
+ * - The contract includes modifiers to restrict access to certain functions, such as `onlyRiskpoolService` and `onlyFundableBundle`.
+ *
+ * The contract includes various modifiers and event emitters to enforce access control and emit relevant events.
+ * Overall, the `BundleController` contract provides functionality to manage bundles and their associated policies, including creating, funding, locking, unlocking, closing, burning, collateralizing, and releasing policies within a bundle.
+ */
 contract BundleController is 
     IBundle,
     CoreController
@@ -44,11 +55,26 @@ contract BundleController is
         _;
     }
 
+    /**
+     * @dev Performs internal operations after the contract initialization.
+     *
+     *
+     */
     function _afterInitialize() internal override onlyInitializing {
         _policy = PolicyController(_getContractAddress("Policy"));
         _token = BundleToken(_getContractAddress("BundleToken"));
     }
 
+    /**
+     * @dev Creates a new bundle and mints a corresponding NFT token. Only callable by the RiskpoolService contract.
+     * @param owner_ The address of the bundle owner.
+     * @param riskpoolId_ The ID of the riskpool associated with the bundle.
+     * @param filter_ The filter used for the bundle.
+     * @param amount_ The amount of capital allocated to the bundle.
+     * @return bundleId The ID of the newly created bundle.
+     * @notice This function emits 1 events: 
+     * - LogBundleCreated
+     */
     function create(address owner_, uint riskpoolId_, bytes calldata filter_, uint256 amount_) 
         external override
         onlyRiskpoolService
@@ -81,6 +107,13 @@ contract BundleController is
     }
 
 
+    /**
+     * @dev Adds funds to a bundle's capital and balance.
+     * @param bundleId The ID of the bundle to add funds to.
+     * @param amount The amount of funds to add to the bundle.
+     * @notice This function emits 1 events: 
+     * - LogBundleCapitalProvided
+     */
     function fund(uint256 bundleId, uint256 amount)
         external override 
         onlyRiskpoolService
@@ -98,6 +131,13 @@ contract BundleController is
     }
 
 
+    /**
+     * @dev Allows the Riskpool service to withdraw `amount` from the `bundleId` Bundle.
+     * @param bundleId The ID of the Bundle to be defunded.
+     * @param amount The amount of tokens to be withdrawn.
+     * @notice This function emits 1 events: 
+     * - LogBundleCapitalWithdrawn
+     */
     function defund(uint256 bundleId, uint256 amount) 
         external override 
         onlyRiskpoolService
@@ -120,6 +160,10 @@ contract BundleController is
         emit LogBundleCapitalWithdrawn(bundleId, _msgSender(), amount, capacityAmount);
     }
 
+    /**
+     * @dev Locks a bundle of assets.
+     * @param bundleId The ID of the bundle to be locked.
+     */
     function lock(uint256 bundleId)
         external override
         onlyRiskpoolService
@@ -127,6 +171,10 @@ contract BundleController is
         _changeState(bundleId, BundleState.Locked);
     }
 
+    /**
+     * @dev Unlocks a bundle, changing its state to active.
+     * @param bundleId The ID of the bundle to be unlocked.
+     */
     function unlock(uint256 bundleId)
         external override
         onlyRiskpoolService
@@ -134,6 +182,10 @@ contract BundleController is
         _changeState(bundleId, BundleState.Active);
     }
 
+    /**
+     * @dev Closes a bundle of policies.
+     * @param bundleId The ID of the bundle to close.
+     */
     function close(uint256 bundleId)
         external override
         onlyRiskpoolService
@@ -142,6 +194,16 @@ contract BundleController is
         _changeState(bundleId, BundleState.Closed);
     }
 
+    /**
+     * @dev Burns a bundle and changes its state to Burned.
+     * @param bundleId The ID of the bundle to be burned.
+     *
+     * Requirements:
+     * - The bundle must be in the Closed state.
+     * - The bundle must have a balance of 0.
+     *
+     * Emits a {BundleStateChanged} event with BundleState.Burned.
+     */
     function burn(uint256 bundleId)    
         external override
         onlyRiskpoolService
@@ -157,6 +219,23 @@ contract BundleController is
         _changeState(bundleId, BundleState.Burned);
     }
 
+    /**
+     * @dev Collateralizes a policy by locking a specific amount of capital in the corresponding bundle.
+     * @param bundleId The ID of the bundle to collateralize.
+     * @param processId The ID of the policy to collateralize.
+     * @param amount The amount of capital to lock in the bundle.
+     *
+     * Requirements:
+     * - Caller must be the riskpool service.
+     * - The bundle must belong to the riskpool that controls the product of the policy.
+     * - The bundle must exist and be in an active state.
+     * - The capacity of the bundle must be enough to lock the amount of capital.
+     * - The policy must not have been previously collateralized.
+     *
+     * Emits a {LogBundlePolicyCollateralized} event with the bundle ID, policy ID, amount of capital locked, and the remaining capacity of the bundle.
+     * @notice This function emits 1 events: 
+     * - LogBundlePolicyCollateralized
+     */
     function collateralizePolicy(uint256 bundleId, bytes32 processId, uint256 amount)
         external override 
         onlyRiskpoolService
@@ -182,6 +261,22 @@ contract BundleController is
     }
 
 
+    /**
+     * @dev Process the premium payment for a given bundle and update its balance.
+     * @param bundleId The ID of the bundle to process the premium payment for.
+     * @param processId The ID of the process associated with the policy.
+     * @param amount The amount of premium to be processed.
+     *
+     * Requirements:
+     * - The caller must be the riskpool service.
+     * - The bundle must exist and be fundable.
+     * - The policy associated with the process must not be closed.
+     * - The bundle must exist.
+     *
+     * Effects:
+     * - Increases the balance of the bundle by the amount processed.
+     * - Updates the updatedAt timestamp of the bundle.
+     */
     function processPremium(uint256 bundleId, bytes32 processId, uint256 amount)
         external override
         onlyRiskpoolService
@@ -201,6 +296,16 @@ contract BundleController is
     }
 
 
+    /**
+     * @dev Processes a payout for a policy from a bundle.
+     * @param bundleId The ID of the bundle.
+     * @param processId The ID of the policy process.
+     * @param amount The amount of the payout.
+     *
+     * Emits a LogBundlePayoutProcessed event.
+     * @notice This function emits 1 events: 
+     * - LogBundlePayoutProcessed
+     */
     function processPayout(uint256 bundleId, bytes32 processId, uint256 amount) 
         external override 
         onlyRiskpoolService
@@ -236,6 +341,14 @@ contract BundleController is
     }
 
 
+    /**
+     * @dev Release a policy and update the bundle capital.
+     * @param bundleId The ID of the bundle.
+     * @param processId The ID of the process.
+     * @return remainingCollateralAmount The remaining collateral amount after releasing the policy.
+     * @notice This function emits 1 events: 
+     * - LogBundlePolicyReleased
+     */
     function releasePolicy(uint256 bundleId, bytes32 processId) 
         external override 
         onlyRiskpoolService
@@ -271,54 +384,113 @@ contract BundleController is
         emit LogBundlePolicyReleased(bundleId, processId, lockedForPolicyAmount, capacityAmount);
     }
 
+    /**
+     * @dev Returns the address of the owner of the token associated with the given bundle ID.
+     * @param bundleId The ID of the bundle.
+     * @return The address of the owner of the token.
+     */
     function getOwner(uint256 bundleId) public view returns(address) { 
         uint256 tokenId = getBundle(bundleId).tokenId;
         return _token.ownerOf(tokenId); 
     }
 
+    /**
+     * @dev Returns the state of the bundle with the given ID.
+     * @param bundleId The ID of the bundle to retrieve the state from.
+     * @return The state of the bundle with the given ID.
+     */
     function getState(uint256 bundleId) public view returns(BundleState) {
         return getBundle(bundleId).state;   
     }
 
+    /**
+     * @dev Returns the filter of a given bundle.
+     * @param bundleId The ID of the bundle to get the filter from.
+     * @return The filter of the bundle as a bytes array.
+     */
     function getFilter(uint256 bundleId) public view returns(bytes memory) {
         return getBundle(bundleId).filter;
     }   
 
+    /**
+     * @dev Returns the available capacity of a bundle.
+     * @param bundleId The ID of the bundle to get the capacity from.
+     * @return The available capacity of the bundle.
+     */
     function getCapacity(uint256 bundleId) public view returns(uint256) {
         Bundle memory bundle = getBundle(bundleId);
         return bundle.capital - bundle.lockedCapital;
     }
 
+    /**
+     * @dev Returns the total value locked in a particular bundle.
+     * @param bundleId The ID of the bundle.
+     * @return lockedCapital The total value locked in the bundle.
+     */
     function getTotalValueLocked(uint256 bundleId) public view returns(uint256) {
         return getBundle(bundleId).lockedCapital;   
     }
 
+    /**
+     * @dev Returns the balance of a specific bundle.
+     * @param bundleId The ID of the bundle to query.
+     * @return The balance of the specified bundle.
+     */
     function getBalance(uint256 bundleId) public view returns(uint256) {
         return getBundle(bundleId).balance;   
     }
 
+    /**
+     * @dev Returns the BundleToken contract instance.
+     * @return _token The BundleToken contract instance.
+     */
     function getToken() external view returns(BundleToken) {
         return _token;
     }
 
+    /**
+     * @dev Returns the bundle with the specified bundle ID.
+     * @param bundleId The ID of the bundle to retrieve.
+     * @return bundle The bundle with the specified ID.
+     */
     function getBundle(uint256 bundleId) public view returns(Bundle memory) {
         Bundle memory bundle = _bundles[bundleId];
         require(bundle.createdAt > 0, "ERROR:BUC-060:BUNDLE_DOES_NOT_EXIST");
         return bundle;
     }
 
+    /**
+     * @dev Returns the number of bundles created.
+     * @return _bundleCount The number of bundles created.
+     */
     function bundles() public view returns(uint256) {
         return _bundleCount;
     }
 
+    /**
+     * @dev Returns the number of unburnt bundles for a given riskpool ID.
+     * @param riskpoolId The ID of the riskpool.
+     * @return The number of unburnt bundles for the given riskpool ID.
+     */
     function unburntBundles(uint256 riskpoolId) external view returns(uint256) {
         return _unburntBundlesForRiskpoolId[riskpoolId];
     }
 
+    /**
+     * @dev Returns the pool controller contract instance.
+     * @return _poolController The pool controller contract instance.
+     */
     function _getPoolController() internal view returns (PoolController _poolController) {
         _poolController = PoolController(_getContractAddress("Pool"));
     }
 
+    /**
+     * @dev Changes the state of a bundle.
+     * @param bundleId The ID of the bundle to change the state of.
+     * @param newState The new state to set for the bundle.
+     * @notice This function emits 1 events: 
+     * - LogBundleStateChanged
+     */
     function _changeState(uint256 bundleId, BundleState newState) internal {
         BundleState oldState = getState(bundleId);
 
@@ -329,11 +501,32 @@ contract BundleController is
         emit LogBundleStateChanged(bundleId, oldState, newState);
     }
 
+    /**
+     * @dev Sets the state and updated timestamp of a given bundle.
+     * @param bundleId The ID of the bundle to update.
+     * @param newState The new state of the bundle.
+     */
     function _setState(uint256 bundleId, BundleState newState) internal {
         _bundles[bundleId].state = newState;
         _bundles[bundleId].updatedAt = block.timestamp;
     }
 
+    /**
+     * @dev Checks if a state transition is valid.
+     * @param oldState The previous state of the bundle.
+     * @param newState The new state of the bundle.
+     *
+     * Requirements:
+     * - The oldState must be Active, Locked, Closed, or Burned.
+     * - The newState must be Locked, Active, Closed, or Burned, depending on the oldState.
+     *
+     * Error messages:
+     * - ERROR:BUC-070:ACTIVE_INVALID_TRANSITION if the oldState is Active and the newState is not Locked or Closed.
+     * - ERROR:BUC-071:LOCKED_INVALID_TRANSITION if the oldState is Locked and the newState is not Active or Closed.
+     * - ERROR:BUC-072:CLOSED_INVALID_TRANSITION if the oldState is Closed and the newState is not Burned.
+     * - ERROR:BUC-073:BURNED_IS_FINAL_STATE if the oldState is Burned.
+     * - ERROR:BOC-074:INITIAL_STATE_NOT_HANDLED if the oldState is not Active, Locked, Closed, or Burned.
+     */
     function _checkStateTransition(BundleState oldState, BundleState newState) 
         internal 
         pure 

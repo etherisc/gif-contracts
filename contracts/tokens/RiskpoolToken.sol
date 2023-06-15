@@ -9,6 +9,9 @@ contract RiskpoolToken is
     string public constant NAME = "GIF Riskpool Token";
     string public constant SYMBOL = "RPT";
 
+    /**
+     * @dev Constructor function that sets the name and symbol of the ERC20 token.
+     */
     constructor() 
         ERC20(NAME, SYMBOL)
     {

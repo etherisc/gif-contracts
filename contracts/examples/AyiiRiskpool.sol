@@ -17,6 +17,14 @@ contract AyiiRiskpool is
     // restricts the maximal sum of sum insured that are secured by gthe riskpool
     uint256 public constant SUM_OF_SUM_INSURED_CAP = 10**24;
 
+    /**
+     * @dev Constructor for creating a new Riskpool with the given parameters.
+     * @param name The name of the Riskpool.
+     * @param collateralization The collateralization percentage of the Riskpool.
+     * @param erc20Token The address of the ERC20 token used for collateral.
+     * @param wallet The address of the wallet where the collateral will be held.
+     * @param registry The address of the registry contract.
+     */
     constructor(
         bytes32 name,
         uint256 collateralization,
@@ -31,6 +39,10 @@ contract AyiiRiskpool is
     }
 
 
+    /**
+     * @dev Grants the INVESTOR_ROLE to the specified address.
+     * @param investor The address to grant the INVESTOR_ROLE to.
+     */
     function grantInvestorRole(address investor)
         external
         onlyOwner
@@ -39,6 +51,12 @@ contract AyiiRiskpool is
     }
 
 
+    /**
+     * @dev Creates a new bundle with the specified filter and initial amount.
+     * @param filter The filter to be applied to the bundle.
+     * @param initialAmount The initial amount of tokens to be deposited into the bundle.
+     * @return bundleId The ID of the newly created bundle.
+     */
     function createBundle(bytes memory filter, uint256 initialAmount) 
         public override
         onlyRole(INVESTOR_ROLE)
@@ -49,6 +67,12 @@ contract AyiiRiskpool is
 
 
     // trivial implementation that matches every application
+    /**
+     * @dev Checks if a given bundle matches a given application.
+     * @param bundle The bundle to check.
+     * @param application The application to match against.
+     * @return isMatching Returns true if the bundle matches the application.
+     */
     function bundleMatchesApplication(
         IBundle.Bundle memory bundle, 
         IPolicy.Application memory application

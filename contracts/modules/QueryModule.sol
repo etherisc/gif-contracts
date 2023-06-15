@@ -9,6 +9,25 @@ import "@etherisc/gif-interface/contracts/components/IOracle.sol";
 import "@etherisc/gif-interface/contracts/modules/IQuery.sol";
 import "@etherisc/gif-interface/contracts/services/IInstanceService.sol";
 
+/**
+ * @dev The smart contract implements the "IQuery" interface and extends the "CoreController" contract.
+ * The contract imports several external contracts from the "etherisc/gif-interface" repository, including "IComponent.sol", "IOracle.sol", "IQuery.sol", and "IInstanceService.sol".
+ * It also imports two local contracts, "ComponentController.sol" and "CoreController.sol".
+ *
+ * The contract defines a private variable `_component` of type "ComponentController" and an array `_oracleRequests` of type "OracleRequest[]".
+ *
+ * The contract includes two modifiers:
+ *
+ * 1. `onlyOracleService`: It requires that the caller must be the contract with the address specified by the "OracleService" contract address stored in the CoreController.
+ * 2. `onlyResponsibleOracle`: It checks if the oracle specified by the `responder` address is responsible for the given `requestId`.
+ *
+ * The contract emits the following events:
+ *
+ * 1. `LogOracleRequested`: Indicates the creation of a new oracle request and includes the process ID, request ID, and responsible oracle ID.
+ * 2. `LogOracleResponded`: Indicates the response to an oracle request and includes the process ID, request ID, responder address, and success status.
+ * 3. `LogOracleCanceled`: Indicates the cancellation of an oracle request and includes the request ID.
+ */
+
 
 contract QueryModule is 
     IQuery, 
@@ -42,6 +61,10 @@ contract QueryModule is
         _;
     }
 
+    /**
+     * @dev Internal function that sets the `_component` variable to the `ComponentController` contract address.
+     *
+     */
     function _afterInitialize() internal override onlyInitializing {
         _component = ComponentController(_getContractAddress("Component"));
     }
@@ -50,6 +73,17 @@ contract QueryModule is
     // request only works for active oracles
     // function call _getOracle reverts if oracle is not active
     // as a result all request call on oracles that are not active will revert
+    /**
+     * @dev Creates a new oracle request for a given process with the specified input data and callback information.
+     * @param processId The ID of the process.
+     * @param input The input data for the request.
+     * @param callbackMethodName The name of the callback method to be called upon completion of the request.
+     * @param callbackContractAddress The address of the contract to be called upon completion of the request.
+     * @param responsibleOracleId The ID of the oracle responsible for handling the request.
+     * @return requestId The ID of the newly created oracle request.
+     * @notice This function emits 1 events: 
+     * - LogOracleRequested
+     */
     function request(
         bytes32 processId,
         bytes calldata input,
@@ -94,6 +128,14 @@ contract QueryModule is
     // modifier onlyResponsibleOracle contains a function call to _getOracle 
     // which reverts if oracle is not active
     // as a result, all response calls by oracles that are not active will revert
+    /**
+     * @dev Responds to an oracle request with the given requestId, responder address, and data.
+     * @param requestId The ID of the oracle request.
+     * @param responder The address of the oracle responder.
+     * @param data The data to be sent to the oracle contract.
+     * @notice This function emits 1 events: 
+     * - LogOracleResponded
+     */
     function respond(
         uint256 requestId,
         address responder,
@@ -129,6 +171,12 @@ contract QueryModule is
         emit LogOracleResponded(processId, requestId, responder, success);
     }
 
+    /**
+     * @dev Cancels an oracle request.
+     * @param requestId The ID of the oracle request to be canceled.
+     * @notice This function emits 1 events: 
+     * - LogOracleCanceled
+     */
     function cancel(uint256 requestId) 
         external override 
         onlyPolicyFlow("Query") 
@@ -140,6 +188,11 @@ contract QueryModule is
     }
 
 
+    /**
+     * @dev Returns the process ID associated with a given request ID.
+     * @param requestId The ID of the request to retrieve the process ID for.
+     * @return processId The process ID associated with the given request ID.
+     */
     function getProcessId(uint256 requestId)
         external
         view
@@ -151,10 +204,22 @@ contract QueryModule is
     }
 
 
+    /**
+     * @dev Returns the number of oracle requests made.
+     * @return _count The number of oracle requests made.
+     */
     function getOracleRequestCount() public view returns (uint256 _count) {
         return _oracleRequests.length;
     }
 
+    /**
+     * @dev Returns the Oracle component with the specified ID.
+     * @param id The ID of the Oracle component to retrieve.
+     * @return oracle The Oracle component retrieved.
+     *
+     * Throws a 'COMPONENT_NOT_ORACLE' error if the component with the specified ID is not an Oracle component.
+     * Throws an 'ORACLE_NOT_ACTIVE' error if the retrieved Oracle component is not in an active state.
+     */
     function _getOracle(uint256 id) internal view returns (IOracle oracle) {
         IComponent cmp = _component.getComponent(id);
         oracle = IOracle(address(cmp));
