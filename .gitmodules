@@ -4,3 +4,6 @@
 [submodule "lib/gif-interface"]
 	path = lib/gif-interface
 	url = https://github.com/etherisc/gif-interface
+[submodule "lib/chainlink"]
+	path = lib/chainlink
+	url = https://github.com/smartcontractkit/chainlink
