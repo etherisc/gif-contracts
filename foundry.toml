@@ -8,7 +8,7 @@ libs = ["lib"]
 remappings = [
     "@etherisc/gif-interface/=lib/gif-interface/",
     "@openzeppelin/=lib/openzeppelin-contracts/",
-    "@chainlink/=smartcontractkit/chainlink/",
+    "@chainlink/=lib/chainlink/",
     "@forgestd/=lib/forge-std/src/",
 ]
 
