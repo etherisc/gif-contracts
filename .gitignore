@@ -3,6 +3,7 @@ __pycache__
 .history
 .hypothesis/
 build/
+build_foundry/
 reports/
 dump_sources/
 node_modules
