@@ -27,5 +27,5 @@ jobs:
         run: forge build
 
       - name: Execute tests
-        run: forge test -vvv
+        run: forge test -vvvv
       
