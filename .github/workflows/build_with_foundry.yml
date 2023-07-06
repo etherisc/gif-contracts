@@ -11,7 +11,7 @@ on:
 
 jobs:  
   test:
-    name: Compile and run tests
+    name: Compile and run tests with foundry
     # only run if contracts have changed
     runs-on: ubuntu-latest
     steps:
@@ -29,5 +29,3 @@ jobs:
       - name: Execute tests
         run: forge test -vvv
       
-      - name: Run snapshot
-        run: forge snapshot
