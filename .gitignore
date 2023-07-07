@@ -3,6 +3,7 @@ __pycache__
 .history
 .hypothesis/
 build/
+build_foundry/
 reports/
 dump_sources/
 node_modules
@@ -14,3 +15,4 @@ tmp/
 .vscode/launch.json
 
 etherisc*.tgz
+cache/solidity-files-cache.json
