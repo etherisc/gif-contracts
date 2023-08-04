@@ -1,6 +1,8 @@
 from web3 import Web3
 
 from brownie import (
+    web3,
+    network, 
     Contract, 
     CoreProxy,
 )
@@ -8,6 +10,16 @@ from brownie import (
 from brownie.convert import to_bytes
 from brownie.network import accounts
 from brownie.network.account import Account
+
+CHAIN_ID_MUMBAI = 80001
+CHAIN_ID_FUJI = 43113
+CHAIN_ID_GOERLI = 5
+
+CHAIN_ID_AVAX = 43114
+CHAIN_ID_MAINNET = 1
+
+CHAIN_IDS_REQUIRING_CONFIRMATIONS = [CHAIN_ID_MUMBAI, CHAIN_ID_FUJI, CHAIN_ID_GOERLI, CHAIN_ID_AVAX, CHAIN_ID_MAINNET]
+
 
 def s2h(text: str) -> str:
     return Web3.toHex(text.encode('ascii'))
@@ -38,6 +50,20 @@ def get_account(mnemonic: str, account_offset: int) -> Account:
         mnemonic,
         count=1,
         offset=account_offset)
+
+
+def wait_for_confirmations(tx):
+    if web3.chain_id in CHAIN_IDS_REQUIRING_CONFIRMATIONS:
+        if not is_forked_network():
+            print('waiting for confirmations ...')
+            tx.wait(2)
+        else:
+            print('not waiting for confirmations in a forked network...')
+
+
+def is_forked_network():
+    return 'fork' in network.show_active()
+
 
 # source: https://github.com/brownie-mix/upgrades-mix/blob/main/scripts/helpful_scripts.py 
 def encode_function_data(*args, initializer=None):

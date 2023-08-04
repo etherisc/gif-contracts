@@ -6,6 +6,7 @@ from brownie.network import accounts
 from brownie.network.account import Account
 
 from brownie import (
+    history,
     Wei,
     Contract, 
     PolicyController,
@@ -20,6 +21,7 @@ from brownie import (
 )
 
 from scripts.util import (
+    wait_for_confirmations,
     get_account,
     encode_function_data,
     # s2h,
@@ -74,7 +76,10 @@ class GifAyiiRiskpool(object):
             instance.getRegistry(),
             {'from': riskpoolKeeper},
             publish_source=publishSource)
-        
+
+        tx = history[-1]
+        wait_for_confirmations(tx)            
+
         print('3) investor role granting to investor {} by riskpool keeper {}'.format(
             investor, riskpoolKeeper))
 
@@ -89,6 +94,9 @@ class GifAyiiRiskpool(object):
         componentOwnerService.propose(
             self.riskpool,
             {'from': riskpoolKeeper})
+
+        tx = history[-1]
+        wait_for_confirmations(tx)            
 
         print('5) approval of riskpool id {} by instance operator {}'.format(
             self.riskpool.getId(), instance.getOwner()))
@@ -190,7 +198,7 @@ class GifAyiiOracle(object):
             oracleProvider))
         
         self.oracle = AyiiOracle.deploy(
-            s2b32('AyiiOracle'),
+            s2b32(name),
             instance.getRegistry(),
             chainLinkTokenAddress,
             chainLinkOracleAddress,
@@ -199,12 +207,18 @@ class GifAyiiOracle(object):
             {'from': oracleProvider},
             publish_source=publishSource)
 
+        tx = history[-1]
+        wait_for_confirmations(tx)            
+
         print('6) oracle {} proposing to instance by oracle provider {}'.format(
             self.oracle, oracleProvider))
 
         componentOwnerService.propose(
             self.oracle,
             {'from': oracleProvider})
+
+        tx = history[-1]
+        wait_for_confirmations(tx)            
 
         print('7) approval of oracle id {} by instance operator {}'.format(
             self.oracle.getId(), instance.getOwner()))
@@ -260,7 +274,7 @@ class GifAyiiProduct(object):
             productOwner))
         
         self.product = AyiiProduct.deploy(
-            s2b32('AyiiProduct'),
+            s2b32(name),
             registry,
             erc20Token.address,
             oracle.getId(),
@@ -269,12 +283,18 @@ class GifAyiiProduct(object):
             {'from': productOwner},
             publish_source=publishSource)
 
+        tx = history[-1]
+        wait_for_confirmations(tx)            
+
         print('3) product {} proposing to instance by product owner {}'.format(
             self.product, productOwner))
         
         componentOwnerService.propose(
             self.product,
             {'from': productOwner})
+
+        tx = history[-1]
+        wait_for_confirmations(tx)            
 
         print('4) approval of product id {} by instance operator {}'.format(
             self.product.getId(), instance.getOwner()))
@@ -291,8 +311,13 @@ class GifAyiiProduct(object):
             erc20Token,
             {'from': instance.getOwner()}) 
 
-        fixedFee = 3
-        fractionalFee = instanceService.getFeeFractionFullUnit() / 10 # corresponds to 10%
+        # fixedFee = 3
+        # fractionalFee = instanceService.getFeeFractionFullUnit() / 10 # corresponds to 10%
+
+        # set fees to zero
+        fixedFee = 0
+        fractionalFee = 0
+        
         print('6) creating premium fee spec (fixed: {}, fractional: {}) for product id {} by instance operator {}'.format(
             fixedFee, fractionalFee, self.product.getId(), instance.getOwner()))
         
@@ -342,6 +367,7 @@ class GifAyiiProductComplete(object):
         investor: Account,
         erc20Token: Account,
         riskpoolWallet: Account,
+        collateralizationLevel: int,
         baseName='Ayii', 
         publishSource=False
     ):
@@ -358,7 +384,7 @@ class GifAyiiProductComplete(object):
             riskpoolKeeper, 
             riskpoolWallet, 
             investor, 
-            instanceService.getFullCollateralizationLevel(),
+            collateralizationLevel,
             '{}Riskpool'.format(baseName),
             publishSource)
 
