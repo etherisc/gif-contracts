@@ -218,6 +218,7 @@ def gifAyiiDeploy(
     testCoin,
     riskpoolWallet: Account
 ) -> GifAyiiProductComplete:
+    collateralizationLevel = 10**18
     return GifAyiiProductComplete(
         instance, 
         productOwner, 
@@ -227,7 +228,8 @@ def gifAyiiDeploy(
         riskpoolKeeper, 
         investor, 
         testCoin, 
-        riskpoolWallet)
+        riskpoolWallet,
+        collateralizationLevel)
 
 @pytest.fixture(scope="module")
 def gifAyiiProduct(gifAyiiDeploy) -> GifAyiiProduct:

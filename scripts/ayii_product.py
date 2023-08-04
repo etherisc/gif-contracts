@@ -311,12 +311,12 @@ class GifAyiiProduct(object):
             erc20Token,
             {'from': instance.getOwner()}) 
 
-        # fixedFee = 3
-        # fractionalFee = instanceService.getFeeFractionFullUnit() / 10 # corresponds to 10%
+        fixedFee = 3
+        fractionalFee = instanceService.getFeeFractionFullUnit() / 10 # corresponds to 10%
 
-        # set fees to zero
-        fixedFee = 0
-        fractionalFee = 0
+        # # set fees to zero
+        # fixedFee = 0
+        # fractionalFee = 0
         
         print('6) creating premium fee spec (fixed: {}, fractional: {}) for product id {} by instance operator {}'.format(
             fixedFee, fractionalFee, self.product.getId(), instance.getOwner()))
