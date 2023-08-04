@@ -343,8 +343,8 @@ def verify_deploy(
         instanceService.getRiskpoolWallet(riskpoolId))/10**erc20_token.decimals()))
     print('RiskpoolBundles {}'.format(riskpool.bundles()))
 
-    bundle_id = riskpool.getBundleId(0)
-    print('RiskpoolBundle[0] {}'.format(instanceService.getBundle(bundle_id).dict()))
+    # bundle_id = riskpool.getBundleId(0)
+    print('RiskpoolBundle[0] {}'.format(riskpool.getBundle(0).dict()))
     print('ProductRisks {}'.format(product.risks()))
     print('ProductApplications {}'.format(product.applications()))
 

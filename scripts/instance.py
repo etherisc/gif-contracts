@@ -199,6 +199,9 @@ class GifInstance(GifRegistry):
         address = self.registry.getContract(nameB32)
         return contractFromAddress(contractClass, address)
 
+    def getOwner(self):
+        return self.instanceOperatorService.owner()
+
     def getRegistry(self) -> GifRegistry:
         return self.registry
 

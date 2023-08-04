@@ -63,7 +63,7 @@ class GifAyiiRiskpool(object):
         instanceOperatorService.grantRole(
             riskpoolKeeperRole, 
             riskpoolKeeper, 
-            {'from': instance.getOwner()})
+            {'from': instanceOperatorService.owner()})
 
         print('2) deploy riskpool by riskpool keeper {}'.format(
             riskpoolKeeper))
@@ -103,7 +103,7 @@ class GifAyiiRiskpool(object):
         
         instanceOperatorService.approve(
             self.riskpool.getId(),
-            {'from': instance.getOwner()})
+            {'from': instanceOperatorService.owner()})
 
         print('6) riskpool wallet {} set for riskpool id {} by instance operator {}'.format(
             riskpoolWallet, self.riskpool.getId(), instance.getOwner()))
@@ -111,7 +111,7 @@ class GifAyiiRiskpool(object):
         instanceOperatorService.setRiskpoolWallet(
             self.riskpool.getId(),
             riskpoolWallet,
-            {'from': instance.getOwner()})
+            {'from': instanceOperatorService.owner()})
 
         # 7) setup capital fees
         fixedFee = 42
@@ -124,14 +124,14 @@ class GifAyiiRiskpool(object):
             fixedFee,
             fractionalFee,
             b'',
-            {'from': instance.getOwner()}) 
+            {'from': instanceOperatorService.owner()})
 
         print('8) setting capital fee spec by instance operator {}'.format(
             instance.getOwner()))
         
         instanceOperatorService.setCapitalFees(
             feeSpec,
-            {'from': instance.getOwner()}) 
+            {'from': instanceOperatorService.owner()})
     
     def getId(self) -> int:
         return self.riskpool.getId()
