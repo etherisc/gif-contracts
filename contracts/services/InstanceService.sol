@@ -325,4 +325,9 @@ contract InstanceService is
     function getFeeFractionFullUnit() external override view returns(uint256) {
         return _treasury.getFractionFullUnit();
     }
+
+    // TODO add to gif-interfaces IInstanceService
+    function getFeeSpecification(uint256 componentId) external view returns(ITreasury.FeeSpecification memory feeSpecification) {
+        return _treasury.getFeeSpecification(componentId);
+    }
 }
