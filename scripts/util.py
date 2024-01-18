@@ -1,3 +1,4 @@
+import json
 from web3 import Web3
 
 from brownie import (
@@ -201,3 +202,14 @@ def contractFromAddress(contractClass, contractAddress):
 
 def contract_from_address(contractClass, contractAddress):
     return Contract.from_abi(contractClass._name, contractAddress, contractClass.abi)
+
+def save_json(contract_class, file_name=None):
+    vi = contract_class.get_verification_info()
+    sji = vi['standard_json_input']
+
+    if not file_name or len(file_name) == 0:
+        file_name = './{}.json'.format(contract_class._name)
+
+    print('writing standard json input file {}'.format(file_name))
+    with open(file_name, "w") as json_file:
+        json.dump(sji, json_file)
