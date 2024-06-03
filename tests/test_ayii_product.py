@@ -571,34 +571,37 @@ def test_payout_percentage_calculation(gifAyiiProduct: GifAyiiProduct):
     trigger = 0.75
     exit = 0.1
 
+    # acceptable error margin
+    epsilon = 1e-06
+
     # random example values
     # expected payout = 0.091093117, aph = 1.9, aaay = 1.3
-    assert get_payout_delta(0.091093117, 1.9, 1.3, tsi, trigger, exit, product, multiplier) < 0.00000001
+    assert get_payout_delta(0.091093117, 1.9, 1.3, tsi, trigger, exit, product, multiplier) < epsilon
 
     # run through product example table
     # harvest ratio >= trigger (75%) give 0 payout 
-    assert get_payout_delta(0, 100.0, 110.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0, 100.0, 100.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0, 100.0,  95.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0, 100.0,  90.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0, 100.0,  85.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0, 100.0,  80.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0, 100.0,  75.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.06923073, 100.0,  70.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.13846153, 100.0,  65.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.20769232, 100.0,  60.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.27692312, 100.0,  55.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.34615379, 100.0,  50.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.41538459, 100.0,  45.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.48461532, 100.0,  40.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.55384612, 100.0,  35.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.62307691, 100.0,  30.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.69230759, 100.0,  25.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.76153838, 100.0,  20.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.83076918, 100.0,  15.0, tsi, trigger, exit, product, multiplier) < 0.00000001
-    assert get_payout_delta(0.9, 100.0,  10.0, tsi, trigger, exit, product, multiplier) < 0.0000001
-    assert get_payout_delta(0.9, 100.0,   5.0, tsi, trigger, exit, product, multiplier) < 0.0000001
-    assert get_payout_delta(0.9, 100.0,   0.0, tsi, trigger, exit, product, multiplier) < 0.0000001
+    assert get_payout_delta(0, 100.0, 110.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0, 100.0, 100.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0, 100.0,  95.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0, 100.0,  90.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0, 100.0,  85.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0, 100.0,  80.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0, 100.0,  75.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.06923073, 100.0,  70.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.13846153, 100.0,  65.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.20769232, 100.0,  60.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.27692312, 100.0,  55.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.34615379, 100.0,  50.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.41538459, 100.0,  45.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.48461532, 100.0,  40.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.55384612, 100.0,  35.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.62307691, 100.0,  30.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.69230759, 100.0,  25.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.76153838, 100.0,  20.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.83076918, 100.0,  15.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.9, 100.0,  10.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.9, 100.0,   5.0, tsi, trigger, exit, product, multiplier) < epsilon
+    assert get_payout_delta(0.9, 100.0,   0.0, tsi, trigger, exit, product, multiplier) < epsilon
 
 
 def test_payout_percentage_calculation_single(gifAyiiProduct: GifAyiiProduct):

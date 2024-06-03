@@ -27,7 +27,7 @@ contract AyiiProduct is
 
     bytes32 public constant INSURER_ROLE = keccak256("INSURER");
 
-    uint256 public constant PERCENTAGE_MULTIPLIER = 2**24;
+    uint256 public constant PERCENTAGE_MULTIPLIER = 10**6;
 
     uint256 public constant AAAY_MIN = 0;
     uint256 public constant AAAY_MAX = 15;
