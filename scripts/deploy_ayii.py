@@ -271,7 +271,10 @@ def deploy_setup_including_token(
 def verify_deploy(
     stakeholders_accounts,
     erc20_token,
-    registry_address
+    registry_address,
+    riskpoolId = 0,
+    oracleId = 0,
+    productId = 0
 ):
     # define stakeholder accounts
     a = stakeholders_accounts
@@ -292,31 +295,33 @@ def verify_deploy(
         product,
         oracle,
         riskpool
-    ) = from_registry(registry_address)
+    ) = from_registry(
+        registry_address,
+        riskpoolId = riskpoolId,
+        oracleId = oracleId,
+        productId = productId
+    )
 
     instanceService = instance.getInstanceService()
-    riskpoolId = 1
-    oracleId = 2
-    productId = 3
 
     verify_element('Registry', instanceService.getRegistry(), registry_address)
     verify_element('InstanceOperator',
-                   instanceService.getInstanceOperator(), instanceOperator)
+        instanceService.getInstanceOperator(), instanceOperator)
     verify_element('InstanceWallet',
-                   instanceService.getInstanceWallet(), instanceWallet)
+        instanceService.getInstanceWallet(), instanceWallet)
 
     verify_element('RiskpoolId', riskpool.getId(), riskpoolId)
     verify_element(
         'RiskpoolType', instanceService.getComponentType(riskpoolId), 2)
     verify_element('RiskpoolState',
-                   instanceService.getComponentState(riskpoolId), 3)
+        instanceService.getComponentState(riskpoolId), 3)
     verify_element('RiskpoolKeeper', riskpool.owner(), riskpoolKeeper)
     verify_element('RiskpoolWallet', instanceService.getRiskpoolWallet(
         riskpoolId), riskpoolWallet)
     verify_element('RiskpoolBalance', instanceService.getBalance(
         riskpoolId), erc20_token.balanceOf(riskpoolWallet))
     verify_element('RiskpoolToken', riskpool.getErc20Token(),
-                   erc20_token.address)
+        erc20_token.address)
 
     verify_element('OracleId', oracle.getId(), oracleId)
     verify_element('OracleType', instanceService.getComponentType(oracleId), 0)
