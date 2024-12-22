@@ -1,4 +1,4 @@
-ARG VARIANT=3.9-bookworm
+ARG VARIANT=3.11-bookworm
 # requires rosetta 2 on apple chips
 ARG PLATFORM=linux/amd64
 FROM --platform=${PLATFORM} mcr.microsoft.com/devcontainers/python:${VARIANT}
@@ -32,10 +32,13 @@ RUN echo 'eval "$(mcfly init zsh)"' >> ~/.zshrc \
 
 # Install brownie & other devtools
 
-# COPY requirements.txt /tmp/pip-tmp/
-RUN wget https://raw.githubusercontent.com/eth-brownie/brownie/master/requirements.txt -O /tmp/pip-requirements.txt 
+# The vyper dependency in the brownie requirements file currently breaks the devcontainer build.
+# Should this change in the future consider to re-enable the line below
+# RUN wget https://raw.githubusercontent.com/eth-brownie/brownie/master/requirements.txt -O /tmp/pip-requirements.txt 
 
-RUN pip install -r /tmp/pip-requirements.txt
+RUN mkdir -p /tmp/brownie
+COPY .devcontainer/requirements.txt /tmp/brownie
+RUN pip install -r /tmp/brownie/requirements.txt
 RUN pip install eth-brownie \
     && pip install fastapi \
     && pip install uvicorn 
