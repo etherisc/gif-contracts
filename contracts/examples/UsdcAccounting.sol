@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.2;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 
-contract UsdcAccounting is ERC20 {
+contract UsdcAccounting is ERC20Permit {
 
     string public constant NAME = "USD Coin - Accounting Token";
     string public constant SYMBOL = "USDC";
@@ -12,6 +13,7 @@ contract UsdcAccounting is ERC20 {
 
     constructor()
         ERC20(NAME, SYMBOL)
+        ERC20Permit(NAME)
     {
         _mint(
             _msgSender(),
