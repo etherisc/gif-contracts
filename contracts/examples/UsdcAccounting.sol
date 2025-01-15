@@ -7,7 +7,7 @@ import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/draft-
 contract UsdcAccounting is ERC20Permit {
 
     string public constant NAME = "USD Coin - Accounting Token";
-    string public constant SYMBOL = "USDC";
+    string public constant SYMBOL = "USDC-AT";
     uint8 public constant DECIMALS = 6;
     uint256 public constant INITIAL_SUPPLY = 10**24;
 
