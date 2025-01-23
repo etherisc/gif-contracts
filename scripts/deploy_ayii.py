@@ -1,3 +1,4 @@
+import click
 from datetime import datetime
 
 from brownie import web3
@@ -8,18 +9,18 @@ from brownie.network.account import Account
 from brownie import (
     interface,
     network,
-    TestCoin,
     InstanceService,
     InstanceOperatorService,
     ComponentOwnerService,
     AyiiProduct,
     AyiiOracle,
-    AyiiRiskpool
+    AyiiRiskpool,
+    ComponentController
 )
 
 from scripts.ayii_product import GifAyiiProductComplete
 from scripts.instance import GifInstance
-from scripts.util import contract_from_address, s2b32
+from scripts.util import contract_from_address, s2b32, getChainName, utcStr
 
 INSTANCE_OPERATOR = 'instanceOperator'
 INSTANCE_WALLET = 'instanceWallet'
@@ -73,6 +74,19 @@ REQUIRED_FUNDS = {
     CUSTOMER2:         REQUIRED_FUNDS_S,
 }
 
+INTERACTIVE = True
+
+
+def set_interactive(interactive):
+    global INTERACTIVE
+    INTERACTIVE = interactive
+
+
+def confirm(text):
+    if INTERACTIVE:
+        click.confirm(
+            f"This action will alter the state of the blockchain <{network.show_active()}>. The action is '{text}'. Do you want to proceed?")
+
 
 def help():
     print('from scripts.util import s2b, b2s, contract_from_address')
@@ -81,13 +95,13 @@ def help():
     print('#--- deploy ganache setup ---------------------------------------#')
     print('a = stakeholders_accounts_ganache()')
     print("instance_operator = a['instanceOperator']")
-    print("token = TestCoin.deploy({'from': instance_operator})")
     print()
     print('check_funds(a, token)')
     print('# amend_funds(a)')
     print('d = deploy(a, token, False)')
     print()
-    print("(instance, product, oracle, riskpool) = from_registry(d['instance'].getRegistry())")
+    print(
+        "(instance, product, oracle, riskpool) = from_registry(d['instance'].getRegistry())")
     print("verify_deploy(a, token, instance.getRegistry())")
     print()
     print('#--- deploy to existing instance --------------------------------#')
@@ -101,7 +115,7 @@ def help():
     print('riskpool_old = riskpool')
     print()
     print('(instance, product, oracle, riskpool) = deploy_product_riskpool(registry_address, a, token, collateralization_level)')
-
+    print(f"You are on chain {network.show_active()}")
 
 
 def stakeholders_accounts_ganache():
@@ -109,7 +123,6 @@ def stakeholders_accounts_ganache():
     instanceOperator = accounts[0]
     instanceWallet = accounts[1]
     oracleProvider = accounts[2]
-    chainlinkNodeOperator = accounts[3]
     riskpoolKeeper = accounts[4]
     riskpoolWallet = accounts[5]
     investor = accounts[6]
@@ -122,7 +135,6 @@ def stakeholders_accounts_ganache():
         INSTANCE_OPERATOR: instanceOperator,
         INSTANCE_WALLET: instanceWallet,
         ORACLE_PROVIDER: oracleProvider,
-        NODE_OPERATOR: chainlinkNodeOperator,
         RISKPOOL_KEEPER: riskpoolKeeper,
         RISKPOOL_WALLET: riskpoolWallet,
         INVESTOR: investor,
@@ -191,6 +203,9 @@ def check_erc20_funds(a, erc20_token):
 
 
 def amend_funds(stakeholders_accounts):
+    if not confirm("amend funds"):
+        return
+
     a = stakeholders_accounts
     for accountName, requiredAmount in REQUIRED_FUNDS.items():
         if a[accountName].balance() < REQUIRED_FUNDS[accountName]:
@@ -203,7 +218,8 @@ def amend_funds(stakeholders_accounts):
 
 
 def _print_constants():
-    print('chain id: {}'.format(web3.eth.chain_id))
+    chainId = web3.eth.chain_id
+    print('chain id: {} {}'.format(chainId, getChainName(chainId)))
     print('gas price [Mwei]: {}'.format(GAS_PRICE/10**6))
     print('gas price safety factor: {}'.format(GAS_PRICE_SAFETY_FACTOR))
 
@@ -272,71 +288,77 @@ def verify_deploy(
     stakeholders_accounts,
     erc20_token,
     registry_address,
-    riskpoolId = 0,
-    oracleId = 0,
-    productId = 0
+    riskpoolId=0,
+    oracleId=0,
+    productId=0
 ):
     # define stakeholder accounts
     a = stakeholders_accounts
     instanceOperator = a[INSTANCE_OPERATOR]
     instanceWallet = a[INSTANCE_WALLET]
     oracleProvider = a[ORACLE_PROVIDER]
-    chainlinkNodeOperator = a[NODE_OPERATOR]
     riskpoolKeeper = a[RISKPOOL_KEEPER]
     riskpoolWallet = a[RISKPOOL_WALLET]
-    investor = a[INVESTOR]
     productOwner = a[PRODUCT_OWNER]
-    insurer = a[INSURER]
-    customer = a[CUSTOMER1]
-    customer2 = a[CUSTOMER2]
 
     (
         instance,
         product,
         oracle,
-        riskpool
+        riskpool,
+        componentController
     ) = from_registry(
         registry_address,
-        riskpoolId = riskpoolId,
-        oracleId = oracleId,
-        productId = productId
+        riskpoolId=riskpoolId,
+        oracleId=oracleId,
+        productId=productId
     )
 
     instanceService = instance.getInstanceService()
 
-    verify_element('Registry', instanceService.getRegistry(), registry_address)
-    verify_element('InstanceOperator',
-        instanceService.getInstanceOperator(), instanceOperator)
-    verify_element('InstanceWallet',
-        instanceService.getInstanceWallet(), instanceWallet)
+    verify_element(
+        'Registry', instanceService.getRegistry(), registry_address)
+    verify_element(
+        'InstanceOperator', instanceService.getInstanceOperator(), instanceOperator)
+    verify_element(
+        'InstanceWallet', instanceService.getInstanceWallet(), instanceWallet)
 
-    verify_element('RiskpoolId', riskpool.getId(), riskpoolId)
+    verify_element(
+        'RiskpoolId', riskpool.getId(), riskpoolId)
     verify_element(
         'RiskpoolType', instanceService.getComponentType(riskpoolId), 2)
-    verify_element('RiskpoolState',
-        instanceService.getComponentState(riskpoolId), 3)
-    verify_element('RiskpoolKeeper', riskpool.owner(), riskpoolKeeper)
-    verify_element('RiskpoolWallet', instanceService.getRiskpoolWallet(
-        riskpoolId), riskpoolWallet)
-    verify_element('RiskpoolBalance', instanceService.getBalance(
-        riskpoolId), erc20_token.balanceOf(riskpoolWallet))
-    verify_element('RiskpoolToken', riskpool.getErc20Token(),
-        erc20_token.address)
+    verify_element(
+        'RiskpoolState', instanceService.getComponentState(riskpoolId), 3)
+    verify_element(
+        'RiskpoolKeeper', riskpool.owner(), riskpoolKeeper)
+    verify_element(
+        'RiskpoolWallet', instanceService.getRiskpoolWallet(riskpoolId), riskpoolWallet)
+    verify_element(
+        'RiskpoolBalance', instanceService.getBalance(riskpoolId), erc20_token.balanceOf(riskpoolWallet))
+    verify_element(
+        'RiskpoolToken', riskpool.getErc20Token(), erc20_token.address)
 
-    verify_element('OracleId', oracle.getId(), oracleId)
-    verify_element('OracleType', instanceService.getComponentType(oracleId), 0)
+    verify_element(
+        'OracleId', oracle.getId(), oracleId)
+    verify_element(
+        'OracleType', instanceService.getComponentType(oracleId), 0)
     verify_element(
         'OracleState', instanceService.getComponentState(oracleId), 3)
-    verify_element('OracleProvider', oracle.owner(), oracleProvider)
+    verify_element(
+        'OracleProvider', oracle.owner(), oracleProvider)
 
-    verify_element('ProductId', product.getId(), productId)
+    verify_element(
+        'ProductId', product.getId(), productId)
     verify_element(
         'ProductType', instanceService.getComponentType(productId), 1)
     verify_element(
         'ProductState', instanceService.getComponentState(productId), 3)
-    verify_element('ProductOwner', product.owner(), productOwner)
-    verify_element('ProductToken', product.getToken(), erc20_token.address)
-    verify_element('ProductRiskpool', product.getRiskpoolId(), riskpoolId)
+    verify_element(
+        'ProductOwner', product.owner(), productOwner)
+    verify_element(
+        'ProductToken', product.getToken(), erc20_token.address)
+    verify_element(
+        'ProductRiskpool', product.getRiskpoolId(), riskpoolId)
 
     print('InstanceWalletBalance {:.2f}'.format(erc20_token.balanceOf(
         instanceService.getInstanceWallet())/10**erc20_token.decimals()))
@@ -349,7 +371,10 @@ def verify_deploy(
     print('RiskpoolBundles {}'.format(riskpool.bundles()))
 
     # bundle_id = riskpool.getBundleId(0)
-    print('RiskpoolBundle[0] {}'.format(riskpool.getBundle(0).dict()))
+    for key, value in riskpool.getBundle(0).dict().items():
+        if key in ['createdAt', 'updatedAt']:  # Apply conversion for specific keys
+            value = utcStr(value)
+        print(f"  {key}: {value}")
     print('ProductRisks {}'.format(product.risks()))
     print('ProductApplications {}'.format(product.applications()))
 
@@ -365,26 +390,25 @@ def verify_element(
         print('{} ERROR {} expected {}'.format(element, value, expected_value))
 
 
-def deploy_product_riskpool(
+def deploy_product_with_oracle_riskpool(
     registry_address,
     stakeholders_accounts,
     erc20_token,
-    collateralizaionLevel,
+    collateralizationLevel,
     publishSource=False
 ):
+    if not confirm(f"deployment with product and riskpool"):
+        return
+
     # define stakeholder accounts
     a = stakeholders_accounts
     instanceOperator = a[INSTANCE_OPERATOR]
-    instanceWallet = a[INSTANCE_WALLET]
     oracleProvider = a[ORACLE_PROVIDER]
-    chainlinkNodeOperator = a[NODE_OPERATOR]
     riskpoolKeeper = a[RISKPOOL_KEEPER]
     riskpoolWallet = a[RISKPOOL_WALLET]
     investor = a[INVESTOR]
     productOwner = a[PRODUCT_OWNER]
     insurer = a[INSURER]
-    customer = a[CUSTOMER1]
-    customer2 = a[CUSTOMER2]
 
     # create basename including unix timestamp
     baseName = 'Ayii_{}_'.format(int(datetime.now().timestamp()))
@@ -400,15 +424,24 @@ def deploy_product_riskpool(
     print('====== setting erc20 token to {} ======'.format(erc20_token))
     erc20Token = erc20_token
 
-    print('====== getting instance from registry address {} ======'.format(registry_address))
+    print('====== getting instance from registry address {} ======'.format(
+        registry_address))
     (instance, product, oracle, riskpool) = from_registry(registry_address)
-
 
     print("====== deploy ayii product /w base name '{}' and riskpool collateralization level {} ======".format(baseName, collateralizaionLevel))
     ayiiDeploy = GifAyiiProductComplete(
-        instance, productOwner, insurer, oracleProvider, chainlinkNodeOperator,
-        riskpoolKeeper, investor, erc20Token, riskpoolWallet, collateralizaionLevel, 
-        baseName=baseName, publishSource=publishSource)
+        instance,
+        productOwner,
+        insurer,
+        oracleProvider,
+        riskpoolKeeper,
+        investor,
+        erc20Token,
+        riskpoolWallet,
+        collateralizationLevel,
+        baseName=baseName,
+        publishSource=publishSource
+    )
 
     ayiiProduct = ayiiDeploy.getProduct()
     ayiiOracle = ayiiProduct.getOracle()
@@ -422,7 +455,9 @@ def deploy_product_riskpool(
     initial_funding = 10**erc20Token.decimals()
     bundle_filter = b''
     erc20Token.transfer(investor, initial_funding, {'from': instanceOperator})
-    erc20Token.approve(instance.getTreasury().address, initial_funding, {'from': investor})
+    erc20Token.approve(
+        instance.getTreasury().address,
+        initial_funding, {'from': investor})
     riskpool.createBundle(bundle_filter, initial_funding, {'from': investor})
 
     return (
@@ -438,13 +473,14 @@ def deploy(
     erc20_token,
     publishSource=False
 ):
+    if not confirm("full deployment"):
+        return
 
     # define stakeholder accounts
     a = stakeholders_accounts
     instanceOperator = a[INSTANCE_OPERATOR]
     instanceWallet = a[INSTANCE_WALLET]
     oracleProvider = a[ORACLE_PROVIDER]
-    chainlinkNodeOperator = a[NODE_OPERATOR]
     riskpoolKeeper = a[RISKPOOL_KEEPER]
     riskpoolWallet = a[RISKPOOL_WALLET]
     investor = a[INVESTOR]
@@ -476,8 +512,9 @@ def deploy(
 
     print('====== deploy ayii product ======')
     collateralizationLevel = instanceService.getFullCollateralizationLevel()
-    ayiiDeploy = GifAyiiProductComplete(instance, productOwner, insurer, oracleProvider, chainlinkNodeOperator,
-        riskpoolKeeper, investor, erc20Token, riskpoolWallet, collateralizationLevel, 
+    ayiiDeploy = GifAyiiProductComplete(
+        instance, productOwner, insurer, oracleProvider, chainlinkNodeOperator,
+        riskpoolKeeper, investor, erc20Token, riskpoolWallet, collateralizationLevel,
         publishSource=publishSource)
 
     # assess balances at beginning of deploy
@@ -499,14 +536,16 @@ def deploy(
 
     erc20Token.transfer(investor, bundleInitialFunding,
                         {'from': instanceOperator})
-    erc20Token.approve(instance.getTreasury(),
-                       bundleInitialFunding, {'from': investor})
+    erc20Token.approve(
+        instance.getTreasury(),
+        bundleInitialFunding, {'from': investor})
 
     print('2) riskpool wallet {} approval for instance treasury {}'.format(
         riskpoolWallet, instance.getTreasury()))
 
-    erc20Token.approve(instance.getTreasury(), bundleInitialFunding, {
-                       'from': riskpoolWallet})
+    erc20Token.approve(
+        instance.getTreasury(), bundleInitialFunding, {
+            'from': riskpoolWallet})
 
     print('3) riskpool bundle creation by investor {}'.format(
         investor))
@@ -550,8 +589,9 @@ def deploy(
         customer, customerFunding, erc20Token))
 
     erc20Token.transfer(customer, customerFunding, {'from': instanceOperator})
-    erc20Token.approve(instance.getTreasury(),
-                       customerFunding, {'from': customer})
+    erc20Token.approve(
+        instance.getTreasury(),
+        customerFunding, {'from': customer})
 
     # policy creation
     premium = [300, 400]
@@ -571,7 +611,6 @@ def deploy(
         INSTANCE_OPERATOR: instanceOperator,
         INSTANCE_WALLET: instanceWallet,
         ORACLE_PROVIDER: oracleProvider,
-        NODE_OPERATOR: chainlinkNodeOperator,
         RISKPOOL_KEEPER: riskpoolKeeper,
         RISKPOOL_WALLET: riskpoolWallet,
         INVESTOR: investor,
@@ -640,9 +679,11 @@ def from_registry(
     registryAddress,
     productId=0,
     oracleId=0,
-    riskpoolId=0
+    riskpoolId=0,
+    verbose=False
 ):
     instance = GifInstance(registryAddress=registryAddress)
+    registry = instance.getRegistry()
     instanceService = instance.getInstanceService()
 
     products = instanceService.products()
@@ -659,7 +700,7 @@ def from_registry(
         else:
             componentId = instanceService.getProductId(products-1)
 
-            if products > 1:
+            if verbose and products > 1:
                 print('1 product expected, {} products available'.format(products))
                 print('returning last product available')
 
@@ -668,10 +709,11 @@ def from_registry(
 
         if product.getType() != 1:
             product = None
-            print('component (type={}) with id {} is not product'.format(
-                product.getType(), componentId))
-            print('no product returned (None)')
-    else:
+            if verbose:
+                print('component (type={}) with id {} is not product'.format(
+                    product.getType(), componentId))
+                print('no product returned (None)')
+    elif verbose:
         print('1 product expected, no product available')
         print('no product returned (None)')
 
@@ -681,7 +723,7 @@ def from_registry(
         else:
             componentId = instanceService.getOracleId(oracles-1)
 
-            if oracles > 1:
+            if verbose and oracles > 1:
                 print('1 oracle expected, {} oracles available'.format(oracles))
                 print('returning last oracle available')
 
@@ -690,10 +732,11 @@ def from_registry(
 
         if oracle.getType() != 0:
             oracle = None
-            print('component (type={}) with id {} is not oracle'.format(
-                component.getType(), componentId))
-            print('no oracle returned (None)')
-    else:
+            if verbose:
+                print('component (type={}) with id {} is not oracle'.format(
+                    component.getType(), componentId))
+                print('no oracle returned (None)')
+    elif verbose:
         print('1 oracle expected, no oracles available')
         print('no oracle returned (None)')
 
@@ -703,7 +746,7 @@ def from_registry(
         else:
             componentId = instanceService.getRiskpoolId(riskpools-1)
 
-            if riskpools > 1:
+            if verbose and riskpools > 1:
                 print('1 riskpool expected, {} riskpools available'.format(riskpools))
                 print('returning last riskpool available')
 
@@ -712,17 +755,24 @@ def from_registry(
 
         if riskpool.getType() != 2:
             riskpool = None
-            print('component (type={}) with id {} is not riskpool'.format(
-                component.getType(), componentId))
-            print('no riskpool returned (None)')
-    else:
+            if verbose:
+                print('component (type={}) with id {} is not riskpool'.format(
+                    component.getType(), componentId))
+                print('no riskpool returned (None)')
+    elif verbose:
         print('1 riskpool expected, no riskpools available')
         print('no riskpool returned (None)')
 
-    return (instance, product, oracle, riskpool)
+    componentController = contract_from_address(
+        ComponentController, registry.getContract(s2b32('Component')))
+
+    return (instance, product, oracle, riskpool, componentController)
 
 
 def dry_run_create_risks(product, insurer):
+    if not confirm("dry run create risks"):
+        return
+
     project = '2022.kenya.wfp.ayii'
     crop = 'maize'
 
@@ -756,12 +806,16 @@ def dry_run_create_risks(product, insurer):
 
     print("project, aez, crop, trigger, exit, tsi, aph, riskId")
     for i in range(len(aez)):
-        riskId = create_risk(product, insurer, project,
-                             aez[i], crop, trigger, exit_, tsi, aph[i])
+        riskId = create_risk(
+            product, insurer, project,
+            aez[i], crop, trigger, exit_, tsi, aph[i])
         print(project, aez[i], crop, trigger, exit_, tsi, aph[i], riskId)
 
 
 def create_risk(product, insurer, project, uai, crop, trigger, exit_, tsi, aph):
+
+    if not confirm("create risks"):
+        return
 
     multiplier = product.getPercentageMultiplier()
     triggerInt = multiplier * trigger

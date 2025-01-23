@@ -48,20 +48,20 @@ contract AyiiOracle is Oracle {
             address(ayiiClf) != address(0),
             "ERROR:AYII-002:GATEWAY_NOT_SET"
         );
-        bytes32 chainlinkRequestId = ayiiClf._sendRequest(input);
+        bytes32 chainlinkRequestId = ayiiClf.sendClfRequest(input);
 
         gifRequests[chainlinkRequestId] = gifRequestId;
         emit LogAyiiRequest(gifRequestId, chainlinkRequestId);
     }
 
-    function fulfillRequest(
+    function fulfillClfRequest(
         bytes32 requestId,
         bytes memory response,
         bytes memory err
     ) external onlyAyiiClf {
         uint256 gifRequest = gifRequests[requestId];
         if (gifRequest == 0) {
-            revert("Unexpected Request Id");
+            revert("ERROR:AYII-003:UNEXPECTED_REQUEST_ID");
         }
         _respond(gifRequest, response);
 

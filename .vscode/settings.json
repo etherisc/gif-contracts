@@ -32,5 +32,6 @@
         "titleBar.inactiveBackground": "#1d3c4399",
         "titleBar.inactiveForeground": "#e7e7e799"
     },
-    "security.olympix.project.includePath": "/contracts"
+    "security.olympix.project.includePath": "/contracts",
+    "solidity.defaultCompiler": "remote"
 }

@@ -3,7 +3,7 @@
 pragma solidity 0.8.2;
 
 interface AyiiClf {
-    function _sendRequest(
+    function sendClfRequest(
         bytes calldata input
     ) external returns (bytes32 requestId);
 }

@@ -1,4 +1,4 @@
-ARG VARIANT=3.11-bookworm
+ARG VARIANT=3.11-22.04
 # requires rosetta 2 on apple chips
 ARG PLATFORM=linux/amd64
 FROM --platform=${PLATFORM} mcr.microsoft.com/devcontainers/python:${VARIANT}

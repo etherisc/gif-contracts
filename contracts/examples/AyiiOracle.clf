@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+// NEU: mit Chainlink Funktion
+
+import "./strings.sol";
+
+// import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "@etherisc/gif-interface/contracts/components/Oracle.sol";
+
+contract AyiiOracle is Oracle, FunctionsClient, ConfirmedOwner {
+    using strings for bytes32;
+    using FunctionsRequest for FunctionsRequest.Request;
+
+    mapping(bytes32 /* Chainlink request ID */ => uint256 /* GIF request ID */)
+        public gifRequests;
+    // DON Network parameters
+    // router and donID can be found on https://docs.chain.link/chainlink-functions/supported-networks
+    // subscriptionId can be found on https://functions.chain.link/ after loggin in with the chainlink subscription account
+    // gasLimit should be estimated
+    // source is the code text of the javascript function to be executed by the DON
+    address public router;
+    uint64 public subscriptionId;
+    uint32 public gasLimit;
+    bytes32 public donID;
+    string public source;
+
+    event LogAyiiRequest(uint256 requestId, bytes32 chainlinkRequestId);
+
+    event LogAyiiFulfill(
+        uint256 requestId,
+        bytes32 chainlinkRequestId,
+        bytes response
+    );
+    constructor(
+        bytes32 _name,
+        address _registry,
+        address _router,
+        uint64 _subscriptionId,
+        uint32 _gasLimit,
+        bytes32 _donID,
+        string memory _source
+    )
+        Oracle(_name, _registry)
+        FunctionsClient(_router)
+        ConfirmedOwner(msg.sender)
+    {
+        router = _router;
+        subscriptionId = _subscriptionId;
+        gasLimit = _gasLimit;
+        donID = _donID;
+        source = _source;
+    }
+
+    function updateChainlinkFunctionParameters(
+        address _router,
+        uint64 _subscriptionId,
+        uint32 _gasLimit,
+        bytes32 _donID,
+        string memory _source
+    ) external onlyOwner {
+        router = _router;
+        subscriptionId = _subscriptionId;
+        gasLimit = _gasLimit;
+        donID = _donID;
+        source = _source;
+    }
+
+    function request(
+        uint256 gifRequestId,
+        bytes calldata input
+    ) external override onlyQuery {
+        FunctionsRequest.Request memory req;
+
+        (bytes32 projectId, bytes32 uaiId, bytes32 cropId) = abi.decode(
+            input,
+            (bytes32, bytes32, bytes32)
+        );
+
+        bytes[] memory bytesArgs = [
+            projectId.toB32String(),
+            uaiId.toB32String(),
+            cropId.toB32String()
+        ];
+
+        req.initializeRequestForInlineJavaScript(source);
+        req.setBytesArgs(bytesArgs);
+
+        bytes32 chainlinkRequestId = _sendRequest(
+            req.encodeCBOR(),
+            subscriptionId,
+            gasLimit,
+            donID
+        );
+
+        gifRequests[chainlinkRequestId] = gifRequestId;
+        emit LogAyiiRequest(gifRequestId, chainlinkRequestId);
+    }
+    /*
+function fulfillRequest(
+        bytes32 requestId,
+        bytes memory response,
+        bytes memory err
+    ) internal override {
+        if (s_lastRequestId != requestId) {
+            revert UnexpectedRequestID(requestId);
+        }
+        s_lastResponse = response;
+        s_lastError = err;
+        emit Response(requestId, s_lastResponse, s_lastError);
+    }
+*/
+    function fulfillRequest(
+        bytes32 requestId,
+        bytes memory response,
+        bytes memory err
+    ) internal override {
+        uint256 gifRequest = gifRequests[requestId];
+        if (gifRequest == 0) {
+            revert("Unexpected Request Id");
+        }
+        _respond(gifRequest, response);
+
+        delete gifRequests[chainlinkRequestId];
+        emit LogAyiiFulfill(gifRequest, requestId, response);
+    }
+}
