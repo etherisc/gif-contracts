@@ -61,7 +61,34 @@ In this case replace the `auto` keyword in the command with the number of execut
 
 Deployments to live networks can be done with brownie console as well.
 
-Example for the deployment to Polygon test
+### Setup Deployment Secrets
+
+Deployments typically use wallets etc and we need to ensure that secrets are not exposed.
+We use 1password to store secrets in vaults, which are accessed programatically via the onepassword-sdk.
+The access tokens are stored in environment variables which are not part of the devcontainer, but
+are imported when the devcontainer is built.
+The solution uses two environment variables:
+* `OP_VAULT` designates the vault under which the secrets are stored in 1password
+* `OP_SERVICE_ACCOUNT_TOKEN` designates the service account token which is used to access the secrets. 
+
+To use this system, create a `.env.op` file in your local home folder. In the file, store the two values:
+```
+OP_VAULT="MY VAULT"
+OP_SERVICE_ACCOUNT_TOKEN="mysecrettoken..."
+```
+When the devcontainer is rebuild, the values are read from this file and stored as environment variables in your devcontainer.
+
+In the vault, create items for each chain you will work with.
+The item name needs to follow this pattern: 
+
+`<chain-name> secrets`
+
+where `<chain-name>` is the output of the brownie `network.show_active()` command.
+
+In the item, store each Mnemonic and each Address to be used in the deployment in two different sections "Mnemonics" and "Addresses".
+
+
+### Example for the deployment to Polygon test
 
 ```bash
 brownie console --network polygon-test

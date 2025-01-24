@@ -1,4 +1,3 @@
-import asyncio
 import os
 from onepassword.client import Client
 from onepassword import ItemCreateParams, ItemCategory, ItemSection, ItemField, ItemFieldType
@@ -11,7 +10,7 @@ async def signIn():
     global client
     # Gets your service account token from the OP_SERVICE_ACCOUNT_TOKEN environment variable.
     token = os.getenv("OP_SERVICE_ACCOUNT_TOKEN")
-
+    # print(token)
     # Connects to 1Password. Fill in your own integration name and version.
     client = await Client.authenticate(auth=token, integration_name="Test", integration_version="v1.0.0")
 

@@ -22,7 +22,8 @@
 				"oderwat.indent-rainbow",
 				"2gua.rainbow-brackets",
 				"johnpapa.vscode-peacock",
-				"vikas.code-navigation"
+				"vikas.code-navigation",
+				"ms-azuretools.vscode-docker"
 			]
 		}
 	},
@@ -38,7 +39,11 @@
 		8000
 	],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "touch .env && brownie compile --all && python --version",
+	// This reads the 1password environment variables from the .env.op file and exports them to the container.
+	"postCreateCommand": "touch .env && brownie compile --all && python --version && grep -v '^#' /home/vscode/.env.op | sed 's/^/export /' >> /home/vscode/.zshrc",
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+	"remoteUser": "vscode",
+	"mounts": [
+		"source=${localEnv:HOME}/.env.op,target=/home/vscode/.env.op,type=bind,consistency=cached"
+	]
 }

@@ -1,4 +1,4 @@
-ARG VARIANT=3.11-22.04
+ARG VARIANT=3.11-bookworm
 # requires rosetta 2 on apple chips
 ARG PLATFORM=linux/amd64
 FROM --platform=${PLATFORM} mcr.microsoft.com/devcontainers/python:${VARIANT}
@@ -41,7 +41,9 @@ COPY .devcontainer/requirements.txt /tmp/brownie
 RUN pip install -r /tmp/brownie/requirements.txt
 RUN pip install eth-brownie \
     && pip install fastapi \
-    && pip install uvicorn 
+    && pip install uvicorn \
+    && pip install onepassword-sdk \
+    && pip install simple_term_menu
 
 # [Optional] Uncomment this line to install global node packages.
 RUN npm install -g ganache solhint prettier prettier-plugin-solidity solhint-plugin-prettier

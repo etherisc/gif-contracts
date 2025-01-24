@@ -1,12 +1,10 @@
-import click
 from datetime import datetime
-
-from brownie import web3
 
 from brownie.network import accounts
 from brownie.network.account import Account
 
 from brownie import (
+    web3,
     interface,
     network,
     InstanceService,
@@ -21,6 +19,7 @@ from brownie import (
 from scripts.ayii_product import GifAyiiProductComplete
 from scripts.instance import GifInstance
 from scripts.util import contract_from_address, s2b32, getChainName, utcStr
+from scripts.prompt import confirm
 
 INSTANCE_OPERATOR = 'instanceOperator'
 INSTANCE_WALLET = 'instanceWallet'
@@ -73,19 +72,6 @@ REQUIRED_FUNDS = {
     CUSTOMER1:         REQUIRED_FUNDS_S,
     CUSTOMER2:         REQUIRED_FUNDS_S,
 }
-
-INTERACTIVE = True
-
-
-def set_interactive(interactive):
-    global INTERACTIVE
-    INTERACTIVE = interactive
-
-
-def confirm(text):
-    if INTERACTIVE:
-        click.confirm(
-            f"This action will alter the state of the blockchain <{network.show_active()}>. The action is '{text}'. Do you want to proceed?")
 
 
 def help():

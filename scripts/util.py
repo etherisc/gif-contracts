@@ -122,8 +122,9 @@ def deployGifModule(
     controller.assignStorage(storage.address, {'from': owner})
     storage.assignController(controller.address, {'from': owner})
 
-    registry.register(controller.NAME.call(),
-                      controller.address, {'from': owner})
+    registry.register(
+        controller.NAME.call(),
+        controller.address, {'from': owner})
     registry.register(storage.NAME.call(), storage.address, {'from': owner})
 
     return contractFromAddress(controllerClass, storage.address)
