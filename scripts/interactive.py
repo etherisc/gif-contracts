@@ -45,8 +45,9 @@ def listComponents():
 
 def selectComponent(type):
     components = context.getComponents(type)
+    ct = [context.oracle.address, context.product.address, context.riskpool.address]
     options = [
-        f"{i:>3}: {component['address']}" for i, component in enumerate(components, 1)
+        f"{i:>3}: {component['address']} {'< in context' if component['address'] in ct else ''}" for i, component in enumerate(components, 1)
     ]
     options.append('Cancel')
     print(f'Select {decodeEnum("ComponentType", type)}:')
@@ -76,16 +77,19 @@ def selectTypeAndComponent():
     if component is None:
         return
     print((
-        f'Selected: {decodeEnum("ComponentType", component[1])} '
-        f'Address: {component[0]} '
-        f'State: {decodeEnum("ComponentState", component[2])}'
+        f'Selected: {component["typeStr"]} '
+        f'Address: {component["address"]} '
+        f'State: {component["stateStr"]}'
     ))
-    if component[1] == 0:
-        context.oracle = contract_from_address(GenericOracle, component[0])
-    elif component[1] == 1:
-        context.product = contract_from_address(AyiiProduct, component[0])
-    elif component[1] == 2:
-        context.riskpool = contract_from_address(AyiiRiskpool, component[0])
+    if component['type'] == 0:  # Oracle
+        context.oracle = contract_from_address(
+            GenericOracle, component['address'])
+    elif component['type'] == 1:  # Product
+        context.product = contract_from_address(
+            AyiiProduct, component['address'])
+    elif component['type'] == 2:  # Riskpool
+        context.riskpool = contract_from_address(
+            AyiiRiskpool, component['address'])
 
 
 def setRiskpool(address):

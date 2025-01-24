@@ -78,7 +78,7 @@ class Context:
         assert self.instanceService.getInstanceOperator() == self.instanceOperator
         assert self.riskpool.getFullCollateralizationLevel() == 1000000000000000000
         self.fullCollateralizationLevel = self.riskpool.getFullCollateralizationLevel()
-        self.noPrint = ['accounts', 'stakeholders', 'noPrint']
+        self.noPrint = ['accounts', 'stakeholders', 'noPrint', 'components']
 
     def printContext(self):
         print('Context:')
@@ -90,9 +90,7 @@ class Context:
             print(
                 f'{k.ljust(30)}: {v.address} {str(Wei(v.balance()).to("ether")).rjust(25)}')
 
-    def getComponents(self, type=None, reload=False):
-        if not reload and hasattr(self, 'components'):
-            return self.components
+    def loadComponents(self):
         componentController = self.componentController
         components = componentController.components()
         result = []
@@ -135,4 +133,11 @@ class Context:
                 result.append(componentData)
 
         self.components = result
-        return list(filter(lambda x: x['type'] == type, result)) if type else result
+        return result
+
+    def getComponents(self, type=None, reload=False):
+        if reload or not hasattr(self, 'components'):
+            self.loadComponents()
+        if type is not None:
+            return list(filter(lambda x: x['type'] == type, self.components))
+        return self.components
