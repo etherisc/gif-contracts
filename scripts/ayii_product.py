@@ -33,9 +33,9 @@ from scripts.util import (
 from scripts.instance import GifInstance
 
 
-RISKPOOL_NAME = 'AyiiRiskpool'
-ORACLE_NAME = 'AyiiOracle'
-PRODUCT_NAME = 'AyiiProduct'
+RISKPOOL_NAME = "AyiiRiskpool"
+ORACLE_NAME = "AyiiOracle"
+PRODUCT_NAME = "AyiiProduct"
 
 
 class GifAyiiRiskpool(object):
@@ -49,26 +49,29 @@ class GifAyiiRiskpool(object):
         investor: Account,
         collateralization: int,
         name=RISKPOOL_NAME,
-        publishSource=False
+        publishSource=False,
     ):
         instanceService = instance.getInstanceService()
         instanceOperatorService = instance.getInstanceOperatorService()
         componentOwnerService = instance.getComponentOwnerService()
         riskpoolService = instance.getRiskpoolService()
 
-        print('------ setting up riskpool ------')
+        print("------ setting up riskpool ------")
 
         riskpoolKeeperRole = instanceService.getRiskpoolKeeperRole()
-        print('1) grant riskpool keeper role {} to riskpool keeper {}'.format(
-            riskpoolKeeperRole, riskpoolKeeper))
+        print(
+            "1) grant riskpool keeper role {} to riskpool keeper {}".format(
+                riskpoolKeeperRole, riskpoolKeeper
+            )
+        )
 
         instanceOperatorService.grantRole(
             riskpoolKeeperRole,
             riskpoolKeeper,
-            {'from': instanceOperatorService.owner()})
+            {"from": instanceOperatorService.owner()},
+        )
 
-        print('2) deploy riskpool by riskpool keeper {}'.format(
-            riskpoolKeeper))
+        print("2) deploy riskpool by riskpool keeper {}".format(riskpoolKeeper))
 
         self.riskpool = AyiiRiskpool.deploy(
             s2b32(name),
@@ -76,64 +79,85 @@ class GifAyiiRiskpool(object):
             erc20Token,
             riskpoolWallet,
             instance.getRegistry(),
-            {'from': riskpoolKeeper},
-            publish_source=publishSource)
+            {"from": riskpoolKeeper},
+            publish_source=publishSource,
+        )
 
         tx = history[-1]
         wait_for_confirmations(tx)
 
-        print('3) investor role granting to investor {} by riskpool keeper {}'.format(
-            investor, riskpoolKeeper))
+        print(
+            "3) investor role granting to investor {} by riskpool keeper {}".format(
+                investor, riskpoolKeeper
+            )
+        )
 
         self.riskpool.grantInvestorRole(
             investor,
-            {'from': riskpoolKeeper},
+            {"from": riskpoolKeeper},
         )
 
-        print('4) riskpool {} proposing to instance by riskpool keeper {}'.format(
-            self.riskpool, riskpoolKeeper))
+        print(
+            "4) riskpool {} proposing to instance by riskpool keeper {}".format(
+                self.riskpool, riskpoolKeeper
+            )
+        )
 
-        componentOwnerService.propose(
-            self.riskpool,
-            {'from': riskpoolKeeper})
+        componentOwnerService.propose(self.riskpool, {"from": riskpoolKeeper})
 
         tx = history[-1]
         wait_for_confirmations(tx)
 
-        print('5) approval of riskpool id {} by instance operator {}'.format(
-            self.riskpool.getId(), instance.getOwner()))
+        print(
+            "5) approval of riskpool id {} by instance operator {}".format(
+                self.riskpool.getId(), instance.getOwner()
+            )
+        )
 
         instanceOperatorService.approve(
-            self.riskpool.getId(),
-            {'from': instanceOperatorService.owner()})
+            self.riskpool.getId(), {"from": instanceOperatorService.owner()}
+        )
 
-        print('6) riskpool wallet {} set for riskpool id {} by instance operator {}'.format(
-            riskpoolWallet, self.riskpool.getId(), instance.getOwner()))
+        print(
+            "6) riskpool wallet {} set for riskpool id {} by instance operator {}".format(
+                riskpoolWallet, self.riskpool.getId(), instance.getOwner()
+            )
+        )
 
         instanceOperatorService.setRiskpoolWallet(
             self.riskpool.getId(),
             riskpoolWallet,
-            {'from': instanceOperatorService.owner()})
+            {"from": instanceOperatorService.owner()},
+        )
 
         # 7) setup capital fees
         fixedFee = 0
-        fractionalFee = 0  # instanceService.getFeeFractionFullUnit() / 20  # corresponds to 5%
-        print('7) creating capital fee spec (fixed: {}, fractional: {}) for riskpool id {} by instance operator {}'.format(
-            fixedFee, fractionalFee, self.riskpool.getId(), instance.getOwner()))
+        fractionalFee = (
+            0  # instanceService.getFeeFractionFullUnit() / 20  # corresponds to 5%
+        )
+        print(
+            "7) creating capital fee spec (fixed: {}, fractional: {}) for riskpool id {} by instance operator {}".format(
+                fixedFee, fractionalFee, self.riskpool.getId(), instance.getOwner()
+            )
+        )
 
         feeSpec = instanceOperatorService.createFeeSpecification(
             self.riskpool.getId(),
             fixedFee,
             fractionalFee,
-            b'',
-            {'from': instanceOperatorService.owner()})
+            b"",
+            {"from": instanceOperatorService.owner()},
+        )
 
-        print('8) setting capital fee spec by instance operator {}'.format(
-            instance.getOwner()))
+        print(
+            "8) setting capital fee spec by instance operator {}".format(
+                instance.getOwner()
+            )
+        )
 
         instanceOperatorService.setCapitalFees(
-            feeSpec,
-            {'from': instanceOperatorService.owner()})
+            feeSpec, {"from": instanceOperatorService.owner()}
+        )
 
     def getId(self) -> int:
         return self.riskpool.getId()
@@ -149,51 +173,57 @@ class GifAyiiOracle(object):
         instance: GifInstance,
         oracleProvider: Account,
         name=ORACLE_NAME,
-        publishSource=False
+        publishSource=False,
     ):
         instanceService = instance.getInstanceService()
         instanceOperatorService = instance.getInstanceOperatorService()
         componentOwnerService = instance.getComponentOwnerService()
 
-        print('------ setting up oracle ------')
+        print("------ setting up oracle ------")
 
         providerRole = instanceService.getOracleProviderRole()
-        print('1) grant oracle provider role {} to oracle provider {}'.format(
-            providerRole, oracleProvider))
+        print(
+            "1) grant oracle provider role {} to oracle provider {}".format(
+                providerRole, oracleProvider
+            )
+        )
 
         instanceOperatorService.grantRole(
-            providerRole,
-            oracleProvider,
-            {'from': instance.getOwner()})
+            providerRole, oracleProvider, {"from": instance.getOwner()}
+        )
 
-        print('5) deploy oracle by oracle provider {}'.format(
-            oracleProvider))
+        print("5) deploy oracle by oracle provider {}".format(oracleProvider))
 
         self.oracle = AyiiOracle.deploy(
             s2b32(name),
             instance.getRegistry(),
-            {'from': oracleProvider},
-            publish_source=publishSource)
+            {"from": oracleProvider},
+            publish_source=publishSource,
+        )
 
         tx = history[-1]
         wait_for_confirmations(tx)
 
-        print('6) oracle {} proposing to instance by oracle provider {}'.format(
-            self.oracle, oracleProvider))
+        print(
+            "6) oracle {} proposing to instance by oracle provider {}".format(
+                self.oracle, oracleProvider
+            )
+        )
 
-        componentOwnerService.propose(
-            self.oracle,
-            {'from': oracleProvider})
+        componentOwnerService.propose(self.oracle, {"from": oracleProvider})
 
         tx = history[-1]
         wait_for_confirmations(tx)
 
-        print('7) approval of oracle id {} by instance operator {}'.format(
-            self.oracle.getId(), instance.getOwner()))
+        print(
+            "7) approval of oracle id {} by instance operator {}".format(
+                self.oracle.getId(), instance.getOwner()
+            )
+        )
 
         instanceOperatorService.approve(
-            self.oracle.getId(),
-            {'from': instance.getOwner()})
+            self.oracle.getId(), {"from": instance.getOwner()}
+        )
 
     def getId(self) -> int:
         return self.oracle.getId()
@@ -216,7 +246,7 @@ class GifAyiiProduct(object):
         oracle: GifAyiiOracle,
         riskpool: GifAyiiRiskpool,
         name=PRODUCT_NAME,
-        publishSource=False
+        publishSource=False,
     ):
         self.policy = instance.getPolicy()
         self.oracle = oracle
@@ -228,19 +258,20 @@ class GifAyiiProduct(object):
         componentOwnerService = instance.getComponentOwnerService()
         registry = instance.getRegistry()
 
-        print('------ setting up product ------')
+        print("------ setting up product ------")
 
         productOwnerRole = instanceService.getProductOwnerRole()
-        print('1) grant product owner role {} to product owner {}'.format(
-            productOwnerRole, productOwner))
+        print(
+            "1) grant product owner role {} to product owner {}".format(
+                productOwnerRole, productOwner
+            )
+        )
 
         instanceOperatorService.grantRole(
-            productOwnerRole,
-            productOwner,
-            {'from': instance.getOwner()})
+            productOwnerRole, productOwner, {"from": instance.getOwner()}
+        )
 
-        print('2) deploy product by product owner {}'.format(
-            productOwner))
+        print("2) deploy product by product owner {}".format(productOwner))
 
         self.product = AyiiProduct.deploy(
             s2b32(name),
@@ -249,60 +280,74 @@ class GifAyiiProduct(object):
             oracle.getId(),
             riskpool.getId(),
             insurer,
-            {'from': productOwner},
-            publish_source=publishSource)
+            {"from": productOwner},
+            publish_source=publishSource,
+        )
 
         tx = history[-1]
         wait_for_confirmations(tx)
 
-        print('3) product {} proposing to instance by product owner {}'.format(
-            self.product, productOwner))
+        print(
+            "3) product {} proposing to instance by product owner {}".format(
+                self.product, productOwner
+            )
+        )
 
-        componentOwnerService.propose(
-            self.product,
-            {'from': productOwner})
+        componentOwnerService.propose(self.product, {"from": productOwner})
 
         tx = history[-1]
         wait_for_confirmations(tx)
 
-        print('4) approval of product id {} by instance operator {}'.format(
-            self.product.getId(), instance.getOwner()))
+        print(
+            "4) approval of product id {} by instance operator {}".format(
+                self.product.getId(), instance.getOwner()
+            )
+        )
 
         instanceOperatorService.approve(
-            self.product.getId(),
-            {'from': instance.getOwner()})
+            self.product.getId(), {"from": instance.getOwner()}
+        )
 
-        print('5) setting erc20 product token {} for product id {} by instance operator {}'.format(
-            erc20Token, self.product.getId(), instance.getOwner()))
+        print(
+            "5) setting erc20 product token {} for product id {} by instance operator {}".format(
+                erc20Token, self.product.getId(), instance.getOwner()
+            )
+        )
 
         instanceOperatorService.setProductToken(
-            self.product.getId(),
-            erc20Token,
-            {'from': instance.getOwner()})
+            self.product.getId(), erc20Token, {"from": instance.getOwner()}
+        )
 
         fixedFee = 0
-        fractionalFee = 0  # instanceService.getFeeFractionFullUnit() / 10  # corresponds to 10%
+        fractionalFee = (
+            0  # instanceService.getFeeFractionFullUnit() / 10  # corresponds to 10%
+        )
 
         # # set fees to zero
         # fixedFee = 0
         # fractionalFee = 0
 
-        print('6) creating premium fee spec (fixed: {}, fractional: {}) for product id {} by instance operator {}'.format(
-            fixedFee, fractionalFee, self.product.getId(), instance.getOwner()))
+        print(
+            "6) creating premium fee spec (fixed: {}, fractional: {}) for product id {} by instance operator {}".format(
+                fixedFee, fractionalFee, self.product.getId(), instance.getOwner()
+            )
+        )
 
         feeSpec = instanceOperatorService.createFeeSpecification(
             self.product.getId(),
             fixedFee,
             fractionalFee,
-            b'',
-            {'from': instance.getOwner()})
+            b"",
+            {"from": instance.getOwner()},
+        )
 
-        print('7) setting premium fee spec by instance operator {}'.format(
-            instance.getOwner()))
+        print(
+            "7) setting premium fee spec by instance operator {}".format(
+                instance.getOwner()
+            )
+        )
 
-        instanceOperatorService.setPremiumFees(
-            feeSpec,
-            {'from': instance.getOwner()})
+        instanceOperatorService.setPremiumFees(feeSpec, {"from": instance.getOwner()})
 
     def getId(self) -> int:
         return self.product.getId()
@@ -336,8 +381,8 @@ class GifAyiiProductComplete(object):
         erc20Token: Account,
         riskpoolWallet: Account,
         collateralizationLevel: int,
-        baseName='Ayii',
-        publishSource=False
+        baseName="Ayii",
+        publishSource=False,
     ):
 
         self.token = erc20Token
@@ -349,14 +394,13 @@ class GifAyiiProductComplete(object):
             riskpoolWallet,
             investor,
             collateralizationLevel,
-            '{}Riskpool'.format(baseName),
-            publishSource)
+            "{}Riskpool".format(baseName),
+            publishSource,
+        )
 
         self.oracle = GifAyiiOracle(
-            instance,
-            oracleProvider,
-            '{}Oracle'.format(baseName),
-            publishSource)
+            instance, oracleProvider, "{}Oracle".format(baseName), publishSource
+        )
 
         self.product = GifAyiiProduct(
             instance,
@@ -365,8 +409,9 @@ class GifAyiiProductComplete(object):
             insurer,
             self.oracle,
             self.riskpool,
-            '{}Product'.format(baseName),
-            publishSource)
+            "{}Product".format(baseName),
+            publishSource,
+        )
 
     def getToken(self):
         return self.token

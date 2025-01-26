@@ -13,17 +13,15 @@ class Prompt:
         if callable(param):
             # If param is a function, call it without parameters
             return param()
-        elif isinstance(param, dict) and 'function' in param and 'args' in param:
+        elif isinstance(param, dict) and "function" in param and "args" in param:
             # If param is a dictionary with 'function' and 'args', execute the function with arguments
-            func = param['function']
-            args = param['args']
+            func = param["function"]
+            args = param["args"]
 
             if not callable(func):
-                raise ValueError(
-                    "'function' in the dictionary must be callable")
+                raise ValueError("'function' in the dictionary must be callable")
             if not isinstance(args, (list, tuple)):
-                raise ValueError(
-                    "'args' in the dictionary must be a list or tuple")
+                raise ValueError("'args' in the dictionary must be a list or tuple")
 
             return func(*args)
         # else:
@@ -44,8 +42,10 @@ class Prompt:
         self.executeFunctionOrObject(selected_function)  # Invoke the method
         return selection
 
-    def qText(self, prompt, validate):
-        response = questionary.text(prompt.ljust(30), validate=validate).ask()
+    def qText(self, prompt, validate, default=""):
+        response = questionary.text(
+            prompt.ljust(30), validate=validate, default=default
+        ).ask()
         return response
 
     def enterCurrency(self, prompt, scale=1, lowerBound=0.1, upperBound=100000):
@@ -57,12 +57,14 @@ class Prompt:
                 if lowerBound <= number <= upperBound:
                     return True
                 else:
-                    return f"Please enter a number between {lowerBound} and {upperBound}."
+                    return (
+                        f"Please enter a number between {lowerBound} and {upperBound}."
+                    )
             except ValueError:
                 return "Invalid input. Please enter a valid number."
 
         response = self.qText(prompt, validate=validateCurrency)
-        return int(round(float(response) * 10 ** scale))
+        return int(round(float(response) * 10**scale))
 
     def enterNumber(self, prompt, lowerBound, upperBound):
         def validateNumber(value):
@@ -73,7 +75,9 @@ class Prompt:
                 if lowerBound <= number <= upperBound:
                     return True
                 else:
-                    return f"Please enter a number between {lowerBound} and {upperBound}."
+                    return (
+                        f"Please enter a number between {lowerBound} and {upperBound}."
+                    )
             except ValueError:
                 return "Invalid input. Please enter a valid number."
 
@@ -89,20 +93,23 @@ class Prompt:
                 if lowerBound <= number <= upperBound:
                     return True
                 else:
-                    return f"Please enter a number between {lowerBound} and {upperBound}."
+                    return (
+                        f"Please enter a number between {lowerBound} and {upperBound}."
+                    )
             except ValueError:
                 return "Invalid input. Please enter a valid number."
 
         response = self.qText(prompt, validate=validateFloat)
         return float(response)
 
-    def enterString(self, prompt, regex):
+    def enterString(self, prompt, regex, default=""):
         def validateString(value):
             r = re.compile(regex)
             if r.match(value):
                 return True
             return "Invalid input. Please enter a valid string."
-        response = self.qText(prompt, validate=validateString)
+
+        response = self.qText(prompt, validate=validateString, default=default)
         return response
 
     def setInteractive(self, interactive):
@@ -110,12 +117,14 @@ class Prompt:
 
     def confirm(self, text):
         if self.INTERACTIVE:
-            return click.confirm((
-                f"This action will alter the state of "
-                f"the blockchain <{network.show_active()}>. \n"
-                f"The action is '{text}'. \n"
-                f"Do you want to proceed?"
-            ))
+            return click.confirm(
+                (
+                    f"This action will alter the state of "
+                    f"the blockchain <{network.show_active()}>. \n"
+                    f"The action is '{text}'. \n"
+                    f"Do you want to proceed?"
+                )
+            )
         else:
             return True
 

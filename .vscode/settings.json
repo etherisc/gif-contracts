@@ -33,5 +33,11 @@
         "titleBar.inactiveForeground": "#e7e7e799"
     },
     "security.olympix.project.includePath": "/contracts",
-    "solidity.defaultCompiler": "remote"
+    "solidity.defaultCompiler": "remote",
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "editor.formatOnSave": true
+
 }

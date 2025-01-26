@@ -7,8 +7,8 @@ from brownie.network.account import Account
 
 from brownie import (
     Wei,
-    interface,    
-    Contract, 
+    interface,
+    Contract,
     PolicyController,
     OracleService,
     ComponentOwnerService,
@@ -27,8 +27,9 @@ from scripts.instance import GifInstance
 
 class GifComponent(object):
 
-    def __init__(self, 
-        componentAddress: Account, 
+    def __init__(
+        self,
+        componentAddress: Account,
     ):
         self.component = contractFromAddress(interface.IComponent, componentAddress)
         self.instance = GifInstance(registryAddress=self.component.getRegistry())

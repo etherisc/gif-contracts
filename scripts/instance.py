@@ -30,7 +30,7 @@ from brownie import (
     PolicyDefaultFlow,
     InstanceOperatorService,
     InstanceService,
-    network
+    network,
 )
 
 from scripts.const import (
@@ -53,39 +53,39 @@ from scripts.util import (
 
 class GifRegistry(object):
 
-    def __init__(
-        self,
-        owner: Account,
-        publishSource: bool = False
-    ):
+    def __init__(self, owner: Account, publishSource: bool = False):
         controller = RegistryController.deploy(
-            {'from': owner},
-            publish_source=publishSource)
+            {"from": owner}, publish_source=publishSource
+        )
 
         encoded_initializer = encode_function_data(
-            s2b32(GIF_RELEASE),
-            initializer=controller.initializeRegistry)
+            s2b32(GIF_RELEASE), initializer=controller.initializeRegistry
+        )
 
         proxy = CoreProxy.deploy(
             controller.address,
             encoded_initializer,
-            {'from': owner},
-            publish_source=publishSource)
+            {"from": owner},
+            publish_source=publishSource,
+        )
 
         self.owner = owner
         self.registry = contractFromAddress(RegistryController, proxy.address)
 
-        print('owner {}'.format(owner))
-        print('controller.address {}'.format(controller.address))
-        print('proxy.address {}'.format(proxy.address))
-        print('registry.address {}'.format(self.registry.address))
-        print('registry.getContract(InstanceOperatorService) {}'.format(
-            self.registry.getContract(s2h("InstanceOperatorService"))))
+        print("owner {}".format(owner))
+        print("controller.address {}".format(controller.address))
+        print("proxy.address {}".format(proxy.address))
+        print("registry.address {}".format(self.registry.address))
+        print(
+            "registry.getContract(InstanceOperatorService) {}".format(
+                self.registry.getContract(s2h("InstanceOperatorService"))
+            )
+        )
 
+        self.registry.register(s2b32("Registry"), proxy.address, {"from": owner})
         self.registry.register(
-            s2b32("Registry"), proxy.address, {'from': owner})
-        self.registry.register(s2b32("RegistryController"),
-                               controller.address, {'from': owner})
+            s2b32("RegistryController"), controller.address, {"from": owner}
+        )
 
     def getOwner(self) -> Account:
         return self.owner
@@ -102,88 +102,104 @@ class GifInstance(GifRegistry):
         instanceWallet: Account = None,
         registryAddress=None,
         publishSource: bool = False,
-        setInstanceWallet: bool = True
+        setInstanceWallet: bool = True,
     ):
         if registryAddress:
             self.fromRegistryAddress(registryAddress)
             self.owner = owner
 
         elif owner:
-            super().__init__(
-                owner,
-                publishSource)
+            super().__init__(owner, publishSource)
 
-            self.deployWithRegistry(
-                self.registry,
-                owner,
-                publishSource)
+            self.deployWithRegistry(self.registry, owner, publishSource)
 
             if setInstanceWallet:
                 self.instanceOperatorService.setInstanceWallet(
-                    instanceWallet,
-                    {'from': owner})
+                    instanceWallet, {"from": owner}
+                )
 
         else:
-            raise ValueError(
-                'either owner or registry_address need to be provided')
+            raise ValueError("either owner or registry_address need to be provided")
 
     def __str__(self):
-        return 'GifInstance class with registry = {}'.format(self.registry.address)
+        return "GifInstance class with registry = {}".format(self.registry.address)
 
     def deployWithRegistry(
-        self,
-        registry: GifRegistry,
-        owner: Account,
-        publishSource: bool
+        self, registry: GifRegistry, owner: Account, publishSource: bool
     ):
         # gif instance tokens
         self.bundleToken = deployGifToken(
-            "BundleToken", BundleToken, registry, owner, publishSource)
+            "BundleToken", BundleToken, registry, owner, publishSource
+        )
         self.riskpoolToken = deployGifToken(
-            "RiskpoolToken", RiskpoolToken, registry, owner, publishSource)
+            "RiskpoolToken", RiskpoolToken, registry, owner, publishSource
+        )
 
         # modules (need to be deployed first)
         # deploy order needs to respect module dependencies
         self.access = deployGifModuleV2(
-            "Access", AccessController, registry, owner, publishSource)
+            "Access", AccessController, registry, owner, publishSource
+        )
         self.component = deployGifModuleV2(
-            "Component", ComponentController, registry, owner, publishSource)
+            "Component", ComponentController, registry, owner, publishSource
+        )
         self.query = deployGifModuleV2(
-            "Query", QueryModule, registry, owner, publishSource)
+            "Query", QueryModule, registry, owner, publishSource
+        )
         self.license = deployGifModuleV2(
-            "License", LicenseController, registry, owner, publishSource)
+            "License", LicenseController, registry, owner, publishSource
+        )
         self.policy = deployGifModuleV2(
-            "Policy", PolicyController, registry, owner, publishSource)
+            "Policy", PolicyController, registry, owner, publishSource
+        )
         self.bundle = deployGifModuleV2(
-            "Bundle", BundleController, registry, owner, publishSource)
+            "Bundle", BundleController, registry, owner, publishSource
+        )
         self.pool = deployGifModuleV2(
-            "Pool", PoolController, registry, owner, publishSource)
+            "Pool", PoolController, registry, owner, publishSource
+        )
         self.treasury = deployGifModuleV2(
-            "Treasury", TreasuryModule, registry, owner, publishSource)
+            "Treasury", TreasuryModule, registry, owner, publishSource
+        )
 
         # TODO these contracts do not work with proxy pattern
         self.policyFlow = deployGifService(
-            PolicyDefaultFlow, registry, owner, publishSource)
+            PolicyDefaultFlow, registry, owner, publishSource
+        )
 
         # services
         self.instanceService = deployGifModuleV2(
-            "InstanceService", InstanceService, registry, owner, publishSource)
+            "InstanceService", InstanceService, registry, owner, publishSource
+        )
         self.componentOwnerService = deployGifModuleV2(
-            "ComponentOwnerService", ComponentOwnerService, registry, owner, publishSource)
+            "ComponentOwnerService",
+            ComponentOwnerService,
+            registry,
+            owner,
+            publishSource,
+        )
         self.oracleService = deployGifModuleV2(
-            "OracleService", OracleService, registry, owner, publishSource)
+            "OracleService", OracleService, registry, owner, publishSource
+        )
         self.riskpoolService = deployGifModuleV2(
-            "RiskpoolService", RiskpoolService, registry, owner, publishSource)
+            "RiskpoolService", RiskpoolService, registry, owner, publishSource
+        )
 
         # TODO these contracts do not work with proxy pattern
         self.productService = deployGifService(
-            ProductService, registry, owner, publishSource)
+            ProductService, registry, owner, publishSource
+        )
 
         # needs to be the last module to register as it will
         # perform some post deploy wirings and changes the address
         # of the instance operator service to its true address
         self.instanceOperatorService = deployGifModuleV2(
-            "InstanceOperatorService", InstanceOperatorService, registry, owner, publishSource)
+            "InstanceOperatorService",
+            InstanceOperatorService,
+            registry,
+            owner,
+            publishSource,
+        )
 
         # post deploy wiring steps
         # self.bundleToken.setBundleModule(self.bundle)
@@ -192,36 +208,37 @@ class GifInstance(GifRegistry):
         assert 32 == registry.contracts()
 
     def fromRegistryAddress(self, registry_address):
-        self.registry = contractFromAddress(
-            RegistryController, registry_address)
+        self.registry = contractFromAddress(RegistryController, registry_address)
         self.access = self.contractFromGifRegistry(AccessController, "Access")
-        self.component = self.contractFromGifRegistry(
-            AccessController, "Component")
+        self.component = self.contractFromGifRegistry(AccessController, "Component")
 
         self.query = self.contractFromGifRegistry(QueryModule, "Query")
-        self.license = self.contractFromGifRegistry(
-            LicenseController, "License")
+        self.license = self.contractFromGifRegistry(LicenseController, "License")
         self.policy = self.contractFromGifRegistry(PolicyController, "Policy")
         self.bundle = self.contractFromGifRegistry(BundleController, "Bundle")
         self.pool = self.contractFromGifRegistry(PoolController, "Pool")
-        self.treasury = self.contractFromGifRegistry(
-            TreasuryModule, "Treasury")
+        self.treasury = self.contractFromGifRegistry(TreasuryModule, "Treasury")
 
         self.instanceService = self.contractFromGifRegistry(
-            InstanceService, "InstanceService")
+            InstanceService, "InstanceService"
+        )
         self.oracleService = self.contractFromGifRegistry(
-            OracleService, "OracleService")
+            OracleService, "OracleService"
+        )
         self.riskpoolService = self.contractFromGifRegistry(
-            RiskpoolService, "RiskpoolService")
+            RiskpoolService, "RiskpoolService"
+        )
         self.productService = self.contractFromGifRegistry(
-            ProductService, "ProductService")
+            ProductService, "ProductService"
+        )
 
         self.policyFlow = self.contractFromGifRegistry(
-            PolicyDefaultFlow, "PolicyDefaultFlow")
-        self.componentOwnerService = self.contractFromGifRegistry(
-            ComponentOwnerService)
+            PolicyDefaultFlow, "PolicyDefaultFlow"
+        )
+        self.componentOwnerService = self.contractFromGifRegistry(ComponentOwnerService)
         self.instanceOperatorService = self.contractFromGifRegistry(
-            InstanceOperatorService)
+            InstanceOperatorService
+        )
 
     def contractFromGifRegistry(self, contractClass, name=None):
         if not name:
@@ -289,14 +306,12 @@ class GifInstance(GifRegistry):
 
 def dump_sources(registryAddress=None):
 
-    dump_sources_summary_dir = './dump_sources/{}'.format(
-        network.show_active())
-    dump_sources_summary_file = '{}/contracts.txt'.format(
-        dump_sources_summary_dir)
+    dump_sources_summary_dir = "./dump_sources/{}".format(network.show_active())
+    dump_sources_summary_file = "{}/contracts.txt".format(dump_sources_summary_dir)
 
     # create parent dir
     try:
-        os.mkdir('./dump_sources')
+        os.mkdir("./dump_sources")
     except OSError:
         pass
 
@@ -313,34 +328,28 @@ def dump_sources(registryAddress=None):
 
     contracts = []
     contracts.append(dump_single(CoreProxy, "Registry", instance))
-    contracts.append(dump_single(RegistryController,
-                     "RegistryController", instance))
+    contracts.append(dump_single(RegistryController, "RegistryController", instance))
 
     contracts.append(dump_single(BundleToken, "BundleToken", instance))
     contracts.append(dump_single(RiskpoolToken, "RiskpoolToken", instance))
 
     contracts.append(dump_single(CoreProxy, "Access", instance))
-    contracts.append(dump_single(AccessController,
-                     "AccessController", instance))
+    contracts.append(dump_single(AccessController, "AccessController", instance))
 
     contracts.append(dump_single(CoreProxy, "Component", instance))
-    contracts.append(dump_single(ComponentController,
-                     "ComponentController", instance))
+    contracts.append(dump_single(ComponentController, "ComponentController", instance))
 
     contracts.append(dump_single(CoreProxy, "Query", instance))
     contracts.append(dump_single(QueryModule, "QueryModule", instance))
 
     contracts.append(dump_single(CoreProxy, "License", instance))
-    contracts.append(dump_single(LicenseController,
-                     "LicenseController", instance))
+    contracts.append(dump_single(LicenseController, "LicenseController", instance))
 
     contracts.append(dump_single(CoreProxy, "Policy", instance))
-    contracts.append(dump_single(PolicyController,
-                     "PolicyController", instance))
+    contracts.append(dump_single(PolicyController, "PolicyController", instance))
 
     contracts.append(dump_single(CoreProxy, "Bundle", instance))
-    contracts.append(dump_single(BundleController,
-                     "BundleController", instance))
+    contracts.append(dump_single(BundleController, "BundleController", instance))
 
     contracts.append(dump_single(CoreProxy, "Pool", instance))
     contracts.append(dump_single(PoolController, "PoolController", instance))
@@ -348,59 +357,62 @@ def dump_sources(registryAddress=None):
     contracts.append(dump_single(CoreProxy, "Treasury", instance))
     contracts.append(dump_single(TreasuryModule, "TreasuryModule", instance))
 
-    contracts.append(dump_single(PolicyDefaultFlow,
-                     "PolicyDefaultFlow", instance))
+    contracts.append(dump_single(PolicyDefaultFlow, "PolicyDefaultFlow", instance))
 
     contracts.append(dump_single(CoreProxy, "InstanceService", instance))
-    contracts.append(dump_single(
-        InstanceService, "InstanceServiceController", instance))
+    contracts.append(
+        dump_single(InstanceService, "InstanceServiceController", instance)
+    )
 
     contracts.append(dump_single(CoreProxy, "ComponentOwnerService", instance))
-    contracts.append(dump_single(ComponentOwnerService,
-                     "ComponentOwnerServiceController", instance))
+    contracts.append(
+        dump_single(ComponentOwnerService, "ComponentOwnerServiceController", instance)
+    )
 
     contracts.append(dump_single(CoreProxy, "OracleService", instance))
-    contracts.append(dump_single(
-        OracleService, "OracleServiceController", instance))
+    contracts.append(dump_single(OracleService, "OracleServiceController", instance))
 
     contracts.append(dump_single(CoreProxy, "RiskpoolService", instance))
-    contracts.append(dump_single(
-        RiskpoolService, "RiskpoolServiceController", instance))
+    contracts.append(
+        dump_single(RiskpoolService, "RiskpoolServiceController", instance)
+    )
 
     contracts.append(dump_single(ProductService, "ProductService", instance))
 
-    contracts.append(dump_single(
-        CoreProxy, "InstanceOperatorService", instance))
-    contracts.append(dump_single(InstanceOperatorService,
-                     "InstanceOperatorServiceController", instance))
+    contracts.append(dump_single(CoreProxy, "InstanceOperatorService", instance))
+    contracts.append(
+        dump_single(
+            InstanceOperatorService, "InstanceOperatorServiceController", instance
+        )
+    )
 
-    with open(dump_sources_summary_file, 'w') as f:
-        f.write('\n'.join(contracts))
-        f.write('\n')
+    with open(dump_sources_summary_file, "w") as f:
+        f.write("\n".join(contracts))
+        f.write("\n")
 
-    print('\n'.join(contracts))
-    print('\nfor contract json files see directory {}'.format(
-        dump_sources_summary_dir))
+    print("\n".join(contracts))
+    print("\nfor contract json files see directory {}".format(dump_sources_summary_dir))
 
 
 def dump_single(contract, registryName, instance=None) -> str:
 
     info = contract.get_verification_info()
     netw = network.show_active()
-    compiler = info['compiler_version']
-    optimizer = info['optimizer_enabled']
-    runs = info['optimizer_runs']
-    license = info['license_identifier']
-    address = 'no_address'
-    name = info['contract_name']
+    compiler = info["compiler_version"]
+    optimizer = info["optimizer_enabled"]
+    runs = info["optimizer_runs"]
+    license = info["license_identifier"]
+    address = "no_address"
+    name = info["contract_name"]
 
     if instance:
         nameB32 = s2b32(registryName)
         address = instance.registry.getContract(nameB32)
 
-    dump_sources_contract_file = './dump_sources/{}/{}.json'.format(netw, name)
-    with open(dump_sources_contract_file, 'w') as f:
-        f.write(json.dumps(contract.get_verification_info()
-                ['standard_json_input']))
+    dump_sources_contract_file = "./dump_sources/{}/{}.json".format(netw, name)
+    with open(dump_sources_contract_file, "w") as f:
+        f.write(json.dumps(contract.get_verification_info()["standard_json_input"]))
 
-    return '{} {} {} {} {} {} {}'.format(netw, compiler, optimizer, runs, license, address, name)
+    return "{} {} {} {} {} {} {}".format(
+        netw, compiler, optimizer, runs, license, address, name
+    )

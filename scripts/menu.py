@@ -7,7 +7,7 @@ from scripts.interactive import (
     selectTypeAndComponent,
     fundBundle,
     createPolicy,
-    triggerOracle
+    triggerOracle,
 )
 
 from scripts.deploy_ayii import (
@@ -15,7 +15,7 @@ from scripts.deploy_ayii import (
     amend_funds,
     deploy,
     deploy_product_with_oracle_riskpool,
-    verify_deploy
+    verify_deploy,
 )
 
 
@@ -23,51 +23,45 @@ def menu():
     run = True
     while run:
         options = {
-            'Check Funds': {
-                'function': check_funds,
-                'args': [context.accounts, context.usdc]
+            "Check Funds": {
+                "function": check_funds,
+                "args": [context.accounts, context.usdc],
             },
-            'Amend Funds': {
-                'function': amend_funds,
-                'args': [context.accounts]
-            },
-            'Deploy': {
-                'function': deploy,
-                'args': [
-                    context.accounts,
-                    context.usdc
-                ]},
-            'Deploy Product, Oracle and Riskpool': {
-                'function': deploy_product_with_oracle_riskpool,
-                'args': [
+            "Amend Funds": {"function": amend_funds, "args": [context.accounts]},
+            "Deploy": {"function": deploy, "args": [context.accounts, context.usdc]},
+            "Deploy Product, Oracle and Riskpool": {
+                "function": deploy_product_with_oracle_riskpool,
+                "args": [
                     context.registry,
                     context.accounts,
                     context.usdc,
-                    context.fullCollateralizationLevel
-                ]},
-            'Verify Deploy': {
-                'function': verify_deploy,
-                'args': [
+                    context.fullCollateralizationLevel,
+                ],
+            },
+            "Verify Deploy": {
+                "function": verify_deploy,
+                "args": [
                     context.accounts,
                     context.usdc,
                     context.registry,
                     context.riskpoolId,
                     context.oracleId,
-                    context.productId
-                ]
+                    context.productId,
+                ],
             },
-            'Context': context.printContext,
-            'List Components': listComponents,
-            'Create Risk': createRisk,
-            'List Risks': listRisks,
-            'Select Type and Component': selectTypeAndComponent,
-            'Fund Bundle': fundBundle,
-            'Create Policy': createPolicy,
-            'Trigger Oracle': triggerOracle,
-            'Exit': None
+            "Context": context.printContext,
+            "Accounts": context.printAccounts,
+            "List Components": listComponents,
+            "Create Risk": createRisk,
+            "List Risks": listRisks,
+            "Select Type and Component": selectTypeAndComponent,
+            "Fund Bundle": fundBundle,
+            "Create Policy": createPolicy,
+            "Trigger Oracle": triggerOracle,
+            "Exit": None,
         }
         selection = prompt.dictMenu(options)
-        run = selection != 'Exit'
+        run = selection != "Exit"
 
 
 menu()

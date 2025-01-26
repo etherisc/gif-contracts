@@ -1,6 +1,12 @@
 import os
 from onepassword.client import Client
-from onepassword import ItemCreateParams, ItemCategory, ItemSection, ItemField, ItemFieldType
+from onepassword import (
+    ItemCreateParams,
+    ItemCategory,
+    ItemSection,
+    ItemField,
+    ItemFieldType,
+)
 
 client = None
 lastItem = None
@@ -12,7 +18,9 @@ async def signIn():
     token = os.getenv("OP_SERVICE_ACCOUNT_TOKEN")
     # print(token)
     # Connects to 1Password. Fill in your own integration name and version.
-    client = await Client.authenticate(auth=token, integration_name="Test", integration_version="v1.0.0")
+    client = await Client.authenticate(
+        auth=token, integration_name="Test", integration_version="v1.0.0"
+    )
 
 
 async def listVaults():
