@@ -43,7 +43,8 @@ RUN pip install eth-brownie \
     && pip install fastapi \
     && pip install uvicorn \
     && pip install onepassword-sdk \
-    && pip install simple_term_menu
+    && pip install simple_term_menu \
+    && pip install questionary
 
 # [Optional] Uncomment this line to install global node packages.
 RUN npm install -g ganache solhint prettier prettier-plugin-solidity solhint-plugin-prettier

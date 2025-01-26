@@ -46,6 +46,7 @@ class Context:
 
         asyncio.run(signIn())
         asyncio.run(getItem(self.vault, self.secretsItem))
+
         self.registry = getSecret('Addresses', 'registry')
         self.usdcAccountingToken = getSecret(
             'Addresses', 'usdc_accounting_token')
@@ -117,6 +118,8 @@ class Context:
                             riskId = product.getRiskId(riskIndex)
                             policies += product.policies(riskId)
                         componentData['additionalData'] = {
+                            'erc20Token': product.getToken(),
+                            'riskpoolId': product.getRiskpoolId(),
                             'risks': product.risks(),
                             'policies': policies,
                             'applications': product.applications()
@@ -125,6 +128,8 @@ class Context:
                         riskpool = contract_from_address(
                             AyiiRiskpool, cAddress)
                         componentData['additionalData'] = {
+                            'erc20Token': riskpool.getErc20Token(),
+                            'capital': riskpool.getCapital(),
                             'bundles': riskpool.bundles()
                         }
                 except Exception as e:

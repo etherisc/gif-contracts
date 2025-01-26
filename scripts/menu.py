@@ -4,7 +4,10 @@ from scripts.interactive import (
     listComponents,
     createRisk,
     listRisks,
-    selectTypeAndComponent
+    selectTypeAndComponent,
+    fundBundle,
+    createPolicy,
+    triggerOracle
 )
 
 from scripts.deploy_ayii import (
@@ -58,6 +61,9 @@ def menu():
             'Create Risk': createRisk,
             'List Risks': listRisks,
             'Select Type and Component': selectTypeAndComponent,
+            'Fund Bundle': fundBundle,
+            'Create Policy': createPolicy,
+            'Trigger Oracle': triggerOracle,
             'Exit': None
         }
         selection = prompt.dictMenu(options)

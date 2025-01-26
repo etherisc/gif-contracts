@@ -18,7 +18,7 @@ from brownie import (
 
 from scripts.ayii_product import GifAyiiProductComplete
 from scripts.instance import GifInstance
-from scripts.util import contract_from_address, s2b32, getChainName, utcStr
+from scripts.util import contract_from_address, s2b32, getChainName, utcStr, decodeEnum, fromWei
 from scripts.prompt import confirm
 
 INSTANCE_OPERATOR = 'instanceOperator'
@@ -357,12 +357,20 @@ def verify_deploy(
     print('RiskpoolBundles {}'.format(riskpool.bundles()))
 
     # bundle_id = riskpool.getBundleId(0)
-    for key, value in riskpool.getBundle(0).dict().items():
-        if key in ['createdAt', 'updatedAt']:  # Apply conversion for specific keys
-            value = utcStr(value)
-        print(f"  {key}: {value}")
+    printBundle(riskpool, 0)
     print('ProductRisks {}'.format(product.risks()))
     print('ProductApplications {}'.format(product.applications()))
+
+
+def printBundle(riskpool, bundleId):
+    for key, value in riskpool.getBundle(bundleId).dict().items():
+        if key in ['createdAt', 'updatedAt']:  # Apply conversion for specific keys
+            value = utcStr(value)
+        if key in ['state']:
+            value = decodeEnum('BundleState', value)
+        if key in ['balance', 'lockedCapital', 'capital']:
+            value = fromWei(value, 6)
+        print(f"  {key:<15}: {value}")
 
 
 def verify_element(

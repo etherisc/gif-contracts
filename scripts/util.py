@@ -2,6 +2,7 @@ import json
 import re
 import requests
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from web3 import Web3
 
@@ -280,3 +281,11 @@ def utcStr(timestamp):
     dt_object = datetime.fromtimestamp(timestamp, tz=timezone.utc)
     date_string = dt_object.strftime('%Y-%m-%d %H:%M:%S')
     return date_string
+
+
+def fromWei(raw, decimals):
+    return Decimal(raw) / Decimal(10**decimals)
+
+
+def toWei(value, decimals):
+    return int(Decimal(value) * Decimal(10**decimals))

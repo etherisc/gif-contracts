@@ -112,8 +112,8 @@ class Prompt:
         if self.INTERACTIVE:
             return click.confirm((
                 f"This action will alter the state of "
-                f"the blockchain <{network.show_active()}>. "
-                f"The action is '{text}'. "
+                f"the blockchain <{network.show_active()}>. \n"
+                f"The action is '{text}'. \n"
                 f"Do you want to proceed?"
             ))
         else:
