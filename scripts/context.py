@@ -8,7 +8,7 @@ from brownie import (
     UsdcAccounting,
     AyiiProduct,
     AyiiRiskpool,
-    AyiiOracle,
+    ProtectedMulticall,
     Wei,
 )
 
@@ -34,6 +34,7 @@ class Context:
         "insurer",
         "customer1",
         "customer2",
+        "escrow",
     ]
     feeCapitalFix = 0
     feeCapitalPercentage = 0
@@ -52,12 +53,23 @@ class Context:
 
         self.registry = getSecret("Addresses", "registry")
         self.usdcAccountingToken = getSecret("Addresses", "usdc_accounting_token")
+        self.clfConsumer = getSecret("Addresses", "clf_consumer")
+        self.multicallAddress = getSecret("Addresses", "multicall")
         self.usdc = contract_from_address(UsdcAccounting, self.usdcAccountingToken)
+        self.multicall = contract_from_address(
+            ProtectedMulticall, self.multicallAddress
+        )
+        self.decimals = self.usdc.decimals()
 
         self.accounts = {
             s: accounts.from_mnemonic(getSecret("Mnemonics", s))
             for s in self.stakeholders
         }
+        self.instanceOperator = self.accounts["instanceOperator"]
+        self.insurer = self.accounts["insurer"]
+        self.escrow = self.accounts["escrow"]
+        self.farmer_hd_base = "insurer"
+
         (instance, product, oracle, riskpool, componentController) = from_registry(
             self.registry
         )
@@ -71,14 +83,18 @@ class Context:
         self.oracleId = oracle.getId()
         self.productId = product.getId()
         self.componentController = componentController
-        self.instanceOperator = self.accounts["instanceOperator"]
+
         assert self.instanceService.getInstanceOperator() == self.instanceOperator
         assert self.riskpool.getFullCollateralizationLevel() == 1000000000000000000
         self.fullCollateralizationLevel = self.riskpool.getFullCollateralizationLevel()
         self.noPrint = ["accounts", "stakeholders", "noPrint", "components"]
+        self.components = []
 
     def setContext(self, key, value):
         setattr(self, key, value)
+
+    def getHdWallet(self, name, index):
+        return accounts.from_mnemonic(getSecret("Mnemonics", name), 1, index)
 
     def printContext(self):
         print("Context:")
@@ -90,7 +106,12 @@ class Context:
         print("Accounts:")
         for k, v in self.accounts.items():
             print(
-                f'{k.ljust(30)}: {v.address} {str(Wei(v.balance()).to("ether")).rjust(25)}'
+                (
+                    f"{k.ljust(30)}: "
+                    f"{v.address[:8]} "
+                    f'{str(Wei(v.balance()).to("ether"))[-22:-16].rjust(8)} '
+                    f"{str(round(self.usdc.balanceOf(v)/10**self.decimals,2)).rjust(12)}"
+                )
             )
 
     def loadComponents(self):
@@ -105,6 +126,7 @@ class Context:
                 cType = componentController.getComponentType(componentIndex)
                 cState = componentController.getComponentState(componentIndex)
                 componentData = {
+                    "index": componentIndex,
                     "address": cAddress,
                     "type": cType,
                     "state": cState,
@@ -144,8 +166,21 @@ class Context:
         return result
 
     def getComponents(self, type=None, reload=False):
-        if reload or not hasattr(self, "components"):
+        if reload or not hasattr(self, "components") or len(self.components) == 0:
             self.loadComponents()
         if type is not None:
             return list(filter(lambda x: x["type"] == type, self.components))
         return self.components
+
+
+context = Context()
+
+# Convenience:
+
+usdc = context.usdc
+a = context.accounts
+iop = context.instanceOperator
+insurer = context.insurer
+escrow = context.escrow
+getHdWallet = context.getHdWallet
+multicall = context.multicall

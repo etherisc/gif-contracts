@@ -2,8 +2,23 @@
   "extends": "solhint:recommended",
   "plugins": [],
   "rules": {
-    "compiler-version": ["error", "0.8.2"],
-    "func-visibility": ["warn", {"ignoreConstructors": true}],
-    "reason-string": ["warn",{"maxLength": 64}] 
+    "compiler-version": [
+      "error",
+      "0.8.2"
+    ],
+    "func-visibility": [
+      "warn",
+      {
+        "ignoreConstructors": true
+      }
+    ],
+    "reason-string": [
+      "warn",
+      {
+        "maxLength": 64
+      }
+    ],
+    "custom-errors": "off",
+    "no-global-import": "off"
   }
 }

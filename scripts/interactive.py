@@ -1,26 +1,22 @@
 from brownie import (
     AyiiProduct,
-    AyiiOracle,
     AyiiRiskpool,
     GenericOracle,
     GenericRiskpool,
     GenericProduct,
 )
 
-from scripts.deploy_ayii import verify_deploy, printBundle
+from scripts.deploy_ayii import verify_deploy, printBundle, setClfConsumer
 from scripts.util import contract_from_address, decodeEnum, b2s, s2b, utcStr, fromWei
-from scripts.context import Context
+from scripts.context import context, a
 from scripts.prompt import prompt
-
-context = Context()
-a = context.accounts
 
 
 def listComponents():
     components = context.getComponents()
-    for componentIndex, componentData in enumerate(components):
+    for index, componentData in enumerate(components):
         info = (
-            f"{componentIndex:>3} : "
+            f'{componentData["index"]:>3} : '
             f'{componentData["typeStr"].ljust(12)}\n'
             f'      Address:      {componentData["address"]}\n'
             f'      Status:       {componentData["stateStr"].ljust(12)}'
@@ -146,26 +142,8 @@ def getComponent(componentId):
     return contract_from_address(contract, address)
 
 
-def createRisk():
+def createRisk(projectId, uaiId, cropId, trigger, exit, tsi, aph):
     insurer = a["insurer"]
-    projectId = prompt.enterString("Enter the project ID:", r"^\d{1,10}$")
-    uaiId = prompt.enterString("Enter the UAI ID:", r"^\d{1,10}$")
-    cropId = prompt.enterString("Enter the crop ID:", r"^[a-zA-Z]+$")
-    trigger = prompt.enterFloat("Enter the trigger:", 0, 1)
-    exit = prompt.enterFloat("Enter the exit:", 0, 1)
-    tsi = prompt.enterFloat("Enter the TSI:", 0, 1)
-    aph = prompt.enterFloat("Enter the APH:", 0, 1)
-    print("Creating risk:")
-    print(f"projectId: {projectId}")
-    print(f"uaiId    : {uaiId}")
-    print(f"cropId   : {cropId}")
-    print(f"Trigger  : {trigger}")
-    print(f"Exit     : {exit}")
-    print(f"TSI      : {tsi}")
-    print(f"APH      : {aph}")
-    if not prompt.confirm("create risk"):
-        return
-
     mul = context.product.getPercentageMultiplier()
     (trigger, exit, tsi, aph) = (mul * trigger, mul * exit, mul * tsi, mul * aph)
     tx = context.product.createRisk(
@@ -180,6 +158,41 @@ def createRisk():
     )
     riskId = dict(tx.events["LogAyiiRiskDataCreated"])["riskId"]
     print(f"Risk created with ID: {riskId}")
+    return riskId
+
+
+def queryRiskParameters():
+    projectId = prompt.enterString("Enter the project ID:", r"^\d{1,10}$")
+    uaiId = prompt.enterString("Enter the UAI ID    :", r"^\d{1,10}$")
+    cropId = prompt.enterString("Enter the crop ID   :", r"^[a-zA-Z]+$")
+    trigger = prompt.enterFloat(
+        "Enter the trigger   :", lowerBound=0, upperBound=1, default=0.7
+    )
+    exit = prompt.enterFloat(
+        "Enter the exit      :", lowerBound=0, upperBound=1, default=0.0
+    )
+    tsi = prompt.enterFloat(
+        "Enter the TSI       :", lowerBound=0, upperBound=1, default=0.7
+    )
+    aph = prompt.enterFloat(
+        "Enter the APH       :", lowerBound=0, upperBound=1, default=0.9876
+    )
+    return (projectId, uaiId, cropId, trigger, exit, tsi, aph)
+
+
+def createRiskInteractive():
+    (projectId, uaiId, cropId, trigger, exit, tsi, aph) = queryRiskParameters()
+    print("Creating risk:")
+    print(f"projectId: {projectId}")
+    print(f"uaiId    : {uaiId}")
+    print(f"cropId   : {cropId}")
+    print(f"Trigger  : {trigger}")
+    print(f"Exit     : {exit}")
+    print(f"TSI      : {tsi}")
+    print(f"APH      : {aph}")
+    if not prompt.confirm("create risk"):
+        return
+    createRisk(projectId, uaiId, cropId, trigger, exit, tsi, aph)
 
 
 def getRisks():
@@ -209,6 +222,9 @@ def getRisks():
 def listRisks():
     riskData = getRisks()
     riskCount = len(riskData)
+    if riskCount == 0:
+        print("No risks available")
+        return
     for riskIndex in range(0, riskCount):
         data = riskData[riskIndex]
         risk = data["risk"]
@@ -234,19 +250,27 @@ def listRisks():
         )
 
 
-def listRiskShort():
+def listRiskShort(filter=lambda x: True):
     riskData = getRisks()
-    return [
-        f"{i:>3}: "
-        f'{b2s(risk["risk"]["projectId"]).ljust(10)} '
-        f'{b2s(risk["risk"]["uaiId"]).ljust(10)} '
-        f'{b2s(risk["risk"]["cropId"]).ljust(10)} '
-        f'{risk["trigger"]:.5f} '
-        f'{risk["exit"]:.5f} '
-        f'{risk["tsi"]:.5f} '
-        f'{risk["aph"]:.5f} '
+    return {
+        (
+            f"{i:>3} :"
+            f'{b2s(risk["risk"]["projectId"]).ljust(10)}:'
+            f'{b2s(risk["risk"]["uaiId"]).ljust(10)}:'
+            f'{b2s(risk["risk"]["cropId"]).ljust(10)}:'
+            f'{risk["trigger"]:.5f}:'
+            f'{risk["exit"]:.5f}:'
+            f'{risk["tsi"]:.5f}:'
+            f'{risk["aph"]:.5f}:'
+            f'{risk["aaay"]:.5f}:'
+            f'{risk["risk"]["requestTriggered"]}:'
+            f'{utcStr(risk["risk"]["responseAt"])}:'
+            f'{utcStr(risk["risk"]["createdAt"])}:'
+            f'{utcStr(risk["risk"]["updatedAt"])}:'
+        ): risk["riskId"]
         for i, risk in enumerate(riskData)
-    ]
+        if filter(risk)
+    }
 
 
 def getPolicies():
@@ -301,12 +325,12 @@ def selectRisk():
         return None
     elif risks == 1:
         print("Only one risk available - selecting it")
-        return 0
+        return context.product.getRiskId(0)
     options = listRiskShort()
-    options.append("Cancel")
+    options["Cancel"] = None
     print("Select Risk:")
-    selection = options.index(prompt.menu(options))
-    if selection == len(options) - 1:
+    selection = prompt.dictMenu(options)
+    if selection is None:
         return None
     return context.product.getRiskId(selection)
 
@@ -323,7 +347,11 @@ def fundBundle():
         return
 
     funding = prompt.enterCurrency(
-        "Enter the funding amount:", context.usdc.decimals(), lowerBound=0
+        "Enter the funding amount:",
+        context.usdc.decimals(),
+        lowerBound=0,
+        upperBound=10000000,
+        default=0.0,
     )
 
     if funding == 0:
@@ -351,23 +379,7 @@ def fundBundle():
     printBundle(context.riskpool, bundleId)
 
 
-def createPolicy():
-
-    riskId = selectRisk()
-    if riskId is None:
-        return
-
-    premium = prompt.enterCurrency(
-        "Enter the premium amount:", context.usdc.decimals(), lowerBound=0
-    )
-    if premium == 0:
-        return
-
-    sumInsured = prompt.enterCurrency(
-        "Enter the sum insured amount:", context.usdc.decimals(), lowerBound=0
-    )
-    if sumInsured == 0:
-        return
+def createPolicy(riskId, premium, sumInsured):
 
     customer = context.accounts["customer1"]
     insurer = context.accounts["insurer"]
@@ -390,17 +402,146 @@ def createPolicy():
     )
     policyId = dict(tx.events["LogAyiiPolicyCreated"])["policyId"]
     print(f"Policy created with ID: {policyId}")
+    return policyId
 
 
-def triggerOracle():
-    policy = selectPolicy()
-    if policy is None:
+def queryPolicyParameters():
+    premium = prompt.enterCurrency(
+        "Enter the premium amount:", context.usdc.decimals(), lowerBound=0, default=15.0
+    )
+    if premium == 0:
         return
-    policyId = policy["policyId"]
-    insurer = context.accounts["insurer"]
-    if not prompt.confirm(f"Trigger oracle request for policyId: {policyId}"):
+
+    sumInsured = prompt.enterCurrency(
+        "Enter the sum insured amount:",
+        context.usdc.decimals(),
+        lowerBound=0,
+        default=150.0,
+    )
+    if sumInsured == 0:
         return
+    return (premium, sumInsured)
+
+
+def createPolicyInteractive():
+    riskId = selectRisk()
+    if riskId is None:
+        return
+    (premium, sumInsured) = queryPolicyParameters()
+    createPolicy(riskId, premium, sumInsured)
+
+
+def triggerOracle(policyId):
     print(f"Triggering oracle request for policyId: {policyId}")
-    tx = context.product.triggerOracle(policyId, {"from": insurer})
+    insurer = context.accounts["insurer"]
+    tx = context.product.triggerOracle(
+        policyId,
+        {
+            "from": insurer
+            # "gas_limit": 1000000,
+            # "allow_revert": True
+        },
+    )
     requestId = dict(tx.events["LogAyiiRiskDataRequested"])["requestId"]
     print(f"Oracle request triggered with requestId: {requestId}")
+
+
+def triggerOracleInteractive():
+    risks = listRiskShort(
+        lambda r: not r["risk"]["requestTriggered"] and r["risk"]["responseAt"] == 0
+    )
+    if len(risks.keys()) == 0:
+        print("No oracle requests available")
+        return
+    options = risks
+    options["Cancel"] = None
+    print("Select Risk Request:")
+    print(
+        (
+            "  Idx |ProjectId | UaId     | "
+            "CropId   | Trig  | Exit  | TSI   | "
+            "APH   | AAAY  |Trig|Response           | "
+            "Created           | Updated"
+        )
+    )
+    riskId = prompt.dictMenu(options)
+    if riskId is None:
+        return
+    try:
+        policyCount = context.product.policies(riskId)
+        if policyCount == 0:
+            print("No policies available for this risk")
+            return
+
+        policyId = context.product.getPolicyId(riskId, 0)
+
+        if not prompt.confirm(f"Trigger oracle request for policyId: {policyId}"):
+            return
+        print(f"Triggering oracle request for policyId: {policyId}")
+        triggerOracle(policyId)
+
+    except Exception as e:
+        print(f"Error triggering oracle request: {e}")
+
+
+def doSetClfConsumer():
+    setClfConsumer(context)
+
+
+def fullCycle():
+    count = prompt.enterNumber("Enter the number of policies to create:", 1, 100)
+    (projectId, uaiId, cropId, trigger, exit, tsi, aph) = queryRiskParameters()
+    (premium, sumInsured) = queryPolicyParameters()
+
+    for i in range(count):
+        uaiId2 = f"{int(uaiId)+i}"
+        print(
+            f"Creating risk with projectId: {projectId} / uaiId: {uaiId2} / cropId: {cropId}"
+        )
+        riskId = createRisk(projectId, uaiId2, cropId, trigger, exit, tsi, aph)
+        policyId = createPolicy(riskId, premium, sumInsured)
+        triggerOracle(policyId)
+
+
+def cancelOracleRequestInteractive():
+    risks = listRiskShort(
+        lambda r: r["risk"]["requestTriggered"] and r["risk"]["responseAt"] == 0
+    )
+    if len(risks.keys()) == 0:
+        print("No oracle requests available")
+        return
+    options = risks
+    options["Cancel"] = None
+    print("Select Oracle Request:")
+    print(
+        (
+            "  Idx |ProjectId | UaId     | "
+            "CropId   | Trig  | Exit  | TSI   | "
+            "APH   | AAAY  |Trig|Response           | "
+            "Created           | Updated"
+        )
+    )
+    riskId = prompt.dictMenu(options)
+    if riskId is None:
+        return
+
+    try:
+        policyCount = context.product.policies(riskId)
+        if policyCount == 0:
+            print("No policies available for this risk")
+            return
+        policyId = context.product.getPolicyId(riskId, 0)
+        if not prompt.confirm(f"Cancel oracle request for policyId: {policyId}"):
+            return
+        tx = context.product.cancelOracleRequest(
+            policyId, {"from": context.accounts["insurer"]}
+        )
+        print(f"Oracle request for policyId: {policyId} canceled")
+        print(tx)
+
+    except Exception as e:
+        print(f"Error canceling oracle request: {e}")
+
+
+def initializeContext():
+    context.initialize()

@@ -435,11 +435,11 @@ def deploy_product_with_oracle_riskpool(
             registry_address
         )
     )
-    (instance, product, oracle, riskpool) = from_registry(registry_address)
+    (instance, product, oracle, riskpool, _) = from_registry(registry_address)
 
     print(
         "====== deploy ayii product /w base name '{}' and riskpool collateralization level {} ======".format(
-            baseName, collateralizaionLevel
+            baseName, collateralizationLevel
         )
     )
     ayiiDeploy = GifAyiiProductComplete(
@@ -522,7 +522,6 @@ def deploy(stakeholders_accounts, erc20_token, publishSource=False):
         productOwner,
         insurer,
         oracleProvider,
-        chainlinkNodeOperator,
         riskpoolKeeper,
         investor,
         erc20Token,
@@ -753,14 +752,14 @@ def from_registry(
         oracle = contract_from_address(AyiiOracle, componentAddress)
 
         if oracle.getType() != 0:
-            oracle = None
             if verbose:
                 print(
                     "component (type={}) with id {} is not oracle".format(
-                        component.getType(), componentId
+                        oracle.getType(), componentId
                     )
                 )
                 print("no oracle returned (None)")
+            oracle = None
     elif verbose:
         print("1 oracle expected, no oracles available")
         print("no oracle returned (None)")
@@ -779,14 +778,14 @@ def from_registry(
         riskpool = contract_from_address(AyiiRiskpool, componentAddress)
 
         if riskpool.getType() != 2:
-            riskpool = None
             if verbose:
                 print(
                     "component (type={}) with id {} is not riskpool".format(
-                        component.getType(), componentId
+                        riskpool.getType(), componentId
                     )
                 )
                 print("no riskpool returned (None)")
+            riskpool = None
     elif verbose:
         print("1 riskpool expected, no riskpools available")
         print("no riskpool returned (None)")
@@ -844,3 +843,13 @@ def create_risk(product, insurer, project, uai, crop, trigger, exit_, tsi, aph):
     )
 
     return tx.events["LogAyiiRiskDataCreated"]["riskId"]
+
+
+def setClfConsumer(context):
+    if not confirm("set clf consumer in oracle"):
+        return
+
+    oracleProvider = context.accounts["oracleProvider"]
+    clfConsumer = context.clfConsumer
+    tx = context.oracle.setClfGateWay(clfConsumer, {"from": oracleProvider})
+    print(tx)

@@ -23,7 +23,8 @@ compiler:
             - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.7.3"
             - "@chainlink=smartcontractkit/chainlink@1.6.0"
             - "@etherisc/gif-interface=etherisc/gif-interface@3b0002a"
-
+        metadata:
+            useLiteralContent: true
 # packages below will be added to brownie
 # you may use 'brownie pm list' after 'brownie compile' 
 # to list the packages installed via the dependency list below

@@ -2,12 +2,18 @@ from scripts.prompt import prompt
 from scripts.interactive import (
     context,
     listComponents,
-    createRisk,
+    createRiskInteractive,
     listRisks,
+    listRiskShort,
     selectTypeAndComponent,
     fundBundle,
-    createPolicy,
-    triggerOracle,
+    getFeeSpecification,
+    createPolicyInteractive,
+    triggerOracleInteractive,
+    cancelOracleRequestInteractive,
+    doSetClfConsumer,
+    fullCycle,
+    initializeContext,
 )
 
 from scripts.deploy_ayii import (
@@ -17,6 +23,23 @@ from scripts.deploy_ayii import (
     deploy_product_with_oracle_riskpool,
     verify_deploy,
 )
+
+
+def executeFunctionOrObject(param):
+    if callable(param):
+        # If param is a function, call it without parameters
+        return param()
+    elif isinstance(param, dict) and "function" in param and "args" in param:
+        # If param is a dictionary with 'function' and 'args', execute the function with arguments
+        func = param["function"]
+        args = param["args"]
+
+        if not callable(func):
+            raise ValueError("'function' in the dictionary must be callable")
+        if not isinstance(args, (list, tuple)):
+            raise ValueError("'args' in the dictionary must be a list or tuple")
+
+        return func(*args)
 
 
 def menu():
@@ -50,18 +73,27 @@ def menu():
                 ],
             },
             "Context": context.printContext,
+            "Initialize Context": initializeContext,
             "Accounts": context.printAccounts,
             "List Components": listComponents,
-            "Create Risk": createRisk,
+            "Create Risk": createRiskInteractive,
             "List Risks": listRisks,
+            "List Risk Short": listRiskShort,
             "Select Type and Component": selectTypeAndComponent,
             "Fund Bundle": fundBundle,
-            "Create Policy": createPolicy,
-            "Trigger Oracle": triggerOracle,
+            "Create Policy": createPolicyInteractive,
+            "Trigger Oracle": triggerOracleInteractive,
+            "Cancel Oracle Request": cancelOracleRequestInteractive,
+            "Show Fee Specification": getFeeSpecification,
+            "Set Clf Consumer": doSetClfConsumer,
+            "Full Cycle": fullCycle,
             "Exit": None,
         }
         selection = prompt.dictMenu(options)
-        run = selection != "Exit"
+        if selection is None:
+            run = False
+        else:
+            executeFunctionOrObject(selection)
 
 
 menu()
